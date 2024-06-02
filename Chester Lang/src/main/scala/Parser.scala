@@ -1,7 +1,6 @@
 package chester.lang
 
-import fastparse._
-import NoWhitespace._
+import fastparse._, NoWhitespace._
 
 object Parser {
 
@@ -9,7 +8,7 @@ object Parser {
 
   def parseExpressions(input: String): Parsed[Seq[Expr]] = parse(input, program(_))
 
-  private def ws[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n").rep.?)
+  private def space[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
 
   private def location[$: P]: P[SourceLocation] = P(Index).map(idx => SourceLocation("filename.scala", idx, idx))
 
@@ -17,39 +16,49 @@ object Parser {
     case (loc, value) => StringExpr(value, loc)
   }
 
-  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ ws ~ keyValue.rep(sep = P(";" ~ ws)) ~ ws ~ "}").map {
-    case (loc, entries) => TableExpr(entries.toMap, loc)
+  private def integer[$: P]: P[IntExpr] = P(location ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).!).map {
+    case (loc, value) => IntExpr(value.toInt, loc)
   }
 
-  private def keyValue[$: P]: P[(String, Expr)] = P(identifier ~ ws ~ "=" ~ ws ~ expr).map {
+  private def float[$: P]: P[FloatExpr] = P(location ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1) ~ "." ~ CharsWhileIn("0-9").rep(1).!).map {
+    case (loc, value) => FloatExpr(value.toDouble, loc)
+  }
+
+  private def number[$: P]: P[Expr] = P(float | integer)
+
+  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ keyValue.rep(sep = P(";" )./).? ~ space ~ "}").map {
+    case (loc, entries) => TableExpr(entries.getOrElse(Seq()).toMap, loc)
+  }
+
+  private def keyValue[$: P]: P[(String, Expr)] = P(identifier ~ space ~ "=" ~/ space ~ expr).map {
     case (key, value) => (key, value)
   }
 
-  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ "]").map {
-    case (loc, elements) => ListExpr(elements, loc)
+  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ expr.rep(sep = P("," )./).? ~ space ~ "]").map {
+    case (loc, elements) => ListExpr(elements.getOrElse(Seq()), loc)
   }
 
-  private def functionCall[$: P]: P[FunctionCall] = P(location ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ ")").map {
+  private def functionCall[$: P]: P[FunctionCall] = P(location ~ identifier ~ "(" ~/ space ~ expr.rep(sep = P("," ~/ space)) ~ space ~ ")").map {
     case (loc, name, args) => FunctionCall(name, args, loc)
   }
 
-  private def infixExpr[$: P]: P[Expr] = P(simpleExpr ~ ws ~ operator ~ ws ~ simpleExpr).map {
-    case (left, op, right) => InfixExpr(left, op, right, left.location)
+  private def infixExpr[$: P]: P[Expr] = P(location ~ simpleExpr ~ space ~ operator ~ space ~ simpleExpr).map {
+    case (loc, left, op, right) => InfixExpr(left, op, right, loc)
   }
 
-  private def methodCall[$: P]: P[MethodCall] = P(location ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ ")").map {
+  private def methodCall[$: P]: P[MethodCall] = P(location ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ space ~ expr.rep(sep = P("," ~/ space)) ~ space ~ ")").map {
     case (loc, target, method, args) => MethodCall(target, method, args, loc)
   }
 
-  private def lambda[$: P]: P[LambdaExpr] = P(location ~ "(" ~ ws ~ params ~ ws ~ ")" ~ ws ~ "=>" ~ ws ~ expr).map {
+  private def lambda[$: P]: P[LambdaExpr] = P(location ~ "(" ~/ space ~ params ~ space ~ ")" ~ space ~ "=>" ~/ space ~ expr).map {
     case (loc, params, body) => LambdaExpr(params, body, loc)
   }
 
-  private def params[$: P]: P[Seq[(String, Option[String])]] = P(param.rep(sep = P("," ~ ws)))
+  private def params[$: P]: P[Seq[(String, Option[String])]] = P(param.rep(sep = P("," ~/ space)))
 
-  private def param[$: P]: P[(String, Option[String])] = P(identifier ~ ws ~ (":" ~ ws ~ identifier).?)
+  private def param[$: P]: P[(String, Option[String])] = P(identifier ~ space ~ (":" ~/ space ~ identifier).?)
 
-  private def typeAnnotation[$: P]: P[TypeAnnotation] = P(location ~ simpleExpr ~ ":" ~ ws ~ identifier).map {
+  private def typeAnnotation[$: P]: P[TypeAnnotation] = P(location ~ simpleExpr ~ ":" ~/ space ~ identifier).map {
     case (loc, expr, tpe) => TypeAnnotation(expr, tpe, loc)
   }
 
@@ -58,14 +67,12 @@ object Parser {
   private def operator[$: P]: P[String] = P(CharIn("+-*/").!)
 
   private def expr[$: P]: P[Expr] = P(
-    ws ~ (
-      table | list | string | functionCall | methodCall | lambda | typeAnnotation | infixExpr | simpleExpr
-      ) ~ ws
+    space ~ (table | list | string | number | functionCall | methodCall | lambda | typeAnnotation | infixExpr | simpleExpr) ~ space
   )
 
   private def simpleExpr[$: P]: P[Expr] = P(location ~ identifier).map {
-    case (loc, id) => StringExpr(id, loc)  // Simplified; you may want to handle different types
+    case (loc, id) => StringExpr(id, loc)
   }
 
-  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";" ~ ws) | ws))
+  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";" ~/ space) | space))
 }
