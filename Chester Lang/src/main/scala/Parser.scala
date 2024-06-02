@@ -13,6 +13,8 @@ object Parser {
 
   def parseIdentifier(input: String): Parsed[String] = parse(input, identifier(_))  // Add this line
 
+  def parseKeyValue(input: String): Parsed[(String, Expr)] = parse(input, keyValue(_))  // Add this line
+
   private def space[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
 
   private def location[$: P]: P[SourceLocation] = P(Index).map(idx => SourceLocation("filename.scala", idx, idx))
@@ -47,7 +49,7 @@ object Parser {
     case (loc, entries) => TableExpr(entries.toMap, loc)
   }
 
-  private def keyValue[$: P]: P[(String, Expr)] = P(identifier ~/ space ~ "=" ~/ expr).map {
+  private def keyValue[$: P]: P[(String, Expr)] = P(space ~/ identifier ~/ space ~ "=" ~/ expr).map {
     case (key, value) => (key, value)
   }
 

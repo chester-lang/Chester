@@ -19,7 +19,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "parse a table expression correctly" in {
-    val input = "{ x = 1; y = 2 }"
+    val input = "{x = 1; y = 2 }"
     val result = Parser.parseExpression(input)
     result match {
       case Parsed.Success(TableExpr(entries, _), _) =>
@@ -87,6 +87,18 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(value, _) =>
         value should be("x")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
+    }
+  }
+  it should "parse a key-value pair correctly" in {
+    val input = "key = 123"
+    val result = Parser.parseKeyValue(input)
+    result match {
+      case Parsed.Success((key, IntExpr(value, _)), _) =>
+        key should be ("key")
+        value should be (123)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
