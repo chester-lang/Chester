@@ -12,9 +12,21 @@ object Parser {
 
   private def location[$: P]: P[SourceLocation] = P(Index).map(idx => SourceLocation("filename.scala", idx, idx))
 
-  private def string[$: P]: P[StringExpr] = P(location ~ "\"" ~/ CharsWhile(_ != '"').! ~ "\"").map {
-    case (loc, value) => StringExpr(value, loc)
-  }
+
+  private def stringChars(c: Char) = c != '\"' && c != '\\'
+
+  private def hexDigit[$: P] = P(CharIn("0-9a-fA-F"))
+
+  private def unicodeEscape[$: P] = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
+
+  private def escape[$: P] = P("\\" ~ (CharIn("\"/\\\\bfnrt") | unicodeEscape))
+
+  private def strChars[$: P] = P(CharsWhile(stringChars))
+
+  private def string[$: P] =
+    P(location ~ space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map {
+      case (loc, value) => StringExpr(value, loc)
+    }
 
   private def integer[$: P]: P[IntExpr] = P(location ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).!).map {
     case (loc, value) => IntExpr(value.toInt, loc)
@@ -26,11 +38,11 @@ object Parser {
 
   private def number[$: P]: P[Expr] = P(float | integer)
 
-  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ keyValue.rep(sep = P(";" )./).? ~ space ~ "}").map {
+  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ keyValue.rep(sep = P(";")./).? ~ space ~ "}").map {
     case (loc, entries) => TableExpr(entries.getOrElse(Seq()).toMap, loc)
   }
 
-  private def keyValue[$: P]: P[(String, Expr)] = P(identifier ~ space ~ "=" ~/ space ~ expr).map {
+  private def keyValue[$: P]: P[(String, Expr)] = P(space ~ identifier ~ "=" ~/ expr).map {
     case (key, value) => (key, value)
   }
 
