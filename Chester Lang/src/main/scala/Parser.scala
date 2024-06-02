@@ -33,11 +33,11 @@ object Parser {
     case (loc, name, args) => FunctionCall(name, args, loc)
   }
 
-  private def infixExpr[$: P]: P[Expr] = P(expr ~ ws ~ operator ~ ws ~ expr).map {
+  private def infixExpr[$: P]: P[Expr] = P(simpleExpr ~ ws ~ operator ~ ws ~ simpleExpr).map {
     case (left, op, right) => InfixExpr(left, op, right, left.location)
   }
 
-  private def methodCall[$: P]: P[MethodCall] = P(location ~ expr ~ "." ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P(",") ~ ws) ~ ws ~ ")").map {
+  private def methodCall[$: P]: P[MethodCall] = P(location ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P(",") ~ ws) ~ ws ~ ")").map {
     case (loc, target, method, args) => MethodCall(target, method, args, loc)
   }
 
@@ -49,12 +49,12 @@ object Parser {
 
   private def param[$: P]: P[(String, Option[String])] = P(identifier ~ ws ~ (":" ~ ws ~ identifier).?)
 
-  private def typeAnnotation[$: P]: P[TypeAnnotation] = P(location ~ expr ~ ":" ~ ws ~ identifier).map {
+  private def typeAnnotation[$: P]: P[TypeAnnotation] = P(location ~ simpleExpr ~ ":" ~ ws ~ identifier).map {
     case (loc, expr, tpe) => TypeAnnotation(expr, tpe, loc)
   }
 
   private def identifier[$: P]: P[String] = P(CharIn("a-zA-Z") ~ CharsWhileIn("a-zA-Z0-9").rep.!)
-  
+
   private def operator[$: P]: P[String] = P(CharIn("+-*/").!)
 
   private def expr[$: P]: P[Expr] = P(
