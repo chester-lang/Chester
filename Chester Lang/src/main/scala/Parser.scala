@@ -9,7 +9,7 @@ object Parser {
 
   def parseExpressions(input: String): Parsed[Seq[Expr]] = parse(input, program(_))
 
-  private def ws[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n").rep)
+  private def ws[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n").rep.?)
 
   private def location[$: P]: P[SourceLocation] = P(Index).map(idx => SourceLocation("filename.scala", idx, idx))
 
@@ -17,7 +17,7 @@ object Parser {
     case (loc, value) => StringExpr(value, loc)
   }
 
-  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ ws ~ keyValue.rep(sep = P(";") | ws) ~ ws ~ "}").map {
+  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ ws ~ keyValue.rep(sep = P(";" ~ ws)) ~ ws ~ "}").map {
     case (loc, entries) => TableExpr(entries.toMap, loc)
   }
 
@@ -25,11 +25,11 @@ object Parser {
     case (key, value) => (key, value)
   }
 
-  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ ws ~ expr.rep(sep = P(",") ~ ws) ~ ws ~ "]").map {
+  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ "]").map {
     case (loc, elements) => ListExpr(elements, loc)
   }
 
-  private def functionCall[$: P]: P[FunctionCall] = P(location ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P(",") ~ ws) ~ ws ~ ")").map {
+  private def functionCall[$: P]: P[FunctionCall] = P(location ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ ")").map {
     case (loc, name, args) => FunctionCall(name, args, loc)
   }
 
@@ -37,7 +37,7 @@ object Parser {
     case (left, op, right) => InfixExpr(left, op, right, left.location)
   }
 
-  private def methodCall[$: P]: P[MethodCall] = P(location ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P(",") ~ ws) ~ ws ~ ")").map {
+  private def methodCall[$: P]: P[MethodCall] = P(location ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ ws ~ expr.rep(sep = P("," ~ ws)) ~ ws ~ ")").map {
     case (loc, target, method, args) => MethodCall(target, method, args, loc)
   }
 
@@ -45,7 +45,7 @@ object Parser {
     case (loc, params, body) => LambdaExpr(params, body, loc)
   }
 
-  private def params[$: P]: P[Seq[(String, Option[String])]] = P(param.rep(sep = P(",") ~ ws))
+  private def params[$: P]: P[Seq[(String, Option[String])]] = P(param.rep(sep = P("," ~ ws)))
 
   private def param[$: P]: P[(String, Option[String])] = P(identifier ~ ws ~ (":" ~ ws ~ identifier).?)
 
@@ -67,5 +67,5 @@ object Parser {
     case (loc, id) => StringExpr(id, loc)  // Simplified; you may want to handle different types
   }
 
-  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";") | ws))
+  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";" ~ ws) | ws))
 }

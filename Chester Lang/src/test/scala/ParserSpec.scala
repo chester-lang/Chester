@@ -12,7 +12,11 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(StringExpr(value, _), _) =>
         value should be ("Hello, World!")
-      case _ => fail("Parsing failed")
+      case Parsed.Success(other, _) =>
+        fail(s"Unexpected parse result: $other")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
     }
   }
 
@@ -22,7 +26,11 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(TableExpr(entries, _), _) =>
         entries.keys should contain allOf ("x", "y")
-      case _ => fail("Parsing failed")
+      case Parsed.Success(other, _) =>
+        fail(s"Unexpected parse result: $other")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
     }
   }
 
@@ -32,7 +40,11 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(ListExpr(elements, _), _) =>
         elements.length should be (3)
-      case _ => fail("Parsing failed")
+      case Parsed.Success(other, _) =>
+        fail(s"Unexpected parse result: $other")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
     }
   }
 
@@ -57,7 +69,11 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(expressions, _) =>
         expressions.length should be (9)
-      case _ => fail("Parsing failed")
+      case Parsed.Success(other, _) =>
+        fail(s"Unexpected parse result: $other")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
     }
   }
 }
