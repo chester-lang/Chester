@@ -11,7 +11,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = Parser.parseExpression(input)
     result match {
       case Parsed.Success(StringExpr(value, _), _) =>
-        value should be ("Hello, World!")
+        value should be("Hello, World!")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -23,7 +23,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = Parser.parseExpression(input)
     result match {
       case Parsed.Success(TableExpr(entries, _), _) =>
-        entries.keys should contain allOf ("x", "y")
+        entries.keys should contain allOf("x", "y")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -35,7 +35,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = Parser.parseExpression(input)
     result match {
       case Parsed.Success(ListExpr(elements, _), _) =>
-        elements.length should be (3)
+        elements.length should be(3)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -62,7 +62,31 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = Parser.parseExpressions(input)
     result match {
       case Parsed.Success(expressions, _) =>
-        expressions.length should be (9)
+        expressions.length should be(9)
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
+    }
+  }
+
+
+  "Parser" should "parse an identifier correctly" in {
+    val input = "myIdentifier"
+    val result = Parser.parseIdentifier(input)
+    result match {
+      case Parsed.Success(value, _) =>
+        value should be("myIdentifier")
+      case f: Parsed.Failure =>
+        println(f.trace().longMsg)
+        fail("Parsing failed")
+    }
+  }
+  "Parser" should "parse an identifier x correctly" in {
+    val input = "x"
+    val result = Parser.parseIdentifier(input)
+    result match {
+      case Parsed.Success(value, _) =>
+        value should be("x")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")

@@ -1,12 +1,17 @@
 package chester.lang
 
-import fastparse._, NoWhitespace._
+import fastparse.*
+import NoWhitespace.*
+
+import java.lang.Character.{isDigit, isLetter}
 
 object Parser {
 
   def parseExpression(input: String): Parsed[Expr] = parse(input, expr(_))
 
   def parseExpressions(input: String): Parsed[Seq[Expr]] = parse(input, program(_))
+
+  def parseIdentifier(input: String): Parsed[String] = parse(input, identifier(_))  // Add this line
 
   private def space[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
 
@@ -38,15 +43,15 @@ object Parser {
 
   private def number[$: P]: P[Expr] = P(float | integer)
 
-  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ keyValue.rep(sep = P(";")./).? ~ space ~ "}").map {
-    case (loc, entries) => TableExpr(entries.getOrElse(Seq()).toMap, loc)
+  private def table[$: P]: P[TableExpr] = P(location ~ "{" ~/ keyValue.rep(sep = P(";")./) ~ space ~ "}").map {
+    case (loc, entries) => TableExpr(entries.toMap, loc)
   }
 
-  private def keyValue[$: P]: P[(String, Expr)] = P(space ~ identifier ~ "=" ~/ expr).map {
+  private def keyValue[$: P]: P[(String, Expr)] = P(identifier ~/ space ~ "=" ~/ expr).map {
     case (key, value) => (key, value)
   }
 
-  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ expr.rep(sep = P("," )./).? ~ space ~ "]").map {
+  private def list[$: P]: P[ListExpr] = P(location ~ "[" ~/ expr.rep(sep = P(",")./).? ~ space ~ "]").map {
     case (loc, elements) => ListExpr(elements.getOrElse(Seq()), loc)
   }
 
@@ -74,7 +79,14 @@ object Parser {
     case (loc, expr, tpe) => TypeAnnotation(expr, tpe, loc)
   }
 
-  private def identifier[$: P]: P[String] = P(CharIn("a-zA-Z") ~ CharsWhileIn("a-zA-Z0-9").rep.!)
+
+  val Id0 = (c: Char) => isLetter(c) | c == '$' | c == '_'
+
+  val Id_ = (c: Char) => Id0(c) | isDigit(c)
+
+  def identifier[$: P]: P[String] = P(CharsWhile(Id0).! ~ CharsWhile(Id_).?.!) map {
+    case (a, b) => a + b
+  }
 
   private def operator[$: P]: P[String] = P(CharIn("+-*/").!)
 
