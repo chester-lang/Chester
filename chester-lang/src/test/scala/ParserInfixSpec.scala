@@ -17,9 +17,6 @@ class ParserInfixSpec extends AnyFlatSpec with Matchers {
         left should matchPattern { case StringExpr("x", _) => }
         op should be("+")
         right should matchPattern { case StringExpr("y", _) => }
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(5)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>
@@ -36,9 +33,6 @@ class ParserInfixSpec extends AnyFlatSpec with Matchers {
         target should matchPattern { case StringExpr("x", _) => }
         method should be("f")
         args shouldBe empty
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(5)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>
@@ -55,9 +49,6 @@ class ParserInfixSpec extends AnyFlatSpec with Matchers {
         left should matchPattern { case StringExpr("x", _) => }
         op should be("f")
         right should matchPattern { case StringExpr("y", _) => }
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(5)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>

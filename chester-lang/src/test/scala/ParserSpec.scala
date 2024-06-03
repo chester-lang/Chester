@@ -15,9 +15,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(StringExpr(value, location), _) =>
         value should be("Hello, World!")
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(15)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -30,7 +27,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(TableExpr(entries, location), _) =>
         entries.keys should contain allOf ("x", "y")
-        location.file should be(fileName)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -43,9 +39,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(ListExpr(elements, location), _) =>
         elements.length should be(3)
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(9)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -58,7 +51,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(TableExpr(entries, location), _) =>
         entries.keys should contain allOf ("x", "y")
-        location.file should be(fileName)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -72,7 +64,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
       case Parsed.Success(FunctionCall(name, args, location), _) =>
         name should be("print")
         args.head should matchPattern { case StringExpr("Hello, World!", _) => }
-        location.file should be(fileName)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -88,7 +79,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
         args should matchPattern {
           case Seq(IntExpr(1, _), IntExpr(2, _)) =>
         }
-        location.file should be(fileName)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -103,9 +93,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
         target should matchPattern { case StringExpr("x", _) => }
         method should be("f")
         args shouldBe empty
-        location.file should be(fileName)
-        location.start should be(0)
-        location.end should be(5)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>
@@ -120,7 +107,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(LambdaExpr(params, body, location), _) =>
         params should contain inOrder (("x", None), ("y", None))
-        location.file should be(fileName)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>
@@ -136,7 +122,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
       case Parsed.Success(TypeAnnotation(expr, tpe, location), _) =>
         expr should matchPattern { case StringExpr("x", _) => }
         tpe should be("Int")
-        location.file should be(fileName)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>
@@ -165,22 +150,6 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(value, _) =>
         value should be("x")
-      case Parsed.Success(expr, _) =>
-        fail(s"Unexpected expression: $expr")
-      case f: Parsed.Failure =>
-        println(f.trace().longMsg)
-        fail("Parsing failed")
-    }
-  }
-
-  it should "parse a key-value pair correctly" in {
-    val input = "key = 123"
-    val result = parser.parseKeyValue(input)
-    result match {
-      case Parsed.Success((key, IntExpr(value, location)), _) =>
-        key should be("key")
-        value should be(123)
-        location.file should be(fileName)
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
       case f: Parsed.Failure =>

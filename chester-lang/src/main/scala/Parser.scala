@@ -13,17 +13,15 @@ case class Parser(fileName: String) {
 
   def parseIdentifier(input: String): Parsed[String] = parse(input, identifier(_))
 
-  def parseKeyValue(input: String): Parsed[(String, Expr)] = parse(input, keyValue(_))
-
   private def space[$: P]: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
 
   private def begin[$: P]: P[Int] = Index
   private def end[$: P]: P[Int] = Index
 
-  private def loc(begin: Int, end: Int)(implicit ctx: P[_]): SourceLocation = {
+  private def loc(begin: Int, end: Int)(implicit ctx: P[_]): Option[SourceLocation] = {
     val (startLine, startCol) = computeLineCol(begin)
     val (endLine, endCol) = computeLineCol(end)
-    SourceLocation(fileName, begin, end, startLine, startCol, endLine, endCol)
+    Some(SourceLocation(fileName, begin, end, startLine, startCol, endLine, endCol))
   }
 
   private def computeLineCol(index: Int)(implicit ctx: P[_]): (Int, Int) = {
