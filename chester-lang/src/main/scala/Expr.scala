@@ -24,3 +24,11 @@ case class IntegerExpr(location: Option[SourceLocation], value: BigInt) extends 
 case class CallExpr(location: Option[SourceLocation], callee: Expr, list: List[Expr]) extends Expr
 
 case class MacroCallExpr(location: Option[SourceLocation], callee: Expr, list: List[Expr]) extends Expr
+
+case class QuasiquoteExpr(location: Option[SourceLocation], expr: Expr) extends Expr
+
+case class QuoteExpr(location: Option[SourceLocation], expr: Expr) extends Expr
+
+case class UnquoteExpr(location: Option[SourceLocation], expr: Expr) extends Expr
+
+case class UnquoteSplicing(location: Option[SourceLocation], expr: Expr) extends Expr
