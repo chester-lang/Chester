@@ -13,7 +13,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val input = "\"Hello, World!\""
     val result = parser.parseExpression(input)
     result match {
-      case Parsed.Success(StringExpr(value, location), _) =>
+      case Parsed.Success(StringAST(value, location), _) =>
         value should be("Hello, World!")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
@@ -25,7 +25,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val input = "{x = 1; y = 2 }"
     val result = parser.parseExpression(input)
     result match {
-      case Parsed.Success(TableExpr(entries, location), _) =>
+      case Parsed.Success(TableAST(entries, location), _) =>
         entries.keys should contain allOf ("x", "y")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
@@ -37,7 +37,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val input = "[1, 2, 3]"
     val result = parser.parseExpression(input)
     result match {
-      case Parsed.Success(ListExpr(elements, location), _) =>
+      case Parsed.Success(ListAST(elements, location), _) =>
         elements.length should be(3)
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
@@ -49,7 +49,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val input = "{ x = 1; y = 2 }"
     val result = parser.parseExpression(input)
     result match {
-      case Parsed.Success(TableExpr(entries, location), _) =>
+      case Parsed.Success(TableAST(entries, location), _) =>
         entries.keys should contain allOf ("x", "y")
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
@@ -63,7 +63,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     result match {
       case Parsed.Success(FunctionCall(name, args, location), _) =>
         name should be("print")
-        args.head should matchPattern { case StringExpr("Hello, World!", _) => }
+        args.head should matchPattern { case StringAST("Hello, World!", _) => }
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
         fail("Parsing failed")
@@ -77,7 +77,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
       case Parsed.Success(FunctionCall(name, args, location), _) =>
         name should be("f")
         args should matchPattern {
-          case Seq(IntExpr(1, _), IntExpr(2, _)) =>
+          case Seq(IntAST(1, _), IntAST(2, _)) =>
         }
       case f: Parsed.Failure =>
         println(f.trace().longMsg)
@@ -90,7 +90,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = parser.parseExpression(input)
     result match {
       case Parsed.Success(MethodCall(target, method, args, location), _) =>
-        target should matchPattern { case StringExpr("x", _) => }
+        target should matchPattern { case StringAST("x", _) => }
         method should be("f")
         args shouldBe empty
       case Parsed.Success(expr, _) =>
@@ -105,7 +105,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val input = "(x, y) => x + y"
     val result = parser.parseExpression(input)
     result match {
-      case Parsed.Success(LambdaExpr(params, body, location), _) =>
+      case Parsed.Success(LambdaAST(params, body, location), _) =>
         params should contain inOrder (("x", None), ("y", None))
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")
@@ -120,7 +120,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     val result = parser.parseExpression(input)
     result match {
       case Parsed.Success(TypeAnnotation(expr, tpe, location), _) =>
-        expr should matchPattern { case StringExpr("x", _) => }
+        expr should matchPattern { case StringAST("x", _) => }
         tpe should be("Int")
       case Parsed.Success(expr, _) =>
         fail(s"Unexpected expression: $expr")

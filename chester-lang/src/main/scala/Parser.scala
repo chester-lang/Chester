@@ -7,9 +7,9 @@ import java.lang.Character.{isDigit, isLetter}
 
 case class Parser(fileName: String) {
 
-  def parseExpression(input: String): Parsed[Expr] = parse(input, expr(_))
+  def parseExpression(input: String): Parsed[AST] = parse(input, expr(_))
 
-  def parseExpressions(input: String): Parsed[Seq[Expr]] = parse(input, program(_))
+  def parseExpressions(input: String): Parsed[Seq[AST]] = parse(input, program(_))
 
   def parseIdentifier(input: String): Parsed[String] = parse(input, identifier(_))
 
@@ -42,46 +42,46 @@ case class Parser(fileName: String) {
 
   private def strChars[$: P] = P(CharsWhile(stringChars))
 
-  private def string[$: P]: P[StringExpr] = P(begin ~ space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"" ~ end).map {
-    case (begin, value, end) => StringExpr(value, loc(begin, end))
+  private def string[$: P]: P[StringAST] = P(begin ~ space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"" ~ end).map {
+    case (begin, value, end) => StringAST(value, loc(begin, end))
   }
 
-  private def integer[$: P]: P[IntExpr] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
-    case (begin, value, end) => IntExpr(value.toInt, loc(begin, end))
+  private def integer[$: P]: P[IntAST] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
+    case (begin, value, end) => IntAST(value.toInt, loc(begin, end))
   }
 
-  private def float[$: P]: P[FloatExpr] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1) ~ "." ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
-    case (begin, value, end) => FloatExpr(value.toDouble, loc(begin, end))
+  private def float[$: P]: P[FloatAST] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1) ~ "." ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
+    case (begin, value, end) => FloatAST(value.toDouble, loc(begin, end))
   }
 
-  private def number[$: P]: P[Expr] = P(float | integer)
+  private def number[$: P]: P[AST] = P(float | integer)
 
-  private def table[$: P]: P[TableExpr] = P(begin ~ "{" ~/ keyValue.rep(sep = P(";")./) ~ space ~ "}" ~ end).map {
-    case (begin, entries, end) => TableExpr(entries.toMap, loc(begin, end))
+  private def table[$: P]: P[TableAST] = P(begin ~ "{" ~/ keyValue.rep(sep = P(";")./) ~ space ~ "}" ~ end).map {
+    case (begin, entries, end) => TableAST(entries.toMap, loc(begin, end))
   }
 
-  private def keyValue[$: P]: P[(String, Expr)] = P(space ~/ identifier ~/ space ~ "=" ~/ expr).map {
+  private def keyValue[$: P]: P[(String, AST)] = P(space ~/ identifier ~/ space ~ "=" ~/ expr).map {
     case (key, value) => (key, value)
   }
 
-  private def list[$: P]: P[ListExpr] = P(begin ~ "[" ~/ expr.rep(sep = P(",")./).? ~ space ~ "]" ~ end).map {
-    case (begin, elements, end) => ListExpr(elements.getOrElse(Seq()), loc(begin, end))
+  private def list[$: P]: P[ListAST] = P(begin ~ "[" ~/ expr.rep(sep = P(",")./).? ~ space ~ "]" ~ end).map {
+    case (begin, elements, end) => ListAST(elements.getOrElse(Seq()), loc(begin, end))
   }
 
   private def functionCall[$: P]: P[FunctionCall] = P(begin ~ identifier ~ "(" ~/ space ~ expr.rep(sep = P("," ~/ space)) ~ space ~ ")" ~ end).map {
     case (begin, name, args, end) => FunctionCall(name, args, loc(begin, end))
   }
 
-  private def infixExpr[$: P]: P[Expr] = P(begin ~ simpleExpr ~ space ~ operator ~ space ~ simpleExpr ~ end).map {
-    case (begin, left, op, right, end) => InfixExpr(left, op, right, loc(begin, end))
+  private def infixExpr[$: P]: P[AST] = P(begin ~ simpleExpr ~ space ~ operator ~ space ~ simpleExpr ~ end).map {
+    case (begin, left, op, right, end) => InfixAST(left, op, right, loc(begin, end))
   }
 
   private def methodCall[$: P]: P[MethodCall] = P(begin ~ simpleExpr ~ "." ~ identifier ~ "(" ~/ space ~ expr.rep(sep = P("," ~/ space)) ~ space ~ ")" ~ end).map {
     case (begin, target, method, args, end) => MethodCall(target, method, args, loc(begin, end))
   }
 
-  private def lambda[$: P]: P[LambdaExpr] = P(begin ~ "(" ~/ space ~ params ~ space ~ ")" ~ space ~ "=>" ~/ space ~ expr ~ end).map {
-    case (begin, params, body, end) => LambdaExpr(params, body, loc(begin, end))
+  private def lambda[$: P]: P[LambdaAST] = P(begin ~ "(" ~/ space ~ params ~ space ~ ")" ~ space ~ "=>" ~/ space ~ expr ~ end).map {
+    case (begin, params, body, end) => LambdaAST(params, body, loc(begin, end))
   }
 
   private def params[$: P]: P[Seq[(String, Option[String])]] = P(param.rep(sep = P("," ~/ space)))
@@ -102,13 +102,13 @@ case class Parser(fileName: String) {
 
   private def operator[$: P]: P[String] = P(CharIn("+-*/").!)
 
-  private def expr[$: P]: P[Expr] = P(
+  private def expr[$: P]: P[AST] = P(
     space ~ (table | list | string | number | functionCall | methodCall | lambda | typeAnnotation | infixExpr | simpleExpr) ~ space
   )
 
-  private def simpleExpr[$: P]: P[Expr] = P(begin ~ identifier ~ end).map {
-    case (begin, id, end) => StringExpr(id, loc(begin, end))
+  private def simpleExpr[$: P]: P[AST] = P(begin ~ identifier ~ end).map {
+    case (begin, id, end) => StringAST(id, loc(begin, end))
   }
 
-  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";" ~/ space) | space))
+  private def program[$: P]: P[Seq[AST]] = P(expr.rep(sep = P(";" ~/ space) | space))
 }

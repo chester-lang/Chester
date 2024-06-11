@@ -5,9 +5,9 @@ import NoWhitespace._
 
 case class ClojureParser(fileName: String) {
 
-  def parseExpression(input: String): Parsed[Expr] = parse(input, expr(_))
+  def parseExpression(input: String): Parsed[AST] = parse(input, expr(_))
 
-  def parseExpressions(input: String): Parsed[Seq[Expr]] = parse(input, program(_))
+  def parseExpressions(input: String): Parsed[Seq[AST]] = parse(input, program(_))
 
   def parseIdentifier(input: String): Parsed[String] = parse(input, identifier(_))
 
@@ -40,35 +40,35 @@ case class ClojureParser(fileName: String) {
 
   private def strChars[$: P] = P(CharsWhile(stringChars))
 
-  private def string[$: P]: P[StringExpr] = P(begin ~ space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"" ~ end).map {
-    case (begin, value, end) => StringExpr(value, loc(begin, end))
+  private def string[$: P]: P[StringAST] = P(begin ~ space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"" ~ end).map {
+    case (begin, value, end) => StringAST(value, loc(begin, end))
   }
 
-  private def integer[$: P]: P[IntExpr] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
-    case (begin, value, end) => IntExpr(value.toInt, loc(begin, end))
+  private def integer[$: P]: P[IntAST] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
+    case (begin, value, end) => IntAST(value.toInt, loc(begin, end))
   }
 
-  private def float[$: P]: P[FloatExpr] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1) ~ "." ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
-    case (begin, value, end) => FloatExpr(value.toDouble, loc(begin, end))
+  private def float[$: P]: P[FloatAST] = P(begin ~ CharIn("+\\-").? ~ CharsWhileIn("0-9").rep(1) ~ "." ~ CharsWhileIn("0-9").rep(1).! ~ end).map {
+    case (begin, value, end) => FloatAST(value.toDouble, loc(begin, end))
   }
 
-  private def number[$: P]: P[Expr] = P(float | integer)
+  private def number[$: P]: P[AST] = P(float | integer)
 
-  private def clojureList[$: P]: P[ListExpr] = P(begin ~ "[" ~/ expr.rep(sep = space) ~ space ~ "]" ~ end).map {
-    case (begin, elements, end) => ListExpr(elements, loc(begin, end))
+  private def clojureList[$: P]: P[ListAST] = P(begin ~ "[" ~/ expr.rep(sep = space) ~ space ~ "]" ~ end).map {
+    case (begin, elements, end) => ListAST(elements, loc(begin, end))
   }
 
-  private def clojureTable[$: P]: P[TableExpr] = P(begin ~ "{" ~/ keyValue.rep(sep = space) ~ space ~ "}" ~ end).map {
-    case (begin, entries, end) => TableExpr(entries.toMap, loc(begin, end))
+  private def clojureTable[$: P]: P[TableAST] = P(begin ~ "{" ~/ keyValue.rep(sep = space) ~ space ~ "}" ~ end).map {
+    case (begin, entries, end) => TableAST(entries.toMap, loc(begin, end))
   }
 
-  private def keyValue[$: P]: P[(Expr, Expr)] = P(expr ~/ space ~ expr).map {
+  private def keyValue[$: P]: P[(AST, AST)] = P(expr ~/ space ~ expr).map {
     case (key, value) => (key, value)
   }
 
   private def clojureFunctionCall[$: P]: P[FunctionCall] = P(begin ~ "(" ~/ expr ~ space ~ expr.rep(sep = space) ~ space ~ ")" ~ end).map {
     case (begin, func, args, end) => FunctionCall(func match {
-      case StringExpr(name, _) => name
+      case StringAST(name, _) => name
       case _ => throw new RuntimeException("Invalid function expression")
     }, args, loc(begin, end))
   }
@@ -77,11 +77,11 @@ case class ClojureParser(fileName: String) {
     case (begin, method, target, end) => MethodCall(target, method, Seq.empty, loc(begin, end))
   }
 
-  private def expr[$: P]: P[Expr] = P(
+  private def expr[$: P]: P[AST] = P(
     space ~ (clojureTable | clojureList | string | number | clojureFunctionCall | clojureMethodCall) ~ space
   )
 
-  private def program[$: P]: P[Seq[Expr]] = P(expr.rep(sep = P(";" ~/ space) | space))
+  private def program[$: P]: P[Seq[AST]] = P(expr.rep(sep = P(";" ~/ space) | space))
 
   def identifier[$: P]: P[String] = P(CharsWhileIn("a-zA-Z").! ~ CharsWhileIn("a-zA-Z0-9_").!).map { case (a, b) => a + b }
 }
