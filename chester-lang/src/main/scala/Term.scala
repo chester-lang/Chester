@@ -35,3 +35,11 @@ case class UnquoteTerm(location: Option[SourceLocation], expr: Term) extends Ter
 case class UnquoteSplicing(location: Option[SourceLocation], expr: Term) extends Term
 
 case class The(location: Option[SourceLocation], expr: Term, itsType: Term) extends Term
+
+sealed trait TypeTerm extends Term
+
+case class AnyType(location: Option[SourceLocation]) extends TypeTerm
+
+case class UnionType(location: Option[SourceLocation], types: List[Term]) extends TypeTerm
+
+case class IntersectionType(location: Option[SourceLocation], types: List[Term]) extends TypeTerm
