@@ -3,6 +3,7 @@ package chester.lang
 sealed trait Expr {
   def location: Option[SourceLocation]
   def isWHNF: Boolean = false
+  lazy val whnf: Expr = Reduce(this)
 }
 
 
