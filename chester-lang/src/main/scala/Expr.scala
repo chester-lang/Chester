@@ -33,3 +33,5 @@ case class QuoteExpr(location: Option[SourceLocation], expr: Expr) extends Expr
 case class UnquoteExpr(location: Option[SourceLocation], expr: Expr) extends Expr
 
 case class UnquoteSplicing(location: Option[SourceLocation], expr: Expr) extends Expr
+
+case class The(location: Option[SourceLocation], expr: Expr, itsType: Expr) extends Expr
