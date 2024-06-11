@@ -1,8 +1,13 @@
-package chester.lang
+package chester.lang.term
+
+import chester.lang.SourceLocation
+import chester.lang.reduce.Reduce
 
 sealed trait Term {
   def location: Option[SourceLocation]
+
   def isWHNF: Boolean = false
+
   lazy val whnf: Term = Reduce(this)
 }
 

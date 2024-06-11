@@ -1,5 +1,7 @@
 package chester.lang
 
+import term.Term
+
 sealed trait StateAction
 
 case class CreateStateVar() extends StateAction
