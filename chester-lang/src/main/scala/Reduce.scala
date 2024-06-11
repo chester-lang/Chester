@@ -1,6 +1,6 @@
 package chester.lang
 
 object Reduce {
-  def apply(expr: Expr): Expr = expr match
+  def apply(expr: Term): Term = expr match
     case _ => ???
 }
