@@ -2,8 +2,9 @@ package chester.lang
 
 import fastparse.*
 import NoWhitespace.*
-
 import java.lang.Character.{isDigit, isLetter}
+
+import ast.*
 
 case class Parser(fileName: String) {
 

@@ -1,4 +1,4 @@
-package chester.lang
+package chester.lang.ast
 
 case class SourceLocation(file: String, start: Int, end: Int, startLine: Int, startCol: Int, endLine: Int, endCol: Int)
 

@@ -1,6 +1,7 @@
 package chester.lang
 
 import term.*
+import ast.*
 
 
 class TyckMutableState{

@@ -1,6 +1,6 @@
 package chester.lang.term
 
-import chester.lang.SourceLocation
+import chester.lang.ast.SourceLocation
 import chester.lang.reduce.Reduce
 
 sealed trait Term {

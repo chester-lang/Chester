@@ -4,6 +4,8 @@ import fastparse._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import ast.*
+
 class ParserInfixSpec extends AnyFlatSpec with Matchers {
 
   val fileName = "testfile.scala"

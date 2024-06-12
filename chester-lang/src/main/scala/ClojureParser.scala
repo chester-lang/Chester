@@ -3,6 +3,8 @@ package chester.lang
 import fastparse._
 import NoWhitespace._
 
+import ast.*
+
 case class ClojureParser(fileName: String) {
 
   def parseExpression(input: String): Parsed[AST] = parse(input, expr(_))
