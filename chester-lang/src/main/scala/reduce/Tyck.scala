@@ -16,9 +16,9 @@ def Pure = Vector()
 
 class Tyck(state: TyckState) {
 
-  def infer(context: LocalContext, ast: AST): Result[The] = ast match {
+  def infer(context: LocalContext, ast: AST, baseEffects: Iterable[Term] = Pure): Result[The] = ast match {
     case AnnotationAST(expr, itsType, effectsAST, location) => for {
-       typeTerm <- check(context, itsType, ???, Pure)
+       typeTerm <- check(context, itsType, SortTerm(None, UniverseSort()), Pure)
 
 
         result <- check(context, expr, typeTerm.term, ???)

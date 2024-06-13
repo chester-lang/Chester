@@ -43,6 +43,12 @@ case class IdentifierTerm(location: Option[SourceLocation], name: Identifier) ex
 
 sealed trait TypeTerm extends Term
 
+sealed trait Sort
+case class TypeSort(level: Int) extends Sort
+case class UniverseSort() extends Sort
+
+case class SortTerm(location: Option[SourceLocation], sort: Sort) extends TypeTerm
+
 case class AnyType(location: Option[SourceLocation]) extends TypeTerm
 
 case class UnionType(location: Option[SourceLocation], types: List[Term]) extends TypeTerm
