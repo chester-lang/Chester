@@ -18,4 +18,4 @@ case class IntAST(value: Int, location: Option[SourceLocation]) extends AST
 case class FloatAST(value: Double, location: Option[SourceLocation]) extends AST
 case class AnnotationAST(expr: AST, itsType: AST, effects: Option[Iterable[AST]], location: Option[SourceLocation]) extends AST
 
-case class IdentifierAST(location: Option[SourceLocation], name: String) extends AST
+case class IdentifierAST(name: String, location: Option[SourceLocation]) extends AST

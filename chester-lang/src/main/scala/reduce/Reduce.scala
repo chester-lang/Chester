@@ -8,7 +8,7 @@ type Result[A] = Either[RuntimeError, A]
 class Reduce(state: TyckState) {
   def apply(context: LocalContext, expr: Term): Result[Term] = expr match
     case IdentifierTerm(location, name) =>
-      context.get(name) match
+      context.getValue(name) match
         case Some(term) => Right(term)
         case None => Left(UnboundIdentifier(location, name))
     case _ => ???
