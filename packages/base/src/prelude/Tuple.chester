@@ -1,0 +1,8 @@
+package prelude
+
+class Tuple2(a, b) {
+  first: a
+  second: b
+}
+
+
