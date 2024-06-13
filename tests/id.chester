@@ -1,10 +1,8 @@
 import assert
 
-id: a |- a -> a
-id(x) = x
+id(a |- x: a): a = x
 
-id1: (a: Type 0 |- x: a) -> Pure a
-id1(a |- x) = x
+id1(a: Type 0 |- x: a): Pure a = x
 
 id2(x) = x
 

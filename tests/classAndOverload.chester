@@ -1,0 +1,8 @@
+class A {
+    var a: Integer
+    var b: Integer
+}
+
+package A {
+    of(a: Integer, b: Integer, ignored: Integer): A = A.of(a, b)
+}
