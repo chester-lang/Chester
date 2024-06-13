@@ -25,6 +25,11 @@ case class StringTerm(location: Option[SourceLocation], value: String) extends T
 
 case class IntegerTerm(location: Option[SourceLocation], value: BigInt) extends Term
 
+case class DoubleTerm(location: Option[SourceLocation], value: Double) extends Term
+
+// Unicode 32bit char or longer, unspecified.
+case class CharTerm(location: Option[SourceLocation], value: Int) extends Term
+
 case class CallTerm(location: Option[SourceLocation], callee: Term, list: List[Term]) extends Term
 
 case class MacroCallTerm(location: Option[SourceLocation], callee: Term, list: List[Term]) extends Term
