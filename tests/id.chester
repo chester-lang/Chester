@@ -1,11 +1,24 @@
 import assert
 
-id: {a}, a -> a
+id: a |- a -> a
 id(x) = x
 
-id1: ({a: Type 0}, x: a) -> Pure a
-id1(x) = x
+id1: (a: Type 0 |- x: a) -> Pure a
+id1(a |- x) = x
 
 id2(x) = x
 
 assert(id(0) == 0)
+
+assert(0 == (
+  id(x) = x
+  id(0)))
+
+assert(0 == (id(x)=x;id(0)))
+
+table = {
+  id(x) = x
+  value: Integer = id(0)
+}
+
+assert(table.value == 0)
