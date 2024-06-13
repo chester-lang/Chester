@@ -1,0 +1,11 @@
+import assert
+
+id: {a}, a -> a
+id(x) = x
+
+id1: ({a: Type 0}, x: a) -> Pure a
+id1(x) = x
+
+id2(x) = x
+
+assert(id(0) == 0)
