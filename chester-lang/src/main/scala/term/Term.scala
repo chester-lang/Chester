@@ -71,10 +71,14 @@ trait TransplantTerm extends Term {
 
 sealed trait RuntimeType
 
-case class ClassRuntime(name: String) extends RuntimeType
+case class ClassRuntime(name: Option[String]) extends RuntimeType
 
-case class TableRuntime() extends RuntimeType
+object ClassRuntime {
+  def apply(name: String): ClassRuntime = ClassRuntime(Some(name))
+}
 
-case class IntegerRuntime() extends RuntimeType
+def TableRuntime = ClassRuntime(None)
 
-case class StringRuntime() extends RuntimeType
+case object IntegerRuntime extends RuntimeType
+
+case object StringRuntime extends RuntimeType
