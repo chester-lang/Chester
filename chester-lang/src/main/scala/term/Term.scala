@@ -46,3 +46,10 @@ case class AnyType(location: Option[SourceLocation]) extends TypeTerm
 case class UnionType(location: Option[SourceLocation], types: List[Term]) extends TypeTerm
 
 case class IntersectionType(location: Option[SourceLocation], types: List[Term]) extends TypeTerm
+
+case class TableType(location: Option[SourceLocation], entries: List[TableEntryType]) extends TypeTerm
+case class TableEntryType(key: Term, valueType: Term)
+
+case class FunctionType(location: Option[SourceLocation], params: List[(String, Term)], returnType: Term) extends TypeTerm
+
+sealed trait EffectTerm extends Term
