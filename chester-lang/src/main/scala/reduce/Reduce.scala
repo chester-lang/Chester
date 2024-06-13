@@ -3,13 +3,6 @@ package chester.lang.reduce
 import chester.lang.ast.{AST, SourceLocation}
 import chester.lang.term.{IdentifierTerm, Term}
 
-sealed trait RuntimeError {
-  def location: Option[SourceLocation]
-  def asTerm: Term = ???
-}
-
-case class UnboundIdentifier(location: Option[SourceLocation], name: String) extends RuntimeError
-
 type Result[A] = Either[RuntimeError, A]
 
 class Reduce(state: TyckState) {

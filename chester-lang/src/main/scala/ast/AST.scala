@@ -16,5 +16,4 @@ case class LambdaAST(params: Seq[(String, Option[String])], body: AST, location:
 case class TypeAnnotation(expr: AST, tpe: String, location: Option[SourceLocation]) extends AST
 case class IntAST(value: Int, location: Option[SourceLocation]) extends AST
 case class FloatAST(value: Double, location: Option[SourceLocation]) extends AST
-case class AnnotationAST(expr: AST, itsType: AST, location: Option[SourceLocation]) extends AST
-case class EffectAnnotationAST(expr: AST, effects: List[AST], location: Option[SourceLocation]) extends AST
+case class AnnotationAST(expr: AST, itsType: AST, effects: Option[Iterable[AST]], location: Option[SourceLocation]) extends AST
