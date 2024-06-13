@@ -1,6 +1,6 @@
-package chester.lang
+package chester.lang.reduce
 
-import term.{Identifier, Term}
+import chester.lang.term.{Identifier, Term}
 
 
 case class LocalContextEntry(term: Term, itsType: Term)

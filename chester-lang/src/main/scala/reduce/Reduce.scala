@@ -1,6 +1,5 @@
 package chester.lang.reduce
 
-import chester.lang.LocalContext
 import chester.lang.ast.{AST, SourceLocation}
 import chester.lang.term.{IdentifierTerm, Term}
 
