@@ -14,5 +14,6 @@ class Box[a] {
   var first: a
 }
 
+B = Box
 // means Box.type(Integer)
-boxInt = Box[Integer]
+boxInt = B[Integer]
