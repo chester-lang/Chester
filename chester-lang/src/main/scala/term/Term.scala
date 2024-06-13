@@ -55,3 +55,10 @@ case class TableEntryType(key: Term, valueType: Term)
 case class FunctionType(location: Option[SourceLocation], params: List[(String, Term)], returnType: Term) extends TypeTerm
 
 sealed trait EffectTerm extends Term
+
+trait OpaqueTerm extends Term
+
+trait TransplantTerm extends Term {
+  def unroll: Term
+}
+
