@@ -1,15 +1,24 @@
 package chester.lang.reduce
 
 import chester.lang.Context
-import chester.lang.ast.AST
-import chester.lang.term.Term
+import chester.lang.ast.{AST, SourceLocation}
+import chester.lang.term.{IdentifierTerm, Term}
 
-case class RuntimeError()
+sealed trait RuntimeError {
+  def location: Option[SourceLocation]
+  def asTerm: Term = ???
+}
+
+case class UnboundIdentifier(location: Option[SourceLocation], name: String) extends RuntimeError
 
 type Result[A] = Either[RuntimeError, A]
 
 object Reduce {
-  def apply(context: Context, expr: Term): Term = expr match
+  def apply(context: Context, expr: Term): Result[Term] = expr match
+    case IdentifierTerm(location, name) =>
+      context.get(name) match
+        case Some(term) => Right(term)
+        case None => Left(UnboundIdentifier(location, name))
     case _ => ???
 }
 
