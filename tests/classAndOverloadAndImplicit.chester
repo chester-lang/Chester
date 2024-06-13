@@ -4,9 +4,9 @@ class A {
     var b: Integer
 }
 
-// A implicitly converts to A.type
 package A {
-    of(a: Integer, b: Integer, ignored: Integer): A = A.of(a, b)
+    // A implicitly converts to A.type
+    apply(a: Integer, b: Integer, ignored: Integer): A = A(a, b)
 }
 
 
@@ -14,5 +14,5 @@ class Box(a) {
   var first: a
 }
 
-// Box() implicitly calls Box.apply
-boxInt = Box(Integer)
+// means Box.type(Integer)
+boxInt = Box[Integer]
