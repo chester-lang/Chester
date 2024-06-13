@@ -1,8 +1,9 @@
 package chester.lang.reduce
 
+import chester.lang.Context
 import chester.lang.term.Term
 
 object Reduce {
-  def apply(expr: Term): Term = expr match
+  def apply(context: Context, expr: Term): Term = expr match
     case _ => ???
 }

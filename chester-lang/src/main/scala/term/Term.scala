@@ -7,8 +7,6 @@ sealed trait Term {
   def location: Option[SourceLocation]
 
   def isWHNF: Boolean = false
-
-  lazy val whnf: Term = Reduce(this)
 }
 
 
@@ -38,6 +36,10 @@ case class QuoteTerm(location: Option[SourceLocation], expr: Term) extends Term
 case class UnquoteTerm(location: Option[SourceLocation], expr: Term) extends Term
 
 case class UnquoteSplicing(location: Option[SourceLocation], expr: Term) extends Term
+
+type Identifier = String
+
+case class IdentifierTerm(location: Option[SourceLocation], name: Identifier) extends Term
 
 sealed trait TypeTerm extends Term
 
