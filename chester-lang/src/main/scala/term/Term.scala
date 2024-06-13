@@ -68,3 +68,13 @@ trait TransplantTerm extends Term {
   def unroll: Term
 }
 
+
+sealed trait RuntimeType
+
+case class ClassRuntime(name: String) extends RuntimeType
+
+case class TableRuntime() extends RuntimeType
+
+case class IntegerRuntime() extends RuntimeType
+
+case class StringRuntime() extends RuntimeType

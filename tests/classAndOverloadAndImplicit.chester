@@ -17,3 +17,8 @@ class Box[a] {
 B = Box
 // means Box.type(Integer)
 boxInt = B[Integer]
+
+
+class Box2[a](first: a)
+
+b2I = Box2(0)
