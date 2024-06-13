@@ -1,0 +1,18 @@
+// defines members in package A
+class A {
+    var a: Integer
+    var b: Integer
+}
+
+// A implicitly converts to A.type
+package A {
+    of(a: Integer, b: Integer, ignored: Integer): A = A.of(a, b)
+}
+
+
+class Box(a) {
+  var first: a
+}
+
+// Box() implicitly calls Box.apply
+boxInt = Box(Integer)
