@@ -6,17 +6,17 @@ id1(a: Type 0 |- x: a): Pure a = x
 
 id2(x) = x
 
-assert(id(0) == 0)
-
 assert(0 == (
   id(x) = x
   id(0)))
-
-assert(0 == (id(x)=x;id(0)))
 
 table = {
   id(x) = x
   value: Integer = id(0)
 }
 
-assert(table.value == 0)
+test0 = () => (
+  assert(id(0) == 0)
+  assert(table.value == 0)
+  assert(0 == (id(x)=x;id(0)))
+)
