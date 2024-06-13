@@ -9,7 +9,7 @@ class TyckState{
 }
 
 
-case class The(expr: Term, itsType: Term, effects: List[Term])
+case class The(expr: Term, itsType: Term, effects: Iterable[Term])
 
 
 class Tyck(state: TyckState) {
@@ -19,6 +19,10 @@ class Tyck(state: TyckState) {
       val typeTerm = ???
       
       check(context, expr, typeTerm, ???)
+    }
+    case IdentifierAST(location, name) => context.getType(name) match {
+      case Some(itsType) => Right(The(IdentifierTerm(location, name), itsType, Vector()))
+      case None => Left(UnboundIdentifier(location, name))
     }
     case _ => ???
   }
