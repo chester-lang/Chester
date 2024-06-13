@@ -21,7 +21,7 @@ class Tyck(state: TyckState) {
        typeTerm <- check(context, itsType, SortTerm(None, UniverseSort()), Pure)
 
 
-        result <- check(context, expr, typeTerm.term, ???)
+        result <- check(context, expr, typeTerm.term, baseEffects)
     } yield result
     case IdentifierAST(name, location) => context.getType(name) match {
       case Some(itsType) => Right(The(IdentifierTerm(location, name), itsType, Vector()))
@@ -29,5 +29,5 @@ class Tyck(state: TyckState) {
     }
     case _ => ???
   }
-  def check(context: LocalContext, ast: AST, itsType: Term, effects: Iterable[Term]): Result[The] = ???
+  def check(context: LocalContext, ast: AST, itsType: Term, baseEffects: Iterable[Term]): Result[The] = ???
 }
