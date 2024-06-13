@@ -1,4 +1,4 @@
 package prelude
 
-tup0: Tuple2(Integer, Integer)
-tup0 = Tuple2.of(0, 0)
+tup0: Tuple2[Integer, Integer]
+tup0 = Tuple2(0, 0)

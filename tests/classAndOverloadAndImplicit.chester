@@ -10,7 +10,7 @@ package A {
 }
 
 
-class Box(a) {
+class Box[a] {
   var first: a
 }
 

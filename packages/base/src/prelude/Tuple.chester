@@ -1,6 +1,6 @@
 package prelude
 
-class Tuple2(a, b) {
+class Tuple2[a, b] {
   var first: a
   var second: b
 }
