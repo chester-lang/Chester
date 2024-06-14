@@ -1,21 +1,19 @@
 // defines members in module A
 class A {
-    var a: Integer
-    var b: Integer
+  var a: Integer
+  var b: Integer
 }
 
 module A {
-    // A implicitly converts to A.type
-    apply(a: Integer, b: Integer, ignored: Integer): A = A(a, b)
+  apply(a: Integer, b: Integer, ignored: Integer): A = A(a, b)
 }
 
-
+// [] means implicit. They are private fields?
 class Box[a] {
   var first: a
 }
 
 B = Box
-// means Box.type(Integer)
 boxInt = B[Integer]
 
 
