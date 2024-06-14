@@ -4,7 +4,7 @@ class A {
     var b: Integer
 }
 
-package A {
+module A {
     // A implicitly converts to A.type
     apply(a: Integer, b: Integer, ignored: Integer): A = A(a, b)
 }
