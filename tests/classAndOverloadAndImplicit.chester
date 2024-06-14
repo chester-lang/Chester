@@ -1,4 +1,4 @@
-// defines members in package A
+// defines members in module A
 class A {
     var a: Integer
     var b: Integer
