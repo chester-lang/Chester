@@ -8,7 +8,9 @@ I sometimes need algebraic effects of koka. I want to freely use things with eff
 
 I sometimes feel uncomfortable when types are not first-class in a language.
 
-I wants the ability to write some proofs. If the type system is unfortunately broken, I can write my prefect proofs in a separate prefect dependently typed language. I would be able to still write some proofs knowing that the type checker can be cheated.
+I want the ability to write some proofs. If the type system is unfortunately broken, I can write my prefect proofs in a separate prefect dependently typed language. I would be able to still write some proofs knowing that the type checker can be cheated.
+
+I want to have type inference. Sometimes I found it more comfortable to omit type annotation for top level definitions. If the type checker failed to do the job, it is free to put `Any` in places.
 
 I want to use OOP model whenever I want. Sometimes it is too time consuming to implement things in an non-OOP way.
 
