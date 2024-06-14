@@ -5,6 +5,7 @@ class A {
 }
 
 module A {
+  // there is only module A; then A will refer to A.apply
   apply(a: Integer, b: Integer, ignored: Integer): A = A(a, b)
 }
 
