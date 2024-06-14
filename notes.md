@@ -12,3 +12,9 @@ We don't usually use module as first-class values
 ## How is the macro system designed?
 
 ?
+
+## effects should be able to be polymorphic
+
+## how is the level system designed?
+
+You have a thing like Agda Setω
