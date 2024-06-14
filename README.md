@@ -12,6 +12,8 @@ I wants the ability to write some proofs. If the type system is unfortunately br
 
 I want to use OOP model whenever I want. Sometimes it is too time consuming to implement things in an non-OOP way.
 
+I want to use some format of this language as my default unix shell and a replacement of Mathematica.
+
 But I don't have skills and energy.
 
 Why would I implement a new language? I could choose a major programming language for a task and use large language model to generate a large portion of code. It would be more comfortable than using a niche language.
