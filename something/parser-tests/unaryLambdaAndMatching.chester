@@ -1,0 +1,6 @@
+@define if_then_else_[a: Type](condition: Boolean, then: => a, else: => a): a {
+    @case condition {
+        True -> then
+        False -> else
+    }
+}
