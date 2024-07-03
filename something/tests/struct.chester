@@ -1,4 +1,9 @@
-@class Tuple2 {
+@class Tuple2Int {
   @define a: Int
   @define b: Int
+}
+
+@class Tuple2[a: Type, b: [a] => Type] {
+  @define first: a
+  @define second: b[a]
 }
