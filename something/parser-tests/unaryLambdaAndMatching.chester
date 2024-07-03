@@ -4,3 +4,11 @@
         False -> else
     }
 }
+
+a = if True then 0 else 1
+
+b = if True then {
+    0
+} else {
+    1
+}
