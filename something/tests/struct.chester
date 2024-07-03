@@ -1,0 +1,4 @@
+@class Tuple2 {
+  @define a: Int
+  @define b: Int
+}
