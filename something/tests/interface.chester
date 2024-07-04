@@ -1,0 +1,3 @@
+@interface ToString[e: Effect] {
+  @define toString: e String
+}
