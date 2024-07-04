@@ -1,6 +1,6 @@
 @class Tuple2Int {
-  @define a: Int
-  @define b: Int
+  @define a: Integer
+  @define b: Integer
 }
 
 @class Tuple2[a: Type, b: [a] => Type] {

@@ -1,4 +1,4 @@
-@define if_then_else_[a: Type](condition: Boolean, then: => a, else: => a): a {
+@define if_then_else_[e: Effect, a: Type](condition: Boolean, then: => e a, else: => e a): e a {
     @case condition {
         True -> then
         False -> else
