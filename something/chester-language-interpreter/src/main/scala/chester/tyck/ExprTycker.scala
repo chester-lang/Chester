@@ -11,5 +11,6 @@ case class Judge(wellTyped: Term, ty: Term)
 
 case class ExprTycker(state: TyckState, localCtx: LocalCtx) {
   def inherit(expr: Expr, ty: Term): Judge = ???
+  def synthesize(expr: Expr): Judge = ???
 
 }
