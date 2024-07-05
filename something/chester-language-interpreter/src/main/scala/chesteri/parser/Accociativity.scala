@@ -1,4 +1,4 @@
-package chesteri.resolver;
+package chesteri.parser
 
 case class PrecedenceGroup(
                             name: String,
