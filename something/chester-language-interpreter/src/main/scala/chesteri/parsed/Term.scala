@@ -15,11 +15,8 @@ sealed abstract class Term {
 
 case class Identifier(name: String) extends Term
 
-case class Infix(op: Identifier, left: Term, right: Term) extends Term
-
-case class Prefix(op: Identifier, operand: Term) extends Term
-
-case class Postfix(op: Identifier, operand: Term) extends Term
+// infix prefix postfix
+case class BinOpSeq(seq: Seq[Term]) extends Term
 
 case class Block(heads: Vector[Term], tail: Term) extends Term
 
