@@ -66,3 +66,5 @@ case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) ex
 case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
 
 case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
+
+case class HoleExpr(description: String, sourcePos: Option[SourcePos] = None) extends Expr
