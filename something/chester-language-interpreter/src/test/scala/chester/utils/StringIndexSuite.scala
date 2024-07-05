@@ -143,9 +143,10 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(1), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(2), LineAndColumn(0, 1))
-    assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(0, 2))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 0))
-    assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(1, 1))
+    assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 1))
+    assertEquals(sp.string.length, 7)
   }
 
 

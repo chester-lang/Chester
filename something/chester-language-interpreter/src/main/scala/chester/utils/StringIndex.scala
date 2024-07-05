@@ -64,24 +64,33 @@ case class StringIndex(val string: String) {
     LineAndColumn(line, column)
   }
 
+  import scala.util.control.Breaks._
+
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
-    // Initial conditions assuming no breaks
     var line = 0
-    var lineStart = 0
+    var column = 0
+    var i = 0
 
-    // Iterate through line breaks to determine the actual line and the start of the line
-    for (breakIndex <- lineBreaks.indices) {
-      if (lineBreaks(breakIndex) < charIndex) {
-        line = breakIndex + 1
-        lineStart = lineBreaks(breakIndex) + 1
+    while (i < charIndex) {
+      if (string(i) == '\n') {
+        line += 1
+        column = 0 // Reset column to 0 for the start of a new line
+        i += 1 // Increment to skip the newline character
+        if (i >= charIndex) { // If we're beyond charIndex after skipping, stop further processing
+          return LineAndColumn(line, column)
+        }
+      } else {
+        // Check if the current character is part of a surrogate pair
+        if (Character.isHighSurrogate(string(i)) && i + 1 < string.length && Character.isLowSurrogate(string(i + 1))) {
+          if (i + 1 < charIndex) { // Only increment column if both parts of the surrogate are within range
+            column += 1
+          }
+          i += 1 // Skip the low surrogate
+        } else {
+          column += 1 // Increment column for normal characters
+        }
+        i += 1
       }
-    }
-
-    // Calculate Unicode column from the start of the current line to the current index
-    val column = if (charIndex >= lineStart) {
-      string.codePointCount(lineStart, charIndex)
-    } else {
-      0
     }
 
     LineAndColumn(line, column)
