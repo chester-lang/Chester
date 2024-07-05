@@ -130,11 +130,11 @@ class StringIndexSuite extends FunSuite {
     val sp = StringIndex("𠀋好\n𠀌世")
     assertEquals(sp.charIndexToCharLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 0))
-    assertEquals(sp.charIndexToCharLineAndColumn(2), LineAndColumn(0, 1))
-    assertEquals(sp.charIndexToCharLineAndColumn(3), LineAndColumn(0, 2))
+    assertEquals(sp.charIndexToCharLineAndColumn(2), LineAndColumn(0, 2))
+    assertEquals(sp.charIndexToCharLineAndColumn(3), LineAndColumn(0, 3))
     assertEquals(sp.charIndexToCharLineAndColumn(4), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToCharLineAndColumn(5), LineAndColumn(1, 0))
-    assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 1))
+    assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 2))
     assertEquals(sp.string.length, 7)
   }
 
