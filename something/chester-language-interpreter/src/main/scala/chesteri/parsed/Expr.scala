@@ -13,7 +13,7 @@ sealed abstract class Expr {
     this
   }
 
-  def descent(operator: Expr => Expr): Expr = operator(this)
+  def descent(operator: Expr => Expr): Expr = this
 }
 
 sealed trait Salt
