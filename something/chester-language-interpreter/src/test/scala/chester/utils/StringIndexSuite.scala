@@ -67,4 +67,50 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(6), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(8), LineAndColumn(1, 1))
   }
+
+  test("charIndexToUnicodeLineAndColumn for multi-line string with mixed characters") {
+    val sp = StringIndex("hello\n\uD834\uDD1Eworld\nJava\uD834\uDD1EScala")
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(0, 5))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(6), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(8), LineAndColumn(1, 1))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(13), LineAndColumn(1, 6))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(14), LineAndColumn(2, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(20), LineAndColumn(2, 5)) // Tests the position after the surrogate pair
+  }
+  test("charIndexToUnicodeIndex for Chinese characters") {
+    val sp = StringIndex("你好世界") // "Hello world" in Chinese
+    assertEquals(sp.charIndexToUnicodeIndex(0), 0)
+    assertEquals(sp.charIndexToUnicodeIndex(1), 1)
+    assertEquals(sp.charIndexToUnicodeIndex(2), 2)
+    assertEquals(sp.charIndexToUnicodeIndex(3), 3)
+  }
+
+  test("unicodeIndexToCharIndex for Chinese characters") {
+    val sp = StringIndex("你好世界")
+    assertEquals(sp.unicodeIndexToCharIndex(0), 0)
+    assertEquals(sp.unicodeIndexToCharIndex(1), 1)
+    assertEquals(sp.unicodeIndexToCharIndex(2), 2)
+    assertEquals(sp.unicodeIndexToCharIndex(3), 3)
+  }
+
+  test("charIndexToCharLineAndColumn for multi-line Chinese string") {
+    val sp = StringIndex("你好\n世界")
+    assertEquals(sp.charIndexToCharLineAndColumn(0), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 1))
+    assertEquals(sp.charIndexToCharLineAndColumn(2), LineAndColumn(0, 2))
+    assertEquals(sp.charIndexToCharLineAndColumn(3), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(4), LineAndColumn(1, 1))
+  }
+
+  test("charIndexToUnicodeLineAndColumn for multi-line Chinese string") {
+    val sp = StringIndex("你好\n世界")
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(1), LineAndColumn(0, 1))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(2), LineAndColumn(0, 2))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 1))
+  }
+
+
 }
