@@ -9,11 +9,20 @@ case class PrecedenceGroup(
                             associativity: Associativity = Associativity.None,
                           )
 
-val DefinePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin("Define"))
+object Names {
+  val Default = "Default"
+  val Define = "Define"
+  val Type = "Type"
+  val Dot = "Dot"
+}
 
-val TypePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin("Type"), higherThan = Vector(DefinePrecedenceGroup))
+val DefaultPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Default))
 
-val DefaultPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin("Default"), higherThan = Vector(TypePrecedenceGroup))
+val DefinePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Define), lowerThan = Vector(DefaultPrecedenceGroup))
+
+val TypePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Type), higherThan = Vector(DefinePrecedenceGroup), lowerThan = Vector(DefaultPrecedenceGroup))
+
+val DotPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Dot), higherThan = Vector(DefaultPrecedenceGroup), associativity = Associativity.Left)
 
 enum Associativity {
   case None
@@ -38,8 +47,18 @@ case class Mixfix(name: Vector[String], group: PrecedenceGroup = DefaultPreceden
 
 case class InfixDefitions(opinfos: Vector[OpInfo])
 
+case class PrecedenceGroupCtx(precedenceGroups: Map[String, PrecedenceGroup])
+
 
 val defaultInfixDefitions = InfixDefitions(Vector(
   Infix("=", DefinePrecedenceGroup),
   Infix(":", TypePrecedenceGroup),
+  Infix(".", DotPrecedenceGroup),
+))
+
+val defaultPrecedenceGroup = PrecedenceGroupCtx(Map(
+  (Names.Default -> DefaultPrecedenceGroup),
+  (Names.Define -> DefinePrecedenceGroup),
+  (Names.Type -> TypePrecedenceGroup),
+  (Names.Dot -> DotPrecedenceGroup),
 ))
