@@ -1,6 +1,6 @@
-package chesteri.syntax.concrete
+package chester.syntax.concrete
 
-import chesteri.common.SourceLocation
+import chester.common.SourceLocation
 
 sealed abstract class Expr {
   private var sourceLocationVar: Option[SourceLocation] = None

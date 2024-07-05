@@ -1,4 +1,4 @@
-package chesteri.parser;
+package chester.parser;
 
 import fastparse.*
 import NoWhitespace.*

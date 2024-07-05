@@ -1,4 +1,4 @@
-package chesteri.common
+package chester.common
 
 case class PositionInFile(char: Int, line: Int, columnL:Int)
 

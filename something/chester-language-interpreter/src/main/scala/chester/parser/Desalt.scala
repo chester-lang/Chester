@@ -1,6 +1,6 @@
-package chesteri.parser
+package chester.parser
 
-import chesteri.syntax.concrete.Expr
+import chester.syntax.concrete.Expr
 
 case class DesugarInfo ()
 
