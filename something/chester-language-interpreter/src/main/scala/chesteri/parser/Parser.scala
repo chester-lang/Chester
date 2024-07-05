@@ -31,5 +31,10 @@ case class InfixDefitions(prefixes: Vector[Prefix] = Vector(),
                           postfixes: Vector[Postfix] = Vector(),
                           infixes: Vector[Infix] = Vector())
 
-case class Parser(state: ParserState) {
+// loads parser-related information
+case class ImportLoader() {
+  def loadImport(path: String) = ???
+}
+
+case class Parser(state: ParserState, loader: ImportLoader) {
 }
