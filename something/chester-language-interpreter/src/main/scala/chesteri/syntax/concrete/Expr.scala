@@ -1,4 +1,4 @@
-package chesteri.parsed
+package chesteri.syntax.concrete
 
 import chesteri.common.SourceLocation
 

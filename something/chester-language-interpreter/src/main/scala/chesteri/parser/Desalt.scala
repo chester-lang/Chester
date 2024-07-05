@@ -1,6 +1,6 @@
 package chesteri.parser
 
-import chesteri.parsed.Expr
+import chesteri.syntax.concrete.Expr
 
 case class DesugarInfo ()
 
