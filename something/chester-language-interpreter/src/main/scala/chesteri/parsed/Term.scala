@@ -1,4 +1,4 @@
-package chesteri.core
+package chesteri.parsed
 
 import chesteri.common.SourceLocation
 
@@ -32,3 +32,5 @@ case class FunctionCall(function: Term, implicitArgs: Vector[Term], args: Vector
 case class IntegerLiteral(value: Int) extends Term
 
 case class StringLiteral(value: String) extends Term
+
+case class VectorTerm(terms: Vector[Term]) extends Term
