@@ -8,12 +8,11 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeIndex(0), 0)
     assertEquals(sp.charIndexToUnicodeIndex(4), 4)
   }
-
   test("charIndexToUnicodeIndex for characters with surrogate pairs") {
     val sp = StringIndex("a\uD834\uDD1Eb")
     assertEquals(sp.charIndexToUnicodeIndex(0), 0)
     assertEquals(sp.charIndexToUnicodeIndex(1), 1)
-    assertEquals(sp.charIndexToUnicodeIndex(2), 2)
+    assertEquals(sp.charIndexToUnicodeIndex(2), 1)
     assertEquals(sp.charIndexToUnicodeIndex(3), 2)
   }
 
@@ -110,6 +109,41 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(2), LineAndColumn(0, 2))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 1))
+  }
+  test("charIndexToUnicodeIndex for Chinese characters with surrogate pairs") {
+    val sp = StringIndex("𠀋好𠀌") // Includes rare Chinese characters outside the BMP
+    assertEquals(sp.charIndexToUnicodeIndex(0), 0)
+    assertEquals(sp.charIndexToUnicodeIndex(1), 0)
+    assertEquals(sp.charIndexToUnicodeIndex(2), 1)
+    assertEquals(sp.charIndexToUnicodeIndex(3), 2)
+    assertEquals(sp.charIndexToUnicodeIndex(4), 2)
+  }
+
+  test("unicodeIndexToCharIndex for Chinese characters with surrogate pairs") {
+    val sp = StringIndex("𠀋好𠀌")
+    assertEquals(sp.unicodeIndexToCharIndex(0), 0)
+    assertEquals(sp.unicodeIndexToCharIndex(1), 2)
+    assertEquals(sp.unicodeIndexToCharIndex(2), 3)
+  }
+
+  test("charIndexToCharLineAndColumn for multi-line Chinese string with surrogate pairs") {
+    val sp = StringIndex("𠀋好\n𠀌世")
+    assertEquals(sp.charIndexToCharLineAndColumn(0), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(2), LineAndColumn(0, 1))
+    assertEquals(sp.charIndexToCharLineAndColumn(3), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(4), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(5), LineAndColumn(1, 1))
+  }
+
+  test("charIndexToUnicodeLineAndColumn for multi-line Chinese string with surrogate pairs") {
+    val sp = StringIndex("𠀋好\n𠀌世")
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(1), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(2), LineAndColumn(0, 1))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(1, 1))
   }
 
 

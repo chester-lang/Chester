@@ -25,23 +25,54 @@ case class StringIndex(val string: String) {
   }
 
   def charIndexToUnicodeIndex(charIndex: Int): Int = {
-    string.codePointCount(0, charIndex)
+    if (charIndex > 0 && Character.isSurrogatePair(string(charIndex - 1), string(charIndex))) {
+      // Pointing to the second character of a surrogate pair, should not increment the index
+      string.codePointCount(0, charIndex) - 1
+    } else {
+      string.codePointCount(0, charIndex)
+    }
   }
+
 
   def unicodeIndexToCharIndex(unicodeIndex: Int): Int = {
     string.offsetByCodePoints(0, unicodeIndex)
   }
 
   def charIndexToCharLineAndColumn(charIndex: Int): LineAndColumn = {
-    val line = lineBreaks.indexWhere(_ >= charIndex)
-    val lineStart = if (line == 0) 0 else lineBreaks(line - 1) + 1
-    LineAndColumn(line, charIndex - lineStart)
+    if (lineBreaks.isEmpty) {
+      // Handling single line strings
+      return LineAndColumn(0, charIndex)
+    }
+
+    // Finding the last line break before the current character index or the beginning if none found
+    val line = if (charIndex > 0 && lineBreaks.exists(_ < charIndex)) {
+      lineBreaks.lastIndexWhere(_ < charIndex) + 1
+    } else {
+      0
+    }
+
+    // Compute the start of the current line
+    val lineStart = if (line > 0) lineBreaks(line - 1) + 1 else 0
+
+    // Adjust column for characters following a newline character
+    val column = charIndex - lineStart
+
+    LineAndColumn(line, column)
   }
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
-    val lineAndColumn = charIndexToCharLineAndColumn(charIndex)
-    val lineStartCharIndex = if (lineAndColumn.line == 0) 0 else lineBreaks(lineAndColumn.line - 1) + 1
-    val lineStartUnicodeIndex = charIndexToUnicodeIndex(lineStartCharIndex)
-    LineAndColumn(lineAndColumn.line, charIndexToUnicodeIndex(charIndex) - lineStartUnicodeIndex)
+    // Find the last line break before the character index, or 0 if none
+    val line = lineBreaks.lastIndexWhere(_ <= charIndex)
+    val lineStart = if (line >= 0) lineBreaks(line) else 0
+
+    // Calculate the Unicode index for the start of the line and the current character index
+    val unicodeLineStartIndex = charIndexToUnicodeIndex(lineStart)
+    val unicodeIndex = charIndexToUnicodeIndex(charIndex)
+
+    // Calculate the column as the difference in Unicode indexes
+    val column = unicodeIndex - unicodeLineStartIndex
+
+    // Adjust line number if necessary based on specific rules (if any)
+    LineAndColumn(line, column)
   }
 }
