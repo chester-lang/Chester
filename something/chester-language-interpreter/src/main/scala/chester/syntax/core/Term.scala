@@ -6,6 +6,9 @@ sealed trait Term extends WithPos {
 
 }
 
+case class Object(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
+
+case class ListTerm(terms: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term
 
 sealed trait Sort extends Term {
 

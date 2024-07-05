@@ -10,6 +10,7 @@ sealed trait Expr extends WithPos {
   def descentAndApply(operator: Expr => Expr): Expr = operator(this.descent(operator))
 }
 
+
 sealed trait Salt
 
 
@@ -64,4 +65,4 @@ case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) ex
 
 case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
 
-case class VectorExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
+case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
