@@ -32,10 +32,10 @@ case class StringLiteral(value: String) extends Expr
 
 case class VectorExpr(terms: Vector[Expr]) extends Expr
 
-sealed abstract class NamedTyped extends Expr
+sealed trait NamedTyped extends Expr
 
-case class Named(name: Identifier, value: Expr) extends Expr
+case class Named(name: Identifier, value: Expr) extends Expr with NamedTyped
 
-case class Typed(name: Identifier, typeExpr: Expr) extends Expr
+case class Typed(name: Identifier, typeExpr: Expr) extends Expr with NamedTyped
 
-case class NameTyped(name: Identifier, typeExpr: Expr, value: Expr) extends Expr
+case class NameTyped(name: Identifier, typeExpr: Expr, value: Expr) extends Expr with NamedTyped
