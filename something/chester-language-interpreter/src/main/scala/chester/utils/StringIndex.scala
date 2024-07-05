@@ -39,23 +39,27 @@ case class StringIndex(val string: String) {
   }
 
   def charIndexToCharLineAndColumn(charIndex: Int): LineAndColumn = {
-    if (lineBreaks.isEmpty) {
-      // Handling single line strings
-      return LineAndColumn(0, charIndex)
+    var line = 0
+    var column = 0
+    var i = 0
+
+    while (i < charIndex) {
+      if (string(i) == '\n') {
+        line += 1
+        column = 0
+      } else {
+        if (Character.isHighSurrogate(string(i)) && i + 1 < string.length && Character.isLowSurrogate(string(i + 1))) {
+          // Only increment the column once for the high surrogate
+          if (i < charIndex - 1) {
+            column += 1 // Only increment if both parts of the surrogate pair are before the charIndex
+          }
+          i += 1 // Move past the low surrogate
+        } else {
+          column += 1
+        }
+      }
+      i += 1
     }
-
-    // Finding the last line break before the current character index or the beginning if none found
-    val line = if (charIndex > 0 && lineBreaks.exists(_ < charIndex)) {
-      lineBreaks.lastIndexWhere(_ < charIndex) + 1
-    } else {
-      0
-    }
-
-    // Compute the start of the current line
-    val lineStart = if (line > 0) lineBreaks(line - 1) + 1 else 0
-
-    // Adjust column for characters following a newline character
-    val column = charIndex - lineStart
 
     LineAndColumn(line, column)
   }
