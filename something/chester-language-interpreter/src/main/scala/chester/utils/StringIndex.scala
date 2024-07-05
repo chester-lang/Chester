@@ -61,18 +61,26 @@ case class StringIndex(val string: String) {
   }
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
-    // Find the last line break before the character index, or 0 if none
-    val line = lineBreaks.lastIndexWhere(_ <= charIndex)
-    val lineStart = if (line >= 0) lineBreaks(line) else 0
+    // Initial conditions assuming no breaks
+    var line = 0
+    var lineStart = 0
 
-    // Calculate the Unicode index for the start of the line and the current character index
-    val unicodeLineStartIndex = charIndexToUnicodeIndex(lineStart)
-    val unicodeIndex = charIndexToUnicodeIndex(charIndex)
+    // Iterate through line breaks to determine the actual line and the start of the line
+    for (breakIndex <- lineBreaks.indices) {
+      if (lineBreaks(breakIndex) < charIndex) {
+        line = breakIndex + 1
+        lineStart = lineBreaks(breakIndex) + 1
+      }
+    }
 
-    // Calculate the column as the difference in Unicode indexes
-    val column = unicodeIndex - unicodeLineStartIndex
+    // Calculate Unicode column from the start of the current line to the current index
+    val column = if (charIndex >= lineStart) {
+      string.codePointCount(lineStart, charIndex)
+    } else {
+      0
+    }
 
-    // Adjust line number if necessary based on specific rules (if any)
     LineAndColumn(line, column)
   }
+
 }
