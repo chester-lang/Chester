@@ -16,52 +16,52 @@ sealed trait Salt
 case class Identifier(sourcePos: Option[SourcePos], name: String) extends Expr
 
 // infix prefix postfix
-case class BinOpSeq(sourcePos: Option[SourcePos], seq: Seq[Expr]) extends Expr with Salt {
+case class BinOpSeq(seq: Seq[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
   override def descent(operator: Expr => Expr): Expr = {
-    BinOpSeq(sourcePos, seq.map(_.descentAndApply(operator)))
+    BinOpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
-case class Infix(sourcePos: Option[SourcePos], op: Expr, left: Expr, right: Expr) extends Expr {
+case class Infix(op: Expr, left: Expr, right: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Infix(sourcePos, op.descentAndApply(operator), left.descentAndApply(operator), right.descentAndApply(operator))
+    Infix(op.descentAndApply(operator), left.descentAndApply(operator), right.descentAndApply(operator), sourcePos)
   }
 }
 
-case class Prefix(sourcePos: Option[SourcePos], op: Expr, operand: Expr) extends Expr {
+case class Prefix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Prefix(sourcePos, op.descentAndApply(operator), operand.descentAndApply(operator))
+    Prefix(op.descentAndApply(operator), operand.descentAndApply(operator), sourcePos)
   }
 }
 
-case class Postfix(sourcePos: Option[SourcePos], op: Expr, operand: Expr) extends Expr {
+case class Postfix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Postfix(sourcePos, op.descentAndApply(operator), operand.descentAndApply(operator))
+    Postfix(op.descentAndApply(operator), operand.descentAndApply(operator), sourcePos)
   }
 }
 
-case class Block(sourcePos: Option[SourcePos], heads: Vector[Expr], tail: Expr) extends Expr {
+case class Block(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Block(sourcePos, heads.map(_.descentAndApply(operator)), tail.descentAndApply(operator))
+    Block(heads.map(_.descentAndApply(operator)), tail.descentAndApply(operator), sourcePos)
   }
 }
 
-case class MacroCall(sourcePos: Option[SourcePos], macroName: Expr, args: Vector[Expr]) extends Expr {
+case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    MacroCall(sourcePos, macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)))
+    MacroCall(macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
-case class FunctionCall(sourcePos: Option[SourcePos], function: Expr, implicitArgs: Vector[Expr], args: Vector[Expr]) extends Expr {
+case class FunctionCall(function: Expr, implicitArgs: Vector[Expr], args: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
   def hasImplicitArgs: Boolean = implicitArgs.nonEmpty
 
   override def descent(operator: Expr => Expr): Expr = {
-    FunctionCall(sourcePos, function.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)))
+    FunctionCall(function.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
-case class IntegerLiteral(sourcePos: Option[SourcePos], value: Int) extends Expr
+case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) extends Expr
 
-case class StringLiteral(sourcePos: Option[SourcePos], value: String) extends Expr
+case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
 
-case class VectorExpr(sourcePos: Option[SourcePos], terms: Vector[Expr]) extends Expr
+case class VectorExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
