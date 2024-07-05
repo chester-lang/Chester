@@ -1,4 +1,4 @@
-package chester.common
+package chester.error
 
 case class Pos(index: Int, line: Int, column:Int)
 
