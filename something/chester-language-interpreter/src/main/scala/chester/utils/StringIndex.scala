@@ -2,7 +2,7 @@ package chester.utils
 
 case class LineAndColumn(val line: Int, val column: Int)
 
-case class StringPos(val string: String) {
+case class StringIndex(val string: String) {
   import java.lang.Character.{isHighSurrogate, isLowSurrogate}
 
   lazy val unicodeLength: Int = string.codePointCount(0, string.length)
