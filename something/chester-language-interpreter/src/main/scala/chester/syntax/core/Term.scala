@@ -14,3 +14,6 @@ sealed trait Sort extends Term {
 case class Type(level: BigInt, sourcePos: Option[SourcePos] = None) extends Sort
 
 val Type0 = Type(0)
+
+// Referencing Setω in Agda
+case class Typeω(sourcePos: Option[SourcePos] = None) extends Sort
