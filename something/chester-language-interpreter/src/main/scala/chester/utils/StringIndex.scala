@@ -37,7 +37,7 @@ case class StringIndex(val string: String) {
   def unicodeIndexToCharIndex(unicodeIndex: Int): Int = {
     string.offsetByCodePoints(0, unicodeIndex)
   }
-
+  
   def charIndexToCharLineAndColumn(charIndex: Int): LineAndColumn = {
     var line = 0
     var column = 0
@@ -49,9 +49,10 @@ case class StringIndex(val string: String) {
         column = 0
       } else {
         if (Character.isHighSurrogate(string(i)) && i + 1 < string.length && Character.isLowSurrogate(string(i + 1))) {
-          // Only increment the column once for the high surrogate
           if (i < charIndex - 1) {
-            column += 1 // Only increment if both parts of the surrogate pair are before the charIndex
+            column += 2 // Increment by 2 for surrogate pairs
+          } else {
+            column += 1
           }
           i += 1 // Move past the low surrogate
         } else {

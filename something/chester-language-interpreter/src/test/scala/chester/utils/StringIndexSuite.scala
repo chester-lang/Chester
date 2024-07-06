@@ -129,11 +129,11 @@ class StringIndexSuite extends FunSuite {
   test("charIndexToCharLineAndColumn for multi-line Chinese string with surrogate pairs") {
     val sp = StringIndex("𠀋好\n𠀌世")
     assertEquals(sp.charIndexToCharLineAndColumn(0), LineAndColumn(0, 0))
-    assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 1))
     assertEquals(sp.charIndexToCharLineAndColumn(2), LineAndColumn(0, 2))
     assertEquals(sp.charIndexToCharLineAndColumn(3), LineAndColumn(0, 3))
     assertEquals(sp.charIndexToCharLineAndColumn(4), LineAndColumn(1, 0))
-    assertEquals(sp.charIndexToCharLineAndColumn(5), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToCharLineAndColumn(5), LineAndColumn(1, 1))
     assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 2))
     assertEquals(sp.string.length, 7)
   }
@@ -145,7 +145,8 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(2), LineAndColumn(0, 1))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(3), LineAndColumn(0, 2))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 0))
-    assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 1))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(1, 0))
+    assertEquals(sp.charIndexToUnicodeLineAndColumn(6), LineAndColumn(1, 1))
     assertEquals(sp.string.length, 7)
   }
 
