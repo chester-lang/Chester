@@ -37,7 +37,7 @@ case class StringIndex(val string: String) {
   def unicodeIndexToCharIndex(unicodeIndex: Int): Int = {
     string.offsetByCodePoints(0, unicodeIndex)
   }
-  
+
   def charIndexToCharLineAndColumn(charIndex: Int): LineAndColumn = {
     var line = 0
     var column = 0
@@ -48,24 +48,13 @@ case class StringIndex(val string: String) {
         line += 1
         column = 0
       } else {
-        if (Character.isHighSurrogate(string(i)) && i + 1 < string.length && Character.isLowSurrogate(string(i + 1))) {
-          if (i < charIndex - 1) {
-            column += 2 // Increment by 2 for surrogate pairs
-          } else {
-            column += 1
-          }
-          i += 1 // Move past the low surrogate
-        } else {
-          column += 1
-        }
+        column += 1
       }
       i += 1
     }
 
     LineAndColumn(line, column)
   }
-
-  import scala.util.control.Breaks._
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
     var line = 0
