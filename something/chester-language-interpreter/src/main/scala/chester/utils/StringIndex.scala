@@ -3,6 +3,7 @@ package chester.utils
 case class LineAndColumn(val line: Int, val column: Int)
 
 case class StringIndex(val string: String) {
+
   import java.lang.Character.{isHighSurrogate, isLowSurrogate}
 
   lazy val unicodeLength: Int = string.codePointCount(0, string.length)
@@ -12,11 +13,8 @@ case class StringIndex(val string: String) {
     val n = string.length
     var i = 0
     while (i < n) {
-      if (string(i) == '\n' || string(i) == '\r') {
+      if (string(i) == '\n') {
         lb += i
-        if (string(i) == '\r' && i + 1 < n && string(i + 1) == '\n') {
-          i += 1
-        }
       }
       i += 1
     }
