@@ -18,3 +18,6 @@ inline def CharacterPred(inline p: Character => Boolean)(implicit ctx: P[_]): P[
 
 inline def CharactersWhile(inline p: Character => Boolean, inline min: Int = 1)(implicit ctx: P[_]): P[Unit] =
   CharacterPred(p).rep(min)
+
+inline def StringPred(inline p: String => Boolean)(implicit ctx: P[_]): P[Unit] =
+  AnyChar.rep.!.flatMap(c => if (p(c)) Pass else Fail)
