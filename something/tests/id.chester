@@ -1,5 +1,5 @@
 // write in a canonical way
-@def id(x) {
+@define id(x) {
   x
 }
 
@@ -9,7 +9,7 @@ id1(x) = x
 
 // we have types and (implicit args)
 
-@def id[a: Type](x: a) {
+@define id[a: Type](x: a) {
   x
 }
 
