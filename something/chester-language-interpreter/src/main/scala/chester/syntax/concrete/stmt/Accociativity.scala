@@ -13,7 +13,6 @@ object Names {
   val Default = "Default"
   val Define = "Define"
   val Type = "Type"
-  val Dot = "Dot"
 }
 
 val DefaultPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Default))
@@ -21,8 +20,6 @@ val DefaultPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Default))
 val DefinePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Define), lowerThan = Vector(DefaultPrecedenceGroup))
 
 val TypePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Type), higherThan = Vector(DefinePrecedenceGroup), lowerThan = Vector(DefaultPrecedenceGroup))
-
-val DotPrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Dot), higherThan = Vector(DefaultPrecedenceGroup), associativity = Associativity.Left)
 
 enum Associativity {
   case None
@@ -53,12 +50,10 @@ case class PrecedenceGroupCtx(precedenceGroups: Map[String, PrecedenceGroup])
 val defaultInfixDefitions = InfixDefitions(Vector(
   Infix("=", DefinePrecedenceGroup),
   Infix(":", TypePrecedenceGroup),
-  Infix(".", DotPrecedenceGroup),
 ))
 
 val defaultPrecedenceGroup = PrecedenceGroupCtx(Map(
   (Names.Default -> DefaultPrecedenceGroup),
   (Names.Define -> DefinePrecedenceGroup),
   (Names.Type -> TypePrecedenceGroup),
-  (Names.Dot -> DotPrecedenceGroup),
 ))

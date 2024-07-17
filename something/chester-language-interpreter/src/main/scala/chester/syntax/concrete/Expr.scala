@@ -53,11 +53,39 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[Sour
   }
 }
 
-case class FunctionCall(function: Expr, implicitArgs: Vector[Expr], args: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+sealed trait Arg {
+  def descentAndApply(operator: Expr => Expr): Arg = this
+}
+
+case class NamelessArg(value: Expr) extends Arg {
+  override def descentAndApply(operator: Expr => Expr): Arg = {
+    NamelessArg(value.descentAndApply(operator))
+  }
+}
+
+case class NamedArg(name: Identifier, value: Expr) extends Arg {
+  override def descentAndApply(operator: Expr => Expr): Arg = {
+    NamedArg(name, value.descentAndApply(operator))
+  }
+}
+
+case class FunctionCall(function: Expr, implicitArgs: Vector[Arg], args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
   def hasImplicitArgs: Boolean = implicitArgs.nonEmpty
 
   override def descent(operator: Expr => Expr): Expr = {
     FunctionCall(function.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)), sourcePos)
+  }
+}
+
+case class DotCall(expr: Expr, field: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), sourcePos)
+  }
+}
+
+case class DotMethodCall(expr: Expr, method: Expr, implicitArgs: Vector[Arg], args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    DotMethodCall(expr.descentAndApply(operator), method.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
