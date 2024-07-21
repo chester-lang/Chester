@@ -64,7 +64,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   }
 
 
-  def escapeSequence: P[String] = P("\\" ~/ CharIn("rnt\\\"").!).map {
+  def escapeSequence: P[String] = P("\\" ~ CharIn("rnt\\\"").!).map {
     case "r" => "\r"
     case "n" => "\n"
     case "t" => "\t"
@@ -74,7 +74,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   def normalChar: P[String] = P(CharPred(c => c != '\\' && c != '"')).!
 
-  def stringLiteral: P[String] = P("\"" ~/ (normalChar | escapeSequence).rep.! ~ "\"")
+  def stringLiteral: P[String] = P("\"" ~/ (normalChar | escapeSequence).rep.map(_.mkString) ~ "\"")
 
   def heredocLiteral: P[String] = {
     def validateIndentation(str: String): Either[String, String] = {
@@ -100,7 +100,6 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   def stringLiteralExpr: P[Expr] = P((stringLiteral | heredocLiteral).withPos).map {
     case (value, pos) => StringLiteral(value, Some(pos))
   }
-
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 

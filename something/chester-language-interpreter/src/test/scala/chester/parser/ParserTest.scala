@@ -115,4 +115,55 @@ class ParserTest extends FunSuite {
     val expected = DoubleLiteral(BigDecimal("1.23e4"))
     parseAndCheck(input, expected)
   }
+
+
+  test("parse single-line string literal") {
+    val input = "\"Hello, world!\""
+    val result = Parser.parseExpression("testFile", input)
+    result match {
+      case Parsed.Success(StringLiteral(value, _), _) =>
+        assertEquals(value, "Hello, world!")
+      case _ => fail(s"Expected StringLiteral but got $result")
+    }
+  }
+
+  test("parse escaped characters in string literal") {
+    val input = "\"Hello, \\\"world\\\"!\\n\""
+    val result = Parser.parseExpression("testFile", input)
+    result match {
+      case Parsed.Success(StringLiteral(value, _), _) =>
+        assertEquals(value, "Hello, \"world\"!\n")
+      case _ => fail(s"Expected StringLiteral but got $result")
+    }
+  }
+
+  test("parse heredoc string literal") {
+    val input = "\"\"\"\n  Hello,\n  world!\n\"\"\""
+    val result = Parser.parseExpression("testFile", input)
+    result match {
+      case Parsed.Success(StringLiteral(value, _), _) =>
+        assertEquals(value, "Hello,\nworld!")
+      case _ => fail(s"Expected StringLiteral but got $result")
+    }
+  }
+
+  test("parse heredoc string literal with inconsistent indentation") {
+    val input = "\"\"\"\n  Hello,\n   world!\n\"\"\""
+    val result = Parser.parseExpression("testFile", input)
+    result match {
+      case Parsed.Failure(label, index, extra) =>
+        assert(extra.trace().msg.contains("Inconsistent indentation in heredoc string literal"))
+      case _ => fail(s"Expected parsing failure due to inconsistent indentation but got $result")
+    }
+  }
+
+  test("parse invalid escape sequence in string literal") {
+    val input = "\"Hello, \\xworld!\""
+    val result = Parser.parseExpression("testFile", input)
+    result match {
+      case Parsed.Failure(label, index, extra) =>
+        assert(extra.trace().msg.contains("trailing characters"))
+      case _ => fail(s"Expected parsing failure due to invalid escape sequence but got $result")
+    }
+  }
 }
