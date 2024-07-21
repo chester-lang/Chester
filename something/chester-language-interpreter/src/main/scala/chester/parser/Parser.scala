@@ -3,7 +3,7 @@ package chester.parser;
 import fastparse.*
 import NoWhitespace.*
 import chester.error.{Pos, RangeInFile, SourcePos}
-import chester.syntax.concrete.{DoubleLiteral, Expr, Identifier, IntegerLiteral}
+import chester.syntax.concrete.{DoubleLiteral, Expr, Identifier, IntegerLiteral, StringLiteral}
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
@@ -63,7 +63,46 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
       DoubleLiteral(BigDecimal(sign + value), Some(pos))
   }
 
-  def literal: P[Expr] = P(doubleLiteral | integerLiteral)
+
+  def escapeSequence: P[String] = P("\\" ~/ CharIn("rnt\\\"").!).map {
+    case "r" => "\r"
+    case "n" => "\n"
+    case "t" => "\t"
+    case "\\" => "\\"
+    case "\"" => "\""
+  }
+
+  def normalChar: P[String] = P(CharPred(c => c != '\\' && c != '"')).!
+
+  def stringLiteral: P[String] = P("\"" ~/ (normalChar | escapeSequence).rep.! ~ "\"")
+
+  def heredocLiteral: P[String] = {
+    def validateIndentation(str: String): Either[String, String] = {
+      val lines = str.split("\n")
+      val indentStrings = lines.filter(_.trim.nonEmpty).map(_.takeWhile(_.isWhitespace))
+
+      if (indentStrings.distinct.length > 1) Left("Inconsistent indentation in heredoc string literal")
+      else {
+        val indentSize = if (indentStrings.nonEmpty) indentStrings.head.length else 0
+        val trimmedLines = lines.map(_.drop(indentSize))
+        Right(trimmedLines.mkString("\n").stripPrefix("\n").stripSuffix("\n"))
+      }
+    }
+
+    P("\"\"\"" ~/ (!"\"\"\"".rep ~ AnyChar).rep.!.flatMap { str =>
+      validateIndentation(str) match {
+        case Right(validStr) => Pass(validStr)
+        case Left(errorMsg) => Fail.opaque(errorMsg)
+      }
+    } ~ "\"\"\"")
+  }
+
+  def stringLiteralExpr: P[Expr] = P((stringLiteral | heredocLiteral).withPos).map {
+    case (value, pos) => StringLiteral(value, Some(pos))
+  }
+
+
+  def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 
   def apply: P[Expr] = P(literal | identifier)
 
