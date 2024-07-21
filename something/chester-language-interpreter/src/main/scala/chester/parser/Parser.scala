@@ -3,7 +3,7 @@ package chester.parser;
 import fastparse.*
 import NoWhitespace.*
 import chester.error.{Pos, RangeInFile, SourcePos}
-import chester.syntax.concrete.{Expr, Identifier}
+import chester.syntax.concrete.{DoubleLiteral, Expr, Identifier, IntegerLiteral}
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
@@ -40,7 +40,31 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   def identifier: P[Expr] = P(id.withPos).map { case (name, pos) => Identifier(Some(pos), name) }
 
-  def apply: P[Expr] = identifier // | ...
+  def signed: P[Unit] = P(CharIn("+\\-").?)
+
+  def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F")).!
+
+  def binLiteral: P[String] = P("0b" ~ CharsWhileIn("01")).!
+
+  def decLiteral: P[String] = P(CharsWhileIn("0-9")).!
+
+  def expLiteral: P[String] = P(CharsWhileIn("0-9") ~ "." ~ CharsWhileIn("0-9") ~ (CharIn("eE") ~ signed ~ CharsWhileIn("0-9")).?).!
+
+  def integerLiteral: P[Expr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
+    case (value, pos) =>
+      val actualValue = if (value.startsWith("0x")) BigInt(value.drop(2), 16)
+      else if (value.startsWith("0b")) BigInt(value.drop(2), 2)
+      else BigInt(value)
+      IntegerLiteral(actualValue, Some(pos))
+  }
+
+  def doubleLiteral: P[Expr] = P(signed ~ expLiteral.withPos).map {
+    case (value, pos) => DoubleLiteral(BigDecimal(value), Some(pos))
+  }
+
+  def literal: P[Expr] = P(doubleLiteral | integerLiteral)
+
+  def apply: P[Expr] = P(literal | identifier)
 
 }
 

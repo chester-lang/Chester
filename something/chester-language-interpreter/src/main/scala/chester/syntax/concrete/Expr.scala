@@ -89,10 +89,16 @@ case class DotMethodCall(expr: Expr, method: Expr, implicitArgs: Vector[Arg], ar
   }
 }
 
-case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) extends Expr
+sealed trait NumberLiteral extends Expr
+
+case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) extends NumberLiteral
+
+case class DoubleLiteral(value: BigDecimal, sourcePos: Option[SourcePos] = None) extends NumberLiteral
 
 case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
 
 case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
 
 case class HoleExpr(description: String, sourcePos: Option[SourcePos] = None) extends Expr
+
+

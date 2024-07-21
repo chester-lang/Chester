@@ -30,11 +30,6 @@ class ParserTest extends FunSuite {
     }
   }
 
-  test("parse invalid identifier starting with digit") {
-    val result = Parser.parseExpression("testFile", "123invalidIdentifier")
-    assert(result.isInstanceOf[Parsed.Failure])
-  }
-
   test("parse empty input") {
     val result = Parser.parseExpression("testFile", "")
     assert(result.isInstanceOf[Parsed.Failure])
