@@ -3,6 +3,7 @@ package chester.parser;
 import fastparse.*
 import NoWhitespace.*
 import chester.error.{Pos, RangeInFile, SourcePos}
+import chester.syntax.concrete.Expr
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
@@ -29,10 +30,12 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
     val endPos = index.charIndexToUnicodeLineAndColumn(end)
     Some(SourcePos(fileName, RangeInFile(Pos(begin, start.line, start.column), Pos(end, endPos.line, endPos.column))))
   }
+  
+  def apply: P[Expr] = ???
 
 
 }
 
 object Parser {
-  
+  def parseExpression(fileName: String, input: String): Parsed[Expr] = parse(input, ParserInternal(fileName)(_).apply)
 }
