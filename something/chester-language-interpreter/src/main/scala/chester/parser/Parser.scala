@@ -40,7 +40,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   def identifier: P[Expr] = P(id.withPos).map { case (name, pos) => Identifier(Some(pos), name) }
 
-  def signed: P[Unit] = P(CharIn("+\\-").?)
+  def signed: P[String] = P(CharIn("+\\-").?.!)
 
   def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F")).!
 
@@ -51,15 +51,16 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   def expLiteral: P[String] = P(CharsWhileIn("0-9") ~ "." ~ CharsWhileIn("0-9") ~ (CharIn("eE") ~ signed ~ CharsWhileIn("0-9")).?).!
 
   def integerLiteral: P[Expr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
-    case (value, pos) =>
-      val actualValue = if (value.startsWith("0x")) BigInt(value.drop(2), 16)
-      else if (value.startsWith("0b")) BigInt(value.drop(2), 2)
-      else BigInt(value)
+    case ((sign, value), pos) =>
+      val actualValue = if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
+      else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
+      else BigInt(sign + value)
       IntegerLiteral(actualValue, Some(pos))
   }
 
   def doubleLiteral: P[Expr] = P(signed ~ expLiteral.withPos).map {
-    case (value, pos) => DoubleLiteral(BigDecimal(value), Some(pos))
+    case (sign, (value, pos)) =>
+      DoubleLiteral(BigDecimal(sign + value), Some(pos))
   }
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral)
