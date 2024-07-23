@@ -13,7 +13,8 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   val ASCIIAllowedSymbols = "-=_+\\|;:,.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "#()[]{}'\""
 
-  def space: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
+  def delimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
+  def maybeSpace: P[Unit] = P(delimiter.?)
 
   def isSymbol(x: Character) = ASCIIAllowedSymbols.contains(x)
 
@@ -107,7 +108,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   def decoration: P[Identifier] = identifier
 
-  def decorations: P[Vector[Identifier]] = P((decoration ~ " ".rep).repX.map(_.toVector))
+  def decorations: P[Vector[Identifier]] = P((decoration ~ delimiter).repX.map(_.toVector))
 
   def argName: P[Identifier] = identifier
 
@@ -130,7 +131,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
     Telescope(args.toVector)
   }
 
-  def apply: P[Expr] = space ~ P(telescope | literal | identifier)
+  def apply: P[Expr] = maybeSpace ~ P(telescope | literal | identifier)
 
 }
 
