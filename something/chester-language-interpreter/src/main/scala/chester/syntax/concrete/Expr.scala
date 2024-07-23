@@ -53,27 +53,16 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[Sour
   }
 }
 
-sealed trait Arg {
-  def descentAndApply(operator: Expr => Expr): Arg = this
-}
-
-case class NamelessArg(value: Expr) extends Arg {
-  override def descentAndApply(operator: Expr => Expr): Arg = {
-    NamelessArg(value.descentAndApply(operator))
+// maybe argument in function call or in function declaration
+case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Option[Expr], body: Expr) {
+  def descentAndApply(operator: Expr => Expr): Arg = {
+    Arg(decorations, name, ty.map(_.descentAndApply(operator)), body.descentAndApply(operator))
   }
 }
 
-case class NamedArg(name: Identifier, value: Expr) extends Arg {
-  override def descentAndApply(operator: Expr => Expr): Arg = {
-    NamedArg(name, value.descentAndApply(operator))
-  }
-}
-
-case class FunctionCall(function: Expr, implicitArgs: Vector[Arg], args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
-  def hasImplicitArgs: Boolean = implicitArgs.nonEmpty
-
+case class FunctionCall(function: Expr, args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    FunctionCall(function.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)), sourcePos)
+    FunctionCall(function.descentAndApply(operator), args.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
