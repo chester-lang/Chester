@@ -9,7 +9,7 @@ import chester.utils.parse.*
 
 import java.lang.Character.{isDigit, isLetter}
 
-case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
+case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
   val ASCIIAllowedSymbols = "-=_+\\|;:,.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "#()[]{}'\""
 
@@ -31,17 +31,18 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   val index = StringIndex(ctx.input.slice(0, ctx.input.length))
 
-  private def loc(begin: Int, end: Int): SourcePos = {
+  private def loc(begin: Int, end: Int): Option[SourcePos] = {
+    if(ignoreLocation) return None
     val start = index.charIndexToUnicodeLineAndColumn(begin)
     val endPos = index.charIndexToUnicodeLineAndColumn(end)
-    SourcePos(fileName, RangeInFile(Pos(begin, start.line, start.column), Pos(end, endPos.line, endPos.column)))
+    Some(SourcePos(fileName, RangeInFile(Pos(begin, start.line, start.column), Pos(end, endPos.line, endPos.column))))
   }
 
   extension [T](inline parse0: P[T]) {
-    inline def withPos: P[(T, SourcePos)] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
+    inline def withPos: P[(T, Option[SourcePos])] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
   }
 
-  def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, Some(pos)) }
+  def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
@@ -58,12 +59,12 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
       val actualValue = if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
       else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
       else BigInt(sign + value)
-      IntegerLiteral(actualValue, Some(pos))
+      IntegerLiteral(actualValue, pos)
   }
 
   def doubleLiteral: P[Expr] = P(signed ~ expLiteral.withPos).map {
     case (sign, (value, pos)) =>
-      DoubleLiteral(BigDecimal(sign + value), Some(pos))
+      DoubleLiteral(BigDecimal(sign + value), pos)
   }
 
 
@@ -101,7 +102,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   }
 
   def stringLiteralExpr: P[Expr] = P((stringLiteral | heredocLiteral).withPos).map {
-    case (value, pos) => StringLiteral(value, Some(pos))
+    case (value, pos) => StringLiteral(value, pos)
   }
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
@@ -136,5 +137,5 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 }
 
 object Parser {
-  def parseExpression(fileName: String, input: String): Parsed[Expr] = parse(input, ParserInternal(fileName)(_).apply)
+  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).apply)
 }
