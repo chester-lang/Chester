@@ -11,7 +11,7 @@ class TelescopeParserTest extends FunSuite {
     result match {
       case Parsed.Success(value, _) =>
         assertEquals(value, expected, s"Failed for input: $input")
-      case _ => fail(s"Parsing failed for input: $input")
+      case Parsed.Failure(label, index, extra) => fail(s"Parsing failed for input: $input $label $index ${extra.trace().msg}")
     }
   }
 

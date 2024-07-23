@@ -10,8 +10,8 @@ import chester.utils.parse.*
 import java.lang.Character.{isDigit, isLetter}
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
-  val ASCIIAllowedSymbols = "-=_+\\|;:.<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val ReservedSymbols = ",#()[]{}'\""
+  val ASCIIAllowedSymbols = "-_+\\|;.<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val ReservedSymbols = "=:,#()[]{}'\""
 
   def delimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
   def maybeSpace: P[Unit] = P(delimiter.?)
@@ -117,7 +117,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argExprOrDefault: P[Option[Expr]] = P("=" ~ apply).?
 
-  def argumentWithName: P[Arg] = P(decorations.? ~ argName ~ argType.? ~ argExprOrDefault).map {
+  def argumentWithName: P[Arg] = P(decorations.? ~ maybeSpace ~ argName ~ maybeSpace ~ argType.? ~ maybeSpace ~ argExprOrDefault).map {
     case (dec, name, ty, exprOrDefault) => Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault)
   }
 
@@ -125,10 +125,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
-  def argument: P[Arg] = argumentWithoutName | argumentWithName
+  def argument: P[Arg] = P(argumentWithoutName | argumentWithName)
 
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ","./) ~ ")").map { args =>
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ",") ~ ")").map { args =>
     Telescope(args.toVector)
   }
 
