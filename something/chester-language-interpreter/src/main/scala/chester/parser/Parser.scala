@@ -3,7 +3,7 @@ package chester.parser;
 import fastparse.*
 import NoWhitespace.*
 import chester.error.{Pos, RangeInFile, SourcePos}
-import chester.syntax.concrete.{DoubleLiteral, Expr, Identifier, IntegerLiteral, StringLiteral}
+import chester.syntax.concrete._
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
@@ -12,6 +12,8 @@ import java.lang.Character.{isDigit, isLetter}
 case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
   val ASCIIAllowedSymbols = "-=_+\\|;:,.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "#()[]{}'\""
+
+  def space: P[Unit] = P(CharsWhileIn(" \t\r\n", 0))
 
   def isSymbol(x: Character) = ASCIIAllowedSymbols.contains(x)
 
@@ -38,7 +40,7 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
     inline def withPos: P[(T, SourcePos)] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
   }
 
-  def identifier: P[Expr] = P(id.withPos).map { case (name, pos) => Identifier(Some(pos), name) }
+  def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, Some(pos)) }
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
@@ -103,7 +105,25 @@ case class ParserInternal(fileName: String)(implicit ctx: P[?]) {
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 
-  def apply: P[Expr] = P(literal | identifier)
+  def decoration: P[Identifier] = identifier
+
+  def decorations: P[Vector[Identifier]] = P((decoration ~ " ".rep).repX.map(_.toVector))
+
+  def argName: P[Identifier] = identifier
+
+  def argType: P[Expr] = P(":" ~ apply)
+
+  def argExprOrDefault: P[Expr] = P("=" ~ apply | apply)
+
+  def argument: P[Arg] = P(decorations.? ~ argName.? ~ argType.? ~ argExprOrDefault.?).map {
+    case (dec, name, ty, exprOrDefault) => Arg(dec.getOrElse(Vector.empty), name, ty, exprOrDefault)
+  }
+
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ","./) ~ ")").map { args =>
+    Telescope(args.toVector)
+  }
+
+  def apply: P[Expr] = space ~ P(telescope | literal | identifier)
 
 }
 

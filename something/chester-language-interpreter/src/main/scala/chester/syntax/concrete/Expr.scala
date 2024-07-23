@@ -14,7 +14,7 @@ sealed trait Expr extends WithPos {
 sealed trait Salt
 
 
-case class Identifier(sourcePos: Option[SourcePos], name: String) extends Expr
+case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends Expr
 
 // infix prefix postfix
 case class BinOpSeq(seq: Seq[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
@@ -54,9 +54,10 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[Sour
 }
 
 // maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Option[Expr], body: Expr) {
+case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr]) {
+  assert(name.isDefined || exprOrDefault.isDefined)
   def descentAndApply(operator: Expr => Expr): Arg = {
-    Arg(decorations, name, ty.map(_.descentAndApply(operator)), body.descentAndApply(operator))
+    Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
   }
 }
 
