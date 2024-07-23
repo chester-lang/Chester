@@ -60,9 +60,15 @@ case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Op
   }
 }
 
-case class FunctionCall(function: Expr, args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
+case class Telescope(args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Telescope = {
+    Telescope(args.map(_.descentAndApply(operator)), sourcePos)
+  }
+}
+
+case class FunctionCall(function: Expr, telescope: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    FunctionCall(function.descentAndApply(operator), args.map(_.descentAndApply(operator)), sourcePos)
+    FunctionCall(function.descentAndApply(operator), telescope.descentAndApply(operator), sourcePos)
   }
 }
 
@@ -72,9 +78,9 @@ case class DotCall(expr: Expr, field: Expr, sourcePos: Option[SourcePos] = None)
   }
 }
 
-case class DotMethodCall(expr: Expr, method: Expr, implicitArgs: Vector[Arg], args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
+case class DotMethodCall(expr: Expr, method: Expr, telescope: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    DotMethodCall(expr.descentAndApply(operator), method.descentAndApply(operator), implicitArgs.map(_.descentAndApply(operator)), args.map(_.descentAndApply(operator)), sourcePos)
+    DotMethodCall(expr.descentAndApply(operator), method.descentAndApply(operator), telescope.descentAndApply(operator), sourcePos)
   }
 }
 
