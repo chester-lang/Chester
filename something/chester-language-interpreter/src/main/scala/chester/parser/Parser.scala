@@ -53,9 +53,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
-  def hexLiteral: P[String] = P("0x"./ ~ CharsWhileIn("0-9a-fA-F")).!
+  def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F")).!
 
-  def binLiteral: P[String] = P("0b"./ ~ CharsWhileIn("01")).!
+  def binLiteral: P[String] = P("0b" ~ CharsWhileIn("01")).!
 
   def decLiteral: P[String] = P(CharsWhileIn("0-9")).!
 
@@ -85,7 +85,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def normalChar: P[String] = P(CharPred(c => c != '\\' && c != '"')).!
 
-  def stringLiteral: P[String] = P("\"" ~/ (normalChar | escapeSequence).rep.map(_.mkString) ~ "\"")
+  def stringLiteral: P[String] = P("\"" ~ (normalChar | escapeSequence).rep.map(_.mkString) ~ "\"")
 
   def heredocLiteral: P[String] = {
     def validateIndentation(str: String): Either[String, String] = {
@@ -100,7 +100,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
       }
     }
 
-    P("\"\"\"" ~/ (!"\"\"\"".rep ~ AnyChar).rep.!.flatMap { str =>
+    P("\"\"\"" ~ (!"\"\"\"".rep ~ AnyChar).rep.!.flatMap { str =>
       validateIndentation(str) match {
         case Right(validStr) => Pass(validStr)
         case Left(errorMsg) => Fail.opaque(errorMsg)
@@ -120,9 +120,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(maybeSpace ~ ":"./ ~ apply)
+  def argType: P[Expr] = P(maybeSpace ~ ":" ~ apply)
 
-  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "="./ ~ apply).?
+  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ apply).?
 
   def argumentWithName: P[Arg] = P(decorations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
@@ -137,17 +137,30 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def telescope: P[Telescope] = PwithPos("(" ~/ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
-    Telescope(args.toVector)
+  def telescope: P[Telescope] = PwithPos("(" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
+    Telescope(args.toVector, pos)
+  }
+
+  def argHasImplicit(arg: Arg): Boolean = arg.decorations.exists(_.name == "implicit")
+
+  def argAddImplicit(arg: Arg): Arg = {
+    if(argHasImplicit(arg)) return arg
+    val newDecorations = arg.decorations :+ Identifier("implicit")
+    arg.copy(decorations = newDecorations)
+  }
+
+  def implicitTelescope: P[Telescope] = PwithPos("[" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "](" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { case ((args0, args1), pos) =>
+    val newArgs = args0.map(argAddImplicit)
+    Telescope(newArgs.toVector ++ args1, pos)
   }
 
   def typeAnnotation: P[TypeAnnotation] = ???
 
-  def list: P[ListExpr] = PwithPos("[" ~/ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
-    ListExpr(terms.toVector)
+  def list: P[ListExpr] = PwithPos("[" ~ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
+    ListExpr(terms.toVector, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(list | telescope | literal | identifier)
+  def apply: P[Expr] = maybeSpace ~ P(implicitTelescope | list | telescope | literal | identifier)
 
 }
 
