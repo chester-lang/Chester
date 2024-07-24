@@ -60,6 +60,9 @@ case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Op
     Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
   }
 }
+object Arg {
+  def apply(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
+}
 
 case class Telescope(args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Telescope = {
