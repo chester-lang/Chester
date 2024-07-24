@@ -113,11 +113,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(":" ~ apply)
+  def argType: P[Expr] = P(maybeSpace ~ ":"./ ~ apply)
 
-  def argExprOrDefault: P[Option[Expr]] = P("=" ~ apply).?
+  def argExprOrDefault: P[Option[Expr]] = P("="./ ~ apply).?
 
-  def argumentWithName: P[Arg] = P(decorations.? ~ maybeSpace ~ argName ~ maybeSpace ~ argType.? ~ maybeSpace ~ argExprOrDefault).map {
+  def argumentWithName: P[Arg] = P(decorations.? ~ argName ~ argType.? ~ argExprOrDefault).map {
     case (dec, name, ty, exprOrDefault) => Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault)
   }
 
