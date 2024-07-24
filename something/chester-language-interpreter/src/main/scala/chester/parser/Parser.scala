@@ -166,9 +166,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     FunctionCall(function, telescope, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(implicitTelescope | list | telescope | literal | identifier).flatMap { expr => {
+  def apply: P[Expr] = maybeSpace ~ P(implicitTelescope | list | telescope | literal | identifier).flatMap { expr =>
     typeAnnotation(expr) | functionCall(expr) | Pass(expr)
-  }
   }
 
 }
