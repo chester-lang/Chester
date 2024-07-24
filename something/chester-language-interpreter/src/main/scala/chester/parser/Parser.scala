@@ -13,7 +13,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   val ASCIIAllowedSymbols = "-_+\\|;.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "=:,#()[]{}'\""
 
-  def comment: P[Unit] = P("//" ~ CharPred(_!='\n').rep)
+  def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
 
@@ -144,7 +144,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   def argHasImplicit(arg: Arg): Boolean = arg.decorations.exists(_.name == "implicit")
 
   def argAddImplicit(arg: Arg): Arg = {
-    if(argHasImplicit(arg)) return arg
+    if (argHasImplicit(arg)) return arg
     val newDecorations = arg.decorations :+ Identifier("implicit")
     arg.copy(decorations = newDecorations)
   }
@@ -162,7 +162,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     ListExpr(terms.toVector, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(typeAnnotation | implicitTelescope | list | telescope | literal | identifier)
+  def functionCall: P[FunctionCall] = PwithPos(apply ~ (implicitTelescope | telescope)).map { case ((function, telescope), pos) =>
+    FunctionCall(function, telescope, pos)
+  }
+
+  def apply: P[Expr] = maybeSpace ~ P(typeAnnotation | functionCall | implicitTelescope | list | telescope | literal | identifier)
 
 }
 
