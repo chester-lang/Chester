@@ -6,15 +6,6 @@ import chester.parser._
 
 class TelescopeParserTest extends FunSuite {
 
-  def parseAndCheck(input: String, expected: Expr): Unit = {
-    val result = Parser.parseExpression("testFile", input, ignoreLocation = true)
-    result match {
-      case Parsed.Success(value, _) =>
-        assertEquals(value, expected, s"Failed for input: $input")
-      case Parsed.Failure(label, index, extra) => fail(s"Parsing failed for input: $input $label $index ${extra.trace().msg}")
-    }
-  }
-
   test("parse telescope with simple arguments") {
     val input = "(a, b, c)"
     val expected = Telescope(Vector(

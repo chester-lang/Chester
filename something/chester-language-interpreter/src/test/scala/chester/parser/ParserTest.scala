@@ -35,30 +35,6 @@ class ParserTest extends FunSuite {
     assert(result.isInstanceOf[Parsed.Failure])
   }
 
-
-  def parseAndCheck(input: String, expected: Expr): Unit = {
-    val result = Parser.parseExpression("testFile", input)
-    result match {
-      case Parsed.Success(value, _) =>
-        value match {
-          case IntegerLiteral(actualValue, _) =>
-            expected match {
-              case IntegerLiteral(expectedValue, _) =>
-                assertEquals(actualValue, expectedValue, s"Failed for input: $input")
-              case _ => fail(s"Expected IntegerLiteral but got ${value.getClass} for input: $input")
-            }
-          case DoubleLiteral(actualValue, _) =>
-            expected match {
-              case DoubleLiteral(expectedValue, _) =>
-                assertEquals(actualValue, expectedValue, s"Failed for input: $input")
-              case _ => fail(s"Expected DoubleLiteral but got ${value.getClass} for input: $input")
-            }
-          case _ => fail(s"Unexpected expression type for input: $input")
-        }
-      case _ => fail(s"Parsing failed for input: $input")
-    }
-  }
-
   // Tests for IntegerLiteral
   test("parse valid decimal integer") {
     val input = "12345"
