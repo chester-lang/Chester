@@ -115,7 +115,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argType: P[Expr] = P(maybeSpace ~ ":"./ ~ apply)
 
-  def argExprOrDefault: P[Option[Expr]] = P("="./ ~ apply).?
+  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "="./ ~ apply).?
 
   def argumentWithName: P[Arg] = P(decorations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
@@ -128,7 +128,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argument: P[Arg] = maybeSpace ~ P(argumentWithName | argumentWithoutName)
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ",") ~ ")").map { args =>
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ",") ~ ",".? ~ maybeSpace ~ ")").map { args =>
     Telescope(args.toVector)
   }
 
