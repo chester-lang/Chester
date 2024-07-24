@@ -154,13 +154,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     Telescope(newArgs.toVector ++ args1, pos)
   }
 
-  def typeAnnotation: P[TypeAnnotation] = ???
+  def typeAnnotation: P[TypeAnnotation] = PwithPos(apply ~ maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case ((expr, ty), pos) =>
+    TypeAnnotation(expr, ty, pos)
+  }
 
   def list: P[ListExpr] = PwithPos("[" ~ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(implicitTelescope | list | telescope | literal | identifier)
+  def apply: P[Expr] = maybeSpace ~ P(typeAnnotation | implicitTelescope | list | telescope | literal | identifier)
 
 }
 
