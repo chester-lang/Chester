@@ -128,7 +128,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argument: P[Arg] = maybeSpace ~ P(argumentWithName | argumentWithoutName)
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ",") ~ ",".? ~ maybeSpace ~ ")").map { args =>
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ","./) ~ ",".? ~ maybeSpace ~ ")").map { args =>
     Telescope(args.toVector)
   }
 
