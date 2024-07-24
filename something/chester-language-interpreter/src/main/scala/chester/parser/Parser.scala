@@ -147,7 +147,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     ListExpr(terms.toVector)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(telescope | literal | identifier)
+  def apply: P[Expr] = maybeSpace ~ P(list | telescope | literal | identifier)
 
 }
 
