@@ -47,6 +47,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     inline def withPos: P[(T, Option[SourcePos])] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
   }
 
+  inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
+
   def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
@@ -135,13 +137,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { args =>
+  def telescope: P[Telescope] = PwithPos("(" ~/ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
     Telescope(args.toVector)
   }
 
   def typeAnnotation: P[TypeAnnotation] = ???
 
-  def list: P[ListExpr] = P("[" ~/ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { terms =>
+  def list: P[ListExpr] = PwithPos("[" ~/ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector)
   }
 
