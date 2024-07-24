@@ -56,7 +56,7 @@ class TelescopeParserTest extends FunSuite {
   }
 
   test("parse telescope with arguments having decorations") {
-    val input = "(implicit a: Integer = 1, b: Integer, c)"
+    val input = "(#implicit a: Integer = 1, b: Integer, c)"
     val expected = Telescope(Vector(
       Arg(Vector(Identifier("implicit")), Some(Identifier("a")), Some(Identifier("Integer")), Some(IntegerLiteral(1))),
       Arg(Vector.empty, Some(Identifier("b")), Some(Identifier("Integer")), None),
@@ -66,7 +66,7 @@ class TelescopeParserTest extends FunSuite {
   }
 
   test("parse telescope with mixed arguments") {
-    val input = "(a, b: String, c = 3.14, implicit d: Integer = 1)"
+    val input = "(a, b: String, c = 3.14, #implicit d: Integer = 1)"
     val expected = Telescope(Vector(
       Arg(Vector.empty, None, None, Some(Identifier("a"))),
       Arg(Vector.empty, Some(Identifier("b")), Some(Identifier("String")), None),

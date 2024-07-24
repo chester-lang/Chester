@@ -107,7 +107,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 
-  def decoration: P[Identifier] = identifier
+  def decoration: P[Identifier] = "#" ~ identifier
 
   def decorations: P[Vector[Identifier]] = P((decoration ~ delimiter).repX.map(_.toVector))
 
