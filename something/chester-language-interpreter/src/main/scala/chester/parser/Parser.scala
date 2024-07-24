@@ -13,7 +13,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   val ASCIIAllowedSymbols = "-_+\\|;.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "=:,#()[]{}'\""
 
-  def delimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
+  def comment: P[Unit] = P("//" ~ (!"\n".rep ~ AnyChar).rep)
+
+  def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
+
+  def delimiter: P[Unit] = P((simpleDelimiter | comment).rep)
+
   def maybeSpace: P[Unit] = P(delimiter.?)
 
   def isSymbol(x: Character) = ASCIIAllowedSymbols.contains(x)
@@ -32,7 +37,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   val index = StringIndex(ctx.input.slice(0, ctx.input.length))
 
   private def loc(begin: Int, end: Int): Option[SourcePos] = {
-    if(ignoreLocation) return None
+    if (ignoreLocation) return None
     val start = index.charIndexToUnicodeLineAndColumn(begin)
     val endPos = index.charIndexToUnicodeLineAndColumn(end)
     Some(SourcePos(fileName, RangeInFile(Pos(begin, start.line, start.column), Pos(end, endPos.line, endPos.column))))
