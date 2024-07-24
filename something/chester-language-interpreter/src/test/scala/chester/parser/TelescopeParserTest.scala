@@ -25,6 +25,16 @@ class TelescopeParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse telescope with simple arguments with comments") {
+    val input = "(a, // comment \n b, c)"
+    val expected = Telescope(Vector(
+      Arg(Vector.empty, None, None, Some(Identifier("a"))),
+      Arg(Vector.empty, None, None, Some(Identifier("b"))),
+      Arg(Vector.empty, None, None, Some(Identifier("c")))
+    ))
+    parseAndCheck(input, expected)
+  }
+
   test("parse telescope with arguments having type") {
     val input = "(a: Integer)"
     val expected = Telescope(Vector(

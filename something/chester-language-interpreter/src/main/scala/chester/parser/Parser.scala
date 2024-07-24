@@ -13,7 +13,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   val ASCIIAllowedSymbols = "-_+\\|;.<>/?`~!@$%^&*".toSet.map(_.toInt)
   val ReservedSymbols = "=:,#()[]{}'\""
 
-  def comment: P[Unit] = P("//" ~ (!"\n".rep ~ AnyChar).rep)
+  def comment: P[Unit] = P("//" ~ CharPred(_!='\n').rep)
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
 
