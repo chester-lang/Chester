@@ -135,11 +135,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = comma./) ~ ",".? ~ maybeSpace ~ ")").map { args =>
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { args =>
     Telescope(args.toVector)
   }
 
   def typeAnnotation: P[TypeAnnotation] = ???
+
+  def list: P[ListExpr] = P("[" ~/ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { terms =>
+    ListExpr(terms.toVector)
+  }
 
   def apply: P[Expr] = maybeSpace ~ P(telescope | literal | identifier)
 
