@@ -93,8 +93,18 @@ case class DoubleLiteral(value: BigDecimal, sourcePos: Option[SourcePos] = None)
 
 case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
 
-case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr
+case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    ListExpr(terms.map(_.descentAndApply(operator)), sourcePos)
+  }
+}
 
 case class HoleExpr(description: String, sourcePos: Option[SourcePos] = None) extends Expr
+
+case class TypeAnnotation(expr: Expr, ty: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    TypeAnnotation(expr.descentAndApply(operator), ty.descentAndApply(operator), sourcePos)
+  }
+}
 
 

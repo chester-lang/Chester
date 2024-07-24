@@ -133,9 +133,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argument: P[Arg] = maybeSpace ~ P(argumentWithName | argumentWithoutName)
 
-  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = ","./) ~ ",".? ~ maybeSpace ~ ")").map { args =>
+  def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
+
+  def telescope: P[Telescope] = P("(" ~/ argument.rep(sep = comma./) ~ ",".? ~ maybeSpace ~ ")").map { args =>
     Telescope(args.toVector)
   }
+
+  def typeAnnotation: P[TypeAnnotation] = ???
 
   def apply: P[Expr] = maybeSpace ~ P(telescope | literal | identifier)
 
