@@ -110,4 +110,10 @@ case class TypeAnnotation(expr: Expr, ty: Expr, sourcePos: Option[SourcePos] = N
   }
 }
 
+case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), sourcePos)
+  }
+}
+
 
