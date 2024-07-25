@@ -154,7 +154,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     Telescope(newArgs.toVector ++ args1, pos)
   }
 
-  def typeAnnotation(expr:Expr): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case (ty, pos) =>
+  def typeAnnotation(expr: Expr): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case (ty, pos) =>
     TypeAnnotation(expr, ty, pos)
   }
 
@@ -162,11 +162,17 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     ListExpr(terms.toVector, pos)
   }
 
-  def functionCall(function:Expr): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
+  def annotation: P[(Identifier, Option[Telescope])] = P("@" ~ identifier ~ telescope.?)
+
+  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ apply).map { case ((annotation, telescope, expr), pos) =>
+    AnnotatedExpr(annotation, telescope, expr, pos)
+  }
+
+  def functionCall(function: Expr): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(implicitTelescope | list | telescope | literal | identifier).flatMap { expr =>
+  def apply: P[Expr] = maybeSpace ~ P(annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { expr =>
     typeAnnotation(expr) | functionCall(expr) | Pass(expr)
   }
 

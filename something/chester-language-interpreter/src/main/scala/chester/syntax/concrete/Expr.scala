@@ -3,7 +3,6 @@ package chester.syntax.concrete
 import chester.error.{SourcePos, WithPos}
 
 
-
 sealed trait Expr extends WithPos {
   def descent(operator: Expr => Expr): Expr = this
 
@@ -56,10 +55,12 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[Sour
 // maybe argument in function call or in function declaration
 case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr]) {
   assert(name.isDefined || exprOrDefault.isDefined)
+
   def descentAndApply(operator: Expr => Expr): Arg = {
     Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
   }
 }
+
 object Arg {
   def apply(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
@@ -104,9 +105,9 @@ case class TypeAnnotation(expr: Expr, ty: Expr, sourcePos: Option[SourcePos] = N
   }
 }
 
-case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], sourcePos: Option[SourcePos] = None) extends Expr {
+case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], expr: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), sourcePos)
+    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), sourcePos)
   }
 }
 
