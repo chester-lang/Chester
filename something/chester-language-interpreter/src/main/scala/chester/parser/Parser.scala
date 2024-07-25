@@ -114,9 +114,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 
-  def decoration: P[Identifier] = "#" ~ identifier
+  def simpleAnnotation: P[Identifier] = "@" ~ identifier
 
-  def decorations: P[Vector[Identifier]] = P((decoration ~ delimiter).repX.map(_.toVector))
+  def simpleAnnotations: P[Vector[Identifier]] = P((simpleAnnotation ~ delimiter).repX.map(_.toVector))
 
   def argName: P[Identifier] = identifier
 
@@ -124,12 +124,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ apply).?
 
-  def argumentWithName: P[Arg] = P(decorations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
+  def argumentWithName: P[Arg] = P(simpleAnnotations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
     case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
   }
 
-  def argumentWithoutName: P[Arg] = P(decorations.? ~ apply).map {
+  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ apply).map {
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
