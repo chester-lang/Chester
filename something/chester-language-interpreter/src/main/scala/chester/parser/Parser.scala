@@ -10,9 +10,9 @@ import chester.utils.parse.*
 import java.lang.Character.{isDigit, isLetter}
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
-  val AllowedInfixSymbols = "-+\\|.<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
   val AllowedWordingSymbols = "_".toSet.map(_.toInt)
-  val ReservedSymbols = ";=:,#()[]{}'\""
+  val ReservedSymbols = ".;=:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
 
