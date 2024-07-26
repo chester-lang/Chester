@@ -3,11 +3,13 @@ package chester.parser;
 import fastparse.*
 import NoWhitespace.*
 import chester.error.{Pos, RangeInFile, SourcePos}
-import chester.syntax.concrete._
+import chester.syntax.concrete.*
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
 import java.lang.Character.{isDigit, isLetter}
+import java.nio.file.{Files, Paths}
+import scala.util._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
   val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
@@ -217,11 +219,30 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     } yield p0.combine(p1))
     tailExpr(expr, getPos) | Pass(expr)
   }
-  
+
   def entrance: P[Expr] = P(parse ~ maybeSpace ~ End)
 
 }
 
+case class ParseError(message: String, index: Int)
+
 object Parser {
+  def parseFile(fileName: String): Either[ParseError, Expr] = {
+    Try(new String(Files.readAllBytes(Paths.get(fileName)))) match {
+      case Success(content) =>
+        parseContent(fileName, content)
+      case Failure(exception) =>
+        Left(ParseError(s"Failed to read file: ${exception.getMessage}", -1))
+    }
+  }
+
+  def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
+    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance) match {
+      case Parsed.Success(expr, _) => Right(expr)
+      case Parsed.Failure(msg, index, extra) => Left(ParseError(s"Parsing failed: $msg", index))
+    }
+  }
+
+  @deprecated
   def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance)
 }
