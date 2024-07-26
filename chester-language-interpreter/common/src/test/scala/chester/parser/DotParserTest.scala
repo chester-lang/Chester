@@ -67,6 +67,21 @@ class DotParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse dot call with arguments block arguments") {
+    val input = "obj.method(arg1, arg2){arg1}"
+    val expected = DotCall(
+      Identifier("obj"),
+      Identifier("method"),
+      Vector(Telescope(Vector(
+        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
+        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
+      )), Telescope(Vector(
+        Arg.of(Block(Vector(), (Identifier("arg1")))),
+      )))
+    )
+    parseAndCheck(input, expected)
+  }
+
   test("parse dot + call with arguments") {
     val input = "obj.+(arg1, arg2)"
     val expected = DotCall(
