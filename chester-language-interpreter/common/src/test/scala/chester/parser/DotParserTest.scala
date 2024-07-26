@@ -6,6 +6,17 @@ import chester.syntax.concrete._
 import chester.parser._
 
 class DotParserTest extends FunSuite {
+  test("world.execute(me)") {
+    val input = "world.execute(me)"
+    val expected = DotCall(
+      Identifier("world"),
+      Identifier("execute"),
+      Vector(Telescope(Vector(
+        Arg(Vector.empty, None, None, Some(Identifier("me"))),
+      )))
+    )
+    parseAndCheck(input, expected)
+  }
   test("parse simple dot call") {
     val input = "obj.field"
     val expected = DotCall(
