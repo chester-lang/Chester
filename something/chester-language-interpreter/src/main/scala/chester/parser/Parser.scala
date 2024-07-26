@@ -66,9 +66,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
-  def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F")).!
+  def hexLiteral: P[String] = P("0x" ~/ CharsWhileIn("0-9a-fA-F")).!
 
-  def binLiteral: P[String] = P("0b" ~ CharsWhileIn("01")).!
+  def binLiteral: P[String] = P("0b" ~/ CharsWhileIn("01")).!
 
   def decLiteral: P[String] = P(CharsWhileIn("0-9")).!
 
