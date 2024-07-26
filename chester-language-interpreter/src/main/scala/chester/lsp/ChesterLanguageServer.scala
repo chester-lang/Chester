@@ -12,6 +12,13 @@ import fastparse.Parsed
 import scala.jdk.CollectionConverters._
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
+
+  private var client: LanguageClient = _
+
+  def connect(client: LanguageClient): Unit = {
+    this.client = client
+  }
+
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
     val capabilities = new ServerCapabilities()
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
