@@ -6,6 +6,7 @@ import chester.syntax.concrete.*
 import munit.Assertions.{assertEquals, fail}
 
 def parseAndCheck(input: String, expected: Expr): Unit = {
+  val resultignored = Parser.parseExpression("testFile", input) // it must parse with location
   val result = Parser.parseExpression("testFile", input, ignoreLocation = true)
   result match {
     case Parsed.Success(value, _) =>
