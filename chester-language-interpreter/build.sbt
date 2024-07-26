@@ -11,5 +11,4 @@ lazy val root = project
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test,
     libraryDependencies += "com.lihaoyi" %% "fastparse" % "3.1.0",
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
   )
