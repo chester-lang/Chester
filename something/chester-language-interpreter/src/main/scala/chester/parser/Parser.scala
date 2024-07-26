@@ -181,17 +181,17 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
-    FunctionCall(function, telescope, p(pos))
-  }
-
-  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(maybeSimpleSpace ~ anonymousBlockLikeFunction).map { case (block, pos) =>
-    FunctionCall(function, Telescope.of(Arg.apply(block))(pos), p(pos))
-  }
-  
   def calling: P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction).withPos.map { case (block, pos) =>
     Telescope.of(Arg.apply(block))(pos)
   })
+
+  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos(calling).map { case (telescope, pos) =>
+    FunctionCall(function, telescope, p(pos))
+  }
+
+  def dotCall(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ calling.?).map { case ((field, telescope), pos) =>
+    DotCall(expr, field, telescope, p(pos))
+  }
 
   def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
@@ -201,7 +201,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def statement: P[Expr] = apply // TODO
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (typeAnnotation(expr, getPos) | functionCall(expr, getPos) | blockCall(expr, getPos)).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
