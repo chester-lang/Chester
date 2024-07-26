@@ -135,16 +135,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(maybeSpace ~ ":" ~ parse)
+  def argType: P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse)
 
-  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ parse).?
+  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse).?
 
   def argumentWithName: P[Arg] = P(simpleAnnotations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
     case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
   }
 
-  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ parse).map {
+  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse).map {
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
@@ -195,7 +195,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     DotCall(expr, field, telescope, p(pos))
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ parse ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
+  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement ~ maybeSpace ~ ";").rep ~ maybeSpace ~ parse ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
   }
 
@@ -212,7 +212,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   }
   })
 
-  def parse: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse: P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
@@ -220,7 +220,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     tailExpr(expr, getPos) | Pass(expr)
   }
 
-  def entrance: P[Expr] = P(parse ~ maybeSpace ~ End)
+  def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse ~ maybeSpace ~ End)
 
 }
 
