@@ -10,7 +10,8 @@ import chester.utils.parse.*
 import java.lang.Character.{isDigit, isLetter}
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
-  val ASCIIAllowedSymbols = "-_+\\|.<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedInfixSymbols = "-+\\|.<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedWordingSymbols = "_".toSet.map(_.toInt)
   val ReservedSymbols = ";=:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
@@ -23,13 +24,21 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
 
-  def isSymbol(x: Character) = ASCIIAllowedSymbols.contains(x)
+  def isInfixSymbol(x: Character) = AllowedInfixSymbols.contains(x)
 
-  def identifierFirst(x: Character) = isLetter(x) || isSymbol(x)
+  def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
-  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x)
+  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
+
+  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isInfixSymbol(x)
 
   def id: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
+
+  def infixIdentifierFirst(x: Character) = isInfixSymbol(x)
+
+  def infixIdentifierRest(x: Character) = isInfixSymbol(x) || isWordingSymbol(x)
+
+  def infixId: P[String] = P((CharacterPred(infixIdentifierFirst).rep(1) ~ CharacterPred(infixIdentifierRest).rep).!)
 
   def begin: P[Int] = Index
 
@@ -52,6 +61,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
 
   def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
+
+  def infixIdentifier: P[Identifier] = P(infixId.withPos).map { case (name, pos) => Identifier(name, pos) }
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
@@ -192,7 +203,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
       p1 <- endPos
     } yield p0.combine(p1))
     tailExpr(expr, getPos1) | Pass(expr)
-  }})
+  }
+  })
 
   def apply: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
