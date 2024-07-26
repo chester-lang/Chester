@@ -62,7 +62,7 @@ case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Op
 }
 
 object Arg {
-  def apply(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
+  def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
 case class Telescope(args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {

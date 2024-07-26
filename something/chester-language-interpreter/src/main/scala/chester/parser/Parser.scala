@@ -133,16 +133,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(maybeSpace ~ ":" ~ apply)
+  def argType: P[Expr] = P(maybeSpace ~ ":" ~ parse)
 
-  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ apply).?
+  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ parse).?
 
   def argumentWithName: P[Arg] = P(simpleAnnotations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
     case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
   }
 
-  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ apply).map {
+  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ parse).map {
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
@@ -167,22 +167,22 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     Telescope(newArgs.toVector ++ args1, pos)
   }
 
-  def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case (ty, pos) =>
+  def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse).map { case (ty, pos) =>
     TypeAnnotation(expr, ty, p(pos))
   }
 
-  def list: P[ListExpr] = PwithPos("[" ~ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
+  def list: P[ListExpr] = PwithPos("[" ~ parse.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
   def annotation: P[(Identifier, Option[Telescope])] = P("@" ~ identifier ~ telescope.?)
 
-  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ apply).map { case ((annotation, telescope, expr), pos) =>
+  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse).map { case ((annotation, telescope, expr), pos) =>
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
   def calling: P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction).withPos.map { case (block, pos) =>
-    Telescope.of(Arg.apply(block))(pos)
+    Telescope.of(Arg.of(block))(pos)
   })
 
   def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos(calling).map { case (telescope, pos) =>
@@ -193,13 +193,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     DotCall(expr, field, telescope, p(pos))
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
+  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ parse ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
   }
 
   def anonymousBlockLikeFunction: P[Expr] = block
 
-  def statement: P[Expr] = apply // TODO
+  def statement: P[Expr] = parse // TODO
 
   def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
@@ -210,16 +210,18 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   }
   })
 
-  def apply: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
     tailExpr(expr, getPos) | Pass(expr)
   }
+  
+  def entrance: P[Expr] = P(parse ~ maybeSpace ~ End)
 
 }
 
 object Parser {
-  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).apply)
+  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance)
 }

@@ -17,19 +17,19 @@ class FunctionCallParserTest extends FunSuite {
 
   test("parse function call with multiple arguments") {
     val input = "multiply(2, 3)"
-    val expected = FunctionCall(Identifier("multiply"), Telescope(Vector(Arg(IntegerLiteral(2)), Arg(IntegerLiteral(3)))))
+    val expected = FunctionCall(Identifier("multiply"), Telescope(Vector(Arg.of(IntegerLiteral(2)), Arg.of(IntegerLiteral(3)))))
     parseAndCheck(input, expected)
   }
 
   test("parse function call with multiple arguments and symbol identifier") {
     val input = "+(2, 3)"
-    val expected = FunctionCall(Identifier("+"), Telescope(Vector(Arg(IntegerLiteral(2)), Arg(IntegerLiteral(3)))))
+    val expected = FunctionCall(Identifier("+"), Telescope(Vector(Arg.of(IntegerLiteral(2)), Arg.of(IntegerLiteral(3)))))
     parseAndCheck(input, expected)
   }
 
   test("parse function call with mixed type arguments") {
     val input = "createPerson(\"John\", 30, true)"
-    val expected = FunctionCall(Identifier("createPerson"), Telescope(Vector(Arg(StringLiteral("John")), Arg(IntegerLiteral(30)), Arg(Identifier("true")))))
+    val expected = FunctionCall(Identifier("createPerson"), Telescope(Vector(Arg.of(StringLiteral("John")), Arg.of(IntegerLiteral(30)), Arg.of(Identifier("true")))))
     parseAndCheck(input, expected)
   }
 
@@ -51,7 +51,7 @@ class FunctionCallParserTest extends FunSuite {
             sourcePos = None
           )
         )
-      ),Arg(StringLiteral("John")), Arg(IntegerLiteral(30)), Arg(Identifier("true")))))
+      ),Arg.of(StringLiteral("John")), Arg.of(IntegerLiteral(30)), Arg.of(Identifier("true")))))
     parseAndCheck(input, expected)
   }
 
