@@ -1,5 +1,12 @@
 val scala3Version = "3.4.2"
 
+ThisBuild / assemblyMergeStrategy := {
+  case PathList("META-INF","versions", xs @ _*)         => MergeStrategy.first
+  case x =>
+    val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
+    oldStrategy(x)
+}
+
 lazy val root = (project in file("."))
   .aggregate(common, interpreter, lsp)
   .settings(
@@ -10,6 +17,7 @@ lazy val root = (project in file("."))
 
 lazy val common = (project in file("common"))
   .settings(
+    assembly / assemblyJarName := "common.jar",
       name := "ChesterCommon",
       scalaVersion := scala3Version,
       libraryDependencies ++= Seq(
@@ -22,6 +30,7 @@ lazy val common = (project in file("common"))
 lazy val interpreter = (project in file("interpreter"))
   .dependsOn(common)
   .settings(
+    assembly / assemblyJarName := "interpreter.jar",
       name := "ChesterInterpreter",
       scalaVersion := scala3Version,
       mainClass in Compile := Some("chester.Main")
@@ -30,6 +39,7 @@ lazy val interpreter = (project in file("interpreter"))
 lazy val lsp = (project in file("lsp"))
   .dependsOn(common)
   .settings(
+    assembly / assemblyJarName := "lsp.jar",
       name := "ChesterLanguageServer",
       scalaVersion := scala3Version,
       mainClass in Compile := Some("chester.lsp.Main"),
