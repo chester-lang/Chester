@@ -180,18 +180,20 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def anonymousBlockLikeFunction: P[Expr] = block
 
-  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(block).map { case (block, pos) =>
+  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(anonymousBlockLikeFunction).map { case (block, pos) =>
     FunctionCall(function, Telescope.of(Arg.apply(block))(pos), p(pos))
   }
 
   def statement: P[Expr] = apply // TODO
+
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = typeAnnotation(expr, getPos ) | functionCall(expr, getPos ) | blockCall(expr, getPos)
 
   def apply: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos:Option[SourcePos])=>for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
-    typeAnnotation(expr, getPos ) | functionCall(expr, getPos ) | Pass(expr)
+    tailExpr(expr, getPos ) | Pass(expr)
   }
 
 }
