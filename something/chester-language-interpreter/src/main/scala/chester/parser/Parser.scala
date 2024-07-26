@@ -182,18 +182,22 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   }
 
   def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
-    FunctionCall(function, telescope, pos)
+    FunctionCall(function, telescope, p(pos))
   }
+
+  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(maybeSimpleSpace ~ anonymousBlockLikeFunction).map { case (block, pos) =>
+    FunctionCall(function, Telescope.of(Arg.apply(block))(pos), p(pos))
+  }
+  
+  def calling: P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction).withPos.map { case (block, pos) =>
+    Telescope.of(Arg.apply(block))(pos)
+  })
 
   def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
   }
 
   def anonymousBlockLikeFunction: P[Expr] = block
-
-  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(maybeSimpleSpace ~ anonymousBlockLikeFunction).map { case (block, pos) =>
-    FunctionCall(function, Telescope.of(Arg.apply(block))(pos), p(pos))
-  }
 
   def statement: P[Expr] = apply // TODO
 
