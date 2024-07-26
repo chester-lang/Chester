@@ -174,7 +174,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     FunctionCall(function, telescope, pos)
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ ";".? ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
+  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
   }
 
@@ -186,7 +186,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def statement: P[Expr] = apply // TODO
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = typeAnnotation(expr, getPos) | functionCall(expr, getPos) | blockCall(expr, getPos)
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (typeAnnotation(expr, getPos) | functionCall(expr, getPos) | blockCall(expr, getPos)).withPos.flatMap({ (expr, pos) => {
+    val getPos1 = ((endPos: Option[SourcePos]) => for {
+      p0 <- getPos(pos)
+      p1 <- endPos
+    } yield p0.combine(p1))
+    tailExpr(expr, getPos1) | Pass(expr)
+  }})
 
   def apply: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
