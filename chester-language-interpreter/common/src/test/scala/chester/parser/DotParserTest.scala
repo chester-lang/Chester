@@ -1,4 +1,5 @@
 package chester.parser
+
 import munit.FunSuite
 import fastparse.*
 import chester.syntax.concrete._
@@ -46,6 +47,21 @@ class DotParserTest extends FunSuite {
       Vector(Telescope(Vector(
         Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
         Arg(Vector.empty, None, None, Some(Identifier("arg2")))
+      )))
+    )
+    parseAndCheck(input, expected)
+  }
+
+  test("parse dot call with arguments arguments") {
+    val input = "obj.method(arg1, arg2)(arg1)"
+    val expected = DotCall(
+      Identifier("obj"),
+      Identifier("method"),
+      Vector(Telescope(Vector(
+        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
+        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
+      )), Telescope(Vector(
+        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
       )))
     )
     parseAndCheck(input, expected)
