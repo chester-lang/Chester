@@ -71,9 +71,13 @@ case class Telescope(args: Vector[Arg], sourcePos: Option[SourcePos] = None) ext
   }
 }
 
-case class FunctionCall(function: Expr, telescope: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
+object Telescope {
+  def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos)
+}
+
+case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    FunctionCall(function.descentAndApply(operator), telescope.descentAndApply(operator), sourcePos)
+    FunctionCall(function.descentAndApply(operator), telescope.descent(operator), sourcePos)
   }
 }
 
@@ -110,5 +114,3 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], e
     AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), sourcePos)
   }
 }
-
-

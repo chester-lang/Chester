@@ -10,8 +10,8 @@ import chester.utils.parse.*
 import java.lang.Character.{isDigit, isLetter}
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
-  val ASCIIAllowedSymbols = "-_+\\|;.<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val ReservedSymbols = "=:,#()[]{}'\""
+  val ASCIIAllowedSymbols = "-_+\\|.<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val ReservedSymbols = ";=:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
 
@@ -20,6 +20,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   def delimiter: P[Unit] = P((simpleDelimiter | comment).rep)
 
   def maybeSpace: P[Unit] = P(delimiter.?)
+
+  def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
 
   def isSymbol(x: Character) = ASCIIAllowedSymbols.contains(x)
 
@@ -154,8 +156,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     Telescope(newArgs.toVector ++ args1, pos)
   }
 
-  def typeAnnotation(expr: Expr): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case (ty, pos) =>
-    TypeAnnotation(expr, ty, pos)
+  def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ apply).map { case (ty, pos) =>
+    TypeAnnotation(expr, ty, p(pos))
   }
 
   def list: P[ListExpr] = PwithPos("[" ~ apply.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
@@ -168,12 +170,28 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  def functionCall(function: Expr): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
+  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos((implicitTelescope | telescope)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, pos)
   }
 
-  def apply: P[Expr] = maybeSpace ~ P(annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { expr =>
-    typeAnnotation(expr) | functionCall(expr) | Pass(expr)
+  def block: P[Expr] = PwithPos("{" ~ (statement ~ maybeSpace ~ ";").rep ~ apply ~ ";".? ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
+    Block(Vector.from(heads), tail, pos)
+  }
+
+  def anonymousBlockLikeFunction: P[Expr] = block
+
+  def blockCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[Expr] = PwithPos(block).map { case (block, pos) =>
+    FunctionCall(function, Telescope.of(Arg.apply(block))(pos), p(pos))
+  }
+
+  def statement: P[Expr] = apply // TODO
+
+  def apply: P[Expr] = maybeSpace ~ PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+    val getPos = ((endPos:Option[SourcePos])=>for {
+      p0 <- pos
+      p1 <- endPos
+    } yield p0.combine(p1))
+    typeAnnotation(expr, getPos ) | functionCall(expr, getPos ) | Pass(expr)
   }
 
 }
