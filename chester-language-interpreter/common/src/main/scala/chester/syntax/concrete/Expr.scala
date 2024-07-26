@@ -81,7 +81,7 @@ case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[
   }
 }
 
-case class DotCall(expr: Expr, field: Expr, telescope: Option[Telescope], sourcePos: Option[SourcePos] = None) extends Expr {
+case class DotCall(expr: Expr, field: Expr, telescope: Vector[Telescope], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
     DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), sourcePos)
   }

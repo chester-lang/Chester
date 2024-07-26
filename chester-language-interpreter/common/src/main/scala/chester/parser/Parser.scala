@@ -191,8 +191,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     FunctionCall(function, telescope, p(pos))
   }
 
-  def dotCall(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ calling.?).map { case ((field, telescope), pos) =>
-    DotCall(expr, field, telescope, p(pos))
+  def dotCall(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ calling.rep.?).map { case ((field, telescope), pos) =>
+    DotCall(expr, field, telescope.getOrElse(Seq()).toVector, p(pos))
   }
 
   def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement ~ maybeSpace ~ ";").rep ~ maybeSpace ~ parse ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
