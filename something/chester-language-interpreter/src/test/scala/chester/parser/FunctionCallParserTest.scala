@@ -21,6 +21,12 @@ class FunctionCallParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse function call with multiple arguments and symbol identifier") {
+    val input = "+(2, 3)"
+    val expected = FunctionCall(Identifier("+"), Telescope(Vector(Arg(IntegerLiteral(2)), Arg(IntegerLiteral(3)))))
+    parseAndCheck(input, expected)
+  }
+
   test("parse function call with mixed type arguments") {
     val input = "createPerson(\"John\", 30, true)"
     val expected = FunctionCall(Identifier("createPerson"), Telescope(Vector(Arg(StringLiteral("John")), Arg(IntegerLiteral(30)), Arg(Identifier("true")))))

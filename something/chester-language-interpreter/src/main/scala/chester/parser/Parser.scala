@@ -28,7 +28,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
-  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
+  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x) || isInfixSymbol(x)
 
   def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isInfixSymbol(x)
 
