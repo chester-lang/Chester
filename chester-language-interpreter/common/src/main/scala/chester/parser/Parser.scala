@@ -58,6 +58,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   extension [T](inline parse0: P[T]) {
     inline def withPos: P[(T, Option[SourcePos])] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
+
+    inline def must(inline message: String = "Expected something"): P[T] = parse0.? flatMap {
+      case Some(x) => Pass(x)
+      case None => Fail.opaque(message)./
+    }
   }
 
   inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
@@ -68,9 +73,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
-  def hexLiteral: P[String] = P("0x" ~/ CharsWhileIn("0-9a-fA-F")).!
+  def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F").must()).!
 
-  def binLiteral: P[String] = P("0b" ~/ CharsWhileIn("01")).!
+  def binLiteral: P[String] = P("0b" ~ CharsWhileIn("01").must()).!
 
   def decLiteral: P[String] = P(CharsWhileIn("0-9")).!
 
