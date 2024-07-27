@@ -34,8 +34,8 @@ class FunctionCallParserTest extends FunSuite {
   }
 
   test("parse function call with mixed type arguments") {
-    val input = "createPerson[Integer](\"John\", 30, true)"
-    val expected = FunctionCall(Identifier("createPerson"), Telescope(Vector(
+    val input = "createPerson<Integer>(\"John\", 30, true)"
+    val expected = FunctionCall(FunctionCall(Identifier("createPerson"), Telescope(Vector(
       Arg(
         decorations = Vector(
           Identifier(
@@ -51,7 +51,8 @@ class FunctionCallParserTest extends FunSuite {
             sourcePos = None
           )
         )
-      ),Arg.of(StringLiteral("John")), Arg.of(IntegerLiteral(30)), Arg.of(Identifier("true")))))
+      )))), Telescope(Vector(
+      Arg.of(StringLiteral("John")), Arg.of(IntegerLiteral(30)), Arg.of(Identifier("true")))))
     parseAndCheck(input, expected)
   }
 

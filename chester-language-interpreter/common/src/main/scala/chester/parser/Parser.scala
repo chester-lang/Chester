@@ -13,7 +13,7 @@ import scala.util._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
   val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val AllowedWordingSymbols = "_".toSet.map(_.toInt)
+  val AllowedWordingSymbols = "_-".toSet.map(_.toInt)
   val ReservedSymbols = ".;=:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
@@ -30,11 +30,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
-  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x) || isInfixSymbol(x)
+  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
 
-  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isInfixSymbol(x)
+  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x)
 
-  def id: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
+  def id: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!) | infixId
 
   def infixIdentifierFirst(x: Character) = isInfixSymbol(x)
 
@@ -164,9 +164,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
     arg.copy(decorations = newDecorations)
   }
 
-  def implicitTelescope: P[Telescope] = PwithPos("[" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ "](" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { case ((args0, args1), pos) =>
-    val newArgs = args0.map(argAddImplicit)
-    Telescope(newArgs.toVector ++ args1, pos)
+  def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
+    Telescope(args.map(argAddImplicit).toVector, pos)
   }
 
   def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse).map { case (ty, pos) =>
