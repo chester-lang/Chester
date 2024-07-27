@@ -243,7 +243,7 @@ object Parser {
   def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
     parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance) match {
       case Parsed.Success(expr, _) => Right(expr)
-      case Parsed.Failure(msg, index, extra) => Left(ParseError(s"Parsing failed: $msg", index))
+      case Parsed.Failure(msg, index, extra) => Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", index))
     }
   }
 
