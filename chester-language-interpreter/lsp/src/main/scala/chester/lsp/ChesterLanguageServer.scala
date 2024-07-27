@@ -4,7 +4,7 @@ import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
 
 import java.util.concurrent.CompletableFuture
-import chester.parser.Parser
+import chester.parser._
 import chester.error.*
 import chester.syntax.concrete.*
 import chester.utils.StringIndex
@@ -46,22 +46,20 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
-    val parsed = Parser.parseExpression(fileName, text)
+    val parsed = Parser.parseContent(fileName, text)
     val index = StringIndex(text)
 
     parsed match {
-      case Parsed.Success(expr, index) =>
+      case Right(expr) =>
         List() // No errors
-      case Parsed.Failure(label, charIndex, extra) =>
-        val start = index.charIndexToUnicodeLineAndColumn(charIndex)
-        val end = index.charIndexToUnicodeLineAndColumn(charIndex)
+      case Left(ParseError(message, pos)) =>
 
         val diagnostic = new Diagnostic(
           new Range(
-            new Position(start.line, start.column),
-            new Position(end.line, end.column)
+            new Position(pos.line, pos.column),
+            new Position(pos.line, pos.column)
           ),
-          label,
+          message,
           DiagnosticSeverity.Error,
           "ChesterLanguageServer"
         )

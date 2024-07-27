@@ -11,7 +11,7 @@ import java.lang.Character.{isDigit, isLetter}
 import java.nio.file.{Files, Paths}
 import scala.util._
 
-case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(implicit ctx: P[?]) {
+case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex]=None)(implicit ctx: P[?]) {
   val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
   val AllowedWordingSymbols = "_-".toSet.map(_.toInt)
   val ReservedSymbols = ".;=:,#()[]{}'\""
@@ -47,13 +47,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
   def end: P[Int] = Index
 
 
-  val index = StringIndex(ctx.input.slice(0, ctx.input.length))
+  val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(ctx.input.slice(0, ctx.input.length)))
 
   private def loc(begin: Int, end: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
-    val start = index.charIndexToUnicodeLineAndColumn(begin)
-    val endPos = index.charIndexToUnicodeLineAndColumn(end)
-    Some(SourcePos(fileName, RangeInFile(Pos(begin, start.line, start.column), Pos(end, endPos.line, endPos.column))))
+    val start = indexer.charIndexToUnicodeLineAndColumn(begin)
+    val endPos = indexer.charIndexToUnicodeLineAndColumn(end)
+    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end), endPos.line, endPos.column))))
   }
 
   extension [T](inline parse0: P[T]) {
@@ -228,7 +228,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false)(imp
 
 }
 
-case class ParseError(message: String, index: Int)
+case class ParseError(message: String, index: Pos)
 
 object Parser {
   def parseFile(fileName: String): Either[ParseError, Expr] = {
@@ -236,14 +236,19 @@ object Parser {
       case Success(content) =>
         parseContent(fileName, content)
       case Failure(exception) =>
-        Left(ParseError(s"Failed to read file: ${exception.getMessage}", -1))
+        Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
     }
   }
 
   def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
-    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance) match {
+    val indexer = StringIndex(input.slice(0, input.length))
+    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(_).entrance) match {
       case Parsed.Success(expr, _) => Right(expr)
-      case Parsed.Failure(msg, index, extra) => Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", index))
+      case Parsed.Failure(msg, index, extra) => {
+        val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+        val p = Pos(indexer.charIndexToUnicodeIndex(index), pos.line, pos.column)
+        Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", p))
+      }
     }
   }
 

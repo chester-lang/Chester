@@ -23,6 +23,8 @@ case class StringIndex(val string: String) {
   }
 
   def charIndexToUnicodeIndex(charIndex: Int): Int = {
+    if(charIndex > string.length) throw new IllegalArgumentException("Index out of bounds")
+    if(charIndex == string.length) return unicodeLength
     if (charIndex > 0 && Character.isSurrogatePair(string(charIndex - 1), string(charIndex))) {
       // Pointing to the second character of a surrogate pair, should not increment the index
       string.codePointCount(0, charIndex) - 1
