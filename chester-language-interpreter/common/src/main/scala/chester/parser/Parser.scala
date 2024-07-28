@@ -208,7 +208,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def statement: P[Expr] = parse // TODO
 
   def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
-    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)))
+    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)).flatten)
   }
   }
 

@@ -20,6 +20,11 @@ case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) exte
   override def descent(operator: Expr => Expr): Expr = {
     BinOpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
   }
+
+  def flatten: BinOpSeq = copy(seq = seq.flatMap {
+    case opseq:BinOpSeq => opseq.flatten.seq
+    case expr => Vector(expr)
+  })
 }
 
 case class Infix(op: Expr, left: Expr, right: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
