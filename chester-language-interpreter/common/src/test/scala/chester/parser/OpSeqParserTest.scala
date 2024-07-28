@@ -256,4 +256,48 @@ class OpSeqParserTest extends FunSuite {
       )
     parseAndCheck(input, expected)
   }
+
+
+  test("parse function call with") {
+    val input = "+(2 + 3)"
+    val expected =
+      FunctionCall(
+        function = Identifier(
+          name = "+",
+          sourcePos = None
+        ),
+        telescope = Telescope(
+          args = Vector(
+            Arg(
+              decorations = Vector(),
+              name = None,
+              ty = None,
+              exprOrDefault = Some(
+                value = BinOpSeq(
+                  seq = Vector(
+                    IntegerLiteral(
+                      value = 2,
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "+",
+                      sourcePos = None
+                    ),
+                    IntegerLiteral(
+                      value = 3,
+                      sourcePos = None
+                    )
+                  ),
+                  sourcePos = None
+                )
+              )
+            )
+          ),
+          sourcePos = None
+        ),
+        sourcePos = None
+      )
+    parseAndCheck(input, expected)
+  }
+
 }
