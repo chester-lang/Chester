@@ -149,19 +149,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
   def telescope: P[Telescope] = PwithPos("(" ~ argument().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
-    Telescope(args.toVector, pos)
-  }
-
-  def argHasImplicit(arg: Arg): Boolean = arg.decorations.exists(_.name == "implicit")
-
-  def argAddImplicit(arg: Arg): Arg = {
-    if (argHasImplicit(arg)) return arg
-    val newDecorations = arg.decorations :+ Identifier("implicit")
-    arg.copy(decorations = newDecorations)
+    Telescope(args.toVector, false, pos)
   }
 
   def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument(ctx = ParsingContext(dontallowBiggerSymbol = true)).rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
-    Telescope(args.map(argAddImplicit).toVector, pos)
+    Telescope(args.toVector, true, pos)
   }
 
   def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse).map { case (ty, pos) =>

@@ -6,6 +6,7 @@ import chester.syntax.concrete._
 import chester.parser._
 
 class FunctionCallParserTest extends FunSuite {
+
   import chester.syntax.concrete._
   import chester.parser._
 
@@ -36,22 +37,14 @@ class FunctionCallParserTest extends FunSuite {
   test("parse function call with mixed type arguments") {
     val input = "createPerson<Integer>(\"John\", 30, true)"
     val expected = FunctionCall(FunctionCall(Identifier("createPerson"), Telescope(Vector(
-      Arg(
-        decorations = Vector(
+      Arg.of(
+        (
           Identifier(
-            name = "implicit",
-            sourcePos = None
-          )
-        ),
-        name = None,
-        ty = None,
-        exprOrDefault = Some(
-          value = Identifier(
             name = "Integer",
             sourcePos = None
           )
-        )
-      )))), Telescope(Vector(
+          )
+      )), true)), Telescope(Vector(
       Arg.of(StringLiteral("John")), Arg.of(IntegerLiteral(30)), Arg.of(Identifier("true")))))
     parseAndCheck(input, expected)
   }

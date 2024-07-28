@@ -77,14 +77,14 @@ object Arg {
   def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
-case class Telescope(args: Vector[Arg], sourcePos: Option[SourcePos] = None) extends Expr {
+case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Telescope = {
-    Telescope(args.map(_.descentAndApply(operator)), sourcePos)
+    Telescope(args.map(_.descentAndApply(operator)), implicitly, sourcePos)
   }
 }
 
 object Telescope {
-  def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos)
+  def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos = sourcePos)
 }
 
 case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[SourcePos] = None) extends Expr {
