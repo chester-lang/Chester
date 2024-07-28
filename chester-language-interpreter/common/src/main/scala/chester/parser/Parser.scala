@@ -133,14 +133,14 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def argType: P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true)))
 
-  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse).?
+  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true))).?
 
   def argumentWithName: P[Arg] = P(simpleAnnotations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
     case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
   }
 
-  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse).map {
+  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true))).map {
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
@@ -204,15 +204,26 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
       case Identifier(name, _) if strIsOperator(name) => true
       case _ => false
     }
-    if (!(exprCouldPrefix || exprs.exists(_.isInstanceOf[Identifier]))) Fail.opaque("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
-  }
-  }
+    val looksLikeOtherThings = {
+      val start = xs.indexWhere(_ match {
+        case Identifier("<", _) => true
+        case _ => false
+      })
+      val end = xs.indexWhere(_ match {
+        case Identifier(">", _) => true
+        case _ => false
+      }, start)
+      start >= 0 && end >= 0 && start < end
+    }
+    if (looksLikeOtherThings) return Fail("Looks like a telescope")
+    if (!(xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
+  })
 
   def objectParse: P[Expr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
     ObjectExpr(fields.toVector, pos)

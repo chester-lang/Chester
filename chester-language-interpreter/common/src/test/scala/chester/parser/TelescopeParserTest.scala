@@ -119,4 +119,31 @@ class TelescopeParserTest extends FunSuite {
     ))
     parseAndCheck(input, expected)
   }
+
+  test("parse implicit telescope with arguments without names") {
+    val input = "<Integer>"
+    val expected =
+      Telescope(
+        args = Vector(
+          Arg(
+            decorations = Vector(
+              Identifier(
+                name = "implicit",
+                sourcePos = None
+              )
+            ),
+            name = None,
+            ty = None,
+            exprOrDefault = Some(
+              value = Identifier(
+                name = "Integer",
+                sourcePos = None
+              )
+            )
+          )
+        ),
+        sourcePos = None
+      )
+    parseAndCheck(input, expected)
+  }
 }
