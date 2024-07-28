@@ -186,6 +186,32 @@ class OpSeqParserTest extends FunSuite {
     ))
     parseAndCheck(input, expected)
   }
+  test("parse val input") {
+    val input = "val input = \"1 -> 5\""
+    val expected =
+      BinOpSeq(
+        seq = Vector(
+          Identifier(
+            name = "val",
+            sourcePos = None
+          ),
+          Identifier(
+            name = "input",
+            sourcePos = None
+          ),
+          Identifier(
+            name = "=",
+            sourcePos = None
+          ),
+          StringLiteral(
+            value = "1 -> 5",
+            sourcePos = None
+          )
+        ),
+        sourcePos = None
+      )
+    parseAndCheck(input, expected)
+  }
 
   test("parse opSeq with ->") {
     val input = "1 -> 5"
