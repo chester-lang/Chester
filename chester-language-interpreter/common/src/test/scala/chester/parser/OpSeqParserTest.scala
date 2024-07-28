@@ -177,6 +177,14 @@ class OpSeqParserTest extends FunSuite {
     }
   }
 
+  test("parse opSeq with not") {
+    val input = "!1"
+    val expected = BinOpSeq(Vector(
+      Identifier("!"),
+      IntegerLiteral(1)
+    ))
+    parseAndCheck(input, expected)
+  }
   test("parse opSeq with and") {
     val input = "1 and 5"
     val expected = BinOpSeq(Vector(

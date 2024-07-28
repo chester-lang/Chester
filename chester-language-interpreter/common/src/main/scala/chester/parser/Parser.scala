@@ -12,7 +12,7 @@ import java.nio.file.{Files, Paths}
 import scala.util._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
-  val AllowedInfixSymbols = "=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedOperatorSymbols = "=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
   val AllowedWordingSymbols = "_".toSet.map(_.toInt)
   val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
   val ReservedSymbols = ".;:,#()[]{}'\""
@@ -27,7 +27,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
 
-  def isInfixSymbol(x: Character) = AllowedInfixSymbols.contains(x)
+  def isOperatorSymbol(x: Character) = AllowedOperatorSymbols.contains(x)
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
@@ -39,13 +39,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
 
-  def id: P[String] = infixId | simpleId
+  def id: P[String] = operatorId | simpleId
 
-  def infixIdentifierFirst(x: Character) = isInfixSymbol(x)
+  def operatorIdentifierFirst(x: Character) = isOperatorSymbol(x)
 
-  def infixIdentifierRest(x: Character) = isInfixSymbol(x) || isWordingSymbol(x)
+  def operatorIdentifierRest(x: Character) = isOperatorSymbol(x) || isWordingSymbol(x)
 
-  def infixId: P[String] = P((CharacterPred(infixIdentifierFirst).rep(1) ~ CharacterPred(infixIdentifierRest).rep).!)
+  def operatorId: P[String] = P((CharacterPred(operatorIdentifierFirst).rep(1) ~ CharacterPred(operatorIdentifierRest).rep).!)
 
   def begin: P[Int] = Index
 
@@ -76,7 +76,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
 
-  def infixIdentifier: P[Identifier] = P(infixId.withPos).map { case (name, pos) => Identifier(name, pos) }
+  def infixIdentifier: P[Identifier] = P(operatorId.withPos).map { case (name, pos) => Identifier(name, pos) }
 
   def signed: P[String] = P(CharIn("+\\-").?.!)
 
@@ -147,7 +147,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse)
+  def argType: P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true)))
 
   def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse).?
 
@@ -194,11 +194,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  def calling(implicit inOpSeq: Boolean = false): P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction.on(!inOpSeq)).withPos.map { case (block, pos) =>
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false) {
+    def opSeq = !inOpSeq && !dontallowOpSeq
+    def blockCall = !inOpSeq
+  }
+
+  def calling(implicit ctx: ParsingContext = ParsingContext()): P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
     Telescope.of(Arg.of(block))(pos)
   })
 
-  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos], inOpSeq: Boolean = false): P[FunctionCall] = PwithPos(calling(inOpSeq = inOpSeq)).map { case (telescope, pos) =>
+  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithPos(calling(ctx = ctx)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, p(pos))
   }
 
@@ -214,8 +219,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(inOpSeq = true) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
-    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)))
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq=true)) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+    val xs = (expr +: exprs)
+    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   }
   }
 
@@ -223,21 +229,21 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.toVector, pos)
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], inOpSeq: Boolean = false): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, inOpSeq = inOpSeq) | opSeq(expr, getPos).on(!inOpSeq)).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos).on(ctx.opSeq)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos1, inOpSeq = inOpSeq) | Pass(expr)
+    tailExpr(expr, getPos1, ctx = ctx) | Pass(expr)
   }
   })
 
-  def parse(implicit inOpSeq: Boolean = false): P[Expr] = PwithPos(objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse(implicit ctx: ParsingContext = ParsingContext()): P[Expr] = PwithPos(objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos, inOpSeq = inOpSeq) | Pass(expr)
+    tailExpr(expr, getPos, ctx = ctx) | Pass(expr)
   }
 
   def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse ~ maybeSpace ~ End)
