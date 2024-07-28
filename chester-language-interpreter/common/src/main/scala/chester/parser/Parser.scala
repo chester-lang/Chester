@@ -13,7 +13,8 @@ import scala.util._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
   val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val AllowedWordingSymbols = "_-".toSet.map(_.toInt)
+  val AllowedWordingSymbols = "_".toSet.map(_.toInt)
+  val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
   val ReservedSymbols = ".;=:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
@@ -30,11 +31,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
+  def isMiddleWordingSymbol(x: Character) = AllowedMiddleWordingSymbols.contains(x)
+
   def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
 
-  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x)
+  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
 
-  def id: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!) | infixId
+  def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
+
+  def id: P[String] = infixId | simpleId
 
   def infixIdentifierFirst(x: Character) = isInfixSymbol(x)
 
