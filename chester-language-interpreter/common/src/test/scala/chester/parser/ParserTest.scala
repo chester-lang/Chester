@@ -144,4 +144,19 @@ class ParserTest extends FunSuite {
       case _ => fail(s"Expected parsing failure due to invalid escape sequence but got $result")
     }
   }
+
+  test("some expr") {
+    val input =
+      """
+        |ObjectExpr(Vector(
+        |      Identifier("a") -> ObjectExpr(Vector(
+        |        Identifier("b") -> IntegerLiteral(2)
+        |      )),
+        |      Identifier("c") -> IntegerLiteral(3)
+        |    ))
+        |""".stripMargin
+    val a = Parser.parseContent("testFile", input, ignoreLocation = true)
+    val expected = FunctionCall(Identifier("ObjectExpr"),Telescope(Vector(Arg(Vector(),None,None,Some(FunctionCall(Identifier("Vector"),Telescope(Vector(Arg(Vector(),None,None,Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"),Telescope(Vector(Arg(Vector(),None,None,Some(StringLiteral("a")))),None),None), Identifier("->"), FunctionCall(Identifier("ObjectExpr"),Telescope(Vector(Arg(Vector(),None,None,Some(FunctionCall(Identifier("Vector"),Telescope(Vector(Arg(Vector(),None,None,Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"),Telescope(Vector(Arg(Vector(),None,None,Some(StringLiteral("b")))),None),None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"),Telescope(Vector(Arg(Vector(),None,None,Some(IntegerLiteral(2,None)))),None),None)),None)))),None),None)))),None),None)),None))), Arg(Vector(),None,None,Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"),Telescope(Vector(Arg(Vector(),None,None,Some(StringLiteral("c")))),None),None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"),Telescope(Vector(Arg(Vector(),None,None,Some(IntegerLiteral(3,None)))),None),None)),None)))),None),None)))),None),None)
+    parseAndCheck(input, expected)
+  }
 }

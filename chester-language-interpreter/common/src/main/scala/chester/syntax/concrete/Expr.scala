@@ -12,8 +12,14 @@ sealed trait Expr extends WithPos {
 
 sealed trait Salt
 
+def encodeString(x: String): String = x.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
 
-case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends Expr
+case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends Expr {
+  override def toString: String = sourcePos match {
+    case None => s"Identifier(\"${encodeString(name)}\")"
+    case Some(pos) => s"Identifier(\"${encodeString(name)}\", ${pos.toString})"
+  }
+}
 
 // infix prefix postfix
 case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
@@ -22,7 +28,7 @@ case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) exte
   }
 
   def flatten: BinOpSeq = copy(seq = seq.flatMap {
-    case opseq:BinOpSeq => opseq.flatten.seq
+    case opseq: BinOpSeq => opseq.flatten.seq
     case expr => Vector(expr)
   })
 }
@@ -98,7 +104,12 @@ case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) ex
 
 case class DoubleLiteral(value: BigDecimal, sourcePos: Option[SourcePos] = None) extends NumberLiteral
 
-case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr
+case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr {
+  override def toString: String = sourcePos match {
+    case None => s"StringLiteral(\"${encodeString(value)}\")"
+    case Some(pos) => s"StringLiteral(\"${encodeString(value)}\", ${pos.toString})"
+  }
+}
 
 case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
