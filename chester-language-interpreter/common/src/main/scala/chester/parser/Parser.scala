@@ -45,7 +45,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   private def loc(begin: Int, end: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
-    val endPos = indexer.charIndexToUnicodeLineAndColumn(end-1)
+    val endPos = indexer.charIndexToUnicodeLineAndColumn(end - 1)
     Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end), endPos.line, endPos.column))))
   }
 
@@ -196,14 +196,14 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
-    if(heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
+    if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
   def anonymousBlockLikeFunction: P[Expr] = block
 
-  def statement: P[Expr] = P((parse(ctx=ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr,index)=>{
-    val itWasBlockEnding = p.input(index-1) == '}'
-    Pass(expr) ~ (lineEnding.on(itWasBlockEnding) | maybeSpace ~ ";")
+  def statement: P[Expr] = P((parse(ctx = ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr, index) => {
+    val itWasBlockEnding = p.input(index - 1) == '}'
+    Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
   def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
@@ -244,7 +244,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = P((dotCall(expr, getPos, ctx) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
-    val itWasBlockEnding = p.input(index-1) == '}'
+    val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
@@ -254,7 +254,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   })
 
   def parse(ctx: ParsingContext = ParsingContext()): P[Expr] = P((objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).withPos ~ Index).flatMap { (expr, pos, index) =>
-    val itWasBlockEnding = p.input(index-1) == '}'
+    val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
