@@ -9,13 +9,26 @@ object IdentifierRules {
   val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
   val ReservedSymbols = ".;:,#()[]{}'\""
 
+  def isEmoji(codePoint: Int): Boolean = {
+    val block = Character.UnicodeBlock.of(codePoint)
+
+    block == Character.UnicodeBlock.EMOTICONS ||
+      block == Character.UnicodeBlock.MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS ||
+      block == Character.UnicodeBlock.TRANSPORT_AND_MAP_SYMBOLS ||
+      block == Character.UnicodeBlock.SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS ||
+      block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_A ||
+      block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_B
+  }
+
+  def isWording(x: Character) = isLetter(x) || isEmoji(x)
+
   def isOperatorSymbol(x: Character) = AllowedOperatorSymbols.contains(x)
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
   def isMiddleWordingSymbol(x: Character) = AllowedMiddleWordingSymbols.contains(x)
 
-  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
+  def identifierFirst(x: Character) = isWording(x) || isWordingSymbol(x)
 
   def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
 

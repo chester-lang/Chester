@@ -159,4 +159,10 @@ class ParserTest extends FunSuite {
     val expected = FunctionCall(Identifier("ObjectExpr"), Telescope(Vector(Arg(Vector(), None, None, Some(FunctionCall(Identifier("Vector"), Telescope(Vector(Arg(Vector(), None, None, Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"), Telescope(Vector(Arg(Vector(), None, None, Some(StringLiteral("a")))))), Identifier("->"), FunctionCall(Identifier("ObjectExpr"), Telescope(Vector(Arg(Vector(), None, None, Some(FunctionCall(Identifier("Vector"), Telescope(Vector(Arg(Vector(), None, None, Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"), Telescope(Vector(Arg(Vector(), None, None, Some(StringLiteral("b")))))), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Telescope(Vector(Arg(Vector(), None, None, Some(IntegerLiteral(2)))))))))))))))))))))), Arg(Vector(), None, None, Some(BinOpSeq(Vector(FunctionCall(Identifier("Identifier"), Telescope(Vector(Arg(Vector(), None, None, Some(StringLiteral("c")))))), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Telescope(Vector(Arg(Vector(), None, None, Some(IntegerLiteral(3))))))))))))))))))
     parseAndCheck(input, expected)
   }
+
+  test("emoji"){
+    val input="👍"
+    val expected = Identifier("👍")
+    parseAndCheck(input, expected)
+  }
 }
