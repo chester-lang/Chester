@@ -86,6 +86,86 @@ class OpSeqParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse mixfix2") {
+    val input = "if x then f(if o then a else b) else w"
+    val expected = BinOpSeq(Vector(
+      Identifier(
+        name = "if",
+        sourcePos = None
+      ),
+      Identifier(
+        name = "x",
+        sourcePos = None
+      ),
+      Identifier(
+        name = "then",
+        sourcePos = None
+      ),
+      BinOpSeq(
+        seq = Vector(
+          FunctionCall(
+            function = Identifier(
+              name = "f",
+              sourcePos = None
+            ),
+            telescope = Telescope(
+              args = Vector(
+                Arg(
+                  decorations = Vector(),
+                  name = None,
+                  ty = None,
+                  exprOrDefault = Some(
+                    value = BinOpSeq(
+                      seq = Vector(
+                        Identifier(
+                          name = "if",
+                          sourcePos = None
+                        ),
+                        Identifier(
+                          name = "o",
+                          sourcePos = None
+                        ),
+                        Identifier(
+                          name = "then",
+                          sourcePos = None
+                        ),
+                        Identifier(
+                          name = "a",
+                          sourcePos = None
+                        ),
+                        Identifier(
+                          name = "else",
+                          sourcePos = None
+                        ),
+                        Identifier(
+                          name = "b",
+                          sourcePos = None
+                        )
+                      ),
+                      sourcePos = None
+                    )
+                  )
+                )
+              ),
+              sourcePos = None
+            ),
+            sourcePos = None
+          ),
+          Identifier(
+            name = "else",
+            sourcePos = None
+          ),
+          Identifier(
+            name = "w",
+            sourcePos = None
+          )
+        ),
+        sourcePos = None
+      )
+    ))
+    parseAndCheck(input, expected)
+  }
+
   if(false) { // It is having difficulty understanding difference between +2 and 1+2
     test("parse opSeq with mixed operators without spaces") {
       val input = "1+2*4+5"
