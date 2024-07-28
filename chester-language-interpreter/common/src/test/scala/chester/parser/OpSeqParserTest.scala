@@ -55,6 +55,37 @@ class OpSeqParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse prefix") {
+    val input = "+ x"
+    val expected = BinOpSeq(Vector(
+      Identifier("+"),
+      Identifier("x"),
+    ))
+    parseAndCheck(input, expected)
+  }
+
+  test("parse prefix2") {
+    val input = "not x"
+    val expected = BinOpSeq(Vector(
+      Identifier("not"),
+      Identifier("x"),
+    ))
+    parseAndCheck(input, expected)
+  }
+
+  test("parse mixfix") {
+    val input = "if x then 1 else 2"
+    val expected = BinOpSeq(Vector(
+      Identifier("if"),
+      Identifier("x"),
+      Identifier("then"),
+      Identifier("1"),
+      Identifier("else"),
+      Identifier("2"),
+    ))
+    parseAndCheck(input, expected)
+  }
+
   if(false) { // It is having difficulty understanding difference between +2 and 1+2
     test("parse opSeq with mixed operators without spaces") {
       val input = "1+2*4+5"
