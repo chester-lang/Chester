@@ -23,6 +23,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def lineEnding: P[Unit] = P(comment | (CharsWhileIn(" \t\r") ~ ("\n" | End)))
 
+  def lineNonEndingSpace: P[Unit] = P((CharsWhileIn(" \t\r")))
+
   def maybeSpace: P[Unit] = P(delimiter.?)
 
   def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
@@ -142,7 +144,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     case (dec, name, ty, vararg, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault, vararg.isDefined))
   }
 
-  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowVararg = true)) ~ maybeSpace ~ "...".!.? ).map {
+  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowVararg = true)) ~ maybeSpace ~ "...".!.?).map {
     case (dec, expr, vararg) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr), vararg.isDefined)
   }
 
@@ -172,7 +174,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false) {
+  // TODO blockAndLineEndEnds
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false, blockAndLineEndEnds: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
 
     def blockCall = !inOpSeq
