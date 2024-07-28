@@ -119,3 +119,10 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], e
     AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), sourcePos)
   }
 }
+
+
+case class ObjectExpr(clauses: Vector[(Identifier, Expr)], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, sourcePos)
+  }
+}

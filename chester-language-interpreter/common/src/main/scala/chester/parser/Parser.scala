@@ -214,6 +214,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   }
 
+  def objectParse: P[Expr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
+    ObjectExpr(fields.toVector, pos)
+  }
+
   def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], inOpSeq: Boolean = false): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, inOpSeq = inOpSeq) | opSeq(expr, getPos).on(!inOpSeq)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
@@ -223,7 +227,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   })
 
-  def parse(implicit inOpSeq: Boolean = false): P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse(implicit inOpSeq: Boolean = false): P[Expr] = PwithPos(objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
