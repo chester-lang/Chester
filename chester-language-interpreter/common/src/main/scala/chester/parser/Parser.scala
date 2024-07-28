@@ -13,7 +13,7 @@ import scala.util._
 
 import chester.syntax.IdentifierRules._
 
-case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
+case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ ("\n" | End))
 
@@ -40,12 +40,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def end: P[Int] = Index
 
 
-  val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(ctx.input.slice(0, ctx.input.length)))
+  val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input.slice(0, p.input.length)))
 
   private def loc(begin: Int, end: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
-    val endPos = indexer.charIndexToUnicodeLineAndColumn(end)
+    val endPos = indexer.charIndexToUnicodeLineAndColumn(end-1)
     Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end), endPos.line, endPos.column))))
   }
 
@@ -240,32 +240,24 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.toVector, pos)
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = (dotCall(expr, getPos, ctx) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = P((dotCall(expr, getPos, ctx) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
+    val itWasBlockEnding = p.input(index-1) == '}'
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos1, ctx = ctx) | Pass(expr)
+    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos1, ctx = ctx)) | Pass(expr)
   }
   })
 
-  def parseNonBlock(ctx: ParsingContext = ParsingContext()): P[Expr] = PwithPos(annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse(ctx: ParsingContext = ParsingContext()): P[Expr] = P((objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).withPos ~ Index).flatMap { (expr, pos, index) =>
+    val itWasBlockEnding = p.input(index-1) == '}'
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos, ctx = ctx) | Pass(expr)
+    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
   }
-
-  def parseWithBlock(ctx: ParsingContext = ParsingContext()): P[Expr] = PwithPos(objectParse | block).flatMap { (expr, pos) =>
-    val getPos = ((endPos: Option[SourcePos]) => for {
-      p0 <- pos
-      p1 <- endPos
-    } yield p0.combine(p1))
-    ((!lineEnding).checkOn(ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
-  }
-
-  def parse(ctx: ParsingContext = ParsingContext()): P[Expr] = parseWithBlock(ctx = ctx) | parseNonBlock(ctx = ctx)
 
   def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
 

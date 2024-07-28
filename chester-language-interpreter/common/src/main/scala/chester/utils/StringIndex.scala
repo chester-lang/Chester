@@ -57,6 +57,8 @@ case class StringIndex(val string: String) {
   }
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
+    if(charIndex < 0) throw new IllegalArgumentException("Index out of bounds (negative)")
+    if(charIndex >= string.length) throw new IllegalArgumentException("Index out of bounds (>=)")
     var line = 0
     var column = 0
     var i = 0
