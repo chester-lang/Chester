@@ -195,13 +195,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     DotCall(expr, field, telescope.getOrElse(Seq()).toVector, p(pos))
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement ~ maybeSpace ~ ";").rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
+  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
     if(heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
   def anonymousBlockLikeFunction: P[Expr] = block
 
-  def statement: P[Expr] = parse() // TODO
+  def statement: P[Expr] = P((parse(ctx=ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr,index)=>{
+    val itWasBlockEnding = p.input(index-1) == '}'
+    Pass(expr) ~ (lineEnding.on(itWasBlockEnding) | maybeSpace ~ ";")
+  }))
 
   def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
