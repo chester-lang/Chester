@@ -131,24 +131,24 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def argName: P[Identifier] = identifier
 
-  def argType: P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true)))
+  def argType(ctx: ParsingContext = ParsingContext()): P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowEqualSymbol = true)))
 
-  def argExprOrDefault: P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true))).?
+  def argExprOrDefault(ctx: ParsingContext = ParsingContext()): P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse(ctx = ctx)).?
 
-  def argumentWithName: P[Arg] = P(simpleAnnotations.? ~ argName ~ argType.? ~ argExprOrDefault).flatMap {
+  def argumentWithName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ argName ~ argType(ctx).? ~ argExprOrDefault(ctx)).flatMap {
     case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
     case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
   }
 
-  def argumentWithoutName: P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true))).map {
+  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx)).map {
     case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
   }
 
-  def argument: P[Arg] = maybeSpace ~ P(argumentWithName | argumentWithoutName)
+  def argument(ctx: ParsingContext = ParsingContext()): P[Arg] = maybeSpace ~ P(argumentWithName(ctx) | argumentWithoutName(ctx))
 
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def telescope: P[Telescope] = PwithPos("(" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
+  def telescope: P[Telescope] = PwithPos("(" ~ argument().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
     Telescope(args.toVector, pos)
   }
 
@@ -160,7 +160,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     arg.copy(decorations = newDecorations)
   }
 
-  def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument.rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
+  def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument(ctx = ParsingContext(dontallowBiggerSymbol = true)).rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
     Telescope(args.map(argAddImplicit).toVector, pos)
   }
 
@@ -178,7 +178,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false) {
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
 
     def blockCall = !inOpSeq
@@ -204,7 +204,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
       case Identifier(name, _) if strIsOperator(name) => true
@@ -222,14 +222,22 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       start >= 0 && end >= 0 && start < end
     }
     if (looksLikeOtherThings) return Fail("Looks like a telescope")
-    if (!(xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
+    if (ctx.dontallowBiggerSymbol && xs.exists(_ match {
+      case Identifier(">", _) => true
+      case _ => false
+    })) return Fail("Looks like a telescope")
+    if (ctx.dontAllowEqualSymbol && xs.exists(_ match {
+      case Identifier("=", _) => true
+      case _ => false
+    })) return Fail("Looks like a equal")
+    if (!(exprCouldPrefix || exprs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   })
 
   def objectParse: P[Expr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
     ObjectExpr(fields.toVector, pos)
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos).on(ctx.opSeq)).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
