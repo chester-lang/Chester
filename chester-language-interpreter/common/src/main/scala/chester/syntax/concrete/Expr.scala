@@ -65,7 +65,7 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[Sour
 }
 
 // maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier], name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr], vararg: Boolean = false) {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr], vararg: Boolean = false) {
   assert(name.isDefined || exprOrDefault.isDefined)
 
   def descentAndApply(operator: Expr => Expr): Arg = {
