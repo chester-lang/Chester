@@ -74,14 +74,14 @@ class OpSeqParserTest extends FunSuite {
   }
 
   test("parse mixfix") {
-    val input = "if x then 1 else 2"
+    val input = "if x then q else w"
     val expected = BinOpSeq(Vector(
       Identifier("if"),
       Identifier("x"),
       Identifier("then"),
-      Identifier("1"),
+      Identifier("q"),
       Identifier("else"),
-      Identifier("2"),
+      Identifier("w"),
     ))
     parseAndCheck(input, expected)
   }

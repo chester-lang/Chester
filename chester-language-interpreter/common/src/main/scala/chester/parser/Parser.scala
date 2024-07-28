@@ -207,12 +207,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
-    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)).flatten)
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(noOpSeq = true) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)))
   }
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos) | opSeq(expr, getPos)).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], noOpSeq: Boolean = false): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos) | (if noOpSeq then Fail("") else opSeq(expr, getPos))).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
@@ -221,12 +221,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   })
 
-  def parse: P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse(implicit noOpSeq: Boolean = false): P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos) | Pass(expr)
+    tailExpr(expr, getPos, noOpSeq = noOpSeq) | Pass(expr)
   }
 
   def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse ~ maybeSpace ~ End)
