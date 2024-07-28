@@ -135,13 +135,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def argExprOrDefault(ctx: ParsingContext = ParsingContext()): P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse(ctx = ctx)).?
 
-  def argumentWithName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ argName ~ argType(ctx).? ~ argExprOrDefault(ctx)).flatMap {
-    case (dex, name, ty, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
-    case (dec, name, ty, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault))
+  def argumentWithName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ argName ~ argType(ctx.copy(dontAllowVararg = true)).? ~ maybeSpace ~ "...".!.? ~ maybeSpace ~ argExprOrDefault(ctx)).flatMap {
+    case (dex, name, ty, vararg, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
+    case (dec, name, ty, vararg, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault, vararg.isDefined))
   }
 
-  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx)).map {
-    case (dec, expr) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr))
+  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowVararg = true)) ~ maybeSpace ~ "...".!.? ).map {
+    case (dec, expr, vararg) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr), vararg.isDefined)
   }
 
   def argument(ctx: ParsingContext = ParsingContext()): P[Arg] = maybeSpace ~ P(argumentWithName(ctx) | argumentWithoutName(ctx))
@@ -170,7 +170,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false) {
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
 
     def blockCall = !inOpSeq
@@ -222,6 +222,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       case Identifier("=", _) => true
       case _ => false
     })) return Fail("Looks like a equal")
+    if (ctx.dontAllowVararg && xs.exists(_ match {
+      case Identifier("...", _) => true
+      case _ => false
+    })) return Fail("Looks like a vararg")
     if (!(exprCouldPrefix || exprs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   })
 
