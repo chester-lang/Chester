@@ -31,6 +31,26 @@ class ObjectParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("parse object with multiple fields with one more comma") {
+    val input = "{ a = 1, b = 2, c = 3 ,}"
+    val expected = ObjectExpr(Vector(
+      Identifier("a") -> IntegerLiteral(1),
+      Identifier("b") -> IntegerLiteral(2),
+      Identifier("c") -> IntegerLiteral(3)
+    ))
+    parseAndCheck(input, expected)
+  }
+
+  test("parse object with multiple fields with one more comma without spaces") {
+    val input = "{a=1,b=2,c=3,}"
+    val expected = ObjectExpr(Vector(
+      Identifier("a") -> IntegerLiteral(1),
+      Identifier("b") -> IntegerLiteral(2),
+      Identifier("c") -> IntegerLiteral(3)
+    ))
+    parseAndCheck(input, expected)
+  }
+
   test("parse object with nested object") {
     val input = "{ a = { b = 2 }, c = 3 }"
     val expected = ObjectExpr(Vector(
