@@ -186,4 +186,31 @@ class OpSeqParserTest extends FunSuite {
     ))
     parseAndCheck(input, expected)
   }
+
+  test("parse infix with block") {
+    val input = "so getthen { doSomething }"
+    val expected =
+      BinOpSeq(
+        seq = Vector(
+          Identifier(
+            name = "so",
+            sourcePos = None
+          ),
+          Identifier(
+            name = "getthen",
+            sourcePos = None
+          ),
+          Block(
+            heads = Vector(),
+            tail = Identifier(
+              name = "doSomething",
+              sourcePos = None
+            ),
+            sourcePos = None
+          )
+        ),
+        sourcePos = None
+      )
+    parseAndCheck(input, expected)
+  }
 }

@@ -63,6 +63,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       case Some(x) => Pass(x)
       case None => Fail.opaque(message)./
     }
+
+    inline def on(inline condition: Boolean): P[T] = if condition then parse0 else Fail("")
   }
 
   inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
@@ -187,11 +189,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
-  def calling: P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction).withPos.map { case (block, pos) =>
+  def calling(implicit inOpSeq: Boolean = false): P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction.on(!inOpSeq)).withPos.map { case (block, pos) =>
     Telescope.of(Arg.of(block))(pos)
   })
 
-  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos]): P[FunctionCall] = PwithPos(calling).map { case (telescope, pos) =>
+  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos], inOpSeq: Boolean = false): P[FunctionCall] = PwithPos(calling(inOpSeq = inOpSeq)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, p(pos))
   }
 
@@ -207,26 +209,26 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(noOpSeq = true) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(inOpSeq = true) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
     if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)))
   }
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], noOpSeq: Boolean = false): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos) | (if noOpSeq then Fail("") else opSeq(expr, getPos))).withPos.flatMap({ (expr, pos) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], inOpSeq: Boolean = false): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, inOpSeq = inOpSeq) | opSeq(expr, getPos).on(!inOpSeq)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos1, noOpSeq = noOpSeq) | Pass(expr)
+    tailExpr(expr, getPos1, inOpSeq = inOpSeq) | Pass(expr)
   }
   })
 
-  def parse(implicit noOpSeq: Boolean = false): P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
+  def parse(implicit inOpSeq: Boolean = false): P[Expr] = PwithPos(block | annotated | implicitTelescope | list | telescope | literal | identifier).flatMap { (expr, pos) =>
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos, noOpSeq = noOpSeq) | Pass(expr)
+    tailExpr(expr, getPos, inOpSeq = inOpSeq) | Pass(expr)
   }
 
   def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse ~ maybeSpace ~ End)
