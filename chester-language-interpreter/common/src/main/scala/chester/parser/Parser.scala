@@ -15,11 +15,13 @@ import chester.syntax.IdentifierRules._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
 
-  def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
+  def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ ("\n" | End))
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
 
   def delimiter: P[Unit] = P((simpleDelimiter | comment).rep)
+
+  def lineEnding: P[Unit] = P(comment | (CharsWhileIn(" \t\r") ~ ("\n" | End)))
 
   def maybeSpace: P[Unit] = P(delimiter.?)
 
