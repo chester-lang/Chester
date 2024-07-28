@@ -11,7 +11,7 @@ import java.lang.Character.{isDigit, isLetter}
 import java.nio.file.{Files, Paths}
 import scala.util._
 
-case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex]=None)(implicit ctx: P[?]) {
+case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
   val AllowedInfixSymbols = "-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
   val AllowedWordingSymbols = "_-".toSet.map(_.toInt)
   val ReservedSymbols = ".;=:,#()[]{}'\""
@@ -207,7 +207,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos)).withPos.flatMap({ (expr, pos) => {
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq((expr +: exprs).toVector, p(pos)))
+  }
+  }
+
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos]): P[Expr] = (dotCall(expr, getPos) | typeAnnotation(expr, getPos) | functionCall(expr, getPos) | opSeq(expr, getPos)).withPos.flatMap({ (expr, pos) => {
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
       p1 <- endPos

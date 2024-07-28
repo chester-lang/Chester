@@ -16,7 +16,7 @@ sealed trait Salt
 case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends Expr
 
 // infix prefix postfix
-case class BinOpSeq(seq: Seq[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
+case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
   override def descent(operator: Expr => Expr): Expr = {
     BinOpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
   }
