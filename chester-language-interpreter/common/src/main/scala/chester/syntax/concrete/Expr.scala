@@ -1,6 +1,7 @@
 package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
+import chester.syntax.IdentifierRules.strIsOperator
 
 
 sealed trait Expr extends WithPos {

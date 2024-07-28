@@ -11,11 +11,9 @@ import java.lang.Character.{isDigit, isLetter}
 import java.nio.file.{Files, Paths}
 import scala.util._
 
+import chester.syntax.IdentifierRules._
+
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit ctx: P[?]) {
-  val AllowedOperatorSymbols = "=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val AllowedWordingSymbols = "_".toSet.map(_.toInt)
-  val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
-  val ReservedSymbols = ".;:,#()[]{}'\""
 
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep)
 
@@ -27,23 +25,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
 
-  def isOperatorSymbol(x: Character) = AllowedOperatorSymbols.contains(x)
-
-  def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
-
-  def isMiddleWordingSymbol(x: Character) = AllowedMiddleWordingSymbols.contains(x)
-
-  def identifierFirst(x: Character) = isLetter(x) || isWordingSymbol(x)
-
-  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
-
   def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
 
   def id: P[String] = operatorId | simpleId
-
-  def operatorIdentifierFirst(x: Character) = isOperatorSymbol(x)
-
-  def operatorIdentifierRest(x: Character) = isOperatorSymbol(x) || isWordingSymbol(x)
 
   def operatorId: P[String] = P((CharacterPred(operatorIdentifierFirst).rep(1) ~ CharacterPred(operatorIdentifierRest).rep).!)
 
@@ -196,6 +180,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
+
     def blockCall = !inOpSeq
   }
 
@@ -219,9 +204,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def statement: P[Expr] = parse // TODO
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq=true)) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
+  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap { (exprs, pos) => {
     val xs = (expr +: exprs)
-    if (!exprs.exists(_.isInstanceOf[Identifier])) Fail.opaque("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
+    val exprCouldPrefix = expr match {
+      case Identifier(name, _) if strIsOperator(name) => true
+      case _ => false
+    }
+    if (!(exprCouldPrefix || exprs.exists(_.isInstanceOf[Identifier]))) Fail.opaque("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   }
   }
 
