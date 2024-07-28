@@ -101,65 +101,60 @@ class OpSeqParserTest extends FunSuite {
         name = "then",
         sourcePos = None
       ),
-      BinOpSeq(
-        seq = Vector(
-          FunctionCall(
-            function = Identifier(
-              name = "f",
-              sourcePos = None
-            ),
-            telescope = Telescope(
-              args = Vector(
-                Arg(
-                  decorations = Vector(),
-                  name = None,
-                  ty = None,
-                  exprOrDefault = Some(
-                    value = BinOpSeq(
-                      seq = Vector(
-                        Identifier(
-                          name = "if",
-                          sourcePos = None
-                        ),
-                        Identifier(
-                          name = "o",
-                          sourcePos = None
-                        ),
-                        Identifier(
-                          name = "then",
-                          sourcePos = None
-                        ),
-                        Identifier(
-                          name = "a",
-                          sourcePos = None
-                        ),
-                        Identifier(
-                          name = "else",
-                          sourcePos = None
-                        ),
-                        Identifier(
-                          name = "b",
-                          sourcePos = None
-                        )
-                      ),
+      FunctionCall(
+        function = Identifier(
+          name = "f",
+          sourcePos = None
+        ),
+        telescope = Telescope(
+          args = Vector(
+            Arg(
+              decorations = Vector(),
+              name = None,
+              ty = None,
+              exprOrDefault = Some(
+                value = BinOpSeq(
+                  seq = Vector(
+                    Identifier(
+                      name = "if",
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "o",
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "then",
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "a",
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "else",
+                      sourcePos = None
+                    ),
+                    Identifier(
+                      name = "b",
                       sourcePos = None
                     )
-                  )
+                  ),
+                  sourcePos = None
                 )
-              ),
-              sourcePos = None
-            ),
-            sourcePos = None
+              )
+            )
           ),
-          Identifier(
-            name = "else",
-            sourcePos = None
-          ),
-          Identifier(
-            name = "w",
-            sourcePos = None
-          )
+          sourcePos = None
         ),
+        sourcePos = None
+      ),
+      Identifier(
+        name = "else",
+        sourcePos = None
+      ),
+      Identifier(
+        name = "w",
         sourcePos = None
       )
     ))

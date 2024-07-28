@@ -217,7 +217,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       p0 <- getPos(pos)
       p1 <- endPos
     } yield p0.combine(p1))
-    tailExpr(expr, getPos1) | Pass(expr)
+    tailExpr(expr, getPos1, noOpSeq = noOpSeq) | Pass(expr)
   }
   })
 
