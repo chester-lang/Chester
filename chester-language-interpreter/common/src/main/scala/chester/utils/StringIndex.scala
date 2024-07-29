@@ -1,5 +1,7 @@
 package chester.utils
 
+import fastparse.ParserInput
+
 case class LineAndColumn(val line: Int, val column: Int)
 
 case class StringIndex(val stringList: LazyList[String]) {
@@ -11,16 +13,12 @@ case class StringIndex(val stringList: LazyList[String]) {
   lazy val unicodeLength: Int = stringIterator.foldLeft(0)((count, char) => count + (if (isHighSurrogate(char)) 0 else 1))
 
   private lazy val lineBreaks: LazyList[Int] = {
-    def lineBreakIndices(it: Iterator[Char], idx: Int = 0, acc: LazyList[Int] = LazyList.empty): LazyList[Int] = {
-      if (it.hasNext) {
-        val char = it.next()
-        if (char == '\n') lineBreakIndices(it, idx + 1, acc :+ idx)
-        else lineBreakIndices(it, idx + 1, acc)
-      } else {
-        acc :+ idx
-      }
+    def lineBreakIndices(s: LazyList[Char], idx: Int = 0): LazyList[Int] = s match {
+      case LazyList() => LazyList(idx)
+      case '\n' #:: tail => idx #:: lineBreakIndices(tail, idx + 1)
+      case _ #:: tail => lineBreakIndices(tail, idx + 1)
     }
-    lineBreakIndices(stringIterator)
+    lineBreakIndices(stringList.flatten)
   }
 
   def charIndexToUnicodeIndex(charIndex: Int): Int = {
@@ -129,7 +127,19 @@ case class StringIndex(val stringList: LazyList[String]) {
 
 }
 
-
 object StringIndex {
   def apply(s: String): StringIndex = StringIndex(LazyList(s))
+
+  def apply(iterator: Iterator[String]): StringIndex = {
+    val lazyList = LazyList.from(iterator)
+    StringIndex(lazyList)
+  }
+
+  def apply(parserInput: ParserInput): StringIndex = {
+    def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
+      LazyList.iterate(0)(_ + pi.innerLength).takeWhile(pi.isReachable).map(pi.slice(_, pi.length))
+    }
+
+    StringIndex(parserInputToLazyList(parserInput))
+  }
 }
