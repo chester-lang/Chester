@@ -161,7 +161,6 @@ class OpSeqParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
-  if (false) { // It is having difficulty understanding difference between +2 and 1+2
     test("parse opSeq with mixed operators without spaces") {
       val input = "1+2*4+5"
       val expected = BinOpSeq(Vector(
@@ -175,7 +174,6 @@ class OpSeqParserTest extends FunSuite {
       ))
       parseAndCheck(input, expected)
     }
-  }
 
   test("parse opSeq with not") {
     val input = "!1"

@@ -71,7 +71,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def infixIdentifier: P[Identifier] = P(operatorId.withPos).map { case (name, pos) => Identifier(name, pos) }
 
-  def signed: P[String] = P(CharIn("+\\-").?.!)
+  def signed: P[String] = P("".!) // P(CharIn("+\\-").?.!)
 
   def hexLiteral: P[String] = P("0x" ~ CharsWhileIn("0-9a-fA-F").must()).!
 
