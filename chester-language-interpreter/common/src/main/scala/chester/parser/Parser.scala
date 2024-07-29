@@ -81,7 +81,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def expLiteral: P[String] = P(CharsWhileIn("0-9") ~ "." ~ CharsWhileIn("0-9") ~ (CharIn("eE") ~ signed ~ CharsWhileIn("0-9")).?).!
 
-  def integerLiteral: P[Expr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
+  def integerLiteral: P[ParsedExpr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
     case ((sign, value), pos) =>
       val actualValue = if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
       else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
@@ -89,7 +89,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       IntegerLiteral(actualValue, pos)
   }
 
-  def doubleLiteral: P[Expr] = P(signed ~ expLiteral.withPos).map {
+  def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withPos).map {
     case (sign, (value, pos)) =>
       DoubleLiteral(BigDecimal(sign + value), pos)
   }
@@ -128,53 +128,29 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     } ~ "\"\"\"")
   }
 
-  def stringLiteralExpr: P[Expr] = P((stringLiteral | heredocLiteral).withPos).map {
+  def stringLiteralExpr: P[ParsedExpr] = P((stringLiteral | heredocLiteral).withPos).map {
     case (value, pos) => StringLiteral(value, pos)
   }
 
-  def literal: P[Expr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
+  def literal: P[ParsedExpr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
 
   def simpleAnnotation: P[Identifier] = "@" ~ identifier
 
-  def simpleAnnotations: P[Vector[Identifier]] = P((simpleAnnotation ~ delimiter).repX.map(_.toVector))
-
-  def argName: P[Identifier] = identifier
-
-  def argType(ctx: ParsingContext = ParsingContext()): P[Expr] = P(maybeSpace ~ ":" ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowEqualSymbol = true)))
-
-  def argExprOrDefault(ctx: ParsingContext = ParsingContext()): P[Option[Expr]] = P(maybeSpace ~ "=" ~ maybeSpace ~ parse(ctx = ctx)).?
-
-  def argumentWithName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ argName ~ argType(ctx.copy(dontAllowVararg = true)).? ~ maybeSpace ~ "...".!.? ~ maybeSpace ~ argExprOrDefault(ctx)).flatMap {
-    case (dex, name, ty, vararg, exprOrDefault) if ty.isEmpty && exprOrDefault.isEmpty => Fail.opaque("Either type or default value should be provided")
-    case (dec, name, ty, vararg, exprOrDefault) => Pass(Arg(dec.getOrElse(Vector.empty), Some(name), ty, exprOrDefault, vararg.isDefined))
-  }
-
-  def argumentWithoutName(ctx: ParsingContext = ParsingContext()): P[Arg] = P(simpleAnnotations.? ~ maybeSpace ~ parse(ctx = ctx.copy(dontAllowVararg = true)) ~ maybeSpace ~ "...".!.?).map {
-    case (dec, expr, vararg) => Arg(dec.getOrElse(Vector.empty), None, None, Some(expr), vararg.isDefined)
-  }
-
-  def argument(ctx: ParsingContext = ParsingContext()): P[Arg] = maybeSpace ~ P(argumentWithName(ctx) | argumentWithoutName(ctx))
-
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def telescope: P[Telescope] = PwithPos("(" ~ argument().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (args, pos) =>
-    Telescope(args.toVector, false, pos)
-  }
-
-  def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument(ctx = ParsingContext(dontallowBiggerSymbol = true)).rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
-    Telescope(args.toVector, true, pos)
-  }
-
-  /*
-    def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse()).map { case (ty, pos) =>
-      TypeAnnotation(expr, ty, p(pos))
-    }
-  */
   def list: P[ListExpr] = PwithPos("[" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
-  def annotation: P[(Identifier, Option[Telescope])] = P("@" ~ identifier ~ telescope.?)
+  def tuple: P[Tuple] = PwithPos("(" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, pos) =>
+    Tuple(terms.toVector, pos)
+  }
+  
+  def generics: P[Generics] = PwithPos("<" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { (terms, pos) =>
+    Generics(terms.toVector, pos)
+  }
+
+  def annotation: P[(Identifier, Vector[ParsedMaybeTelescope])] = P("@" ~ identifier ~ callingZeroOrMore())
 
   def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse()).map { case ((annotation, telescope, expr), pos) =>
     AnnotatedExpr(annotation, telescope, expr, pos)
@@ -187,30 +163,34 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     def blockCall = !inOpSeq
   }
 
-  def calling(implicit ctx: ParsingContext = ParsingContext()): P[Telescope] = P((implicitTelescope | telescope) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
-    Telescope.of(Arg.of(block))(pos)
+  def callingOnce( ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((generics | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
+    Tuple(Vector(block), pos)
   })
+  
+  def callingMultiple( ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx=ctx).rep(min=1).map(_.toVector))
 
-  def functionCall(function: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithPos(calling(ctx = ctx)).map { case (telescope, pos) =>
+  def callingZeroOrMore( ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx=ctx).rep.map(_.toVector))
+  
+  def functionCall(function: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithPos(callingOnce(ctx = ctx)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, p(pos))
   }
 
-  def dotCall(expr: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ calling.rep.?).map { case ((field, telescope), pos) =>
-    DotCall(expr, field, telescope.getOrElse(Seq()).toVector, p(pos))
+  def dotCall(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ callingZeroOrMore(ctx=ctx)).map { case ((field, telescope), pos) =>
+    DotCall(expr, field, telescope, p(pos))
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
+  def block: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
-  inline def anonymousBlockLikeFunction: P[Expr] = block | objectParse
+  inline def anonymousBlockLikeFunction: P[ParsedExpr] = block | objectParse
 
-  def statement: P[Expr] = P((parse(ctx = ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr, index) => {
+  def statement: P[ParsedExpr] = P((parse(ctx = ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
     Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
-  def opSeq(expr: Expr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
+  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
       case Identifier(name, _) if strIsOperator(name) => true
@@ -244,11 +224,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   })
 
-  def objectParse: P[Expr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
+  def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
     ObjectExpr(fields.toVector, pos)
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
+  def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
@@ -257,8 +237,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos1, ctx = ctx)) | Pass(expr)
   }
   })
+  
+  inline def parse0: P[ParsedExpr] = objectParse | block | annotated | generics | list | tuple | literal | identifier
 
-  def parse(ctx: ParsingContext = ParsingContext()): P[Expr] = P((objectParse | block | annotated | implicitTelescope | list | telescope | literal | identifier).withPos ~ Index).flatMap { (expr, pos, index) =>
+  def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos = ((endPos: Option[SourcePos]) => for {
       p0 <- pos
@@ -267,9 +249,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
   }
 
-  def exprEntrance: P[Expr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
+  def exprEntrance: P[ParsedExpr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
 
-  def statementsEntrance: P[Vector[Expr]] = P(Start ~ (maybeSpace ~ statement ~ maybeSpace).rep ~ maybeSpace ~ End).map(_.toVector)
+  def statementsEntrance: P[Vector[ParsedExpr]] = P(Start ~ (maybeSpace ~ statement ~ maybeSpace).rep ~ maybeSpace ~ End).map(_.toVector)
 }
 
 case class ParseError(message: String, index: Pos)
@@ -311,26 +293,26 @@ object Parser {
     }
   }
 
-  def parseStatements(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, Vector[Expr]] = {
+  def parseStatements(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, Vector[ParsedExpr]] = {
     parseFromSource(source, _.statementsEntrance, ignoreLocation)
   }
 
-  def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
+  def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, ParsedExpr] = {
     parseFromSource(source, _.exprEntrance, ignoreLocation)
   }
 
   @deprecated("Use parseExpr with ParserSource instead")
-  def parseFile(fileName: String): Either[ParseError, Expr] = {
+  def parseFile(fileName: String): Either[ParseError, ParsedExpr] = {
     parseExpr(FilePath(fileName))
   }
 
   @deprecated("Use parseExpr with ParserSource instead")
-  def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
+  def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, ParsedExpr] = {
     parseExpr(FileNameAndContent(fileName, input), ignoreLocation)
   }
 
   @deprecated("Use parseExpr with ParserSource instead")
-  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = {
+  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[ParsedExpr] = {
     parse(input, x => ParserInternal(fileName, ignoreLocation = ignoreLocation)(x).exprEntrance)
   }
 }

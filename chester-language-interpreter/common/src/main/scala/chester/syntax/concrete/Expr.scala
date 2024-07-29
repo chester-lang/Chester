@@ -89,13 +89,25 @@ object Arg {
   def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
-case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
-  override def descent(operator: Expr => Expr): Expr = {
+sealed trait MaybeTelescope extends Expr {
+  override def descent(operator: Expr => Expr): MaybeTelescope = super.descent(operator).asInstanceOf[MaybeTelescope]
+}
+
+sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr
+
+case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedMaybeTelescope {
+  override def descent(operator: Expr => Expr): Tuple = {
     Tuple(terms.map(_.descentAndApply(operator)), sourcePos)
   }
 }
 
-case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None) extends Expr {
+case class Generics(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedMaybeTelescope {
+  override def descent(operator: Expr => Expr): Generics = {
+    Generics(terms.map(_.descentAndApply(operator)), sourcePos)
+  }
+}
+
+case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None) extends MaybeTelescope {
   override def descent(operator: Expr => Expr): Telescope = {
     Telescope(args.map(_.descentAndApply(operator)), implicitly, sourcePos)
   }
@@ -105,13 +117,13 @@ object Telescope {
   def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos = sourcePos)
 }
 
-case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
+case class FunctionCall(function: Expr, telescope: MaybeTelescope, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     FunctionCall(function.descentAndApply(operator), telescope.descent(operator), sourcePos)
   }
 }
 
-case class DotCall(expr: Expr, field: Expr, telescope: Vector[Telescope], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
+case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), sourcePos)
   }
@@ -144,7 +156,7 @@ case class TypeAnnotation(expr: Expr, ty: Expr, sourcePos: Option[SourcePos] = N
   }
 }
 
-case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], expr: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
+case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescope], expr: Expr, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), sourcePos)
   }
