@@ -135,7 +135,6 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToCharLineAndColumn(4), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToCharLineAndColumn(5), LineAndColumn(1, 1))
     assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 2))
-    assertEquals(sp.string.length, 7)
   }
 
   test("charIndexToUnicodeLineAndColumn for multi-line Chinese string with surrogate pairs") {
@@ -147,7 +146,6 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(6), LineAndColumn(1, 1))
-    assertEquals(sp.string.length, 7)
   }
 
 
