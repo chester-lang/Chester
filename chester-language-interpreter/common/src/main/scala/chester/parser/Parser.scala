@@ -225,7 +225,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
         case FunctionCall(Identifier(">", _), _, _) => true
         case _ => false
       }, start)
-      start >= 0 && end >= 0 && start < end
+      end >= 0 || start >= 0 && end >= 0 && start < end
     }
     if (looksLikeOtherThings) return Fail("Looks like a telescope")
     if (ctx.dontallowBiggerSymbol && xs.exists(_ match {
@@ -240,7 +240,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       case Identifier("...", _) => true
       case _ => false
     })) return Fail("Looks like a vararg")
-    if (!(exprCouldPrefix || exprs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
+    if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
   })
 
   def objectParse: P[Expr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
