@@ -52,10 +52,15 @@ case class Postfix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None)
   }
 }
 
-case class Block(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos] = None) extends Expr {
+case class Block(heads: Vector[Expr], tail: Option[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Block(heads.map(_.descentAndApply(operator)), tail.descentAndApply(operator), sourcePos)
+    Block(heads.map(_.descentAndApply(operator)), tail.map(_.descentAndApply(operator)), sourcePos)
   }
+}
+
+object Block {
+  def apply(heads: Vector[Expr], tail: Expr): Block = Block(heads, Some(tail), None)
+  def apply(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos]): Block = Block(heads, Some(tail), sourcePos)
 }
 
 case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
@@ -75,6 +80,12 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifi
 
 object Arg {
   def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
+}
+
+case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = {
+    Tuple(terms.map(_.descentAndApply(operator)), sourcePos)
+  }
 }
 
 case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None) extends Expr {

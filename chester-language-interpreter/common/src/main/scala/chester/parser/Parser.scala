@@ -193,7 +193,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     DotCall(expr, field, telescope.getOrElse(Seq()).toVector, p(pos))
   }
 
-  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement ~ maybeSpace ~ ";").rep ~ maybeSpace ~ parse ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
+  def block: P[Expr] = PwithPos("{" ~ (maybeSpace ~ statement ~ maybeSpace ~ ";").rep ~ maybeSpace ~ parse.? ~ maybeSpace ~ "}").map { case ((heads, tail), pos) =>
     Block(Vector.from(heads), tail, pos)
   }
 

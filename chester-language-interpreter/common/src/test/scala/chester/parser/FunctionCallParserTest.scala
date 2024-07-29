@@ -7,9 +7,6 @@ import chester.parser._
 
 class FunctionCallParserTest extends FunSuite {
 
-  import chester.syntax.concrete._
-  import chester.parser._
-
   test("parse simple function call with no arguments") {
     val input = "func()"
     val expected = FunctionCall(Identifier("func"), Telescope(Vector()))
