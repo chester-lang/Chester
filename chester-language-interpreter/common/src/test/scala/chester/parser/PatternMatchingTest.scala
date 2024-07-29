@@ -14,10 +14,11 @@ class PatternMatchingTest extends FunSuite {
         |    case VoiceRecording(name, link) => C;
         |  }
         |""".stripMargin
-    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("sender")),false), Arg(Vector(),None,None,Some(Identifier("title")),false), Arg(Vector(),None,None,Some(Identifier("_")),false)),false,None),None), Identifier("=>"), Identifier("A")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("number")),false), Arg(Vector(),None,None,Some(Identifier("message")),false)),false,None),None), Identifier("=>"), Identifier("B")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("name")),false), Arg(Vector(),None,None,Some(Identifier("link")),false)),false,None),None), Identifier("=>"), Identifier("C")),None)),None,None)),None)
+    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"),Tuple(Vector(Identifier("sender"), Identifier("title"), Identifier("_")),None),None), Identifier("=>"), Identifier("A")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"),Tuple(Vector(Identifier("number"), Identifier("message")),None),None), Identifier("=>"), Identifier("B")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"),Tuple(Vector(Identifier("name"), Identifier("link")),None),None), Identifier("=>"), Identifier("C")),None)),None,None)),None)
     parseAndCheck(input, expected)
   }
 
+  // TODO
   test("match2") {
     val input =
       """
@@ -31,7 +32,7 @@ class PatternMatchingTest extends FunSuite {
         |    case _ => D;
         |  }
         |""".stripMargin
-    val expected = Parser.parseContent("testFile", input, ignoreLocation = true).toOption.get
+    val expected = getParsed(input)
     parseAndCheck(input, expected)
   }
 }
