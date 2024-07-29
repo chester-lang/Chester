@@ -38,7 +38,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def end: P[Int] = Index
 
 
-  val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input.slice(0, p.input.length)))
+  val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input))
 
   private def loc(begin: Int, end: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
