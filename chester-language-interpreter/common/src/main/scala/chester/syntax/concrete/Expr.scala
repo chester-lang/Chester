@@ -10,12 +10,12 @@ sealed trait Expr extends WithPos {
   def descentAndApply(operator: Expr => Expr): Expr = operator(this.descent(operator))
 }
 
+sealed trait ParsedExpr extends Expr
 
-sealed trait Salt
 
 def encodeString(x: String): String = x.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
 
-case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends Expr {
+case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def toString: String = sourcePos match {
     case None => s"Identifier(\"${encodeString(name)}\")"
     case Some(pos) => s"Identifier(\"${encodeString(name)}\", ${pos.toString})"
@@ -23,7 +23,7 @@ case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends
 }
 
 // infix prefix postfix
-case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr with Salt {
+case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     BinOpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
   }
@@ -52,7 +52,7 @@ case class Postfix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None)
   }
 }
 
-case class Block(heads: Vector[Expr], tail: Option[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+case class Block(heads: Vector[Expr], tail: Option[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     Block(heads.map(_.descentAndApply(operator)), tail.map(_.descentAndApply(operator)), sourcePos)
   }
@@ -89,7 +89,7 @@ object Arg {
   def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
-case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     Tuple(terms.map(_.descentAndApply(operator)), sourcePos)
   }
@@ -105,32 +105,32 @@ object Telescope {
   def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos = sourcePos)
 }
 
-case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[SourcePos] = None) extends Expr {
+case class FunctionCall(function: Expr, telescope: Telescope, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     FunctionCall(function.descentAndApply(operator), telescope.descent(operator), sourcePos)
   }
 }
 
-case class DotCall(expr: Expr, field: Expr, telescope: Vector[Telescope], sourcePos: Option[SourcePos] = None) extends Expr {
+case class DotCall(expr: Expr, field: Expr, telescope: Vector[Telescope], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), sourcePos)
   }
 }
 
-sealed trait NumberLiteral extends Expr
+sealed trait NumberLiteral extends ParsedExpr
 
 case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None) extends NumberLiteral
 
 case class DoubleLiteral(value: BigDecimal, sourcePos: Option[SourcePos] = None) extends NumberLiteral
 
-case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends Expr {
+case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def toString: String = sourcePos match {
     case None => s"StringLiteral(\"${encodeString(value)}\")"
     case Some(pos) => s"StringLiteral(\"${encodeString(value)}\", ${pos.toString})"
   }
 }
 
-case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     ListExpr(terms.map(_.descentAndApply(operator)), sourcePos)
   }
@@ -151,7 +151,7 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Option[Telescope], e
 }
 
 
-case class ObjectExpr(clauses: Vector[(Identifier, Expr)], sourcePos: Option[SourcePos] = None) extends Expr {
+case class ObjectExpr(clauses: Vector[(Identifier, Expr)], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, sourcePos)
   }
