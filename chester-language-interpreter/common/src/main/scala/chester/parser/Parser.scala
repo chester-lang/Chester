@@ -27,8 +27,6 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def maybeSpace: P[Unit] = P(delimiter.?)
 
-  def maybeSimpleSpace: P[Unit] = P(CharsWhileIn(" \t").?)
-
   def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
 
   def id: P[String] = operatorId | simpleId
@@ -188,7 +186,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     def blockCall = !inOpSeq
   }
 
-  def calling(implicit ctx: ParsingContext = ParsingContext()): P[Telescope] = P((implicitTelescope | telescope) | (maybeSimpleSpace ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
+  def calling(implicit ctx: ParsingContext = ParsingContext()): P[Telescope] = P((implicitTelescope | telescope) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
     Telescope.of(Arg.of(block))(pos)
   })
 
