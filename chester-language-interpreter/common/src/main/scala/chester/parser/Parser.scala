@@ -44,7 +44,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
     val endPos = indexer.charIndexToUnicodeLineAndColumn(end - 1)
-    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end), endPos.line, endPos.column))))
+    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end-1), endPos.line, endPos.column))))
   }
 
   extension [T](inline parse0: P[T]) {
@@ -266,7 +266,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
   }
 
-  def entrance: P[Expr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
+  def exprEntrance: P[Expr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
 
 }
 
@@ -284,7 +284,7 @@ object Parser {
 
   def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
     val indexer = StringIndex(input.slice(0, input.length))
-    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(_).entrance) match {
+    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(_).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
       case Parsed.Failure(msg, index, extra) => {
         val pos = indexer.charIndexToUnicodeLineAndColumn(index)
@@ -295,5 +295,5 @@ object Parser {
   }
 
   @deprecated
-  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).entrance)
+  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).exprEntrance)
 }
