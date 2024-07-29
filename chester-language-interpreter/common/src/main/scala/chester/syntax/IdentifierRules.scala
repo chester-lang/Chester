@@ -4,10 +4,10 @@ import java.lang.Character.{isDigit, isLetter}
 import chester.utils.parse.Character
 
 object IdentifierRules {
-  val AllowedOperatorSymbols = ":=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedOperatorSymbols = ".:=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
   val AllowedWordingSymbols = "_".toSet.map(_.toInt)
   val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
-  val ReservedSymbols = ".;,#()[]{}'\""
+  val ReservedSymbols = ";,#()[]{}'\""
 
   def isEmoji(codePoint: Int): Boolean = {
     val block = Character.UnicodeBlock.of(codePoint)
