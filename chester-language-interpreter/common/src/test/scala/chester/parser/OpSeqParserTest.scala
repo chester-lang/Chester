@@ -300,4 +300,10 @@ class OpSeqParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
+  test("some macro") {
+    val input = "def apply(heads: Vector<Expr>, tail: Expr): Block = Block(heads, Some(tail), None)"
+    val expected = getParsed(input)
+    assertEquals(getParsed(input), expected)
+  }
+
 }

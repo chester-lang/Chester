@@ -60,6 +60,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     inline def on(inline condition: Boolean): P[T] = if condition then parse0 else Fail("")
 
     inline def checkOn(inline condition: Boolean): P[Unit] = if condition then parse0 else Pass(())
+
+    inline def thenTry(inline parse1: P[T]): P[T] = parse0.?.flatMap {
+      case Some(result) => Pass(result)
+      case None => parse1
+    }
   }
 
   inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
@@ -219,6 +224,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       })
       val end = xs.indexWhere(_ match {
         case Identifier(">", _) => true
+        case FunctionCall(Identifier(">", _), _, _) => true
         case _ => false
       }, start)
       start >= 0 && end >= 0 && start < end
