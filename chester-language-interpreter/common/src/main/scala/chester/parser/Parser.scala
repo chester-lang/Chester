@@ -138,15 +138,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def list: P[ListExpr] = PwithPos("[" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
+  def list: P[ListExpr] = PwithPos("[" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
-  def tuple: P[Tuple] = PwithPos("(" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, pos) =>
+  def tuple: P[Tuple] = PwithPos("(" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, pos) =>
     Tuple(terms.toVector, pos)
   }
-  
-  def generics: P[Generics] = PwithPos("<" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { (terms, pos) =>
+
+  def generics: P[Generics] = PwithPos("<" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { (terms, pos) =>
     Generics(terms.toVector, pos)
   }
 
@@ -166,11 +166,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def callingOnce( ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((generics | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
     Tuple(Vector(block), pos)
   })
-  
+
   def callingMultiple( ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx=ctx).rep(min=1).map(_.toVector))
 
   def callingZeroOrMore( ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx=ctx).rep.map(_.toVector))
-  
+
   def functionCall(function: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithPos(callingOnce(ctx = ctx)).map { case (telescope, pos) =>
     FunctionCall(function, telescope, p(pos))
   }
@@ -237,7 +237,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos1, ctx = ctx)) | Pass(expr)
   }
   })
-  
+
   inline def parse0: P[ParsedExpr] = objectParse | block | annotated | generics | list | tuple | literal | identifier
 
   def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>

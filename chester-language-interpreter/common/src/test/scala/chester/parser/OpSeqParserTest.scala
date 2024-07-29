@@ -279,4 +279,29 @@ class OpSeqParserTest extends FunSuite {
     assertEquals(getParsed(input), expected)
   }
 
+  test("parse Identifier to IntegerLiteral") {
+    val input = "Identifier(\"b\") -> IntegerLiteral(2)"
+    val expected = OpSeq(Vector(
+      FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("b")))),
+      Identifier("->"),
+      FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(2))))
+    ))
+    parseAndCheck(input, expected)
+  }
+
+  test("parse OpSeq with identifier to integer literal mapping") {
+    val input = "Vector(\n  Identifier(\"b\") -> IntegerLiteral(2)\n)"
+    val expected = FunctionCall(
+      Identifier("Vector"),
+      Tuple(Vector(
+        OpSeq(Vector(
+          FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("b")))),
+          Identifier("->"),
+          FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(2))))
+        ))
+      ))
+    )
+    parseAndCheck(input, expected)
+  }
+
 }
