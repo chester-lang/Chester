@@ -203,7 +203,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
-  def anonymousBlockLikeFunction: P[Expr] = block
+  inline def anonymousBlockLikeFunction: P[Expr] = block | objectParse
 
   def statement: P[Expr] = P((parse(ctx = ParsingContext(newLineAfterBlockMeansEnds = true)) ~ Index).flatMap((expr, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
