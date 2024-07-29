@@ -60,6 +60,7 @@ case class Block(heads: Vector[Expr], tail: Option[Expr], sourcePos: Option[Sour
 
 object Block {
   def apply(heads: Vector[Expr], tail: Expr): Block = Block(heads, Some(tail), None)
+
   def apply(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos]): Block = Block(heads, Some(tail), sourcePos)
 }
 
@@ -75,6 +76,12 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifi
 
   def descentAndApply(operator: Expr => Expr): Arg = {
     Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
+  }
+
+  override def toString: String = this match {
+    case Arg(Vector(), None, None, Some(expr), false) => s"Arg.of($expr)"
+    case Arg(decorations, name, ty, exorOrDefault, false) => s"Arg($decorations,$name,$ty,$exorOrDefault)"
+    case Arg(decorations, name, ty, exorOrDefault, vararg) => s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
   }
 }
 
