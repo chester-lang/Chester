@@ -9,9 +9,10 @@ import chester.utils.parse.*
 
 import java.lang.Character.{isDigit, isLetter}
 import java.nio.file.{Files, Paths}
-import scala.util._
+import scala.util.*
+import chester.syntax.IdentifierRules.*
 
-import chester.syntax.IdentifierRules._
+import scala.:+
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
 
@@ -190,7 +191,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
-  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
+  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = PwithPos(opSeqGettingExprs(ctx=ctx)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
       case Identifier(name, _) if strIsOperator(name) => true
@@ -226,6 +227,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
     ObjectExpr(fields.toVector, pos)
+  }
+
+  def opSeqGettingExprs(ctx: ParsingContext): P[Vector[ParsedExpr]] = P(maybeSpace ~ parse(ctx = ctx.copy(inOpSeq = true)) ~ Index).flatMap { (expr, index) =>
+    val itWasBlockEnding = p.input(index - 1) == '}'
+    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
   }
 
   def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
