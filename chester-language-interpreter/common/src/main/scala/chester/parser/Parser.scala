@@ -44,7 +44,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
     val endPos = indexer.charIndexToUnicodeLineAndColumn(end - 1)
-    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end-1), endPos.line, endPos.column))))
+    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end - 1), endPos.line, endPos.column))))
   }
 
   extension [T](inline parse0: P[T]) {
@@ -164,11 +164,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument(ctx = ParsingContext(dontallowBiggerSymbol = true)).rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
     Telescope(args.toVector, true, pos)
   }
-/*
-  def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse()).map { case (ty, pos) =>
-    TypeAnnotation(expr, ty, p(pos))
-  }
-*/
+
+  /*
+    def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse()).map { case (ty, pos) =>
+      TypeAnnotation(expr, ty, p(pos))
+    }
+  */
   def list: P[ListExpr] = PwithPos("[" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
@@ -268,32 +269,68 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def exprEntrance: P[Expr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
 
+  def statementsEntrance: P[Vector[Expr]] = P(Start ~ (maybeSpace ~ statement ~ maybeSpace).rep ~ maybeSpace ~ End).map(_.toVector)
 }
 
 case class ParseError(message: String, index: Pos)
 
+sealed trait ParserSource
+
+case class FileNameAndContent(fileName: String, content: String) extends ParserSource
+
+case class FilePath(path: String) extends ParserSource
+
 object Parser {
+  private def getContentFromSource(source: ParserSource): Either[ParseError, (String, String)] = {
+    source match {
+      case FileNameAndContent(fileName, content) =>
+        Right((fileName, content))
+      case FilePath(path) =>
+        Try(new String(Files.readAllBytes(Paths.get(path)))) match {
+          case Success(content) =>
+            val fileName = Paths.get(path).getFileName.toString
+            Right((fileName, content))
+          case Failure(exception) =>
+            Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
+        }
+    }
+  }
+
+  private def parseFromSource[T](source: ParserSource, parserFunc: ParserInternal => P[T], ignoreLocation: Boolean = false): Either[ParseError, T] = {
+    getContentFromSource(source) match {
+      case Right((fileName, content)) =>
+        val indexer = StringIndex(content)
+        parse(content, x => parserFunc(ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(x))) match {
+          case Parsed.Success(result, _) => Right(result)
+          case Parsed.Failure(msg, index, extra) =>
+            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+            val p = Pos(indexer.charIndexToUnicodeIndex(index), pos.line, pos.column)
+            Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", p))
+        }
+      case Left(error) => Left(error)
+    }
+  }
+
+  def parseStatements(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, Vector[Expr]] = {
+    parseFromSource(source, _.statementsEntrance, ignoreLocation)
+  }
+
+  def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
+    parseFromSource(source, _.exprEntrance, ignoreLocation)
+  }
+
+  @deprecated("Use parseExpr with ParserSource instead")
   def parseFile(fileName: String): Either[ParseError, Expr] = {
-    Try(new String(Files.readAllBytes(Paths.get(fileName)))) match {
-      case Success(content) =>
-        parseContent(fileName, content)
-      case Failure(exception) =>
-        Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
-    }
+    parseExpr(FilePath(fileName))
   }
 
+  @deprecated("Use parseExpr with ParserSource instead")
   def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, Expr] = {
-    val indexer = StringIndex(input.slice(0, input.length))
-    parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(_).exprEntrance) match {
-      case Parsed.Success(expr, _) => Right(expr)
-      case Parsed.Failure(msg, index, extra) => {
-        val pos = indexer.charIndexToUnicodeLineAndColumn(index)
-        val p = Pos(indexer.charIndexToUnicodeIndex(index), pos.line, pos.column)
-        Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", p))
-      }
-    }
+    parseExpr(FileNameAndContent(fileName, input), ignoreLocation)
   }
 
-  @deprecated
-  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = parse(input, ParserInternal(fileName, ignoreLocation = ignoreLocation)(_).exprEntrance)
+  @deprecated("Use parseExpr with ParserSource instead")
+  def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[Expr] = {
+    parse(input, x => ParserInternal(fileName, ignoreLocation = ignoreLocation)(x).exprEntrance)
+  }
 }
