@@ -302,7 +302,7 @@ class OpSeqParserTest extends FunSuite {
 
   test("some macro") {
     val input = "def apply(heads: Vector<Expr>, tail: Expr): Block = Block(heads, Some(tail), None)"
-    val expected = getParsed(input)
+    val expected = BinOpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Telescope(Vector(Arg(Vector(),Some(Identifier("heads")),Some(FunctionCall(Identifier("Vector"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("Expr")),false)),true,None),None)),None,false), Arg(Vector(),Some(Identifier("tail")),Some(Identifier("Expr")),None,false)),false,None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("heads")),false), Arg(Vector(),None,None,Some(FunctionCall(Identifier("Some"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("tail")),false)),false,None),None)),false), Arg(Vector(),None,None,Some(Identifier("None")),false)),false,None),None)),None)
     assertEquals(getParsed(input), expected)
   }
 

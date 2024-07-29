@@ -164,11 +164,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def implicitTelescope: P[Telescope] = PwithPos("<" ~ argument(ctx = ParsingContext(dontallowBiggerSymbol = true)).rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { case (args, pos) =>
     Telescope(args.toVector, true, pos)
   }
-
+/*
   def typeAnnotation(expr: Expr, p: Option[SourcePos] => Option[SourcePos]): P[TypeAnnotation] = PwithPos(maybeSpace ~ ":" ~ maybeSpace ~ parse()).map { case (ty, pos) =>
     TypeAnnotation(expr, ty, p(pos))
   }
-
+*/
   def list: P[ListExpr] = PwithPos("[" ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
@@ -247,7 +247,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.toVector, pos)
   }
 
-  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = P((dotCall(expr, getPos, ctx) | typeAnnotation(expr, getPos) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
+  def tailExpr(expr: Expr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[Expr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
