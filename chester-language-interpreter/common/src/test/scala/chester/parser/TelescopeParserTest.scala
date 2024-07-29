@@ -45,7 +45,7 @@ class TelescopeParserTest extends FunSuite {
   test("parse tuple with arguments having type") {
     val input = "(a: Integer)"
     val expected = Tuple(Vector(
-      BinOpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer")))
+      OpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer")))
     ))
     parseAndCheck(input, expected)
   }
@@ -53,9 +53,9 @@ class TelescopeParserTest extends FunSuite {
   test("parse tuple with arguments having types") {
     val input = "(a: Integer, b: String, c: Double)"
     val expected = Tuple(Vector(
-      BinOpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer"))),
-      BinOpSeq(Vector(Identifier("b"), Identifier(":"), Identifier("String"))),
-      BinOpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double")))
+      OpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer"))),
+      OpSeq(Vector(Identifier("b"), Identifier(":"), Identifier("String"))),
+      OpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double")))
     ))
     parseAndCheck(input, expected)
   }
@@ -63,7 +63,7 @@ class TelescopeParserTest extends FunSuite {
   test("parse tuple with arguments having default value") {
     val input = "(a = 1)"
     val expected = Tuple(Vector(
-      BinOpSeq(Vector(Identifier("a"), Identifier("="), IntegerLiteral(1)))
+      OpSeq(Vector(Identifier("a"), Identifier("="), IntegerLiteral(1)))
     ))
     parseAndCheck(input, expected)
   }
@@ -71,9 +71,9 @@ class TelescopeParserTest extends FunSuite {
   test("parse tuple with arguments having default values") {
     val input = "(a = 1, b = 2, c = 3)"
     val expected = Tuple(Vector(
-      BinOpSeq(Vector(Identifier("a"), Identifier("="), IntegerLiteral(1))),
-      BinOpSeq(Vector(Identifier("b"), Identifier("="), IntegerLiteral(2))),
-      BinOpSeq(Vector(Identifier("c"), Identifier("="), IntegerLiteral(3)))
+      OpSeq(Vector(Identifier("a"), Identifier("="), IntegerLiteral(1))),
+      OpSeq(Vector(Identifier("b"), Identifier("="), IntegerLiteral(2))),
+      OpSeq(Vector(Identifier("c"), Identifier("="), IntegerLiteral(3)))
     ))
     parseAndCheck(input, expected)
   }
@@ -81,9 +81,9 @@ class TelescopeParserTest extends FunSuite {
   test("parse tuple with arguments having types and default values") {
     val input = "(a: Integer = 1, b: String = \"test\", c: Double = 3.14)"
     val expected = Tuple(Vector(
-      BinOpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer"), Identifier("="), IntegerLiteral(1))),
-      BinOpSeq(Vector(Identifier("b"), Identifier(":"), Identifier("String"), Identifier("="), StringLiteral("test"))),
-      BinOpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double"), Identifier("="), DoubleLiteral(BigDecimal(3.14))))
+      OpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer"), Identifier("="), IntegerLiteral(1))),
+      OpSeq(Vector(Identifier("b"), Identifier(":"), Identifier("String"), Identifier("="), StringLiteral("test"))),
+      OpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double"), Identifier("="), DoubleLiteral(BigDecimal(3.14))))
     ))
     parseAndCheck(input, expected)
   }

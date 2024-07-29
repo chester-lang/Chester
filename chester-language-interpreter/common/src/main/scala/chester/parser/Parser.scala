@@ -190,7 +190,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
-  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[BinOpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
+  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = PwithPos((maybeSpace ~ parse(ctx = ParsingContext(inOpSeq = true)) ~ maybeSpace).rep(min = 1)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
       case Identifier(name, _) if strIsOperator(name) => true
@@ -221,7 +221,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       case Identifier("...", _) => true
       case _ => false
     })) return Fail("Looks like a vararg")
-    if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(BinOpSeq(xs.toVector, p(pos)))
+    if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(OpSeq(xs.toVector, p(pos)))
   })
 
   def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>

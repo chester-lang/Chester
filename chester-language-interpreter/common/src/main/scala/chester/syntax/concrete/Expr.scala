@@ -23,13 +23,13 @@ case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends
 }
 
 // infix prefix postfix
-case class BinOpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
+case class OpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    BinOpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
+    OpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
   }
 
-  def flatten: BinOpSeq = copy(seq = seq.flatMap {
-    case opseq: BinOpSeq => opseq.flatten.seq
+  def flatten: OpSeq = copy(seq = seq.flatMap {
+    case opseq: OpSeq => opseq.flatten.seq
     case expr => Vector(expr)
   })
 }
