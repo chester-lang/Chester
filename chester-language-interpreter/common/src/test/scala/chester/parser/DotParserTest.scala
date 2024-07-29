@@ -11,8 +11,8 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("world"),
       Identifier("execute"),
-      Vector(Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("me"))),
+      Vector(Tuple(Vector(
+        Identifier("me"),
       )))
     )
     parseAndCheck(input, expected)
@@ -32,7 +32,7 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("obj"),
       Identifier("method"),
-      Vector(Telescope(Vector()))
+      Vector(Tuple(Vector()))
     )
     parseAndCheck(input, expected)
   }
@@ -55,26 +55,51 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("obj"),
       Identifier("method"),
-      Vector(Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
-        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
+      Vector(Tuple(Vector(
+        Identifier("arg1"),
+        Identifier("arg2")
       )))
     )
     parseAndCheck(input, expected)
   }
-
   test("parse dot call with arguments arguments") {
     val input = "obj.method(arg1, arg2)(arg1)"
-    val expected = DotCall(
-      Identifier("obj"),
-      Identifier("method"),
-      Vector(Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
-        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
-      )), Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
-      )))
-    )
+    val expected =
+      DotCall(
+        expr = Identifier(
+          name = "obj",
+          sourcePos = None
+        ),
+        field = Identifier(
+          name = "method",
+          sourcePos = None
+        ),
+        telescope = Vector(
+          Tuple(
+            terms = Vector(
+              Identifier(
+                name = "arg1",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "arg2",
+                sourcePos = None
+              )
+            ),
+            sourcePos = None
+          ),
+          Tuple(
+            terms = Vector(
+              Identifier(
+                name = "arg1",
+                sourcePos = None
+              )
+            ),
+            sourcePos = None
+          )
+        ),
+        sourcePos = None
+      )
     parseAndCheck(input, expected)
   }
 
@@ -83,12 +108,10 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("obj"),
       Identifier("method"),
-      Vector(Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
-        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
-      )), Telescope(Vector(
-        Arg.of(Block(Vector(), (Identifier("arg1")))),
-      )))
+      Vector(
+        Tuple(Vector(Identifier("arg1"), Identifier("arg2"))),
+        Tuple(Vector(Block(Vector(), Some(Identifier("arg1")))))
+      )
     )
     parseAndCheck(input, expected)
   }
@@ -98,10 +121,7 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("obj"),
       Identifier("+"),
-      Vector(Telescope(Vector(
-        Arg(Vector.empty, None, None, Some(Identifier("arg1"))),
-        Arg(Vector.empty, None, None, Some(Identifier("arg2")))
-      )))
+      Vector(Tuple(Vector(Identifier("arg1"), Identifier("arg2"))))
     )
     parseAndCheck(input, expected)
   }
@@ -112,10 +132,10 @@ class DotParserTest extends FunSuite {
       DotCall(
         Identifier("obj"),
         Identifier("method"),
-        Vector(Telescope(Vector()))
+        Vector(Tuple(Vector()))
       ),
       Identifier("anotherMethod"),
-      Vector(Telescope(Vector()))
+      Vector(Tuple(Vector()))
     )
     parseAndCheck(input, expected)
   }
