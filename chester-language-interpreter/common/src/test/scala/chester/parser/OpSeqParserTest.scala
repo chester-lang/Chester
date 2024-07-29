@@ -1,7 +1,6 @@
 package chester.parser
 
 import munit.FunSuite
-import fastparse.*
 import chester.syntax.concrete._
 import chester.parser._
 
@@ -106,47 +105,36 @@ class OpSeqParserTest extends FunSuite {
           name = "f",
           sourcePos = None
         ),
-        telescope = Telescope(
-          args = Vector(
-            Arg(
-              decorations = Vector(),
-              name = None,
-              ty = None,
-              exprOrDefault = Some(
-                value = OpSeq(
-                  seq = Vector(
-                    Identifier(
-                      name = "if",
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "o",
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "then",
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "a",
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "else",
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "b",
-                      sourcePos = None
-                    )
-                  ),
-                  sourcePos = None
-                )
+        telescope = Tuple(Vector(
+          OpSeq(
+            seq = Vector(
+              Identifier(
+                name = "if",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "o",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "then",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "a",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "else",
+                sourcePos = None
+              ),
+              Identifier(
+                name = "b",
+                sourcePos = None
               )
-            )
-          ),
-          sourcePos = None
-        ),
+            ),
+            sourcePos = None
+          ))),
         sourcePos = None
       ),
       Identifier(
@@ -264,35 +252,16 @@ class OpSeqParserTest extends FunSuite {
           name = "+",
           sourcePos = None
         ),
-        telescope = Telescope(
-          args = Vector(
-            Arg(
-              decorations = Vector(),
-              name = None,
-              ty = None,
-              exprOrDefault = Some(
-                value = OpSeq(
-                  seq = Vector(
-                    IntegerLiteral(
-                      value = 2,
-                      sourcePos = None
-                    ),
-                    Identifier(
-                      name = "+",
-                      sourcePos = None
-                    ),
-                    IntegerLiteral(
-                      value = 3,
-                      sourcePos = None
-                    )
-                  ),
-                  sourcePos = None
-                )
-              )
-            )
-          ),
-          sourcePos = None
-        ),
+        telescope = Tuple(Vector(
+          OpSeq(
+            seq = Vector(
+              IntegerLiteral(2),
+              Identifier("+"),
+              IntegerLiteral(3)
+            ),
+            sourcePos = None
+          )
+        )),
         sourcePos = None
       )
     parseAndCheck(input, expected)
@@ -300,14 +269,14 @@ class OpSeqParserTest extends FunSuite {
 
   test("some macro") {
     val input = "def apply(heads: Vector<Expr>, tail: Expr): Block = Block(heads, Some(tail), None)"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Telescope(Vector(Arg(Vector(),Some(Identifier("heads")),Some(FunctionCall(Identifier("Vector"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("Expr")),false)),true,None),None)),None,false), Arg(Vector(),Some(Identifier("tail")),Some(Identifier("Expr")),None,false)),false,None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("heads")),false), Arg(Vector(),None,None,Some(FunctionCall(Identifier("Some"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("tail")),false)),false,None),None)),false), Arg(Vector(),None,None,Some(Identifier("None")),false)),false,None),None)),None)
-    assertEquals(getParsed(input), expected)
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),Generics(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Tuple(Vector(Identifier("heads"), FunctionCall(Identifier("Some"),Tuple(Vector(Identifier("tail")),None),None), Identifier("None")),None),None)),None)
+      assertEquals(getParsed(input), expected)
   }
 
   test("more macro") {
     val input = "def apply(heads: Vector<Expr>, tail: Expr): Block"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Telescope(Vector(Arg(Vector(),Some(Identifier("heads")),Some(FunctionCall(Identifier("Vector"),Telescope(Vector(Arg.of(Identifier("Expr"))),true,None),None)),None), Arg(Vector(),Some(Identifier("tail")),Some(Identifier("Expr")),None)),false,None),None), Identifier(":"), Identifier("Block")),None)
-      assertEquals(getParsed(input), expected)
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),Generics(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block")),None)
+    assertEquals(getParsed(input), expected)
   }
 
 }
