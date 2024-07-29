@@ -14,7 +14,7 @@ class PatternMatchingTest extends FunSuite {
         |    case VoiceRecording(name, link) => C;
         |  }
         |""".stripMargin
-    val expected = Parser.parseContent("testFile", input, ignoreLocation = true)
-    parseAndCheck(input, expected.right.get)
+    val expected = BinOpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(BinOpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("sender")),false), Arg(Vector(),None,None,Some(Identifier("title")),false), Arg(Vector(),None,None,Some(Identifier("_")),false)),false,None),None), Identifier("=>"), Identifier("A")),None), BinOpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("number")),false), Arg(Vector(),None,None,Some(Identifier("message")),false)),false,None),None), Identifier("=>"), Identifier("B")),None), BinOpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"),Telescope(Vector(Arg(Vector(),None,None,Some(Identifier("name")),false), Arg(Vector(),None,None,Some(Identifier("link")),false)),false,None),None), Identifier("=>"), Identifier("C")),None)),None,None)),None)
+    parseAndCheck(input, expected)
   }
 }
