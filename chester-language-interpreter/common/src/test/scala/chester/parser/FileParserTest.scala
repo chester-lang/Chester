@@ -11,15 +11,15 @@ class FileParserTest extends FunSuite {
 
   val testDir = "parserTests"
 
-  test("File-based parser tests") {
-    val inputFiles = Files.list(Paths.get(testDir))
-      .iterator()
-      .asScala
-      .filter(_.toString.endsWith(".chester"))
-      .toSeq
+  val inputFiles = Files.list(Paths.get(testDir))
+    .iterator()
+    .asScala
+    .filter(_.toString.endsWith(".chester"))
+    .toSeq
 
-    inputFiles.foreach { inputFile =>
-      val baseName = inputFile.getFileName.toString.stripSuffix(".chester")
+  inputFiles.foreach { inputFile =>
+    val baseName = inputFile.getFileName.toString.stripSuffix(".chester")
+    test(baseName) {
       val expectedFile = Paths.get(testDir, s"$baseName.expected")
 
       val input = new String(Files.readAllBytes(inputFile))
@@ -27,7 +27,7 @@ class FileParserTest extends FunSuite {
 
       Parser.parseTopLevel(FileNameAndContent(inputFile.toString, input)) match {
         case Right(parsedBlock) =>
-          val actual = parsedBlock.toString
+          val actual: String = pprint.apply(parsedBlock).plainText
 
           if (!expectedExists) {
             Files.write(expectedFile, actual.getBytes)

@@ -1,0 +1,4 @@
+id: [a: Type](x: a) -> a;
+id(x) = x;
+
+id1[a: Type](x: a): a = x;
