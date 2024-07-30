@@ -1,0 +1,27 @@
+module heu;
+
+data abstract AnimalType;
+
+data Dog extends AnimalType {
+  wo: String;
+}
+
+data abstract Expr[T: Type];
+
+data IVal extends Expr[Int] {
+  val: Int;
+}
+
+data BVal extends Expr[Bool] {
+  val: Bool;
+}
+
+data sealed abstract Vector[n: Nat, T: Type];
+
+data Nil extends Vector[0, T] {
+}
+
+data Cons extends Vector[succ(n), T] {
+  head: T;
+  tail: Vector[n, T];
+}

@@ -1,0 +1,1313 @@
+Block(
+  heads = Vector(
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "module",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 5, line = 0, column = 5))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "heu",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 7, line = 0, column = 7), end = Pos(index = 9, line = 0, column = 9))
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 9, line = 0, column = 9))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 13, line = 2, column = 0), end = Pos(index = 16, line = 2, column = 3))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "abstract",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 18, line = 2, column = 5), end = Pos(index = 25, line = 2, column = 12))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "AnimalType",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 27, line = 2, column = 14), end = Pos(index = 36, line = 2, column = 23))
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 13, line = 2, column = 0), end = Pos(index = 36, line = 2, column = 23))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 40, line = 4, column = 0), end = Pos(index = 43, line = 4, column = 3))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "Dog",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 45, line = 4, column = 5), end = Pos(index = 47, line = 4, column = 7))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "extends",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 49, line = 4, column = 9), end = Pos(index = 55, line = 4, column = 15))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "AnimalType",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 57, line = 4, column = 17), end = Pos(index = 66, line = 4, column = 26))
+            )
+          ),
+          commentInfo = None
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "wo",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 72, line = 5, column = 2),
+                        end = Pos(index = 73, line = 5, column = 3)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = ":",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 74, line = 5, column = 4),
+                        end = Pos(index = 74, line = 5, column = 4)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = "String",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 76, line = 5, column = 6),
+                        end = Pos(index = 81, line = 5, column = 11)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              ),
+              sourcePos = Some(
+                value = SourcePos(
+                  fileName = "parserTests/some.chester",
+                  range = RangeInFile(
+                    start = Pos(index = 72, line = 5, column = 2),
+                    end = Pos(index = 81, line = 5, column = 11)
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          ),
+          tail = None,
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 68, line = 4, column = 28), end = Pos(index = 84, line = 6, column = 0))
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 40, line = 4, column = 0), end = Pos(index = 84, line = 6, column = 0))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 87, line = 8, column = 0), end = Pos(index = 90, line = 8, column = 3))
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "abstract",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(start = Pos(index = 92, line = 8, column = 5), end = Pos(index = 99, line = 8, column = 12))
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 101, line = 8, column = 14),
+                  end = Pos(index = 104, line = 8, column = 17)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "T",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 106, line = 8, column = 19),
+                          end = Pos(index = 106, line = 8, column = 19)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = ":",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 107, line = 8, column = 20),
+                          end = Pos(index = 107, line = 8, column = 20)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = "Type",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 109, line = 8, column = 22),
+                          end = Pos(index = 112, line = 8, column = 25)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  )
+                ),
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 106, line = 8, column = 19),
+                      end = Pos(index = 112, line = 8, column = 25)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 105, line = 8, column = 18),
+                  end = Pos(index = 113, line = 8, column = 26)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 101, line = 8, column = 14),
+                end = Pos(index = 113, line = 8, column = 26)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 87, line = 8, column = 0), end = Pos(index = 113, line = 8, column = 26))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 117, line = 10, column = 0),
+                end = Pos(index = 120, line = 10, column = 3)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "IVal",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 122, line = 10, column = 5),
+                end = Pos(index = 125, line = 10, column = 8)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "extends",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 127, line = 10, column = 10),
+                end = Pos(index = 133, line = 10, column = 16)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 135, line = 10, column = 18),
+                  end = Pos(index = 138, line = 10, column = 21)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Int",
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 140, line = 10, column = 23),
+                      end = Pos(index = 142, line = 10, column = 25)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 139, line = 10, column = 22),
+                  end = Pos(index = 143, line = 10, column = 26)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 135, line = 10, column = 18),
+                end = Pos(index = 143, line = 10, column = 26)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "val",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 149, line = 11, column = 2),
+                        end = Pos(index = 151, line = 11, column = 4)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = ":",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 152, line = 11, column = 5),
+                        end = Pos(index = 152, line = 11, column = 5)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = "Int",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 154, line = 11, column = 7),
+                        end = Pos(index = 156, line = 11, column = 9)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              ),
+              sourcePos = Some(
+                value = SourcePos(
+                  fileName = "parserTests/some.chester",
+                  range = RangeInFile(
+                    start = Pos(index = 149, line = 11, column = 2),
+                    end = Pos(index = 156, line = 11, column = 9)
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          ),
+          tail = None,
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 145, line = 10, column = 28),
+                end = Pos(index = 159, line = 12, column = 0)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 117, line = 10, column = 0), end = Pos(index = 159, line = 12, column = 0))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 162, line = 14, column = 0),
+                end = Pos(index = 165, line = 14, column = 3)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "BVal",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 167, line = 14, column = 5),
+                end = Pos(index = 170, line = 14, column = 8)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "extends",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 172, line = 14, column = 10),
+                end = Pos(index = 178, line = 14, column = 16)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 180, line = 14, column = 18),
+                  end = Pos(index = 183, line = 14, column = 21)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Bool",
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 185, line = 14, column = 23),
+                      end = Pos(index = 188, line = 14, column = 26)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 184, line = 14, column = 22),
+                  end = Pos(index = 189, line = 14, column = 27)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 180, line = 14, column = 18),
+                end = Pos(index = 189, line = 14, column = 27)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "val",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 195, line = 15, column = 2),
+                        end = Pos(index = 197, line = 15, column = 4)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = ":",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 198, line = 15, column = 5),
+                        end = Pos(index = 198, line = 15, column = 5)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = "Bool",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 200, line = 15, column = 7),
+                        end = Pos(index = 203, line = 15, column = 10)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              ),
+              sourcePos = Some(
+                value = SourcePos(
+                  fileName = "parserTests/some.chester",
+                  range = RangeInFile(
+                    start = Pos(index = 195, line = 15, column = 2),
+                    end = Pos(index = 203, line = 15, column = 10)
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          ),
+          tail = None,
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 191, line = 14, column = 29),
+                end = Pos(index = 206, line = 16, column = 0)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 162, line = 14, column = 0), end = Pos(index = 206, line = 16, column = 0))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 209, line = 18, column = 0),
+                end = Pos(index = 212, line = 18, column = 3)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "sealed",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 214, line = 18, column = 5),
+                end = Pos(index = 219, line = 18, column = 10)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "abstract",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 221, line = 18, column = 12),
+                end = Pos(index = 228, line = 18, column = 19)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 230, line = 18, column = 21),
+                  end = Pos(index = 235, line = 18, column = 26)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "n",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 237, line = 18, column = 28),
+                          end = Pos(index = 237, line = 18, column = 28)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = ":",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 238, line = 18, column = 29),
+                          end = Pos(index = 238, line = 18, column = 29)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = "Nat",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 240, line = 18, column = 31),
+                          end = Pos(index = 242, line = 18, column = 33)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  )
+                ),
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 237, line = 18, column = 28),
+                      end = Pos(index = 242, line = 18, column = 33)
+                    )
+                  )
+                ),
+                commentInfo = None
+              ),
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "T",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 245, line = 18, column = 36),
+                          end = Pos(index = 245, line = 18, column = 36)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = ":",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 246, line = 18, column = 37),
+                          end = Pos(index = 246, line = 18, column = 37)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  Identifier(
+                    name = "Type",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 248, line = 18, column = 39),
+                          end = Pos(index = 251, line = 18, column = 42)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  )
+                ),
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 245, line = 18, column = 36),
+                      end = Pos(index = 251, line = 18, column = 42)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 236, line = 18, column = 27),
+                  end = Pos(index = 252, line = 18, column = 43)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 230, line = 18, column = 21),
+                end = Pos(index = 252, line = 18, column = 43)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 209, line = 18, column = 0), end = Pos(index = 252, line = 18, column = 43))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 256, line = 20, column = 0),
+                end = Pos(index = 259, line = 20, column = 3)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "Nil",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 261, line = 20, column = 5),
+                end = Pos(index = 263, line = 20, column = 7)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "extends",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 265, line = 20, column = 9),
+                end = Pos(index = 271, line = 20, column = 15)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 273, line = 20, column = 17),
+                  end = Pos(index = 278, line = 20, column = 22)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              IntegerLiteral(
+                value = 0,
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 280, line = 20, column = 24),
+                      end = Pos(index = 280, line = 20, column = 24)
+                    )
+                  )
+                ),
+                commentInfo = None
+              ),
+              Identifier(
+                name = "T",
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 283, line = 20, column = 27),
+                      end = Pos(index = 283, line = 20, column = 27)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 279, line = 20, column = 23),
+                  end = Pos(index = 284, line = 20, column = 28)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 273, line = 20, column = 17),
+                end = Pos(index = 284, line = 20, column = 28)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        ObjectExpr(
+          clauses = Vector(),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 286, line = 20, column = 30),
+                end = Pos(index = 288, line = 21, column = 0)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 256, line = 20, column = 0), end = Pos(index = 288, line = 21, column = 0))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 291, line = 23, column = 0),
+                end = Pos(index = 294, line = 23, column = 3)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "Cons",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 296, line = 23, column = 5),
+                end = Pos(index = 299, line = 23, column = 8)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "extends",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 301, line = 23, column = 10),
+                end = Pos(index = 307, line = 23, column = 16)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 309, line = 23, column = 18),
+                  end = Pos(index = 314, line = 23, column = 23)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              FunctionCall(
+                function = Identifier(
+                  name = "succ",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 316, line = 23, column = 25),
+                        end = Pos(index = 319, line = 23, column = 28)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                telescope = Tuple(
+                  terms = Vector(
+                    Identifier(
+                      name = "n",
+                      sourcePos = Some(
+                        value = SourcePos(
+                          fileName = "parserTests/some.chester",
+                          range = RangeInFile(
+                            start = Pos(index = 321, line = 23, column = 30),
+                            end = Pos(index = 321, line = 23, column = 30)
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  ),
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 320, line = 23, column = 29),
+                        end = Pos(index = 322, line = 23, column = 31)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 316, line = 23, column = 25),
+                      end = Pos(index = 322, line = 23, column = 31)
+                    )
+                  )
+                ),
+                commentInfo = None
+              ),
+              Identifier(
+                name = "T",
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/some.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 325, line = 23, column = 34),
+                      end = Pos(index = 325, line = 23, column = 34)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            ),
+            sourcePos = Some(
+              value = SourcePos(
+                fileName = "parserTests/some.chester",
+                range = RangeInFile(
+                  start = Pos(index = 315, line = 23, column = 24),
+                  end = Pos(index = 326, line = 23, column = 35)
+                )
+              )
+            ),
+            commentInfo = None
+          ),
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 309, line = 23, column = 18),
+                end = Pos(index = 326, line = 23, column = 35)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "head",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 332, line = 24, column = 2),
+                        end = Pos(index = 335, line = 24, column = 5)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = ":",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 336, line = 24, column = 6),
+                        end = Pos(index = 336, line = 24, column = 6)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = "T",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 338, line = 24, column = 8),
+                        end = Pos(index = 338, line = 24, column = 8)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              ),
+              sourcePos = Some(
+                value = SourcePos(
+                  fileName = "parserTests/some.chester",
+                  range = RangeInFile(
+                    start = Pos(index = 332, line = 24, column = 2),
+                    end = Pos(index = 338, line = 24, column = 8)
+                  )
+                )
+              ),
+              commentInfo = None
+            ),
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "tail",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 343, line = 25, column = 2),
+                        end = Pos(index = 346, line = 25, column = 5)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                Identifier(
+                  name = ":",
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 347, line = 25, column = 6),
+                        end = Pos(index = 347, line = 25, column = 6)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                ),
+                FunctionCall(
+                  function = Identifier(
+                    name = "Vector",
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 349, line = 25, column = 8),
+                          end = Pos(index = 354, line = 25, column = 13)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  telescope = ListExpr(
+                    terms = Vector(
+                      Identifier(
+                        name = "n",
+                        sourcePos = Some(
+                          value = SourcePos(
+                            fileName = "parserTests/some.chester",
+                            range = RangeInFile(
+                              start = Pos(index = 356, line = 25, column = 15),
+                              end = Pos(index = 356, line = 25, column = 15)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      ),
+                      Identifier(
+                        name = "T",
+                        sourcePos = Some(
+                          value = SourcePos(
+                            fileName = "parserTests/some.chester",
+                            range = RangeInFile(
+                              start = Pos(index = 359, line = 25, column = 18),
+                              end = Pos(index = 359, line = 25, column = 18)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      )
+                    ),
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/some.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 355, line = 25, column = 14),
+                          end = Pos(index = 360, line = 25, column = 19)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  ),
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/some.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 349, line = 25, column = 8),
+                        end = Pos(index = 360, line = 25, column = 19)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              ),
+              sourcePos = Some(
+                value = SourcePos(
+                  fileName = "parserTests/some.chester",
+                  range = RangeInFile(
+                    start = Pos(index = 343, line = 25, column = 2),
+                    end = Pos(index = 360, line = 25, column = 19)
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          ),
+          tail = None,
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 328, line = 23, column = 37),
+                end = Pos(index = 363, line = 26, column = 0)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 291, line = 23, column = 0), end = Pos(index = 363, line = 26, column = 0))
+        )
+      ),
+      commentInfo = None
+    )
+  ),
+  tail = None,
+  sourcePos = Some(
+    value = SourcePos(
+      fileName = "parserTests/some.chester",
+      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 363, line = 26, column = 0))
+    )
+  ),
+  commentInfo = None
+)
