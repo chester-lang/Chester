@@ -1,6 +1,8 @@
 package chester.error
 
-case class Pos(index: Int, line: Int, column:Int)
+import chester.utils.encodeString
+
+case class Pos(index: Int, line: Int, column: Int)
 
 object Pos {
   lazy val Zero = Pos(0, 0, 0)
@@ -17,4 +19,6 @@ case class SourcePos(fileName: String, range: RangeInFile) {
     val newRange = RangeInFile(range.start, other.range.end)
     SourcePos(fileName, newRange)
   }
+
+  override def toString: String = s"SourcePos(\"${encodeString(fileName)}\",${range})"
 }

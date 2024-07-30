@@ -2,6 +2,7 @@ package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
 import chester.syntax.IdentifierRules.strIsOperator
+import chester.utils.encodeString
 
 
 sealed trait Expr extends WithPos {
@@ -12,8 +13,6 @@ sealed trait Expr extends WithPos {
 
 sealed trait ParsedExpr extends Expr
 
-
-def encodeString(x: String): String = x.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
 
 case class Identifier(name: String, sourcePos: Option[SourcePos] = None) extends ParsedExpr {
   override def toString: String = sourcePos match {
