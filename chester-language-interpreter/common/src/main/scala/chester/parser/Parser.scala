@@ -194,15 +194,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = PwithPos(opSeqGettingExprs(ctx = ctx)).flatMap((exprs, pos) => {
     val xs = (expr +: exprs)
     val exprCouldPrefix = expr match {
-      case Identifier(name, _) if strIsOperator(name) => true
+      case Identifier(name, _, _) if strIsOperator(name) => true
       case _ => false
     }
     if (ctx.dontAllowEqualSymbol && xs.exists(_ match {
-      case Identifier("=", _) => true
+      case Identifier("=", _, _) => true
       case _ => false
     })) return Fail("Looks like a equal")
     if (ctx.dontAllowVararg && xs.exists(_ match {
-      case Identifier("...", _) => true
+      case Identifier("...", _, _) => true
       case _ => false
     })) return Fail("Looks like a vararg")
     if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(OpSeq(xs.toVector, p(pos)))

@@ -9,7 +9,7 @@ class ParserTest extends FunSuite {
   test("parse valid identifier") {
     val result = Parser.parseExpression("testFile", "validIdentifier123")
     result match {
-      case Parsed.Success(Identifier(name, Some(pos)), _) =>
+      case Parsed.Success(Identifier(name, Some(pos), _), _) =>
         assertEquals(name, "validIdentifier123")
         assertEquals(pos.fileName, "testFile")
         assertEquals(pos.range.start.line, 0)
@@ -21,7 +21,7 @@ class ParserTest extends FunSuite {
   test("parse identifier with symbols") {
     val result = Parser.parseExpression("testFile", "valid-Identifier_123")
     result match {
-      case Parsed.Success(Identifier(name, Some(pos)), _) =>
+      case Parsed.Success(Identifier(name, Some(pos), _), _) =>
         assertEquals(name, "valid-Identifier_123")
         assertEquals(pos.fileName, "testFile")
         assertEquals(pos.range.start.line, 0)
@@ -97,7 +97,7 @@ class ParserTest extends FunSuite {
     val input = "\"Hello, world!\""
     val result = Parser.parseExpression("testFile", input)
     result match {
-      case Parsed.Success(StringLiteral(value, _), _) =>
+      case Parsed.Success(StringLiteral(value, _, _), _) =>
         assertEquals(value, "Hello, world!")
       case _ => fail(s"Expected StringLiteral but got $result")
     }
@@ -107,7 +107,7 @@ class ParserTest extends FunSuite {
     val input = "\"Hello, \\\"world\\\"!\\n\""
     val result = Parser.parseExpression("testFile", input)
     result match {
-      case Parsed.Success(StringLiteral(value, _), _) =>
+      case Parsed.Success(StringLiteral(value, _, _), _) =>
         assertEquals(value, "Hello, \"world\"!\n")
       case _ => fail(s"Expected StringLiteral but got $result")
     }
@@ -118,7 +118,7 @@ class ParserTest extends FunSuite {
       val input = "\"\"\"\n  Hello,\n  world!\n\"\"\""
       val result = Parser.parseExpression("testFile", input)
       result match {
-        case Parsed.Success(StringLiteral(value, _), _) =>
+        case Parsed.Success(StringLiteral(value, _, _), _) =>
           assertEquals(value, "Hello,\nworld!")
         case _ => fail(s"Expected StringLiteral but got $result")
       }
