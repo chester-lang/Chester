@@ -9,9 +9,9 @@ enum CommentType {
   case MultiLine
 }
 
-case class Comment(content: String, typ: CommentType, sourcePos: SourcePos)
+case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])
 
-case class CommentInfo(commentBefore: Option[Comment], commentAfter: Option[Comment]) {
+case class CommentInfo(commentBefore: Vector[Comment], commentAfter: Vector[Comment]) {
   if (commentBefore.isEmpty && commentAfter.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }

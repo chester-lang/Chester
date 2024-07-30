@@ -16,17 +16,33 @@ import scala.:+
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
 
-  def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ ("\n" | End))
+  def nEnd: P[Unit] = P("\n" | End)
+
+  @deprecated("comment is lost")
+  def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ nEnd)
+
+  def commentOneLine: P[Comment] = PwithPos("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map(Comment(_, CommentType.OneLine, _))
+
+  def allComment: P[Comment] = P(commentOneLine)
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
 
+  @deprecated("comment is lost")
   def delimiter: P[Unit] = P((simpleDelimiter | comment).rep)
 
+  def delimiter1: P[Vector[Comment]] = P((simpleDelimiter.map(x => Vector()) | allComment.rep).rep).map(_.flatten.toVector)
+
+  @deprecated("comment is lost")
   def lineEnding: P[Unit] = P(comment | (CharsWhileIn(" \t\r").? ~ ("\n" | End)))
+
+  def lineEnding1: P[Vector[Comment]] = P(commentOneLine.map(Vector(_)) | (CharsWhileIn(" \t\r").? ~ nEnd).map(x => Vector()))
 
   def lineNonEndingSpace: P[Unit] = P((CharsWhileIn(" \t\r")))
 
+  @deprecated("comment is lost")
   def maybeSpace: P[Unit] = P(delimiter.?)
+
+  def maybeSpace1: P[Vector[Comment]] = P(delimiter1.?.map(_.toVector.flatten))
 
   def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
 
