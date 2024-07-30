@@ -100,12 +100,6 @@ case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) exten
   }
 }
 
-case class Generics(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedMaybeTelescope {
-  override def descent(operator: Expr => Expr): Generics = {
-    Generics(terms.map(_.descentAndApply(operator)), sourcePos)
-  }
-}
-
 case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None) extends MaybeTelescope {
   override def descent(operator: Expr => Expr): Telescope = {
     Telescope(args.map(_.descentAndApply(operator)), implicitly, sourcePos)
@@ -141,8 +135,8 @@ case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None) ext
   }
 }
 
-case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedExpr {
-  override def descent(operator: Expr => Expr): Expr = {
+case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None) extends ParsedMaybeTelescope {
+  override def descent(operator: Expr => Expr): ListExpr = {
     ListExpr(terms.map(_.descentAndApply(operator)), sourcePos)
   }
 }

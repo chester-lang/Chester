@@ -268,14 +268,14 @@ class OpSeqParserTest extends FunSuite {
   }
 
   test("some macro") {
-    val input = "def apply(heads: Vector<Expr>, tail: Expr): Block = Block(heads, Some(tail), None)"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),Generics(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Tuple(Vector(Identifier("heads"), FunctionCall(Identifier("Some"),Tuple(Vector(Identifier("tail")),None),None), Identifier("None")),None),None)),None)
+    val input = "def apply(heads: Vector[Expr], tail: Expr): Block = Block(heads, Some(tail), None)"
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),ListExpr(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Tuple(Vector(Identifier("heads"), FunctionCall(Identifier("Some"),Tuple(Vector(Identifier("tail")),None),None), Identifier("None")),None),None)),None)
       assertEquals(getParsed(input), expected)
   }
 
   test("more macro") {
-    val input = "def apply(heads: Vector<Expr>, tail: Expr): Block"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),Generics(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block")),None)
+    val input = "def apply(heads: Vector[Expr], tail: Expr): Block"
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),ListExpr(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block")),None)
     assertEquals(getParsed(input), expected)
   }
 

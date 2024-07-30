@@ -99,8 +99,8 @@ class TelescopeParserTest extends FunSuite {
   }
 
   test("parse generics with arguments without names") {
-    val input = "<Integer>"
-    val expected = Generics(Vector(
+    val input = "[Integer]"
+    val expected = ListExpr(Vector(
       Identifier("Integer")
     ))
     parseAndCheck(input, expected)

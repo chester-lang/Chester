@@ -31,9 +31,9 @@ class FunctionCallParserTest extends FunSuite {
   }
 
   test("parse function call with generics and mixed type arguments") {
-    val input = "createPerson<Integer>(\"John\", 30, true)"
+    val input = "createPerson[Integer](\"John\", 30, true)"
     val expected = FunctionCall(
-      FunctionCall(Identifier("createPerson"), Generics(Vector(Identifier("Integer")))),
+      FunctionCall(Identifier("createPerson"), ListExpr(Vector(Identifier("Integer")))),
       Tuple(Vector(StringLiteral("John"), IntegerLiteral(30), Identifier("true")))
     )
     parseAndCheck(input, expected)

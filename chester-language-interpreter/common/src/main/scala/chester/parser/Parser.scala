@@ -147,10 +147,6 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Tuple(terms.toVector, pos)
   }
 
-  def generics: P[Generics] = PwithPos("<" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ">").map { (terms, pos) =>
-    Generics(terms.toVector, pos)
-  }
-
   def annotation: P[(Identifier, Vector[ParsedMaybeTelescope])] = P("@" ~ identifier ~ callingZeroOrMore())
 
   def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse()).map { case ((annotation, telescope, expr), pos) =>
@@ -164,7 +160,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     def blockCall = !inOpSeq
   }
 
-  def callingOnce(ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((generics | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
+  def callingOnce(ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((list | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
     Tuple(Vector(block), pos)
   })
 
@@ -201,23 +197,6 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       case Identifier(name, _) if strIsOperator(name) => true
       case _ => false
     }
-    val looksLikeOtherThings = {
-      val start = xs.indexWhere(_ match {
-        case Identifier("<", _) => true
-        case _ => false
-      })
-      val end = xs.indexWhere(_ match {
-        case Identifier(">", _) => true
-        case FunctionCall(Identifier(">", _), _, _) => true
-        case _ => false
-      }, start)
-      end >= 0 || start >= 0 && end >= 0 && start < end
-    }
-    if (looksLikeOtherThings) return Fail("Looks like a telescope")
-    if (ctx.dontallowBiggerSymbol && xs.exists(_ match {
-      case Identifier(">", _) => true
-      case _ => false
-    })) return Fail("Looks like a telescope")
     if (ctx.dontAllowEqualSymbol && xs.exists(_ match {
       case Identifier("=", _) => true
       case _ => false
@@ -248,7 +227,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   })
 
-  inline def parse0: P[ParsedExpr] = objectParse | block | annotated | generics | list | tuple | literal | identifier
+  inline def parse0: P[ParsedExpr] = objectParse | block | annotated | list | tuple | literal | identifier
 
   def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
