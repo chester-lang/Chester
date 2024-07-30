@@ -22,7 +22,7 @@ sealed trait Expr extends WithPos {
 
   def descentAndApply(operator: Expr => Expr): Expr = operator(this.descent(operator))
 
-  def commentInfo: Option[CommentInfo] = None
+  def commentInfo: Option[CommentInfo]
 
   def sourcePos: Option[SourcePos]
 }
@@ -79,7 +79,7 @@ object Block {
   def apply(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos]): Block = Block(heads, Some(tail), sourcePos)
 }
 
-case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[SourcePos] = None) extends Expr {
+case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
     MacroCall(macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)), sourcePos)
   }
