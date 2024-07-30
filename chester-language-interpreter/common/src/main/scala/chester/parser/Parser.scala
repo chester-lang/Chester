@@ -238,7 +238,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
   }
 
-  def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
+  def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx).on(expr.isInstanceOf[Identifier] || expr.isInstanceOf[FunctionCall] || !ctx.inOpSeq) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getPos1 = ((endPos: Option[SourcePos]) => for {
       p0 <- getPos(pos)
