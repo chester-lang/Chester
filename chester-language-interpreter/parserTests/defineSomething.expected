@@ -7,10 +7,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 0, line = 0, column = 0),
-                end = Pos(index = 1, line = 0, column = 1)
-              )
+              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 1, line = 0, column = 1))
             )
           )
         ),
@@ -19,10 +16,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 2, line = 0, column = 2),
-                end = Pos(index = 2, line = 0, column = 2)
-              )
+              range = RangeInFile(start = Pos(index = 2, line = 0, column = 2), end = Pos(index = 2, line = 0, column = 2))
             )
           )
         ),
@@ -81,10 +75,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 4, line = 0, column = 4),
-                end = Pos(index = 12, line = 0, column = 12)
-              )
+              range = RangeInFile(start = Pos(index = 4, line = 0, column = 4), end = Pos(index = 12, line = 0, column = 12))
             )
           )
         ),
@@ -143,10 +134,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 13, line = 0, column = 13),
-                end = Pos(index = 18, line = 0, column = 18)
-              )
+              range = RangeInFile(start = Pos(index = 13, line = 0, column = 13), end = Pos(index = 18, line = 0, column = 18))
             )
           )
         ),
@@ -155,10 +143,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 20, line = 0, column = 20),
-                end = Pos(index = 21, line = 0, column = 21)
-              )
+              range = RangeInFile(start = Pos(index = 20, line = 0, column = 20), end = Pos(index = 21, line = 0, column = 21))
             )
           )
         ),
@@ -167,10 +152,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 23, line = 0, column = 23),
-                end = Pos(index = 23, line = 0, column = 23)
-              )
+              range = RangeInFile(start = Pos(index = 23, line = 0, column = 23), end = Pos(index = 23, line = 0, column = 23))
             )
           )
         )
@@ -178,10 +160,7 @@ Block(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/defineSomething.chester",
-          range = RangeInFile(
-            start = Pos(index = 0, line = 0, column = 0),
-            end = Pos(index = 23, line = 0, column = 23)
-          )
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 23, line = 0, column = 23))
         )
       )
     ),
@@ -193,10 +172,7 @@ Block(
             sourcePos = Some(
               value = SourcePos(
                 fileName = "parserTests/defineSomething.chester",
-                range = RangeInFile(
-                  start = Pos(index = 26, line = 1, column = 0),
-                  end = Pos(index = 27, line = 1, column = 1)
-                )
+                range = RangeInFile(start = Pos(index = 26, line = 1, column = 0), end = Pos(index = 27, line = 1, column = 1))
               )
             )
           ),
@@ -218,20 +194,14 @@ Block(
             sourcePos = Some(
               value = SourcePos(
                 fileName = "parserTests/defineSomething.chester",
-                range = RangeInFile(
-                  start = Pos(index = 28, line = 1, column = 2),
-                  end = Pos(index = 30, line = 1, column = 4)
-                )
+                range = RangeInFile(start = Pos(index = 28, line = 1, column = 2), end = Pos(index = 30, line = 1, column = 4))
               )
             )
           ),
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 26, line = 1, column = 0),
-                end = Pos(index = 30, line = 1, column = 4)
-              )
+              range = RangeInFile(start = Pos(index = 26, line = 1, column = 0), end = Pos(index = 30, line = 1, column = 4))
             )
           )
         ),
@@ -240,10 +210,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 32, line = 1, column = 6),
-                end = Pos(index = 32, line = 1, column = 6)
-              )
+              range = RangeInFile(start = Pos(index = 32, line = 1, column = 6), end = Pos(index = 32, line = 1, column = 6))
             )
           )
         ),
@@ -252,10 +219,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 34, line = 1, column = 8),
-                end = Pos(index = 34, line = 1, column = 8)
-              )
+              range = RangeInFile(start = Pos(index = 34, line = 1, column = 8), end = Pos(index = 34, line = 1, column = 8))
             )
           )
         )
@@ -263,10 +227,7 @@ Block(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/defineSomething.chester",
-          range = RangeInFile(
-            start = Pos(index = 26, line = 1, column = 0),
-            end = Pos(index = 34, line = 1, column = 8)
-          )
+          range = RangeInFile(start = Pos(index = 26, line = 1, column = 0), end = Pos(index = 34, line = 1, column = 8))
         )
       )
     ),
@@ -351,10 +312,7 @@ Block(
             sourcePos = Some(
               value = SourcePos(
                 fileName = "parserTests/defineSomething.chester",
-                range = RangeInFile(
-                  start = Pos(index = 38, line = 3, column = 0),
-                  end = Pos(index = 49, line = 3, column = 11)
-                )
+                range = RangeInFile(start = Pos(index = 38, line = 3, column = 0), end = Pos(index = 49, line = 3, column = 11))
               )
             )
           ),
@@ -423,10 +381,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 38, line = 3, column = 0),
-                end = Pos(index = 55, line = 3, column = 17)
-              )
+              range = RangeInFile(start = Pos(index = 38, line = 3, column = 0), end = Pos(index = 55, line = 3, column = 17))
             )
           )
         ),
@@ -435,10 +390,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 56, line = 3, column = 18),
-                end = Pos(index = 56, line = 3, column = 18)
-              )
+              range = RangeInFile(start = Pos(index = 56, line = 3, column = 18), end = Pos(index = 56, line = 3, column = 18))
             )
           )
         ),
@@ -447,10 +399,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 58, line = 3, column = 20),
-                end = Pos(index = 58, line = 3, column = 20)
-              )
+              range = RangeInFile(start = Pos(index = 58, line = 3, column = 20), end = Pos(index = 58, line = 3, column = 20))
             )
           )
         ),
@@ -459,10 +408,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 60, line = 3, column = 22),
-                end = Pos(index = 60, line = 3, column = 22)
-              )
+              range = RangeInFile(start = Pos(index = 60, line = 3, column = 22), end = Pos(index = 60, line = 3, column = 22))
             )
           )
         ),
@@ -471,10 +417,7 @@ Block(
           sourcePos = Some(
             value = SourcePos(
               fileName = "parserTests/defineSomething.chester",
-              range = RangeInFile(
-                start = Pos(index = 62, line = 3, column = 24),
-                end = Pos(index = 62, line = 3, column = 24)
-              )
+              range = RangeInFile(start = Pos(index = 62, line = 3, column = 24), end = Pos(index = 62, line = 3, column = 24))
             )
           )
         )
@@ -482,10 +425,7 @@ Block(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/defineSomething.chester",
-          range = RangeInFile(
-            start = Pos(index = 38, line = 3, column = 0),
-            end = Pos(index = 62, line = 3, column = 24)
-          )
+          range = RangeInFile(start = Pos(index = 38, line = 3, column = 0), end = Pos(index = 62, line = 3, column = 24))
         )
       )
     )
@@ -494,7 +434,7 @@ Block(
   sourcePos = Some(
     value = SourcePos(
       fileName = "parserTests/defineSomething.chester",
-      range = RangeInFile(
-        start = Pos(index = 0, line = 0, column = 0),
-        end = Pos(index = 63, line = 3, column = 25)
-...
+      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 63, line = 3, column = 25))
+    )
+  )
+)

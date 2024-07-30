@@ -6,10 +6,7 @@ Block(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/a.chester",
-          range = RangeInFile(
-            start = Pos(index = 0, line = 0, column = 0),
-            end = Pos(index = 0, line = 0, column = 0)
-          )
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 0, line = 0, column = 0))
         )
       )
     )
@@ -17,10 +14,7 @@ Block(
   sourcePos = Some(
     value = SourcePos(
       fileName = "parserTests/a.chester",
-      range = RangeInFile(
-        start = Pos(index = 0, line = 0, column = 0),
-        end = Pos(index = 0, line = 0, column = 0)
-      )
+      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 0, line = 0, column = 0))
     )
   )
 )

@@ -27,7 +27,7 @@ class FileParserTest extends FunSuite {
 
       Parser.parseTopLevel(FileNameAndContent(inputFile.toString, input)) match {
         case Right(parsedBlock) =>
-          val actual: String = pprint.apply(parsedBlock).plainText
+          val actual: String = pprint.apply(parsedBlock, width = 128, height = Integer.MAX_VALUE).plainText
 
           if (!expectedExists) {
             Files.write(expectedFile, actual.getBytes)
