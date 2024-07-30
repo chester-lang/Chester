@@ -25,3 +25,6 @@ data Cons extends Vector[succ(n), T] {
   head: T;
   tail: Vector[n, T];
 }
+
+proof1: Nil = Nil;
+proof1 = ?hole;

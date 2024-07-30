@@ -1300,13 +1300,152 @@ Block(
         )
       ),
       commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "proof1",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 366, line = 28, column = 0),
+                end = Pos(index = 371, line = 28, column = 5)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = ":",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 372, line = 28, column = 6),
+                end = Pos(index = 372, line = 28, column = 6)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "Nil",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 374, line = 28, column = 8),
+                end = Pos(index = 376, line = 28, column = 10)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "=",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 378, line = 28, column = 12),
+                end = Pos(index = 378, line = 28, column = 12)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "Nil",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 380, line = 28, column = 14),
+                end = Pos(index = 382, line = 28, column = 16)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 366, line = 28, column = 0), end = Pos(index = 382, line = 28, column = 16))
+        )
+      ),
+      commentInfo = None
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "proof1",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 385, line = 29, column = 0),
+                end = Pos(index = 390, line = 29, column = 5)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "=",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 392, line = 29, column = 7),
+                end = Pos(index = 392, line = 29, column = 7)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "?",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 394, line = 29, column = 9),
+                end = Pos(index = 394, line = 29, column = 9)
+              )
+            )
+          ),
+          commentInfo = None
+        ),
+        Identifier(
+          name = "hole",
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/some.chester",
+              range = RangeInFile(
+                start = Pos(index = 395, line = 29, column = 10),
+                end = Pos(index = 398, line = 29, column = 13)
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      ),
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/some.chester",
+          range = RangeInFile(start = Pos(index = 385, line = 29, column = 0), end = Pos(index = 398, line = 29, column = 13))
+        )
+      ),
+      commentInfo = None
     )
   ),
   tail = None,
   sourcePos = Some(
     value = SourcePos(
       fileName = "parserTests/some.chester",
-      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 363, line = 26, column = 0))
+      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 399, line = 29, column = 14))
     )
   ),
   commentInfo = None
