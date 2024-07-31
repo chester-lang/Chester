@@ -25,6 +25,7 @@ data InternetOverdose extends 舞;
 // InternetOverdose is overloaded with `Type` and `InternetOverdose`. For design: using `.instance` and `.type` for distinguishing doesn't look good? 
 it: Type = InternetOverdose;
 i: InternetOverdose = InternetOverdose;
+ia: Any = InternetOverdose; // How do you choose from overloaded Type and InternetOverdose? People probably don't want a Type in a value, so one is chosen. Won't it bring ambiguous problem? Surely it will. What's the cost?
 
 data #sealed #abstract Expr[T: Type]: Type {
   eval: T;
