@@ -1,7 +1,7 @@
 package chester.tyck
 
-import chester.syntax.concrete.Expr
-import chester.syntax.core.Term
+import chester.syntax.concrete.*
+import chester.syntax.core._
 
 case class TyckState()
 
@@ -15,20 +15,50 @@ object TyckError {
   val emptyResults = TyckError("Empty Results")
 }
 
-case class Results[T](xs: LazyList[Either[TyckError, T]]) {
-  def map[U](f: T => U): Results[U] = Results(xs.map(_.map(f)))
+case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)]]) {
 
-  def flatMap[U](f: T => Results[U]): Results[U] = Results(xs.flatMap {
-    case Left(err) => LazyList(Left(err))
-    case Right(x) => f(x).xs
-  })
+  def map[U](f: T => U): Getting[U] = Getting { state =>
+    xs(state).map {
+      case Left(err) => Left(err)
+      case Right((nextState, value)) => Right((nextState, f(value)))
+    }
+  }
 
-  def getEither: Either[TyckError, T] = xs.find(_.isRight).getOrElse(xs.headOption.getOrElse(Left(TyckError.emptyResults)))
+  def flatMap[U](f: T => Getting[U]): Getting[U] = Getting { state =>
+    xs(state).flatMap {
+      case Left(err) => LazyList(Left(err))
+      case Right((nextState, value)) => f(value).xs(nextState)
+    }
+  }
+
+  def getOne(state: TyckState): Either[TyckError, (TyckState, T)] = {
+    xs(state).collectFirst {
+      case right@Right(_) => right
+    }.getOrElse(Left(TyckError.emptyResults))
+  }
+}
+
+object Getting {
+  def pure[T](x: T): Getting[T] = Getting(state => LazyList(Right((state, x))))
+
+  def read: Getting[TyckState] = Getting(state => LazyList(Right((state, state))))
+
+  def write(newState: TyckState): Getting[Unit] = Getting(_ => LazyList(Right((newState, ()))))
 }
 
 
-case class ExprTycker(state: TyckState, localCtx: LocalCtx) {
-  def inherit(expr: Expr, ty: Term): Results[Judge] = ???
+case class ExprTycker(localCtx: LocalCtx) {
+  def unify(subType: Term, superType: Term): Getting[Term] = ???
 
-  def synthesize(expr: Expr): Results[Judge] = ???
+  def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
+    case default => for {
+      Judge(wellTyped, judgeTy) <- synthesize(default)
+      ty1 <- unify(judgeTy, ty)
+    } yield Judge(wellTyped, ty1)
+  }
+
+  def synthesize(expr: Expr): Getting[Judge] = expr match {
+    case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType()))
+    case _ => ???
+  }
 }

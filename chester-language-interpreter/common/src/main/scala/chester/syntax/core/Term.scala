@@ -20,3 +20,12 @@ val Type0 = Type(0)
 
 // Referencing Setω in Agda
 case class Typeω(sourcePos: Option[SourcePos] = None) extends Sort
+
+
+case class IntegerTerm(value: BigInt, sourcePos: Option[SourcePos] = None) extends Term
+
+sealed trait TypeTerm extends Term {
+
+}
+
+case class IntegerType(sourcePos: Option[SourcePos] = None) extends TypeTerm
