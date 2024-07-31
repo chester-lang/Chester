@@ -11,8 +11,8 @@ enum CommentType {
 
 case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])
 
-case class CommentInfo(commentBefore: Vector[Comment], commentAfter: Vector[Comment]) {
-  if (commentBefore.isEmpty && commentAfter.isEmpty) {
+case class CommentInfo(commentBefore: Vector[Comment], commentIn: Vector[Comment] = Vector.empty, commentAfter: Vector[Comment] = Vector.empty) {
+  if (commentBefore.isEmpty && commentIn.isEmpty && commentAfter.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
@@ -28,12 +28,12 @@ sealed trait Expr extends WithPos {
 
   def commentAtStart(comment: Comment): Expr = updateCommentInfo {
     case Some(info) => Some(info.copy(commentBefore = info.commentBefore :+ comment))
-    case None => Some(CommentInfo(Vector(comment), Vector.empty))
+    case None => Some(CommentInfo(Vector(comment)))
   }
 
   def commentAtStart(comment: Vector[Comment]): Expr = if (comment.isEmpty) this else updateCommentInfo {
     case Some(info) => Some(info.copy(commentBefore = info.commentBefore ++ comment))
-    case None => Some(CommentInfo(comment, Vector.empty))
+    case None => Some(CommentInfo(comment))
   }
 
   def sourcePos: Option[SourcePos]
