@@ -15,6 +15,10 @@ data 超会議 extends 舞 {
 @derive(Show)
 data InternetOverdose extends 舞;
 
+// InternetOverdose is overloaded with `Type` and `InternetOverdose`. For design: using `.instance` and `.type` for distinguishing doesn't look good? 
+it: Type = InternetOverdose;
+i: InternetOverdose = InternetOverdose;
+
 data #sealed #abstract Expr[T: Type]: Type {
   eval: T;
 }
@@ -45,4 +49,15 @@ data Cons extends Vector[succ(n), T] {
 
 proof1: Nil = Nil;
 proof1 = ?hole;
+```
+
+```chester
+tuple0: TupleN[Integer];
+tuple0 = (1, 1, 1);
+// Tuple: [t: Type *] -> Type
+tuple1: Tuple[Integer, Integer, Integer] = (1,1,1);
+tuple0ToLisst: List[Integer] = tuple0.toList;
+
+list0: List[Integer] = [1,1,1];
+list0ToTuple: TupleN[Integer] = list0.toTuple;
 ```
