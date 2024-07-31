@@ -30,7 +30,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   @deprecated("comment is lost")
   def delimiter: P[Unit] = P((simpleDelimiter | comment).rep)
 
-  def delimiter1: P[Vector[Comment]] = P((simpleDelimiter.map(x => Vector()) | allComment.rep).rep).map(_.flatten.toVector)
+  def delimiter1: P[Vector[Comment]] = P((simpleDelimiter.map(x => Vector()) | allComment.map(Vector(_))).rep).map(_.flatten.toVector)
 
   @deprecated("comment is lost")
   def lineEnding: P[Unit] = P(comment | (CharsWhileIn(" \t\r").? ~ ("\n" | End)))
@@ -67,7 +67,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   extension [T](inline parse0: P[T]) {
     inline def withPos[R](using s: fastparse.Implicits.Sequencer[T, Option[SourcePos], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) => s(x, loc(b, e)) }
 
-    inline def withSpaceAtStart: P[(T, Vector[Comment])] = (maybeSpace1 ~ parse0).map { case (comments, x) => (x, comments) }
+    inline def withSpaceAtStart[R](using s: fastparse.Implicits.Sequencer[T, Vector[Comment], R]): P[R] = (maybeSpace1 ~ parse0).map { case (comments, x) => s(x, comments) }
 
     inline def must(inline message: String = "Expected something"): P[T] = parse0.? flatMap {
       case Some(x) => Pass(x)
@@ -155,9 +155,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def simpleAnnotation: P[Identifier] = "@" ~ identifier
 
+  @deprecated
   def comma: P[Unit] = P(maybeSpace ~ "," ~ maybeSpace)
 
-  def list: P[ListExpr] = PwithPos("[" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
+  def comma1: P[Unit] = ","
+
+  def list: P[ListExpr] = PwithPos("[" ~ (parse().withSpaceAtStart.map((x,c)=>x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
