@@ -11,8 +11,8 @@ enum CommentType {
 
 case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])
 
-case class CommentInfo(commentBefore: Vector[Comment], commentIn: Vector[Comment] = Vector.empty, commentAfter: Vector[Comment] = Vector.empty) {
-  if (commentBefore.isEmpty && commentIn.isEmpty && commentAfter.isEmpty) {
+case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty) {
+  if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
