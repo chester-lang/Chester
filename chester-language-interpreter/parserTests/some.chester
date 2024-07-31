@@ -6,7 +6,7 @@ data Dog extends AnimalType {
   wo: String;
 }
 
-data abstract Expr[T: Type];
+data #abstract Expr[T: Type];
 
 data IVal extends Expr[Int] {
   val: Int;
@@ -16,7 +16,7 @@ data BVal extends Expr[Bool] {
   val: Bool;
 }
 
-data sealed abstract Vector[n: Nat, T: Type];
+data #sealed #abstract Vector[n: Nat, T: Type];
 
 data Nil extends Vector[0, T] {
 }
