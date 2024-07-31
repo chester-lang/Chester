@@ -36,6 +36,13 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
       case right@Right(_) => right
     }.getOrElse(Left(TyckError.emptyResults))
   }
+
+  def explainError(explain: TyckError => TyckError): Getting[T] = Getting { state =>
+    xs(state).map {
+      case Left(err) => Left(explain(err))
+      case right => right
+    }
+  }
 }
 
 object Getting {
@@ -48,7 +55,10 @@ object Getting {
 
 
 case class ExprTycker(localCtx: LocalCtx) {
-  def unify(subType: Term, superType: Term): Getting[Term] = ???
+  def unify(subType: Term, superType: Term): Getting[Term] = {
+    if(subType == superType) return Getting.pure(subType)
+    ???
+  }
 
   def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
     case default => for {
