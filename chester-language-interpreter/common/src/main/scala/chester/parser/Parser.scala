@@ -2,7 +2,7 @@ package chester.parser;
 
 import fastparse.*
 import NoWhitespace.*
-import chester.error.{Pos, RangeInFile, SourcePos}
+import chester.error._
 import chester.syntax.concrete.*
 import chester.utils.StringIndex
 import chester.utils.parse.*
@@ -224,7 +224,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(OpSeq(xs.toVector, p(pos)))
   })
 
-  def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ identifier ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
+  def qualifiedNameOn(x: QualifiedName): P[QualifiedName] = PwithPos("." ~ identifier).flatMap { (id, pos) =>
+    val built = QualifiedName.build(x, id, x.sourcePos.combineInOption(pos))
+    qualifiedNameOn(built) | Pass(built)
+  }
+
+  def qualifiedName: P[QualifiedName] = P(identifier).flatMap { id =>
+    qualifiedNameOn(id) | Pass(id)
+  }
+
+  def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
     ObjectExpr(fields.toVector, pos)
   }
 
@@ -239,10 +248,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx).on(expr.isInstanceOf[Identifier] || expr.isInstanceOf[FunctionCall] || !ctx.inOpSeq) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
-    val getPos1 = ((endPos: Option[SourcePos]) => for {
-      p0 <- getPos(pos)
-      p1 <- endPos
-    } yield p0.combine(p1))
+    val getPos1 = ((endPos: Option[SourcePos]) => getPos(pos).combineInOption(endPos))
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos1, ctx = ctx)) | Pass(expr)
   }
   })
@@ -251,10 +257,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
-    val getPos = ((endPos: Option[SourcePos]) => for {
-      p0 <- pos
-      p1 <- endPos
-    } yield p0.combine(p1))
+    val getPos = ((endPos: Option[SourcePos]) => pos.combineInOption(endPos))
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
   }
 

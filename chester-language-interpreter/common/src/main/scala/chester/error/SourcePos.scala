@@ -22,3 +22,14 @@ case class SourcePos(fileName: String, range: RangeInFile) {
 
   override def toString: String = s"SourcePos(\"${encodeString(fileName)}\",${range})"
 }
+
+extension (pos: Option[SourcePos]) {
+  def combineInOption(other: Option[SourcePos]): Option[SourcePos] = {
+    (pos, other) match {
+      case (None, None) => None
+      case (Some(p), None) => Some(p)
+      case (None, Some(p)) => Some(p)
+      case (Some(p1), Some(p2)) => Some(p1.combine(p2))
+    }
+  }
+}

@@ -136,6 +136,24 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], s
   override def descent(operator: Expr => Expr): Expr = {
     DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), sourcePos)
   }
+
+  def isField: Boolean = telescope.isEmpty
+
+  def isQualifiedName: Boolean = {
+    if (telescope.nonEmpty) return false
+    if(!field.isInstanceOf[Identifier]) return false
+    expr match {
+      case Identifier(_, _, _) => true
+      case DotCall(_, _, _, _, _) => expr.asInstanceOf[DotCall].isQualifiedName
+      case _ => false
+    }
+  }
+}
+
+type QualifiedName = DotCall | Identifier
+
+object QualifiedName {
+  def build(x: QualifiedName, field: Identifier, sourcePos: Option[SourcePos] = None, commentInfo: Option[CommentInfo] = None): QualifiedName = DotCall(x, field,Vector(), sourcePos, commentInfo)
 }
 
 sealed trait NumberLiteral extends ParsedExpr
@@ -172,7 +190,7 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescop
 }
 
 
-case class ObjectExpr(clauses: Vector[(Identifier, Expr)], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class ObjectExpr(clauses: Vector[(QualifiedName, Expr)], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, sourcePos)
   }
