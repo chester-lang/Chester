@@ -60,4 +60,8 @@ tuple0ToLisst: List[Integer] = tuple0.toList;
 
 list0: List[Integer] = [1,1,1];
 list0ToTuple: TupleN[Integer] = list0.toTuple;
+
+extension [T](list: List[T]) {
+  map1[e: Effect, U](f: T -> e U): e List[U] = ?todo;
+}
 ```
