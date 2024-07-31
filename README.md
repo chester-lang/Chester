@@ -65,3 +65,9 @@ extension [T](list: List[T]) {
   map1[e: Effect, U](f: T -> e U): e List[U] = ?todo;
 }
 ```
+
+```chester
+pragma #UnsizedType;
+
+Expr = Integer | String | List[Expr];
+```
