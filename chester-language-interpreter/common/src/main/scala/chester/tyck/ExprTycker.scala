@@ -13,6 +13,7 @@ case class TyckError(message: String)
 
 object TyckError {
   val emptyResults = TyckError("Empty Results")
+  def unifyFailed(subType: Term, superType: Term): TyckError = TyckError(s"Unification failed: $subType is not a subtype of $superType")
 }
 
 case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)]]) {
@@ -59,7 +60,7 @@ object Getting {
 case class ExprTycker(localCtx: LocalCtx) {
   def unify(subType: Term, superType: Term): Getting[Term] = {
     if (subType == superType) return Getting.pure(subType)
-    ???
+    return Getting.error(TyckError.unifyFailed(subType, superType))
   }
 
   def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
