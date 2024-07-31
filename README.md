@@ -10,6 +10,8 @@ world = {
   execute = (me: String) |-> me;
 };
 
+world.execute(me); // it type checks and does nothing? What's the point of having expressions at top level when they can't have effects? Checking something type checks? No we might allow module that init with specific effects.
+
 data #abstract 舞 extends Show;
 
 @derive(Show)
@@ -54,8 +56,6 @@ data Cons extends Vector[succ(n), T] {
 
 proof1: Nil = Nil;
 proof1 = ?hole;
-
-world.execute(me)
 ```
 
 ```chester
