@@ -65,7 +65,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   extension [T](inline parse0: P[T]) {
-    inline def withPos: P[(T, Option[SourcePos])] = (begin ~ parse0 ~ end).map { case (b, x, e) => (x, loc(b, e)) }
+    inline def withPos[R](using s: fastparse.Implicits.Sequencer[T, Option[SourcePos], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) => s(x, loc(b, e)) }
+
+    inline def withSpaceAtStart: P[(T, Vector[Comment])] = (maybeSpace1 ~ parse0).map { case (comments, x) => (x, comments) }
 
     inline def must(inline message: String = "Expected something"): P[T] = parse0.? flatMap {
       case Some(x) => Pass(x)
@@ -82,7 +84,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     }
   }
 
-  inline def PwithPos[T](inline parse0: P[T]): P[(T, Option[SourcePos])] = P(parse0.withPos)
+  inline def PwithPos[T, R](inline parse0: P[T])(using s: fastparse.Implicits.Sequencer[T, Option[SourcePos], R]): P[R] = P(parse0.withPos)
 
   def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
 
@@ -99,7 +101,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def expLiteral: P[String] = P(CharsWhileIn("0-9") ~ "." ~ CharsWhileIn("0-9") ~ (CharIn("eE") ~ signed ~ CharsWhileIn("0-9")).?).!
 
   def integerLiteral: P[ParsedExpr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
-    case ((sign, value), pos) =>
+    case (sign, value, pos) =>
       val actualValue = if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
       else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
       else BigInt(sign + value)
@@ -165,7 +167,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def annotation: P[(Identifier, Vector[ParsedMaybeTelescope])] = P("@" ~ identifier ~ callingZeroOrMore())
 
-  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse()).map { case ((annotation, telescope, expr), pos) =>
+  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse()).map { case (annotation, telescope, expr, pos) =>
     AnnotatedExpr(annotation, telescope, expr, pos)
   }
 
@@ -188,15 +190,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     FunctionCall(function, telescope, p(pos))
   }
 
-  def dotCall(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ callingZeroOrMore(ctx = ctx)).map { case ((field, telescope), pos) =>
+  def dotCall(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ callingZeroOrMore(ctx = ctx)).map { case (field, telescope, pos) =>
     DotCall(expr, field, telescope, p(pos))
   }
 
-  def insideBlock: P[Block] = PwithPos((maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace).flatMap { case ((heads, tail), pos) =>
+  def insideBlock: P[Block] = PwithPos((maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace).flatMap { case (heads, tail, pos) =>
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
-  def block: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case ((heads, tail), pos) =>
+  def block: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case (heads, tail, pos) =>
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
   }
 
@@ -237,7 +239,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.toVector, pos)
   }
 
-  def keyword: P[ParsedExpr] = PwithPos("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case ((id, telescope), pos) =>
+  def keyword: P[ParsedExpr] = PwithPos("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, pos) =>
     Keyword(id, telescope, pos)
   }
 
