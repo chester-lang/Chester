@@ -177,3 +177,9 @@ case class ObjectExpr(clauses: Vector[(Identifier, Expr)], sourcePos: Option[Sou
     ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, sourcePos)
   }
 }
+
+case class Keyword(key: Identifier, telescope: Vector[MaybeTelescope], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+  override def descent(operator: Expr => Expr): Expr = {
+    Keyword(key, telescope.map(_.descent(operator)), sourcePos)
+  }
+}

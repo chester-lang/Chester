@@ -170,10 +170,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   // TODO blockAndLineEndEnds
-  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false, newLineAfterBlockMeansEnds: Boolean = false) {
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false, newLineAfterBlockMeansEnds: Boolean = false, dontAllowBlockApply: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
 
-    def blockCall = !inOpSeq
+    def blockCall = !inOpSeq && !dontAllowBlockApply
   }
 
   def callingOnce(ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((list | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
@@ -228,6 +228,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.toVector, pos)
   }
 
+  def keyword: P[ParsedExpr] = PwithPos("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case ((id, telescope), pos) =>
+    Keyword(id, telescope, pos)
+  }
+
   def opSeqGettingExprs(ctx: ParsingContext): P[Vector[ParsedExpr]] = P(maybeSpace ~ parse(ctx = ctx.copy(inOpSeq = true)) ~ Index).flatMap { (expr, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
@@ -243,7 +247,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   })
 
-  inline def parse0: P[ParsedExpr] = objectParse | block | annotated | list | tuple | literal | identifier
+  inline def parse0: P[ParsedExpr] = keyword | objectParse | block | annotated | list | tuple | literal | identifier
 
   def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
