@@ -5,6 +5,11 @@ It might look like?
 ```chester
 module 😿😿;
 
+me: String = "インターネット・エンジェル";
+world = {
+  execute = (me: String): String |-> me;
+};
+
 data #abstract 舞 extends Show;
 
 @derive(Show)
@@ -49,6 +54,8 @@ data Cons extends Vector[succ(n), T] {
 
 proof1: Nil = Nil;
 proof1 = ?hole;
+
+world.execute(me)
 ```
 
 ```chester
@@ -70,4 +77,10 @@ extension [T](list: List[T]) {
 pragma #UnsizedType;
 
 Expr = Integer | String | List[Expr];
+```
+
+```chester
+enableEffect IO;
+
+functionCanEmitEffect(): Unit = println("はっぱ - もうすぐ楽になるからね");
 ```
