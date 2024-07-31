@@ -7,7 +7,7 @@ module 😿😿;
 
 me: String = "インターネット・エンジェル";
 world = {
-  execute = (me: String): String |-> me;
+  execute = (me: String) |-> me;
 };
 
 data #abstract 舞 extends Show;
