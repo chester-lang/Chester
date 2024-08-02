@@ -21,3 +21,7 @@ case class Modules(modules: immutable.HashMap[QualifiedIDString, Vector[ModuleFi
     Modules(updatedModules)
   }
 }
+
+object Modules {
+  def Empty: Modules = Modules(immutable.HashMap())
+}

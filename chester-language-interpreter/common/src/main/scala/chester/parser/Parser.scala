@@ -351,7 +351,7 @@ object Parser {
     }
   }
 
-  def parseModule(source: ParserSource, modules: Modules = Modules(immutable.HashMap.empty), ignoreLocation: Boolean = false): Either[ParseError, Modules] = {
+  def parseModule(source: ParserSource, modules: Modules = Modules.Empty, ignoreLocation: Boolean = false): Either[ParseError, Modules] = {
     getContentFromSource(source) match {
       case Right((fileName, content)) =>
         parseTopLevel(FileNameAndContent(fileName, content), ignoreLocation).flatMap { block =>
