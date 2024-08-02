@@ -2,7 +2,7 @@ package chester.parser;
 
 import fastparse.*
 import NoWhitespace.*
-import chester.error._
+import chester.error.*
 import chester.syntax.concrete.*
 import chester.utils.StringIndex
 import chester.utils.parse.*
@@ -13,6 +13,7 @@ import scala.util.*
 import chester.syntax.IdentifierRules.*
 
 import scala.:+
+import scala.collection.immutable
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
 
@@ -337,5 +338,29 @@ object Parser {
   @deprecated("Use parseExpr with ParserSource instead")
   def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[ParsedExpr] = {
     parse(input, x => ParserInternal(fileName, ignoreLocation = ignoreLocation)(x).exprEntrance)
+  }
+
+  def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
+    block.heads.headOption match {
+      case Some(OpSeq(Vector(Identifier("module", _, _), identifiers*), _, _)) =>
+        val names = identifiers.collect { case Identifier(name, _, _) => name }.toVector
+        if (names.nonEmpty) Right(names) else Left(ParseError("Module identifiers could not be parsed", Pos.Zero))
+      case Some(OpSeq(Vector(Identifier("module", _, _)), _, _)) =>
+        Left(ParseError("Module identifiers missing", Pos.Zero))
+      case _ => Right(Vector.empty)
+    }
+  }
+
+  def parseModule(source: ParserSource, modules: Modules = Modules(immutable.HashMap.empty), ignoreLocation: Boolean = false): Either[ParseError, Modules] = {
+    getContentFromSource(source) match {
+      case Right((fileName, content)) =>
+        parseTopLevel(FileNameAndContent(fileName, content), ignoreLocation).flatMap { block =>
+          val moduleFile = ModuleFile(fileName, block)
+          extractModuleName(block).map { id =>
+            modules.addModule(id, moduleFile)
+          }
+        }
+      case Left(error) => Left(error)
+    }
   }
 }
