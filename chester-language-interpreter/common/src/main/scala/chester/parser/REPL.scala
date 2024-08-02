@@ -14,8 +14,12 @@ object REPL {
 
   sealed trait REPLResult
   case class Complete(result: Either[ParseError, ParsedExpr]) extends REPLResult
-  case object Incomplete extends REPLResult
   case class UnmatchedPair(error: ParseError) extends REPLResult
+
+  sealed trait PairCheckResult
+  case object Unclosed extends PairCheckResult
+  case object Closed extends PairCheckResult
+  case class PairError(error: ParseError) extends PairCheckResult
 
   // Function to parse a single line and determine if more lines are needed
   private def parseLine(line: String): Either[ParseError, ParsedExpr] = {
@@ -36,21 +40,31 @@ object REPL {
   }
 
   // Function to determine if the input has unclosed brackets, parentheses, or braces
-  private def checkUnclosedPairs(input: String): Option[ParseError] = {
-    val stack = scala.collection.mutable.Stack[Char]()
+  private def checkUnclosedPairs(input: String): PairCheckResult = {
+    val stack = scala.collection.mutable.Stack[(Char, Int)]()
+    val indexer = StringIndex(input)
     for ((char, index) <- input.zipWithIndex) {
       char match {
-        case '(' | '[' | '{' => stack.push(char)
+        case '(' | '[' | '{' => stack.push((char, index))
         case ')' =>
-          if (stack.isEmpty || stack.pop() != '(') return Some(ParseError(s"Unmatched parenthesis at position $index", Pos.Zero))
+          if (stack.isEmpty || stack.pop()._1 != '(') {
+            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+            return PairError(ParseError(s"Unmatched parenthesis at position $index", Pos(index, pos.line, pos.column)))
+          }
         case ']' =>
-          if (stack.isEmpty || stack.pop() != '[') return Some(ParseError(s"Unmatched bracket at position $index", Pos.Zero))
+          if (stack.isEmpty || stack.pop()._1 != '[') {
+            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+            return PairError(ParseError(s"Unmatched bracket at position $index", Pos(index, pos.line, pos.column)))
+          }
         case '}' =>
-          if (stack.isEmpty || stack.pop() != '{') return Some(ParseError(s"Unmatched brace at position $index", Pos.Zero))
+          if (stack.isEmpty || stack.pop()._1 != '{') {
+            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+            return PairError(ParseError(s"Unmatched brace at position $index", Pos(index, pos.line, pos.column)))
+          }
         case _ =>
       }
     }
-    if (stack.nonEmpty) Some(ParseError("Unclosed pair found", Pos.Zero)) else None
+    if (stack.nonEmpty) Unclosed else Closed
   }
 
   // Function to determine if a line indicates the start of a multi-line input
@@ -59,18 +73,17 @@ object REPL {
   }
 
   // Function to add a line to the current input and check if it forms a complete expression
-  def addLine(currentLines: List[String], newLine: String): (List[String], REPLResult) = {
+  def addLine(currentLines: List[String], newLine: String): Either[List[String], REPLResult] = {
     val updatedLines = currentLines :+ newLine
     val input = updatedLines.mkString("\n")
 
     checkUnclosedPairs(input) match {
-      case Some(error) => (currentLines, UnmatchedPair(error))
-      case None =>
-        if (isMultiLineStart(newLine) || !parseLine(input).isRight) {
-          (updatedLines, Incomplete)
-        } else {
-          val result = handleInput(updatedLines)
-          (List.empty[String], Complete(result))
+      case PairError(error) => Right(UnmatchedPair(error))
+      case Unclosed => Left(updatedLines)
+      case Closed =>
+        parseLine(input) match {
+          case Right(expr) => Right(Complete(Right(expr)))
+          case Left(_) => Left(updatedLines)
         }
     }
   }
