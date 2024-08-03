@@ -67,18 +67,70 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     return Getting.error(TyckError.unifyFailed(subType, superType))
   }
 
-  def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
-    case default => for {
-      Judge(wellTyped, judgeTy) <- synthesize(default)
-      ty1 <- unify(judgeTy, ty)
-    } yield Judge(wellTyped, ty1)
+
+  def synthesizeObjectExpr(clauses: Vector[(QualifiedName, Expr)]): Getting[ObjectTerm] = {
+    for {
+      typedClauses <- clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
+        for {
+          typedClauses <- acc
+          (qualifiedName, expr) = clause
+          Judge(wellTypedExpr, _) <- synthesize(expr)
+        } yield typedClauses :+ (qualifiedName.toString, wellTypedExpr)
+      }
+    } yield ObjectTerm(typedClauses.toMap)
+  }
+
+  def synthesizeObjectType(clauses: Vector[(QualifiedName, Expr)]): Getting[ObjectType] = {
+    for {
+      typedClauses <- clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
+        for {
+          typedClauses <- acc
+          (qualifiedName, expr) = clause
+          Judge(_, exprType) <- synthesize(expr)
+        } yield typedClauses :+ (qualifiedName.toString, exprType)
+      }
+    } yield ObjectType(typedClauses.toMap)
   }
 
   def synthesize(expr: Expr): Getting[Judge] = expr match {
     case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType(sourcePos)))
     case DoubleLiteral(value, sourcePos, _) => Getting.pure(Judge(DoubleTerm(value, sourcePos), DoubleType(sourcePos)))
     case StringLiteral(value, sourcePos, _) => Getting.pure(Judge(StringTerm(value, sourcePos), StringType(sourcePos)))
+    case ObjectExpr(clauses, sourcePos, _) =>
+      for {
+        objTerm <- synthesizeObjectExpr(clauses)
+        objType <- synthesizeObjectType(clauses)
+      } yield Judge(objTerm, objType)
     case _ => Getting.error(TyckError("Unsupported expression type"))
+  }
+
+  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Map[String, Term]): Getting[Vector[(String, Term)]] = {
+    clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
+      for {
+        typedClauses <- acc
+        (qualifiedName, expr) = clause
+        fieldType <- fieldTypes.get(qualifiedName.toString) match {
+          case Some(ft) => inherit(expr, ft).map(_.wellTyped)
+          case None => Getting.error[Term](TyckError(s"Field type not found for ${qualifiedName.toString}"))
+        }
+      } yield typedClauses :+ (qualifiedName.toString, fieldType)
+    }
+  }
+
+  def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
+    case ObjectExpr(clauses, sourcePos, _) =>
+      ty match {
+        case ObjectType(fieldTypes, _) =>
+          for {
+            inheritedFields <- inheritObjectFields(clauses, fieldTypes)
+          } yield Judge(ObjectTerm(inheritedFields.toMap, sourcePos), ty)
+        case _ => Getting.error(TyckError("Expected an ObjectType for inheritance"))
+      }
+    case default =>
+      for {
+        Judge(wellTyped, judgeTy) <- synthesize(default)
+        ty1 <- unify(judgeTy, ty)
+      } yield Judge(wellTyped, ty1)
   }
 }
 

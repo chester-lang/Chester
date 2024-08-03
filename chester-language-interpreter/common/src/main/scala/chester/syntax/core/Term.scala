@@ -6,8 +6,6 @@ sealed trait Term extends WithPos {
   def sourcePos: Option[SourcePos]
 }
 
-case class Object(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
-
 case class ListTerm(terms: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term
 
 sealed trait Sort extends Term {
@@ -35,3 +33,11 @@ case class StringTerm(value: String, sourcePos: Option[SourcePos] = None) extend
 
 case class DoubleType(sourcePos: Option[SourcePos] = None) extends TypeTerm
 case class StringType(sourcePos: Option[SourcePos] = None) extends TypeTerm
+
+
+
+case class ObjectTerm(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
+
+
+case class ObjectType(fieldTypes: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
+
