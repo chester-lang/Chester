@@ -31,7 +31,7 @@ object REPL {
   }
 
   // Function to handle multiple lines of input and parse them as a single expression
-  private def handleInput(lines: List[String]): Either[ParseError, ParsedExpr] = {
+  private def handleInput(lines: Vector[String]): Either[ParseError, ParsedExpr] = {
     val input = lines.mkString("\n")
     parse(input, p => new ParserInternal("repl", ignoreLocation = true)(p).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
@@ -73,17 +73,19 @@ object REPL {
   }
 
   // Function to add a line to the current input and check if it forms a complete expression
-  def addLine(currentLines: List[String], newLine: String): Either[List[String], REPLResult] = {
-    val updatedLines = currentLines :+ newLine
-    val input = updatedLines.mkString("\n")
+  def addLine(replLines: ReplLines, newLine: String): Either[ReplLines, REPLResult] = {
+    replLines.addLine(newLine)
+    val input = replLines.getPendingLines.mkString("\n")
 
     checkUnclosedPairs(input) match {
       case PairError(error) => Right(UnmatchedPair(error))
-      case Unclosed => Left(updatedLines)
+      case Unclosed => Left(replLines)
       case Closed =>
         parseLine(input) match {
-          case Right(expr) => Right(Complete(Right(expr)))
-          case Left(_) => Left(updatedLines)
+          case Right(expr) =>
+            replLines.clearPendingLines()
+            Right(Complete(Right(expr)))
+          case Left(_) => Left(replLines)
         }
     }
   }

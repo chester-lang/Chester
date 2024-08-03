@@ -1,6 +1,6 @@
 package chester.repl
 
-import chester.parser.REPL
+import chester.parser.{REPL, ReplLines}
 import chester.parser.REPL.{REPLResult, UnmatchedPair, Complete}
 import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, TyckState, LocalCtx, Judge}
@@ -25,7 +25,7 @@ object REPLMain {
     println("Welcome to the Chester REPL!")
     println("Type your expressions below. Type 'exit' to quit.")
 
-    var inputLines: List[String] = List()
+    val replLines = new ReplLines()
     var currentPrompt = mainPrompt
 
     while (true) {
@@ -37,14 +37,13 @@ object REPLMain {
           return
         }
 
-        REPL.addLine(inputLines, line) match {
-          case Left(updatedLines) =>
-            inputLines = updatedLines
+        REPL.addLine(replLines, line) match {
+          case Left(_) =>
             currentPrompt = continuationPrompt  // Update prompt to indicate multi-line input
 
           case Right(UnmatchedPair(error)) =>
             println(s"Error: ${error.message} at ${error.index}")
-            inputLines = List()
+            replLines.clearPendingLines()
             currentPrompt = mainPrompt  // Reset prompt
 
           case Right(Complete(result)) =>
@@ -63,7 +62,6 @@ object REPLMain {
                     println(s"Type Check Successful: ${judge}")
                 }
             }
-            inputLines = List()
             currentPrompt = mainPrompt  // Reset prompt
         }
       } catch {
