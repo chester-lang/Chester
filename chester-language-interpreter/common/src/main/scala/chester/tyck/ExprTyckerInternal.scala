@@ -40,7 +40,7 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
   def getOne(state: TyckState): Either[TyckError, (TyckState, T)] = {
     xs(state).collectFirst {
       case right@Right(_) => right
-    }.getOrElse(Left(TyckError.emptyResults))
+    }.getOrElse(xs(state).headOption.getOrElse(Left(TyckError.emptyResults)))
   }
 
   def explainError(explain: TyckError => TyckError): Getting[T] = Getting { state =>
