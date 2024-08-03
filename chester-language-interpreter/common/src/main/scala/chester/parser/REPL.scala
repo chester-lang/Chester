@@ -22,8 +22,8 @@ object REPL {
   case class PairError(error: ParseError) extends PairCheckResult
 
   // Function to parse a single line and determine if more lines are needed
-  private def parseLine(line: String): Either[ParseError, ParsedExpr] = {
-    parse(line, p => new ParserInternal("repl", ignoreLocation = true)(p).exprEntrance) match {
+  private def parseLine(line: String, linesOffset: Int, posOffset: Int): Either[ParseError, ParsedExpr] = {
+    parse(line, p => new ParserInternal("repl", linesOffset = linesOffset, posOffset = posOffset)(p).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
       case f: Parsed.Failure if f.index == line.length => Left(ParseError(f.msg, Pos.Zero))
       case f: Parsed.Failure => Left(ParseError(f.msg, Pos.Zero))
@@ -31,9 +31,9 @@ object REPL {
   }
 
   // Function to handle multiple lines of input and parse them as a single expression
-  private def handleInput(lines: Vector[String]): Either[ParseError, ParsedExpr] = {
+  private def handleInput(lines: Vector[String], linesOffset: Int, posOffset: Int): Either[ParseError, ParsedExpr] = {
     val input = lines.mkString("\n")
-    parse(input, p => new ParserInternal("repl", ignoreLocation = true)(p).exprEntrance) match {
+    parse(input, p => new ParserInternal("repl", linesOffset = linesOffset, posOffset = posOffset)(p).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
       case f: Parsed.Failure => Left(ParseError(f.msg, Pos.Zero))
     }
@@ -67,21 +67,18 @@ object REPL {
     if (stack.nonEmpty) Unclosed else Closed
   }
 
-  // Function to determine if a line indicates the start of a multi-line input
-  private def isMultiLineStart(line: String): Boolean = {
-    line.trim.endsWith("\\") || line.contains("(") || line.contains("[") || line.contains("{")
-  }
-
   // Function to add a line to the current input and check if it forms a complete expression
   def addLine(replLines: ReplLines, newLine: String): Either[ReplLines, REPLResult] = {
     replLines.addLine(newLine)
     val input = replLines.getPendingLines.mkString("\n")
+    val linesOffset = replLines.getLinesOffset
+    val posOffset = replLines.getPosOffset
 
     checkUnclosedPairs(input) match {
       case PairError(error) => Right(UnmatchedPair(error))
       case Unclosed => Left(replLines)
       case Closed =>
-        parseLine(input) match {
+        parseLine(input, linesOffset = linesOffset, posOffset = posOffset) match {
           case Right(expr) =>
             replLines.clearPendingLines()
             Right(Complete(Right(expr)))

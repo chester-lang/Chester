@@ -16,4 +16,8 @@ class ReplLines {
   }
 
   def getHistory: Vector[String] = history
+
+  def getLinesOffset: Int = history.length
+
+  def getPosOffset: Int = history.map(_.length).sum + history.length  // Adding newlines
 }
