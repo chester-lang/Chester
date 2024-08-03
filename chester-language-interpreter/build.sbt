@@ -53,7 +53,7 @@ lazy val repl = (project in file("repl"))
     assembly / assemblyJarName := "repl.jar",
     name := "ChesterRepl",
     scalaVersion := scala3Version,
-    mainClass in Compile := Some("chester.repl.Main"),
+    mainClass in Compile := Some("chester.repl.REPLMain"),
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2"
     )
