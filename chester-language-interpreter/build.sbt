@@ -1,17 +1,17 @@
 val scala3Version = "3.4.2"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("META-INF", "versions", xs@_*) => MergeStrategy.first
+  case PathList("META-INF", "versions", xs*) => MergeStrategy.first
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
 }
 
 lazy val root = (project in file("."))
-  .aggregate(common, interpreter, lsp, repl)  // Added repl to the aggregate list
+  .aggregate(common, interpreter, lsp, repl)
   .settings(
     name := "Chester",
-    version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version
   )
 
