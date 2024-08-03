@@ -15,7 +15,11 @@ import chester.syntax.IdentifierRules.*
 import scala.:+
 import scala.collection.immutable
 
-case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
+case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
+  if (linesOffset != 0) assert(posOffset != 0)
+  if (posOffset != 0) assert(linesOffset != 0)
+  assert(posOffset >= 0)
+  assert(linesOffset >= 0)
 
   def nEnd: P[Unit] = P("\n" | End)
 
@@ -58,11 +62,15 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input))
 
-  private def loc(begin: Int, end: Int): Option[SourcePos] = {
+  private def loc(begin: Int, end0: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
-    val endPos = indexer.charIndexToUnicodeLineAndColumn(end - 1)
-    Some(SourcePos(fileName, RangeInFile(Pos(indexer.charIndexToUnicodeIndex(begin), start.line, start.column), Pos(indexer.charIndexToUnicodeIndex(end - 1), endPos.line, endPos.column))))
+    val end = end0 - 1
+    val endPos = indexer.charIndexToUnicodeLineAndColumn(end)
+    val range = RangeInFile(
+      Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
+      Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
+    Some(SourcePos(fileName, range))
   }
 
   extension [T](inline parse0: P[T]) {
@@ -161,7 +169,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def comma1: P[Unit] = ","
 
-  def list: P[ListExpr] = PwithPos("[" ~ (parse().withSpaceAtStart.map((x,c)=>x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
+  def list: P[ListExpr] = PwithPos("[" ~ (parse().withSpaceAtStart.map((x, c) => x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
     ListExpr(terms.toVector, pos)
   }
 
