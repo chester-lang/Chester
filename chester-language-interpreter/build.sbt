@@ -34,7 +34,7 @@ lazy val interpreter = (project in file("interpreter"))
     assembly / assemblyJarName := "interpreter.jar",
     name := "ChesterInterpreter",
     scalaVersion := scala3Version,
-    mainClass in Compile := Some("chester.Main")
+    Compile / mainClass := Some("chester.Main")
   )
 
 lazy val lsp = (project in file("lsp"))
@@ -43,7 +43,7 @@ lazy val lsp = (project in file("lsp"))
     assembly / assemblyJarName := "lsp.jar",
     name := "ChesterLanguageServer",
     scalaVersion := scala3Version,
-    mainClass in Compile := Some("chester.lsp.Main"),
+    Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1"
   )
 
@@ -53,7 +53,7 @@ lazy val repl = (project in file("repl"))
     assembly / assemblyJarName := "repl.jar",
     name := "ChesterRepl",
     scalaVersion := scala3Version,
-    mainClass in Compile := Some("chester.repl.REPLMain"),
+    Compile / mainClass := Some("chester.repl.REPLMain"),
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2"
     )
