@@ -54,7 +54,7 @@ jobs:
     - name: Check if release exists
       id: check_release
       run: |
-        if curl --silent --fail -H "Authorization: token ${{ secrets.TOKEN }}" \
+        if curl --silent --fail -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/releases/tags/snapshot; then
           echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
         else
@@ -65,7 +65,7 @@ jobs:
       id: create_update_release
       uses: actions/github-script@v4
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         script: |
           const { data: releases } = await github.repos.listReleases({
@@ -103,7 +103,7 @@ jobs:
     - name: Upload Release Asset common.jar
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
@@ -113,7 +113,7 @@ jobs:
     - name: Upload Release Asset interpreter.jar
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/interpreter/target/scala-${{ env.SCALA_VERSION }}/interpreter.jar
@@ -123,7 +123,7 @@ jobs:
     - name: Upload Release Asset lsp.jar
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
@@ -133,7 +133,7 @@ jobs:
     - name: Upload Release Asset repl.jar
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/repl/target/scala-${{ env.SCALA_VERSION }}/repl.jar
