@@ -74,6 +74,19 @@ jobs:
           });
           const release = releases.find(r => r.tag_name === 'snapshot');
           if (process.env.RELEASE_EXISTS === 'true') {
+            // Delete existing assets
+            const assets = await github.repos.listReleaseAssets({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.id
+            });
+            for (const asset of assets.data) {
+              await github.repos.deleteReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: asset.id
+              });
+            }
             // Update existing release
             const { data: updatedRelease } = await github.repos.updateRelease({
               owner: context.repo.owner,
