@@ -7,12 +7,17 @@ case class TyckState()
 
 case class LocalCtx()
 
+object LocalCtx {
+  val Empty = LocalCtx()
+}
+
 case class Judge(wellTyped: Term, ty: Term)
 
 case class TyckError(message: String)
 
 object TyckError {
   val emptyResults = TyckError("Empty Results")
+
   def unifyFailed(subType: Term, superType: Term): TyckError = TyckError(s"Unification failed: $subType is not a subtype of $superType")
 }
 
@@ -57,7 +62,7 @@ object Getting {
 }
 
 
-case class ExprTycker(localCtx: LocalCtx) {
+case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): Getting[Term] = {
     if (subType == superType) return Getting.pure(subType)
     return Getting.error(TyckError.unifyFailed(subType, superType))
@@ -73,5 +78,19 @@ case class ExprTycker(localCtx: LocalCtx) {
   def synthesize(expr: Expr): Getting[Judge] = expr match {
     case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType()))
     case _ => ???
+  }
+}
+
+object ExprTycker {
+  def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Term] = {
+    ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
+  }
+
+  def inherit(expr: Expr, ty: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Judge] = {
+    ExprTyckerInternal(ctx).inherit(expr, ty).getOne(state).map(_._2)
+  }
+
+  def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Judge] = {
+    ExprTyckerInternal(ctx).synthesize(expr).getOne(state).map(_._2)
   }
 }

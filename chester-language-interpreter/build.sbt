@@ -8,7 +8,7 @@ ThisBuild / assemblyMergeStrategy := {
 }
 
 lazy val root = (project in file("."))
-  .aggregate(common, interpreter, lsp)
+  .aggregate(common, interpreter, lsp, repl)  // Added repl to the aggregate list
   .settings(
     name := "Chester",
     version := "0.1.0-SNAPSHOT",
@@ -45,4 +45,16 @@ lazy val lsp = (project in file("lsp"))
     scalaVersion := scala3Version,
     mainClass in Compile := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1"
+  )
+
+lazy val repl = (project in file("repl"))
+  .dependsOn(common)
+  .settings(
+    assembly / assemblyJarName := "repl.jar",
+    name := "ChesterRepl",
+    scalaVersion := scala3Version,
+    mainClass in Compile := Some("chester.repl.Main"),
+    libraryDependencies ++= Seq(
+      "org.jline" % "jline" % "3.26.2"
+    )
   )
