@@ -61,7 +61,6 @@ object Getting {
   def write(newState: TyckState): Getting[Unit] = Getting(_ => LazyList(Right((newState, ()))))
 }
 
-
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): Getting[Term] = {
     if (subType == superType) return Getting.pure(subType)
@@ -76,8 +75,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   def synthesize(expr: Expr): Getting[Judge] = expr match {
-    case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType()))
-    case _ => ???
+    case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType(sourcePos)))
+    case DoubleLiteral(value, sourcePos, _) => Getting.pure(Judge(DoubleTerm(value, sourcePos), DoubleType(sourcePos)))
+    case StringLiteral(value, sourcePos, _) => Getting.pure(Judge(StringTerm(value, sourcePos), StringType(sourcePos)))
+    case _ => Getting.error(TyckError("Unsupported expression type"))
   }
 }
 

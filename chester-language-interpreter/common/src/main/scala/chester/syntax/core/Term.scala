@@ -3,7 +3,7 @@ package chester.syntax.core
 import chester.error.{SourcePos, WithPos}
 
 sealed trait Term extends WithPos {
-
+  def sourcePos: Option[SourcePos]
 }
 
 case class Object(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
@@ -29,3 +29,9 @@ sealed trait TypeTerm extends Term {
 }
 
 case class IntegerType(sourcePos: Option[SourcePos] = None) extends TypeTerm
+
+case class DoubleTerm(value: BigDecimal, sourcePos: Option[SourcePos] = None) extends Term
+case class StringTerm(value: String, sourcePos: Option[SourcePos] = None) extends Term
+
+case class DoubleType(sourcePos: Option[SourcePos] = None) extends TypeTerm
+case class StringType(sourcePos: Option[SourcePos] = None) extends TypeTerm
