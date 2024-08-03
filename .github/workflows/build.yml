@@ -10,6 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      SCALA_VERSION: '3.4.2'
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -35,15 +38,18 @@ jobs:
       working-directory: chester-language-interpreter
       run: sbt clean assembly
 
+    - name: List files for debugging
+      run: find chester-language-interpreter -type f -name "*.jar"
+
     - name: Upload JAR files
       uses: actions/upload-artifact@v3
       with:
         name: assembly-jars
         path: |
-          chester-language-interpreter/common/target/scala-*/common.jar
-          chester-language-interpreter/interpreter/target/scala-*/interpreter.jar
-          chester-language-interpreter/lsp/target/scala-*/lsp.jar
-          chester-language-interpreter/repl/target/scala-*/repl.jar
+          chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-language-interpreter/interpreter/target/scala-${{ env.SCALA_VERSION }}/interpreter.jar
+          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
+          chester-language-interpreter/repl/target/scala-${{ env.SCALA_VERSION }}/repl.jar
 
     - name: Create GitHub Release
       id: create_release
@@ -56,42 +62,42 @@ jobs:
         draft: false
         prerelease: true
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset common.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: chester-language-interpreter/common/target/scala-*/common.jar
+        asset_path: chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
         asset_name: common.jar
         asset_content_type: application/zip
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset interpreter.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: chester-language-interpreter/interpreter/target/scala-*/interpreter.jar
+        asset_path: chester-language-interpreter/interpreter/target/scala-${{ env.SCALA_VERSION }}/interpreter.jar
         asset_name: interpreter.jar
         asset_content_type: application/zip
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset lsp.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: chester-language-interpreter/lsp/target/scala-*/lsp.jar
+        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
         asset_name: lsp.jar
         asset_content_type: application/zip
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset repl.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: chester-language-interpreter/repl/target/scala-*/repl.jar
+        asset_path: chester-language-interpreter/repl/target/scala-${{ env.SCALA_VERSION }}/repl.jar
         asset_name: repl.jar
         asset_content_type: application/zip
