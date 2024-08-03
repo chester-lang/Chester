@@ -49,6 +49,10 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
       case right => right
     }
   }
+
+  def ||(other: => Getting[T]): Getting[T] = Getting { state =>
+    xs(state) #::: other.xs(state)
+  }
 }
 
 object Getting {
@@ -64,9 +68,11 @@ object Getting {
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): Getting[Term] = {
     if (subType == superType) return Getting.pure(subType)
-    return Getting.error(TyckError.unifyFailed(subType, superType))
+    (subType, superType) match {
+      case (_, AnyTerm(_)) => Getting.pure(subType) // AnyTerm matches any subtype
+      case _ => Getting.error(TyckError.unifyFailed(subType, superType))
+    }
   }
-
 
   def synthesizeObjectExpr(clauses: Vector[(QualifiedName, Expr)]): Getting[ObjectTerm] = {
     for {
@@ -117,7 +123,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
-  def inherit(expr: Expr, ty: Term): Getting[Judge] = expr match {
+  def inherit0(expr: Expr, ty: Term): Getting[Judge] = expr match {
     case ObjectExpr(clauses, sourcePos, _) =>
       ty match {
         case ObjectType(fieldTypes, _) =>
@@ -126,12 +132,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
           } yield Judge(ObjectTerm(inheritedFields.toMap, sourcePos), ty)
         case _ => Getting.error(TyckError("Expected an ObjectType for inheritance"))
       }
-    case default =>
-      for {
-        Judge(wellTyped, judgeTy) <- synthesize(default)
-        ty1 <- unify(judgeTy, ty)
-      } yield Judge(wellTyped, ty1)
+    case default => Getting.error(TyckError("Unsupported expression type"))
   }
+
+  def inherit(expr: Expr, ty: Term): Getting[Judge] = inherit0(expr, ty) || (for {
+    Judge(wellTyped, judgeTy) <- synthesize(expr)
+    ty1 <- unify(judgeTy, ty)
+  } yield Judge(wellTyped, ty1))
 }
 
 object ExprTycker {

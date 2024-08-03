@@ -23,7 +23,6 @@ case class Typeω(sourcePos: Option[SourcePos] = None) extends Sort
 case class IntegerTerm(value: BigInt, sourcePos: Option[SourcePos] = None) extends Term
 
 sealed trait TypeTerm extends Term {
-
 }
 
 case class IntegerType(sourcePos: Option[SourcePos] = None) extends TypeTerm
@@ -34,6 +33,7 @@ case class StringTerm(value: String, sourcePos: Option[SourcePos] = None) extend
 case class DoubleType(sourcePos: Option[SourcePos] = None) extends TypeTerm
 case class StringType(sourcePos: Option[SourcePos] = None) extends TypeTerm
 
+case class AnyTerm(sourcePos: Option[SourcePos] = None) extends TypeTerm
 
 
 case class ObjectTerm(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
