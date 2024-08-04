@@ -17,7 +17,9 @@ case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Co
   }
 }
 
-case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo])
+case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) {
+  assert(sourcePos.isDefined || commentInfo.isDefined)
+}
 
 sealed trait Expr extends WithPos {
   def descent(operator: Expr => Expr): Expr = this

@@ -3,6 +3,21 @@ Block(
   tail = Some(
     value = IntegerLiteral(
       value = 0,
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/a.chester",
+              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 0, line = 0, column = 0))
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    )
+  ),
+  meta = Some(
+    value = ExprMeta(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/a.chester",
@@ -11,12 +26,5 @@ Block(
       ),
       commentInfo = None
     )
-  ),
-  sourcePos = Some(
-    value = SourcePos(
-      fileName = "parserTests/a.chester",
-      range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 0, line = 0, column = 0))
-    )
-  ),
-  commentInfo = None
+  )
 )

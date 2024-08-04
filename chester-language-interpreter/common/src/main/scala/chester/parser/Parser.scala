@@ -7,12 +7,10 @@ import chester.syntax.concrete.*
 import chester.utils.StringIndex
 import chester.utils.parse.*
 
-import java.lang.Character.{isDigit, isLetter}
 import java.nio.file.{Files, Paths}
 import scala.util.*
 import chester.syntax.IdentifierRules.*
 
-import scala.:+
 import scala.collection.immutable
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
@@ -29,6 +27,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def commentOneLine: P[Comment] = PwithMeta("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map { case (content, meta) =>
     Comment(content, CommentType.OneLine, meta.flatMap(_.sourcePos))
   }
+
   def allComment: P[Comment] = P(commentOneLine)
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
@@ -73,8 +72,18 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Some(SourcePos(fileName, range))
   }
 
+  private def createMeta(pos: Option[SourcePos], comments: Option[CommentInfo]): Option[ExprMeta] = {
+    (pos, comments) match {
+      case (None, None) => None
+      case _ => Some(ExprMeta(pos, comments))
+    }
+  }
+
   extension [T](inline parse0: P[T]) {
-    inline def withMeta[R](using s: fastparse.Implicits.Sequencer[T, Option[ExprMeta], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) => s(x, Some(ExprMeta(loc(b, e), None))) }
+    inline def withMeta[R](using s: fastparse.Implicits.Sequencer[T, Option[ExprMeta], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) =>
+      val meta = createMeta(loc(b, e), None)
+      s(x, meta)
+    }
 
     inline def withSpaceAtStart[R](using s: fastparse.Implicits.Sequencer[T, Vector[Comment], R]): P[R] = (maybeSpace1 ~ parse0).map { case (comments, x) => s(x, comments) }
 
@@ -275,7 +284,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   private def combineMeta(meta1: Option[ExprMeta], meta2: Option[ExprMeta]): Option[ExprMeta] = {
     (meta1, meta2) match {
       case (Some(ExprMeta(pos1, comments1)), Some(ExprMeta(pos2, comments2))) =>
-        Some(ExprMeta(pos1.orElse(pos2), comments1.orElse(comments2)))
+        createMeta(pos1.orElse(pos2), comments1.orElse(comments2))
       case (Some(meta), None) => Some(meta)
       case (None, Some(meta)) => Some(meta)
       case (None, None) => None
@@ -286,8 +295,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getMeta1 = ((endMeta: Option[ExprMeta]) => getMeta(combineMeta(meta, endMeta)))
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getMeta1, ctx = ctx)) | Pass(expr)
-  }
-  })
+  }})
 
   inline def parse0: P[ParsedExpr] = keyword | objectParse | block | annotated | list | tuple | literal | identifier
 
