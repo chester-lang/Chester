@@ -88,8 +88,8 @@ jobs:
       with:
         name: windows-executables
         path: |
-          chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.exe
-          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.exe
+          chester-language-interpreter/cli/target/chester.exe
+          chester-language-interpreter/lsp/target/chester-lsp.exe
 
     - name: Check if release exists
       id: check_release
@@ -215,7 +215,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.exe
+        asset_path: chester-language-interpreter/cli/target/chester.exe
         asset_name: chester.exe
         asset_content_type: application/zip
 
@@ -226,6 +226,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.exe
+        asset_path: chester-language-interpreter/lsp/target/chester-lsp.exe
         asset_name: chester-lsp.exe
         asset_content_type: application/zip
