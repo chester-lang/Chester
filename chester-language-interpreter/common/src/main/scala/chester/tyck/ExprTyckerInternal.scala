@@ -17,12 +17,28 @@ object LocalCtx {
 
 case class Judge(wellTyped: Term, ty: Term, effect: EffectTerm)
 
-case class TyckError(message: String)
+sealed trait TyckError {
+  def message: String
+}
 
-object TyckError {
-  val emptyResults = TyckError("Empty Results")
+case class EmptyResultsError() extends TyckError {
+  def message: String = "Empty Results"
+}
 
-  def unifyFailed(subType: Term, superType: Term): TyckError = TyckError(s"Unification failed: $subType is not a subtype of $superType")
+case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
+  def message: String = s"Unification failed: $subType is not a subtype of $superType"
+}
+
+case class UnsupportedExpressionError(expr: Expr) extends TyckError {
+  def message: String = s"Unsupported expression type: $expr"
+}
+
+case class FieldTypeNotFoundError(qualifiedName: QualifiedName) extends TyckError {
+  def message: String = s"Field type not found for $qualifiedName"
+}
+
+case class ExpectedObjectTypeError() extends TyckError {
+  def message: String = "Expected an ObjectType for inheritance"
 }
 
 case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)]]) {
@@ -44,7 +60,7 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
   def getOne(state: TyckState): Either[TyckError, (TyckState, T)] = {
     xs(state).collectFirst {
       case right@Right(_) => right
-    }.getOrElse(xs(state).headOption.getOrElse(Left(TyckError.emptyResults)))
+    }.getOrElse(xs(state).headOption.getOrElse(Left(EmptyResultsError())))
   }
 
   def explainError(explain: TyckError => TyckError): Getting[T] = Getting { state =>
@@ -56,14 +72,6 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
 
   def ||(other: => Getting[T]): Getting[T] = Getting { state =>
     xs(state) #::: other.xs(state)
-  }
-
-  // withFilter was needed for a bug in a specific version of Scala
-  private def withFilter_removed(p: T => Boolean): Getting[T] = Getting { state =>
-    xs(state).collect {
-      case Left(err) => Left(err)
-      case Right((nextState, value)) if p(value) => Right((nextState, value))
-    }
   }
 }
 
@@ -82,7 +90,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     if (subType == superType) return Getting.pure(subType)
     (subType, superType) match {
       case (_, AnyTerm(_)) => Getting.pure(subType) // AnyTerm matches any subtype
-      case _ => Getting.error(TyckError.unifyFailed(subType, superType))
+      case _ => Getting.error(UnifyFailedError(subType, superType))
     }
   }
 
@@ -91,7 +99,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case (_, NoEffect(_)) => Getting.pure(subEffect)
       case (NoEffect(_), _) => Getting.pure(superEffect)
       case _ if subEffect == superEffect => Getting.pure(subEffect)
-      case _ => Getting.error(TyckError.unifyFailed(subEffect, superEffect))
+      case _ => Getting.error(UnifyFailedError(subEffect, superEffect))
     }
   }
 
@@ -166,7 +174,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         objTerm <- synthesizeObjectExpr(desugaredExpr.clauses)
         objType <- synthesizeObjectType(desugaredExpr.clauses)
       } yield Judge(objTerm, objType, NoEffect(convertMeta(objExpr.meta)))
-    case _ => Getting.error(TyckError("Unsupported expression type"))
+    case _ => Getting.error(UnsupportedExpressionError(expr))
   }
 
   def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Vector[(String, Term)], effect: Option[EffectTerm]): Getting[Vector[(String, Term)]] = {
@@ -176,7 +184,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         (qualifiedName, expr) = clause
         fieldType <- fieldTypes.find(_._1 == desugarQualifiedName(qualifiedName).head).map(_._2) match {
           case Some(ft) => inherit(expr, ft, effect).map(_.wellTyped)
-          case None => Getting.error[Term](TyckError(s"Field type not found for ${qualifiedName.toString}"))
+          case None => Getting.error[Term](FieldTypeNotFoundError(qualifiedName))
         }
       } yield typedClauses :+ (desugarQualifiedName(qualifiedName).head, fieldType)
     }
@@ -193,9 +201,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
               case None => Getting.pure(NoEffect(convertMeta(meta)))
             }
           } yield Judge(ObjectTerm(inheritedFields, convertMeta(meta)), ty, effect)
-        case _ => Getting.error(TyckError("Expected an ObjectType for inheritance"))
+        case _ => Getting.error(ExpectedObjectTypeError())
       }
-    case default => Getting.error(TyckError("Unsupported expression type"))
+    case default => Getting.error(UnsupportedExpressionError(default))
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None): Getting[Judge] = effect match {
