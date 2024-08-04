@@ -20,7 +20,7 @@ class ObjectWithIntegersSuite extends FunSuite {
 
     assert(result.isRight)
     result match {
-      case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _))) =>
+      case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _), _)) =>
         assertEquals(clauses.find(_._1 == "field1").map(_._2), Some(IntegerTerm(42)))
         assertEquals(clauses.find(_._1 == "field2").map(_._2), Some(IntegerTerm(24)))
         assertEquals(clauses.find(_._1 == "field3").map(_._2), Some(IntegerTerm(100)))
