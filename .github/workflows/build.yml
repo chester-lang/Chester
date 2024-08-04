@@ -33,6 +33,12 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
+    - name: Install SBT on macOS
+      if: runner.os == 'macOS'
+      run: |
+        brew update
+        brew install sbt
+
     - name: Cache SBT
       uses: actions/cache@v2
       with:
