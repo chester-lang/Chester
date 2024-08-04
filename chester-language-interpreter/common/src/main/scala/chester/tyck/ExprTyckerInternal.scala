@@ -1,8 +1,8 @@
 package chester.tyck
 
 import chester.error.SourcePos
-import chester.syntax.concrete.*
-import chester.syntax.core.*
+import chester.syntax.concrete._
+import chester.syntax.core._
 
 case class TyckState()
 
@@ -53,31 +53,36 @@ case class ExpectedObjectTypeError() extends TyckError {
   def cause: Option[Term | Expr] = None
 }
 
-case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)]]) {
+case class Getting[T](xs: TyckState => LazyList[Either[Vector[TyckError], (TyckState, T)]]) {
+
+  private def nonEmptyErrors(errors: Vector[TyckError]): Vector[TyckError] = {
+    require(errors.nonEmpty, "Errors vector cannot be empty")
+    errors
+  }
 
   def map[U](f: T => U): Getting[U] = Getting { state =>
     xs(state).map {
-      case Left(err) => Left(err)
+      case Left(err) => Left(nonEmptyErrors(err))
       case Right((nextState, value)) => Right((nextState, f(value)))
     }
   }
 
   def flatMap[U](f: T => Getting[U]): Getting[U] = Getting { state =>
     xs(state).flatMap {
-      case Left(err) => LazyList(Left(err))
+      case Left(err) => LazyList(Left(nonEmptyErrors(err)))
       case Right((nextState, value)) => f(value).xs(nextState)
     }
   }
 
-  def getOne(state: TyckState): Either[TyckError, (TyckState, T)] = {
+  def getOne(state: TyckState): Either[Vector[TyckError], (TyckState, T)] = {
     xs(state).collectFirst {
       case right@Right(_) => right
-    }.getOrElse(xs(state).headOption.getOrElse(Left(EmptyResultsError())))
+    }.getOrElse(xs(state).headOption.getOrElse(Left(nonEmptyErrors(Vector(EmptyResultsError())))))
   }
 
   def explainError(explain: TyckError => TyckError): Getting[T] = Getting { state =>
     xs(state).map {
-      case Left(err) => Left(explain(err))
+      case Left(err) => Left(nonEmptyErrors(err.map(explain)))
       case right => right
     }
   }
@@ -90,7 +95,9 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
 object Getting {
   def pure[T](x: T): Getting[T] = Getting(state => LazyList(Right((state, x))))
 
-  def error[T](err: TyckError): Getting[T] = Getting(_ => LazyList(Left(err)))
+  def error[T](err: TyckError): Getting[T] = Getting(_ => LazyList(Left(Vector(err))))
+
+  def errors[T](errs: Vector[TyckError]): Getting[T] = Getting(_ => LazyList(Left(errs)))
 
   def read: Getting[TyckState] = Getting(state => LazyList(Right((state, state))))
 
@@ -232,19 +239,19 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 }
 
 object ExprTycker {
-  def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Term] = {
+  def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
   }
 
-  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, EffectTerm] = {
+  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], EffectTerm] = {
     ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Judge] = {
+  def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).inherit(expr, ty, effect).getOne(state).map(_._2)
   }
 
-  def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Judge] = {
+  def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).synthesize(expr).getOne(state).map(_._2)
   }
 }

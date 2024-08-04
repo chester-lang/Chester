@@ -52,15 +52,15 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 }
 object ModuleTycker {
 
-  def tyckModuleFile(moduleFile: ModuleFile, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, TyckedModuleFile] = {
+  def tyckModuleFile(moduleFile: ModuleFile, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], TyckedModuleFile] = {
     ModuleTyckerInternal(ctx).tyckModuleFile(moduleFile).getOne(state).map(_._2)
   }
 
-  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile], state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, TyckedModule] = {
+  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile], state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], TyckedModule] = {
     ModuleTyckerInternal(ctx).tyckModule(id, files).getOne(state).map(_._2)
   }
 
-  def tyckModules(modules: Modules, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[TyckError, Vector[TyckedModule]] = {
+  def tyckModules(modules: Modules, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Vector[TyckedModule]] = {
     ModuleTyckerInternal(ctx).tyckModules(modules).getOne(state).map(_._2)
   }
 }
