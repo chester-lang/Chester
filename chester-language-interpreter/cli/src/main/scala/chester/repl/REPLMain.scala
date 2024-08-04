@@ -56,7 +56,7 @@ object REPLMain {
                 val typeCheckResult = typeCheck(parsedExpr)
                 typeCheckResult match {
                   case Left(error) =>
-                    println(s"Type Error: ${error(1).message}") // TODO: correctly print error
+                    println(s"Type Error: ${error(0).message}") // TODO: correctly print error
                   case Right(judge) =>
                     println(s"Type Check Successful: ${judge}")
                 }
