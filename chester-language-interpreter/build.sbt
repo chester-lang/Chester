@@ -38,7 +38,7 @@ lazy val common = (project in file("common"))
     )
   )
 
-lazy val cli = (project in file("chester"))
+lazy val cli = (project in file("cli"))
   .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(

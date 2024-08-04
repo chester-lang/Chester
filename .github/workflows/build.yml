@@ -59,7 +59,7 @@ jobs:
         name: assembly-jars-and-native-images
         path: |
           chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-language-interpreter/chester/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
           chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-language-interpreter/target/chester
           chester-language-interpreter/target/chester-lsp
@@ -142,7 +142,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/chester/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+        asset_path: chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
         asset_name: chester.jar
         asset_content_type: application/zip
 
