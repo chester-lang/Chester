@@ -37,12 +37,35 @@ case class StringType(sourcePos: Option[SourcePos] = None) extends TypeTerm
 
 case class AnyTerm(sourcePos: Option[SourcePos] = None) extends TypeTerm
 
+type Id = String
 
-case class ObjectTerm(clauses: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
+case class ObjectTerm(clauses: Vector[(Id, Term)], sourcePos: Option[SourcePos] = None) extends Term
 
+object ObjectTerm {
+  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
+  def apply(clauses: Map[String, Term], sourcePos: Option[SourcePos]): ObjectTerm = {
+    new ObjectTerm(clauses.toVector, sourcePos)
+  }
 
-case class ObjectType(fieldTypes: Map[String, Term], sourcePos: Option[SourcePos] = None) extends Term
+  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
+  def apply(clauses: Map[String, Term]): ObjectTerm = {
+    new ObjectTerm(clauses.toVector, None)
+  }
+}
 
+case class ObjectType(fieldTypes: Vector[(Id, Term)], sourcePos: Option[SourcePos] = None) extends Term
+
+object ObjectType {
+  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
+  def apply(fieldTypes: Map[String, Term], sourcePos: Option[SourcePos]): ObjectType = {
+    new ObjectType(fieldTypes.toVector, sourcePos)
+  }
+
+  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
+  def apply(fieldTypes: Map[String, Term]): ObjectType = {
+    new ObjectType(fieldTypes.toVector, None)
+  }
+}
 
 case class OrType(xs: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term {
   assert(xs.nonEmpty)

@@ -1,7 +1,7 @@
 package chester.tyck
 
 import chester.syntax.concrete.*
-import chester.syntax.core._
+import chester.syntax.core.*
 
 case class TyckState()
 
@@ -78,6 +78,36 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
+  def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
+    case Identifier(name, _, _) => Vector(name)
+    case DotCall(expr, field: Identifier, _, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
+    case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
+  }
+
+  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
+    def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
+      fields.foldLeft(base) {
+        case (acc, (Vector(k), v)) =>
+          val updatedClauses = acc.clauses :+ (Identifier(k) -> v)
+          acc.copy(clauses = updatedClauses)
+        case (acc, (Vector(k, ks @ _*), v)) =>
+          val nestedExpr = acc.clauses.find(_._1 == Identifier(k)) match {
+            case Some((_, nestedObj: ObjectExpr)) =>
+              insertNested(Vector((ks.toVector, v)), nestedObj)
+            case _ =>
+              insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
+          }
+          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ (Identifier(k) -> nestedExpr)
+          acc.copy(clauses = updatedClauses)
+      }
+    }
+
+    val desugaredClauses = expr.clauses.map {
+      case (qname, expr) => (desugarQualifiedName(qname), expr)
+    }
+    insertNested(desugaredClauses, ObjectExpr(Vector.empty))
+  }
+
   def synthesizeObjectExpr(clauses: Vector[(QualifiedName, Expr)]): Getting[ObjectTerm] = {
     for {
       typedClauses <- clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
@@ -85,9 +115,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
           typedClauses <- acc
           (qualifiedName, expr) = clause
           Judge(wellTypedExpr, _) <- synthesize(expr)
-        } yield typedClauses :+ (qualifiedName.toString, wellTypedExpr)
+        } yield typedClauses :+ (desugarQualifiedName(qualifiedName).mkString("."), wellTypedExpr)
       }
-    } yield ObjectTerm(typedClauses.toMap)
+    } yield ObjectTerm(typedClauses)
   }
 
   def synthesizeObjectType(clauses: Vector[(QualifiedName, Expr)]): Getting[ObjectType] = {
@@ -97,33 +127,34 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
           typedClauses <- acc
           (qualifiedName, expr) = clause
           Judge(_, exprType) <- synthesize(expr)
-        } yield typedClauses :+ (qualifiedName.toString, exprType)
+        } yield typedClauses :+ (desugarQualifiedName(qualifiedName).mkString("."), exprType)
       }
-    } yield ObjectType(typedClauses.toMap)
+    } yield ObjectType(typedClauses)
   }
 
   def synthesize(expr: Expr): Getting[Judge] = expr match {
     case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType(sourcePos)))
     case DoubleLiteral(value, sourcePos, _) => Getting.pure(Judge(DoubleTerm(value, sourcePos), DoubleType(sourcePos)))
     case StringLiteral(value, sourcePos, _) => Getting.pure(Judge(StringTerm(value, sourcePos), StringType(sourcePos)))
-    case ObjectExpr(clauses, sourcePos, _) =>
+    case objExpr: ObjectExpr =>
+      val desugaredExpr = desugarObjectExpr(objExpr)
       for {
-        objTerm <- synthesizeObjectExpr(clauses)
-        objType <- synthesizeObjectType(clauses)
+        objTerm <- synthesizeObjectExpr(desugaredExpr.clauses)
+        objType <- synthesizeObjectType(desugaredExpr.clauses)
       } yield Judge(objTerm, objType)
     case _ => Getting.error(TyckError("Unsupported expression type"))
   }
 
-  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Map[String, Term]): Getting[Vector[(String, Term)]] = {
+  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Vector[(String, Term)]): Getting[Vector[(String, Term)]] = {
     clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
       for {
         typedClauses <- acc
         (qualifiedName, expr) = clause
-        fieldType <- fieldTypes.get(qualifiedName.toString) match {
+        fieldType <- fieldTypes.find(_._1 == desugarQualifiedName(qualifiedName).head).map(_._2) match {
           case Some(ft) => inherit(expr, ft).map(_.wellTyped)
           case None => Getting.error[Term](TyckError(s"Field type not found for ${qualifiedName.toString}"))
         }
-      } yield typedClauses :+ (qualifiedName.toString, fieldType)
+      } yield typedClauses :+ (desugarQualifiedName(qualifiedName).head, fieldType)
     }
   }
 
@@ -133,7 +164,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         case ObjectType(fieldTypes, _) =>
           for {
             inheritedFields <- inheritObjectFields(clauses, fieldTypes)
-          } yield Judge(ObjectTerm(inheritedFields.toMap, sourcePos), ty)
+          } yield Judge(ObjectTerm(inheritedFields, sourcePos), ty)
         case _ => Getting.error(TyckError("Expected an ObjectType for inheritance"))
       }
     case default => Getting.error(TyckError("Unsupported expression type"))
