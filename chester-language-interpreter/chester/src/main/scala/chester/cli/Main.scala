@@ -7,7 +7,7 @@ object Main {
 
   // Command line arguments case class
   case class Config(
-                     subcommand: String = "evaluate",
+                     subcommand: String = "",
                      input: Option[String] = None
                    )
 
@@ -22,9 +22,9 @@ object Main {
         head("chester", "1.0"),
 
         // Subcommands
-        cmd("evaluate")
-          .action((_, c) => c.copy(subcommand = "evaluate"))
-          .text("evaluate expressions")
+        cmd("run")
+          .action((_, c) => c.copy(subcommand = "run"))
+          .text("run expressions")
           .children(
             arg[String]("input")
               .optional()
@@ -39,7 +39,7 @@ object Main {
         // Help options
         help("help").text("prints this usage text"),
         checkConfig { c =>
-          if (c.input.isEmpty && c.subcommand == "evaluate") success
+          if (c.input.isEmpty && c.subcommand == "run") success
           else if (c.input.exists(x => x == "-" || new java.io.File(x).exists())) success
           else failure("Invalid input. Provide '-' for stdin, or a valid file/directory.")
         }
@@ -50,11 +50,11 @@ object Main {
     OParser.parse(parser, args, Config()) match {
       case Some(config) =>
         config.subcommand match {
-          case "evaluate" =>
+          case "run" =>
             config.input match {
               case None => REPLMain.runREPL() // Run interactive REPL
-              case Some("-") => evaluateStdin() // Evaluate from stdin
-              case Some(fileOrDir) => evaluateFileOrDirectory(fileOrDir) // Evaluate from file or directory
+              case Some("-") => REPLMain.runREPL()
+              case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
             }
           case "help" => OParser.usage(parser)
         }
@@ -62,16 +62,9 @@ object Main {
     }
   }
 
-  // Evaluate from stdin
-  def evaluateStdin(): Unit = {
-    println("Reading from stdin...")
-    // Implement stdin evaluation logic
-    ???
-  }
-
   // Evaluate from file or directory
-  def evaluateFileOrDirectory(fileOrDir: String): Unit = {
-    println(s"Evaluating from $fileOrDir...")
+  def runFileOrDirectory(fileOrDir: String): Unit = {
+    println(s"Running from $fileOrDir...")
     // Implement file or directory evaluation logic
     ???
   }
