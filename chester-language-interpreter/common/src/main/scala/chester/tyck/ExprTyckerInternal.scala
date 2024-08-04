@@ -5,6 +5,10 @@ import chester.syntax.core._
 
 case class TyckState()
 
+object BuiltinCtx {
+  val builtinSyntax = Vector("data")
+}
+
 case class LocalCtx()
 
 object LocalCtx {
