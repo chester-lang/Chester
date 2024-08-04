@@ -38,6 +38,10 @@ jobs:
       working-directory: chester-language-interpreter
       run: sbt clean assembly
 
+    - name: Run Tests
+      working-directory: chester-language-interpreter
+      run: sbt test
+
     - name: List files for debugging
       run: find chester-language-interpreter -type f -name "*.jar"
 
