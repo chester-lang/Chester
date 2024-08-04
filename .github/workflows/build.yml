@@ -67,9 +67,11 @@ jobs:
       run: sbt lsp/nativeImage
 
     - name: List files for debugging
-      run: find chester-language-interpreter -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp"
+      run: find chester-language-interpreter -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "*.exe"
+      continue-on-error: true
 
-    - name: Upload JAR and Native Image files
+    - name: Upload JAR and Native Image files (Unix)
+      if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
       with:
         name: assembly-jars-and-native-images
@@ -79,6 +81,15 @@ jobs:
           chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-language-interpreter/target/chester
           chester-language-interpreter/target/chester-lsp
+
+    - name: Upload Windows Executable
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-executables
+        path: |
+          chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.exe
+          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.exe
 
     - name: Check if release exists
       id: check_release
@@ -143,6 +154,7 @@ jobs:
         result-format: string
 
     - name: Upload Release Asset common.jar
+      if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -153,6 +165,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester.jar
+      if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -163,6 +176,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester-lsp.jar
+      if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -173,6 +187,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester binary
+      if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -183,6 +198,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester-lsp binary
+      if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -190,4 +206,26 @@ jobs:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/target/chester-lsp
         asset_name: chester-lsp
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset chester.exe
+      if: runner.os == 'Windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_update_release.outputs.result }}
+        asset_path: chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.exe
+        asset_name: chester.exe
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset chester-lsp.exe
+      if: runner.os == 'Windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_update_release.outputs.result }}
+        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.exe
+        asset_name: chester-lsp.exe
         asset_content_type: application/zip
