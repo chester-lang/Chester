@@ -4,7 +4,7 @@ val graalVersion = "22.0.2"
 val nativeImageOption = Seq(
   "--verbose",
   "--no-fallback",
-  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,org.jline",
+  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse", // runtime: org.jline
 )
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
