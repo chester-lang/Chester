@@ -51,9 +51,8 @@ jobs:
         name: assembly-jars
         path: |
           chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-language-interpreter/interpreter/target/scala-${{ env.SCALA_VERSION }}/interpreter.jar
+          chester-language-interpreter/chester/target/scala-${{ env.SCALA_VERSION }}/chester.jar
           chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
-          chester-language-interpreter/repl/target/scala-${{ env.SCALA_VERSION }}/repl.jar
 
     - name: Check if release exists
       id: check_release
@@ -127,14 +126,14 @@ jobs:
         asset_name: common.jar
         asset_content_type: application/zip
 
-    - name: Upload Release Asset interpreter.jar
+    - name: Upload Release Asset chester.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/interpreter/target/scala-${{ env.SCALA_VERSION }}/interpreter.jar
-        asset_name: interpreter.jar
+        asset_path: chester-language-interpreter/chester/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+        asset_name: chester.jar
         asset_content_type: application/zip
 
     - name: Upload Release Asset lsp.jar
@@ -145,14 +144,4 @@ jobs:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
         asset_name: lsp.jar
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset repl.jar
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/repl/target/scala-${{ env.SCALA_VERSION }}/repl.jar
-        asset_name: repl.jar
         asset_content_type: application/zip

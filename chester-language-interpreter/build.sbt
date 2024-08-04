@@ -9,7 +9,7 @@ ThisBuild / assemblyMergeStrategy := {
 }
 
 lazy val root = (project in file("."))
-  .aggregate(common, interpreter, lsp, repl)
+  .aggregate(common, cli, lsp)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version
@@ -21,20 +21,23 @@ lazy val common = (project in file("common"))
     name := "ChesterCommon",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
       "org.scalameta" %% "munit" % "1.0.0" % Test,
       "com.lihaoyi" %% "fastparse" % "3.1.0",
       "com.lihaoyi" %% "pprint" % "0.9.0"
     )
   )
 
-lazy val interpreter = (project in file("interpreter"))
+lazy val cli = (project in file("chester"))
   .dependsOn(common)
   .settings(
-    assembly / assemblyJarName := "interpreter.jar",
-    name := "ChesterInterpreter",
+    assembly / assemblyJarName := "chester.jar",
+    name := "ChesterCLI",
     scalaVersion := scala3Version,
-    Compile / mainClass := Some("chester.Main")
+    Compile / mainClass := Some("chester.cli.Main"),
+    libraryDependencies ++= Seq(
+      "org.jline" % "jline" % "3.26.2",
+      "com.github.scopt" %% "scopt" % "4.1.0"
+    )
   )
 
 lazy val lsp = (project in file("lsp"))
@@ -45,16 +48,4 @@ lazy val lsp = (project in file("lsp"))
     scalaVersion := scala3Version,
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1"
-  )
-
-lazy val repl = (project in file("repl"))
-  .dependsOn(common)
-  .settings(
-    assembly / assemblyJarName := "repl.jar",
-    name := "ChesterRepl",
-    scalaVersion := scala3Version,
-    Compile / mainClass := Some("chester.repl.REPLMain"),
-    libraryDependencies ++= Seq(
-      "org.jline" % "jline" % "3.26.2"
-    )
   )

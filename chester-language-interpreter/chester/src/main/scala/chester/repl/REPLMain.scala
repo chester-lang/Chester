@@ -1,11 +1,10 @@
 package chester.repl
-
+import chester.parser.REPL.{Complete, REPLResult, UnmatchedPair}
 import chester.parser.{REPL, ReplLines}
-import chester.parser.REPL.{REPLResult, UnmatchedPair, Complete}
 import chester.syntax.concrete.Expr
-import chester.tyck.{ExprTycker, TyckState, LocalCtx, Judge}
-import org.jline.reader.{LineReader, LineReaderBuilder, EndOfFileException, UserInterruptException}
+import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import org.jline.reader.impl.history.DefaultHistory
+import org.jline.reader.{EndOfFileException, LineReader, LineReaderBuilder, UserInterruptException}
 import org.jline.terminal.TerminalBuilder
 
 object REPLMain {
@@ -14,7 +13,7 @@ object REPLMain {
   val continuationPrompt: String = "...      "
   assert(mainPrompt.length == continuationPrompt.length)
 
-  def main(args: Array[String]): Unit = {
+  def runREPL(): Unit = {
     val terminal = TerminalBuilder.terminal()
     val history = new DefaultHistory()
     val reader = LineReaderBuilder.builder()
