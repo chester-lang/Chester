@@ -2,12 +2,13 @@ package chester.cli
 
 import scopt.OParser
 import chester.repl.REPLMain
+import java.io.File
 
 object Main {
 
   // Command line arguments case class
   case class Config(
-                     subcommand: String = "",
+                     subcommand: String = "run",
                      input: Option[String] = None
                    )
 
@@ -29,7 +30,7 @@ object Main {
             arg[String]("input")
               .optional()
               .action((x, c) => c.copy(input = Some(x)))
-              .text("input can be -, a file, or a directory")
+              .text("input can be '-', a file, or a directory")
           ),
 
         cmd("help")
@@ -39,8 +40,7 @@ object Main {
         // Help options
         help("help").text("prints this usage text"),
         checkConfig { c =>
-          if (c.input.isEmpty && c.subcommand == "run") success
-          else if (c.input.exists(x => x == "-" || new java.io.File(x).exists())) success
+          if (c.input.isEmpty || c.input.exists(x => x == "-" || new File(x).exists())) success
           else failure("Invalid input. Provide '-' for stdin, or a valid file/directory.")
         }
       )
@@ -52,7 +52,7 @@ object Main {
         config.subcommand match {
           case "run" =>
             config.input match {
-              case None => REPLMain.runREPL() // Run interactive REPL
+              case None => REPLMain.runREPL() // Run interactive REPL when no input is provided
               case Some("-") => REPLMain.runREPL()
               case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
             }
@@ -65,7 +65,6 @@ object Main {
   // Evaluate from file or directory
   def runFileOrDirectory(fileOrDir: String): Unit = {
     println(s"Running from $fileOrDir...")
-    // Implement file or directory evaluation logic
     ???
   }
 }
