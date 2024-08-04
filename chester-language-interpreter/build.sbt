@@ -28,6 +28,7 @@ lazy val common = (project in file("common"))
   )
 
 lazy val cli = (project in file("chester"))
+  .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
     assembly / assemblyJarName := "chester.jar",
@@ -41,6 +42,7 @@ lazy val cli = (project in file("chester"))
   )
 
 lazy val lsp = (project in file("lsp"))
+  .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
     assembly / assemblyJarName := "lsp.jar",
