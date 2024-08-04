@@ -1,5 +1,6 @@
 package chester.tyck
 
+import chester.error.SourcePos
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 
@@ -19,26 +20,37 @@ case class Judge(wellTyped: Term, ty: Term, effect: EffectTerm)
 
 sealed trait TyckError {
   def message: String
+  def cause: Option[Term | Expr]
+  def location: Option[SourcePos] = cause match {
+    case Some(term: Term) => term.sourcePos
+    case Some(expr: Expr) => expr.sourcePos
+    case _ => None
+  }
 }
 
 case class EmptyResultsError() extends TyckError {
   def message: String = "Empty Results"
+  def cause: Option[Term | Expr] = None
 }
 
 case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
   def message: String = s"Unification failed: $subType is not a subtype of $superType"
+  def cause: Option[Term | Expr] = Some(subType)
 }
 
 case class UnsupportedExpressionError(expr: Expr) extends TyckError {
   def message: String = s"Unsupported expression type: $expr"
+  def cause: Option[Term | Expr] = Some(expr)
 }
 
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName) extends TyckError {
   def message: String = s"Field type not found for $qualifiedName"
+  def cause: Option[Term | Expr] = Some(qualifiedName)
 }
 
 case class ExpectedObjectTypeError() extends TyckError {
   def message: String = "Expected an ObjectType for inheritance"
+  def cause: Option[Term | Expr] = None
 }
 
 case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)]]) {
