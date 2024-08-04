@@ -6,7 +6,7 @@ import chester.syntax.core._
 case class TyckState()
 
 object BuiltinCtx {
-  val builtinSyntax = Vector("data")
+  val builtinSyntax = Vector("data", "module")
 }
 
 case class LocalCtx()
