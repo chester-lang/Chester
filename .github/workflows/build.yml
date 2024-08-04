@@ -42,17 +42,27 @@ jobs:
       working-directory: chester-language-interpreter
       run: sbt test
 
-    - name: List files for debugging
-      run: find chester-language-interpreter -type f -name "*.jar"
+    - name: Build Native Image for CLI
+      working-directory: chester-language-interpreter
+      run: sbt cli/nativeImage
 
-    - name: Upload JAR files
+    - name: Build Native Image for LSP
+      working-directory: chester-language-interpreter
+      run: sbt lsp/nativeImage
+
+    - name: List files for debugging
+      run: find chester-language-interpreter -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp"
+
+    - name: Upload JAR and Native Image files
       uses: actions/upload-artifact@v3
       with:
-        name: assembly-jars
+        name: assembly-jars-and-native-images
         path: |
           chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
           chester-language-interpreter/chester/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
+          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-language-interpreter/target/chester
+          chester-language-interpreter/target/chester-lsp
 
     - name: Check if release exists
       id: check_release
@@ -136,12 +146,32 @@ jobs:
         asset_name: chester.jar
         asset_content_type: application/zip
 
-    - name: Upload Release Asset lsp.jar
+    - name: Upload Release Asset chester-lsp.jar
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/lsp.jar
-        asset_name: lsp.jar
+        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+        asset_name: chester-lsp.jar
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset chester binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_update_release.outputs.result }}
+        asset_path: chester-language-interpreter/target/chester
+        asset_name: chester
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset chester-lsp binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_update_release.outputs.result }}
+        asset_path: chester-language-interpreter/target/chester-lsp
+        asset_name: chester-lsp
         asset_content_type: application/zip
