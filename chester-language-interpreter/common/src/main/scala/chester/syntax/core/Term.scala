@@ -67,17 +67,17 @@ object ObjectType {
 }
 
 case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
-  assert(xs.nonEmpty)
+  require(xs.nonEmpty)
 }
 
 case class AndType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
-  assert(xs.nonEmpty)
+  require(xs.nonEmpty)
 }
 
 sealed trait EffectTerm extends Term
 
 case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends EffectTerm {
-  assert(xs.nonEmpty)
+  require(xs.nonEmpty)
 }
 
 case class NoEffect(meta: Option[TermMeta] = None) extends EffectTerm

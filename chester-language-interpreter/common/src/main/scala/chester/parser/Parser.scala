@@ -14,10 +14,10 @@ import chester.syntax.IdentifierRules.*
 import scala.collection.immutable
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
-  if (linesOffset != 0) assert(posOffset != 0)
-  if (posOffset != 0) assert(linesOffset != 0)
-  assert(posOffset >= 0)
-  assert(linesOffset >= 0)
+  if (linesOffset != 0) require(posOffset != 0)
+  if (posOffset != 0) require(linesOffset != 0)
+  require(posOffset >= 0)
+  require(linesOffset >= 0)
 
   def nEnd: P[Unit] = P("\n" | End)
 

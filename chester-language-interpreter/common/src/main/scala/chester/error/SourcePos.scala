@@ -15,7 +15,7 @@ case class SourcePos(fileName: String, range: RangeInFile) {
     if (fileName != other.fileName) {
       throw new IllegalArgumentException("Cannot combine source positions from different files")
     }
-    assert(range.start.index <= other.range.start.index)
+    require(range.start.index <= other.range.start.index)
     val newRange = RangeInFile(range.start, other.range.end)
     SourcePos(fileName, newRange)
   }

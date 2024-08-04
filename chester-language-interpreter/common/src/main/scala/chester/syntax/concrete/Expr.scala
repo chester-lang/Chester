@@ -18,7 +18,7 @@ case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Co
 }
 
 case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) {
-  assert(sourcePos.isDefined || commentInfo.isDefined)
+  require(sourcePos.isDefined || commentInfo.isDefined)
 }
 
 sealed trait Expr extends WithPos {
@@ -112,7 +112,7 @@ case class MacroCall(macroName: Expr, args: Vector[Expr], meta: Option[ExprMeta]
 
 // maybe argument in function call or in function declaration
 case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr], vararg: Boolean = false) {
-  assert(name.isDefined || exprOrDefault.isDefined)
+  require(name.isDefined || exprOrDefault.isDefined)
 
   def descentAndApply(operator: Expr => Expr): Arg = {
     Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
