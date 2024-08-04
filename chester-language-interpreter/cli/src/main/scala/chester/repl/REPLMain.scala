@@ -56,7 +56,7 @@ object REPLMain {
                 val typeCheckResult = typeCheck(parsedExpr)
                 typeCheckResult match {
                   case Left(error) =>
-                    println(s"Type Error: ${error.message}")
+                    println(s"Type Error: ${error(1).message}") // TODO: correctly print error
                   case Right(judge) =>
                     println(s"Type Check Successful: ${judge}")
                 }
@@ -73,7 +73,7 @@ object REPLMain {
   }
 
   // Function to type-check the parsed expression
-  def typeCheck(expr: Expr): Either[chester.tyck.TyckError, Judge] = {
+  def typeCheck(expr: Expr): Either[Vector[chester.tyck.TyckError], Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
     ExprTycker.synthesize(expr, initialState, initialCtx)
