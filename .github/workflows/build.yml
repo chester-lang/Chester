@@ -22,13 +22,14 @@ jobs:
 
     env:
       SCALA_VERSION: '3.4.2'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up JDK
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: 'adopt'
         java-version: '17'
@@ -38,9 +39,10 @@ jobs:
       run: |
         brew update
         brew install sbt
+      shell: bash
 
     - name: Cache SBT
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.ivy2/cache
@@ -53,21 +55,26 @@ jobs:
     - name: Build with SBT
       working-directory: chester-language-interpreter
       run: sbt clean assembly
+      shell: bash
 
     - name: Run Tests
       working-directory: chester-language-interpreter
       run: sbt test
+      shell: bash
 
     - name: Build Native Image for CLI
       working-directory: chester-language-interpreter
       run: sbt cli/nativeImage
+      shell: bash
 
     - name: Build Native Image for LSP
       working-directory: chester-language-interpreter
       run: sbt lsp/nativeImage
+      shell: bash
 
     - name: List files for debugging
       run: find chester-language-interpreter -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "*.exe"
+      shell: bash
       continue-on-error: true
 
     - name: Upload JAR and Native Image files (Unix)
@@ -88,8 +95,8 @@ jobs:
       with:
         name: windows-executables
         path: |
-          chester-language-interpreter/cli/target/chester.exe
-          chester-language-interpreter/lsp/target/chester-lsp.exe
+          chester-language-interpreter/target/chester.exe
+          chester-language-interpreter/target/chester-lsp.exe
 
     - name: Check if release exists
       id: check_release
@@ -100,12 +107,11 @@ jobs:
         else
           echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
         fi
+      shell: bash
 
     - name: Create or update GitHub Release
       id: create_update_release
       uses: actions/github-script@v4
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         script: |
           const { data: releases } = await github.repos.listReleases({
@@ -156,8 +162,6 @@ jobs:
     - name: Upload Release Asset common.jar
       if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
@@ -167,8 +171,6 @@ jobs:
     - name: Upload Release Asset chester.jar
       if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
@@ -178,8 +180,6 @@ jobs:
     - name: Upload Release Asset chester-lsp.jar
       if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
@@ -189,8 +189,6 @@ jobs:
     - name: Upload Release Asset chester binary
       if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/target/chester
@@ -200,8 +198,6 @@ jobs:
     - name: Upload Release Asset chester-lsp binary
       if: runner.os != 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-language-interpreter/target/chester-lsp
@@ -211,21 +207,17 @@ jobs:
     - name: Upload Release Asset chester.exe
       if: runner.os == 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/cli/target/chester.exe
+        asset_path: chester-language-interpreter/target/chester.exe
         asset_name: chester.exe
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester-lsp.exe
       if: runner.os == 'Windows'
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/lsp/target/chester-lsp.exe
+        asset_path: chester-language-interpreter/target/chester-lsp.exe
         asset_name: chester-lsp.exe
         asset_content_type: application/zip
