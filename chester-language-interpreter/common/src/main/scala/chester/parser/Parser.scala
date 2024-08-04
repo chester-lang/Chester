@@ -221,22 +221,35 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
-  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = PwithPos(opSeqGettingExprs(ctx = ctx)).flatMap((exprs, pos) => {
-    val xs = (expr +: exprs)
-    val exprCouldPrefix = expr match {
-      case Identifier(name, _, _) if strIsOperator(name) => true
-      case _ => false
+  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = {
+    PwithPos(opSeqGettingExprs(ctx = ctx)).flatMap { case (exprs, pos) =>
+      val xs = (expr +: exprs)
+      lazy val exprCouldPrefix = expr match {
+        case Identifier(name, _, _) if strIsOperator(name) => true
+        case _ => false
+      }
+
+      lazy val failEqualCheck = ctx.dontAllowEqualSymbol && xs.exists {
+        case Identifier("=", _, _) => true
+        case _ => false
+      }
+
+      lazy val failVarargCheck = ctx.dontAllowVararg && xs.exists {
+        case Identifier("...", _, _) => true
+        case _ => false
+      }
+
+      if (failEqualCheck) {
+        Fail("Looks like a equal")
+      } else if (failVarargCheck) {
+        Fail("Looks like a vararg")
+      } else if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) {
+        Fail("Expected identifier")
+      } else {
+        Pass(OpSeq(xs.toVector, p(pos)))
+      }
     }
-    if (ctx.dontAllowEqualSymbol && xs.exists(_ match {
-      case Identifier("=", _, _) => true
-      case _ => false
-    })) return Fail("Looks like a equal")
-    if (ctx.dontAllowVararg && xs.exists(_ match {
-      case Identifier("...", _, _) => true
-      case _ => false
-    })) return Fail("Looks like a vararg")
-    if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) Fail("Expected identifier") else Pass(OpSeq(xs.toVector, p(pos)))
-  })
+  }
 
   def qualifiedNameOn(x: QualifiedName): P[QualifiedName] = PwithPos("." ~ identifier).flatMap { (id, pos) =>
     val built = QualifiedName.build(x, id, x.sourcePos.combineInOption(pos))
@@ -353,8 +366,6 @@ object Parser {
       case Some(OpSeq(Vector(Identifier("module", _, _), identifiers*), _, _)) =>
         val names = identifiers.collect { case Identifier(name, _, _) => name }.toVector
         if (names.nonEmpty) Right(names) else Left(ParseError("Module identifiers could not be parsed", Pos.Zero))
-      case Some(OpSeq(Vector(Identifier("module", _, _)), _, _)) =>
-        Left(ParseError("Module identifiers missing", Pos.Zero))
       case _ => Right(Vector.empty)
     }
   }

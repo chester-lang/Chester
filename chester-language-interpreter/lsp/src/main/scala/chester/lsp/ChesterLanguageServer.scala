@@ -4,16 +4,18 @@ import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
 
 import java.util.concurrent.CompletableFuture
-import chester.parser._
+import chester.parser.*
 import chester.error.*
 import chester.syntax.concrete.*
 import chester.utils.StringIndex
 import fastparse.Parsed
-import scala.jdk.CollectionConverters._
+
+import scala.compiletime.uninitialized
+import scala.jdk.CollectionConverters.*
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
 
-  private var client: LanguageClient = _
+  private var client: LanguageClient = uninitialized
 
   def connect(client: LanguageClient): Unit = {
     this.client = client

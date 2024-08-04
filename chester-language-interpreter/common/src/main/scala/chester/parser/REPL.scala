@@ -39,32 +39,44 @@ object REPL {
     }
   }
 
+  import scala.util.boundary
+  import scala.util.boundary.break
+
   // Function to determine if the input has unclosed brackets, parentheses, or braces
   private def checkUnclosedPairs(input: String): PairCheckResult = {
-    val stack = scala.collection.mutable.Stack[(Char, Int)]()
-    val indexer = StringIndex(input)
-    for ((char, index) <- input.zipWithIndex) {
-      char match {
-        case '(' | '[' | '{' => stack.push((char, index))
-        case ')' =>
-          if (stack.isEmpty || stack.pop()._1 != '(') {
-            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
-            return PairError(ParseError(s"Unmatched parenthesis at position $index", Pos(index, pos.line, pos.column)))
-          }
-        case ']' =>
-          if (stack.isEmpty || stack.pop()._1 != '[') {
-            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
-            return PairError(ParseError(s"Unmatched bracket at position $index", Pos(index, pos.line, pos.column)))
-          }
-        case '}' =>
-          if (stack.isEmpty || stack.pop()._1 != '{') {
-            val pos = indexer.charIndexToUnicodeLineAndColumn(index)
-            return PairError(ParseError(s"Unmatched brace at position $index", Pos(index, pos.line, pos.column)))
-          }
-        case _ =>
+    boundary {
+      val stack = scala.collection.mutable.Stack[(Char, Int)]()
+      val indexer = StringIndex(input)
+      for ((char, index) <- input.zipWithIndex) {
+        char match {
+          case '(' | '[' | '{' =>
+            stack.push((char, index))
+          case ')' =>
+            if (stack.isEmpty || stack.pop()._1 != '(') {
+              val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+              break {
+                PairError(ParseError(s"Unmatched parenthesis at position $index", Pos(index, pos.line, pos.column)))
+              }
+            }
+          case ']' =>
+            if (stack.isEmpty || stack.pop()._1 != '[') {
+              val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+              break {
+                PairError(ParseError(s"Unmatched bracket at position $index", Pos(index, pos.line, pos.column)))
+              }
+            }
+          case '}' =>
+            if (stack.isEmpty || stack.pop()._1 != '{') {
+              val pos = indexer.charIndexToUnicodeLineAndColumn(index)
+              break {
+                PairError(ParseError(s"Unmatched brace at position $index", Pos(index, pos.line, pos.column)))
+              }
+            }
+          case _ =>
+        }
       }
+      if (stack.nonEmpty) Unclosed else Closed
     }
-    if (stack.nonEmpty) Unclosed else Closed
   }
 
   // Function to add a line to the current input and check if it forms a complete expression

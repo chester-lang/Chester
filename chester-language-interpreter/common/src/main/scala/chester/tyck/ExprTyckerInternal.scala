@@ -90,7 +90,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         case (acc, (Vector(k), v)) =>
           val updatedClauses = acc.clauses :+ (Identifier(k) -> v)
           acc.copy(clauses = updatedClauses)
-        case (acc, (Vector(k, ks @ _*), v)) =>
+        case (acc, (Vector(k, ks*), v)) =>
           val nestedExpr = acc.clauses.find(_._1 == Identifier(k)) match {
             case Some((_, nestedObj: ObjectExpr)) =>
               insertNested(Vector((ks.toVector, v)), nestedObj)
@@ -99,6 +99,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
           }
           val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ (Identifier(k) -> nestedExpr)
           acc.copy(clauses = updatedClauses)
+        case (acc, (Vector(), _)) => acc
       }
     }
 
