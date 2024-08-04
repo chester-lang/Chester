@@ -1,8 +1,16 @@
 val scala3Version = "3.4.2"
+val graalVm = "graalvm-java22"
+val graalVersion = "22.0.2"
+val nativeImageOption = Seq(
+  "--verbose",
+  "--no-fallback",
+  "--initialize-at-build-time=scopt,scala,java",
+)
+
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("META-INF", "versions", xs @ _*) => MergeStrategy.first
+  case PathList("META-INF", "versions", xs@_*) => MergeStrategy.first
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
@@ -12,7 +20,10 @@ lazy val root = (project in file("."))
   .aggregate(common, cli, lsp)
   .settings(
     name := "Chester",
-    scalaVersion := scala3Version
+    scalaVersion := scala3Version,
+    nativeImageVersion := graalVersion,
+    nativeImageOptions := nativeImageOption,
+    nativeImageJvm := graalVm,
   )
 
 lazy val common = (project in file("common"))
@@ -32,8 +43,12 @@ lazy val cli = (project in file("chester"))
   .dependsOn(common)
   .settings(
     assembly / assemblyJarName := "chester.jar",
+    nativeImageOutput := file("target") / "chester",
     name := "ChesterCLI",
     scalaVersion := scala3Version,
+    nativeImageVersion := graalVersion,
+    nativeImageOptions := nativeImageOption,
+    nativeImageJvm := graalVm,
     Compile / mainClass := Some("chester.cli.Main"),
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2",
@@ -45,9 +60,13 @@ lazy val lsp = (project in file("lsp"))
   .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
-    assembly / assemblyJarName := "lsp.jar",
+    assembly / assemblyJarName := "chester-lsp.jar",
+    nativeImageOutput := file("target") / "chester-lsp",
     name := "ChesterLanguageServer",
     scalaVersion := scala3Version,
+    nativeImageVersion := graalVersion,
+    nativeImageOptions := nativeImageOption,
+    nativeImageJvm := graalVm,
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1"
   )

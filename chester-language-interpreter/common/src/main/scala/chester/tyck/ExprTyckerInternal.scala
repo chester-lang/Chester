@@ -57,6 +57,14 @@ case class Getting[T](xs: TyckState => LazyList[Either[TyckError, (TyckState, T)
   def ||(other: => Getting[T]): Getting[T] = Getting { state =>
     xs(state) #::: other.xs(state)
   }
+
+  // withFilter was needed for a bug in a specific version of Scala
+  private def withFilter_removed(p: T => Boolean): Getting[T] = Getting { state =>
+    xs(state).collect {
+      case Left(err) => Left(err)
+      case Right((nextState, value)) if p(value) => Right((nextState, value))
+    }
+  }
 }
 
 object Getting {
