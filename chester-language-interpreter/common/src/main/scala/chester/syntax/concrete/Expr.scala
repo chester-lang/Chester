@@ -17,93 +17,95 @@ case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Co
   }
 }
 
+case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo])
+
 sealed trait Expr extends WithPos {
   def descent(operator: Expr => Expr): Expr = this
 
   def descentAndApply(operator: Expr => Expr): Expr = operator(this.descent(operator))
 
-  def commentInfo: Option[CommentInfo]
+  def meta: Option[ExprMeta]
 
-  def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Expr
+  def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr
 
-  def commentAtStart(comment: Comment): Expr = updateCommentInfo {
-    case Some(info) => Some(info.copy(commentBefore = info.commentBefore :+ comment))
-    case None => Some(CommentInfo(Vector(comment)))
+  def commentAtStart(comment: Comment): Expr = updateMeta {
+    case Some(meta) => Some(meta.copy(commentInfo = meta.commentInfo.map(info => info.copy(commentBefore = info.commentBefore :+ comment))))
+    case None => Some(ExprMeta(None, Some(CommentInfo(Vector(comment)))))
   }
 
-  def commentAtStart(comment: Vector[Comment]): Expr = if (comment.isEmpty) this else updateCommentInfo {
-    case Some(info) => Some(info.copy(commentBefore = info.commentBefore ++ comment))
-    case None => Some(CommentInfo(comment))
+  def commentAtStart(comment: Vector[Comment]): Expr = if (comment.isEmpty) this else updateMeta {
+    case Some(meta) => Some(meta.copy(commentInfo = meta.commentInfo.map(info => info.copy(commentBefore = info.commentBefore ++ comment))))
+    case None => Some(ExprMeta(None, Some(CommentInfo(comment))))
   }
 
-  def sourcePos: Option[SourcePos]
+  def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
+  def commentInfo: Option[CommentInfo] = meta.flatMap(_.commentInfo)
 }
 
 sealed trait ParsedExpr extends Expr
 
-
-case class Identifier(name: String, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
-  override def toString: String = sourcePos match {
+case class Identifier(name: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+  override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"Identifier(\"${encodeString(name)}\")"
     case Some(pos) => s"Identifier(\"${encodeString(name)}\", ${pos.toString})"
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Identifier = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Identifier = copy(meta = updater(meta))
 }
 
 // infix prefix postfix
-case class OpSeq(seq: Vector[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    OpSeq(seq.map(_.descentAndApply(operator)), sourcePos)
+    OpSeq(seq.map(_.descentAndApply(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): OpSeq = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): OpSeq = copy(meta = updater(meta))
 }
 
-case class Infix(op: Expr, left: Expr, right: Expr, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
+case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Infix(op.descentAndApply(operator), left.descentAndApply(operator), right.descentAndApply(operator), sourcePos)
+    Infix(op.descentAndApply(operator), left.descentAndApply(operator), right.descentAndApply(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Infix = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Infix = copy(meta = updater(meta))
 }
 
-case class Prefix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
+case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Prefix(op.descentAndApply(operator), operand.descentAndApply(operator), sourcePos)
+    Prefix(op.descentAndApply(operator), operand.descentAndApply(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Prefix = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Prefix = copy(meta = updater(meta))
 }
 
-case class Postfix(op: Expr, operand: Expr, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
+case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    Postfix(op.descentAndApply(operator), operand.descentAndApply(operator), sourcePos)
+    Postfix(op.descentAndApply(operator), operand.descentAndApply(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Postfix = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Postfix = copy(meta = updater(meta))
 }
 
-case class Block(heads: Vector[Expr], tail: Option[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class Block(heads: Vector[Expr], tail: Option[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    Block(heads.map(_.descentAndApply(operator)), tail.map(_.descentAndApply(operator)), sourcePos)
+    Block(heads.map(_.descentAndApply(operator)), tail.map(_.descentAndApply(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Block = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Block = copy(meta = updater(meta))
 }
 
 object Block {
   def apply(heads: Vector[Expr], tail: Expr): Block = Block(heads, Some(tail), None)
 
-  def apply(heads: Vector[Expr], tail: Expr, sourcePos: Option[SourcePos]): Block = Block(heads, Some(tail), sourcePos)
+  def apply(heads: Vector[Expr], tail: Expr, meta: Option[ExprMeta]): Block = Block(heads, Some(tail), meta)
 }
 
-case class MacroCall(macroName: Expr, args: Vector[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
+case class MacroCall(macroName: Expr, args: Vector[Expr], meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    MacroCall(macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)), sourcePos)
+    MacroCall(macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): MacroCall = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): MacroCall = copy(meta = updater(meta))
 }
 
 // maybe argument in function call or in function declaration
@@ -131,40 +133,40 @@ sealed trait MaybeTelescope extends Expr {
 
 sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr
 
-case class Tuple(terms: Vector[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedMaybeTelescope {
+case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): Tuple = {
-    Tuple(terms.map(_.descentAndApply(operator)), sourcePos)
+    Tuple(terms.map(_.descentAndApply(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Tuple = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Tuple = copy(meta = updater(meta))
 }
 
-case class Telescope(args: Vector[Arg], implicitly: Boolean = false, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends MaybeTelescope {
+case class Telescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope {
   override def descent(operator: Expr => Expr): Telescope = {
-    Telescope(args.map(_.descentAndApply(operator)), implicitly, sourcePos)
+    Telescope(args.map(_.descentAndApply(operator)), implicitly, meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Telescope = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Telescope = copy(meta = updater(meta))
 }
 
 object Telescope {
-  def of(args: Arg*)(implicit sourcePos: Option[SourcePos] = None): Telescope = Telescope(args.toVector, sourcePos = sourcePos)
+  def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): Telescope = Telescope(args.toVector, meta = meta)
 }
 
-case class FunctionCall(function: Expr, telescope: MaybeTelescope, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    FunctionCall(function.descentAndApply(operator), telescope.descent(operator), sourcePos)
+    FunctionCall(function.descentAndApply(operator), telescope.descent(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): FunctionCall = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
 }
 
-case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), sourcePos)
+    DotCall(expr.descentAndApply(operator), expr.descentAndApply(operator), telescope.map(_.descent(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): DotCall = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DotCall = copy(meta = updater(meta))
 
   def isField: Boolean = telescope.isEmpty
 
@@ -172,8 +174,8 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], s
     if (telescope.nonEmpty) return false
     if (!field.isInstanceOf[Identifier]) return false
     expr match {
-      case Identifier(_, _, _) => true
-      case DotCall(_, _, _, _, _) => expr.asInstanceOf[DotCall].isQualifiedName
+      case Identifier(_, _) => true
+      case DotCall(_, _, _, _) => expr.asInstanceOf[DotCall].isQualifiedName
       case _ => false
     }
   }
@@ -182,69 +184,69 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], s
 type QualifiedName = DotCall | Identifier
 
 object QualifiedName {
-  def build(x: QualifiedName, field: Identifier, sourcePos: Option[SourcePos] = None, commentInfo: Option[CommentInfo] = None): QualifiedName = DotCall(x, field, Vector(), sourcePos, commentInfo)
+  def build(x: QualifiedName, field: Identifier, meta: Option[ExprMeta] = None): QualifiedName = DotCall(x, field, Vector(), meta)
 }
 
 sealed trait NumberLiteral extends ParsedExpr
 
-case class IntegerLiteral(value: BigInt, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends NumberLiteral {
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Expr = copy(commentInfo = updater(commentInfo))
+case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends NumberLiteral {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
-case class DoubleLiteral(value: BigDecimal, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends NumberLiteral {
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Expr = copy(commentInfo = updater(commentInfo))
+case class DoubleLiteral(value: BigDecimal, meta: Option[ExprMeta] = None) extends NumberLiteral {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
-case class StringLiteral(value: String, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
-  override def toString: String = sourcePos match {
+case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+  override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"StringLiteral(\"${encodeString(value)}\")"
     case Some(pos) => s"StringLiteral(\"${encodeString(value)}\", ${pos.toString})"
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Expr = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
-case class ListExpr(terms: Vector[Expr], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedMaybeTelescope {
+case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): ListExpr = {
-    ListExpr(terms.map(_.descentAndApply(operator)), sourcePos)
+    ListExpr(terms.map(_.descentAndApply(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): ListExpr = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ListExpr = copy(meta = updater(meta))
 }
 
-case class HoleExpr(description: String, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): HoleExpr = copy(commentInfo = updater(commentInfo))
+case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends Expr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): HoleExpr = copy(meta = updater(meta))
 }
 
-case class TypeAnnotation(expr: Expr, ty: Expr, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends Expr {
+case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = {
-    TypeAnnotation(expr.descentAndApply(operator), ty.descentAndApply(operator), sourcePos)
+    TypeAnnotation(expr.descentAndApply(operator), ty.descentAndApply(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): TypeAnnotation = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): TypeAnnotation = copy(meta = updater(meta))
 }
 
-case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescope], expr: Expr, sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescope], expr: Expr, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), sourcePos)
+    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): AnnotatedExpr = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): AnnotatedExpr = copy(meta = updater(meta))
 }
 
 
-case class ObjectExpr(clauses: Vector[(QualifiedName, Expr)], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class ObjectExpr(clauses: Vector[(QualifiedName, Expr)], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, sourcePos)
+    ObjectExpr(clauses.map { case (k, v) => (k, v.descentAndApply(operator)) }, meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): ObjectExpr = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ObjectExpr = copy(meta = updater(meta))
 }
 
-case class Keyword(key: Identifier, telescope: Vector[MaybeTelescope], sourcePos: Option[SourcePos] = None, override val commentInfo: Option[CommentInfo] = None) extends ParsedExpr {
+case class Keyword(key: Identifier, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    Keyword(key, telescope.map(_.descent(operator)), sourcePos)
+    Keyword(key, telescope.map(_.descent(operator)), meta)
   }
 
-  override def updateCommentInfo(updater: Option[CommentInfo] => Option[CommentInfo]): Keyword = copy(commentInfo = updater(commentInfo))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Keyword = copy(meta = updater(meta))
 }

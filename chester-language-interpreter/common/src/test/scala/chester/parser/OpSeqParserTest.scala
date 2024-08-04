@@ -90,60 +90,60 @@ class OpSeqParserTest extends FunSuite {
     val expected = OpSeq(Vector(
       Identifier(
         name = "if",
-        sourcePos = None
+        
       ),
       Identifier(
         name = "x",
-        sourcePos = None
+        
       ),
       Identifier(
         name = "then",
-        sourcePos = None
+        
       ),
       FunctionCall(
         function = Identifier(
           name = "f",
-          sourcePos = None
+          
         ),
         telescope = Tuple(Vector(
           OpSeq(
             seq = Vector(
               Identifier(
                 name = "if",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "o",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "then",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "a",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "else",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "b",
-                sourcePos = None
+                
               )
             ),
-            sourcePos = None
+            
           ))),
-        sourcePos = None
+        
       ),
       Identifier(
         name = "else",
-        sourcePos = None
+        
       ),
       Identifier(
         name = "w",
-        sourcePos = None
+        
       )
     ))
     parseAndCheck(input, expected)
@@ -187,22 +187,22 @@ class OpSeqParserTest extends FunSuite {
         seq = Vector(
           Identifier(
             name = "val",
-            sourcePos = None
+            
           ),
           Identifier(
             name = "input",
-            sourcePos = None
+            
           ),
           Identifier(
             name = "=",
-            sourcePos = None
+            
           ),
           StringLiteral(
             value = "1 -> 5",
-            sourcePos = None
+            
           )
         ),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }
@@ -223,22 +223,22 @@ class OpSeqParserTest extends FunSuite {
         seq = Vector(
           Identifier(
             name = "so",
-            sourcePos = None
+            
           ),
           Identifier(
             name = "getthen",
-            sourcePos = None
+            
           ),
           Block(
             heads = Vector(),
             tail = Identifier(
               name = "doSomething",
-              sourcePos = None
+              
             ),
-            sourcePos = None
+            
           )
         ),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }
@@ -250,7 +250,7 @@ class OpSeqParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "+",
-          sourcePos = None
+          
         ),
         telescope = Tuple(Vector(
           OpSeq(
@@ -259,10 +259,10 @@ class OpSeqParserTest extends FunSuite {
               Identifier("+"),
               IntegerLiteral(3)
             ),
-            sourcePos = None
+            
           )
         )),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }

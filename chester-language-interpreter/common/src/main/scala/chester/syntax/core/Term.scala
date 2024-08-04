@@ -2,49 +2,48 @@ package chester.syntax.core
 
 import chester.error.{SourcePos, WithPos}
 
+case class TermMeta(sourcePos: Option[SourcePos])
+
 sealed trait Term extends WithPos {
-  def sourcePos: Option[SourcePos]
+  def meta: Option[TermMeta]
+  def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 }
 
-case class ListTerm(terms: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term
+case class ListTerm(terms: Vector[Term], meta: Option[TermMeta] = None) extends Term
 
-sealed trait Sort extends Term {
+sealed trait Sort extends Term
 
-}
-
-case class Type(level: Term, sourcePos: Option[SourcePos] = None) extends Sort
+case class Type(level: Term, meta: Option[TermMeta] = None) extends Sort
 
 val Type0 = Type(IntegerTerm(0))
 
 // Referencing Setω in Agda
-case class Typeω(sourcePos: Option[SourcePos] = None) extends Sort
+case class Typeω(meta: Option[TermMeta] = None) extends Sort
 
+case class IntegerTerm(value: BigInt, meta: Option[TermMeta] = None) extends Term
 
-case class IntegerTerm(value: BigInt, sourcePos: Option[SourcePos] = None) extends Term
+sealed trait TypeTerm extends Term
 
-sealed trait TypeTerm extends Term {
-}
+case class IntegerType(meta: Option[TermMeta] = None) extends TypeTerm
 
-case class IntegerType(sourcePos: Option[SourcePos] = None) extends TypeTerm
+case class DoubleTerm(value: BigDecimal, meta: Option[TermMeta] = None) extends Term
 
-case class DoubleTerm(value: BigDecimal, sourcePos: Option[SourcePos] = None) extends Term
+case class StringTerm(value: String, meta: Option[TermMeta] = None) extends Term
 
-case class StringTerm(value: String, sourcePos: Option[SourcePos] = None) extends Term
+case class DoubleType(meta: Option[TermMeta] = None) extends TypeTerm
 
-case class DoubleType(sourcePos: Option[SourcePos] = None) extends TypeTerm
+case class StringType(meta: Option[TermMeta] = None) extends TypeTerm
 
-case class StringType(sourcePos: Option[SourcePos] = None) extends TypeTerm
-
-case class AnyTerm(sourcePos: Option[SourcePos] = None) extends TypeTerm
+case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm
 
 type Id = String
 
-case class ObjectTerm(clauses: Vector[(Id, Term)], sourcePos: Option[SourcePos] = None) extends Term
+case class ObjectTerm(clauses: Vector[(Id, Term)], meta: Option[TermMeta] = None) extends Term
 
 object ObjectTerm {
   @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(clauses: Map[String, Term], sourcePos: Option[SourcePos]): ObjectTerm = {
-    new ObjectTerm(clauses.toVector, sourcePos)
+  def apply(clauses: Map[String, Term], meta: Option[TermMeta]): ObjectTerm = {
+    new ObjectTerm(clauses.toVector, meta)
   }
 
   @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
@@ -53,12 +52,12 @@ object ObjectTerm {
   }
 }
 
-case class ObjectType(fieldTypes: Vector[(Id, Term)], sourcePos: Option[SourcePos] = None) extends Term
+case class ObjectType(fieldTypes: Vector[(Id, Term)], meta: Option[TermMeta] = None) extends Term
 
 object ObjectType {
   @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(fieldTypes: Map[String, Term], sourcePos: Option[SourcePos]): ObjectType = {
-    new ObjectType(fieldTypes.toVector, sourcePos)
+  def apply(fieldTypes: Map[String, Term], meta: Option[TermMeta]): ObjectType = {
+    new ObjectType(fieldTypes.toVector, meta)
   }
 
   @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
@@ -67,23 +66,22 @@ object ObjectType {
   }
 }
 
-case class OrType(xs: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term {
+case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   assert(xs.nonEmpty)
 }
 
-case class AndType(xs: Vector[Term], sourcePos: Option[SourcePos] = None) extends Term {
+case class AndType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   assert(xs.nonEmpty)
 }
 
-sealed trait EffectTerm extends Term {
-}
+sealed trait EffectTerm extends Term
 
-case class EffectList(xs: Vector[Term], sourcePos: Option[SourcePos] = None) extends EffectTerm {
+case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends EffectTerm {
   assert(xs.nonEmpty)
 }
 
-case class NoEffect(sourcePos: Option[SourcePos] = None) extends EffectTerm
+case class NoEffect(meta: Option[TermMeta] = None) extends EffectTerm
 
-case class PartialEffect(sourcePos: Option[SourcePos] = None) extends EffectTerm
+case class PartialEffect(meta: Option[TermMeta] = None) extends EffectTerm
 
-case class DivergeEffect(sourcePos: Option[SourcePos] = None) extends EffectTerm
+case class DivergeEffect(meta: Option[TermMeta] = None) extends EffectTerm

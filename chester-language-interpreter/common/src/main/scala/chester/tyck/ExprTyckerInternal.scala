@@ -88,8 +88,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
-    case Identifier(name, _, _) => Vector(name)
-    case DotCall(expr, field: Identifier, _, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
+    case Identifier(name, _) => Vector(name)
+    case DotCall(expr, field: Identifier, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
     case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
   }
 
@@ -143,15 +143,21 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   def synthesize(expr: Expr): Getting[Judge] = expr match {
-    case IntegerLiteral(value, sourcePos, _) => Getting.pure(Judge(IntegerTerm(value, sourcePos), IntegerType(sourcePos), NoEffect(sourcePos)))
-    case DoubleLiteral(value, sourcePos, _) => Getting.pure(Judge(DoubleTerm(value, sourcePos), DoubleType(sourcePos), NoEffect(sourcePos)))
-    case StringLiteral(value, sourcePos, _) => Getting.pure(Judge(StringTerm(value, sourcePos), StringType(sourcePos), NoEffect(sourcePos)))
+    case IntegerLiteral(value, meta) =>
+      val termMeta = convertMeta(meta)
+      Getting.pure(Judge(IntegerTerm(value, termMeta), IntegerType(termMeta), NoEffect(termMeta)))
+    case DoubleLiteral(value, meta) =>
+      val termMeta = convertMeta(meta)
+      Getting.pure(Judge(DoubleTerm(value, termMeta), DoubleType(termMeta), NoEffect(termMeta)))
+    case StringLiteral(value, meta) =>
+      val termMeta = convertMeta(meta)
+      Getting.pure(Judge(StringTerm(value, termMeta), StringType(termMeta), NoEffect(termMeta)))
     case objExpr: ObjectExpr =>
       val desugaredExpr = desugarObjectExpr(objExpr)
       for {
         objTerm <- synthesizeObjectExpr(desugaredExpr.clauses)
         objType <- synthesizeObjectType(desugaredExpr.clauses)
-      } yield Judge(objTerm, objType, NoEffect(desugaredExpr.sourcePos))
+      } yield Judge(objTerm, objType, NoEffect(convertMeta(objExpr.meta)))
     case _ => Getting.error(TyckError("Unsupported expression type"))
   }
 
@@ -169,16 +175,16 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   def inherit0(expr: Expr, ty: Term, effect: Option[EffectTerm]): Getting[Judge] = expr match {
-    case ObjectExpr(clauses, sourcePos, _) =>
+    case ObjectExpr(clauses, meta) =>
       ty match {
         case ObjectType(fieldTypes, _) =>
           for {
             inheritedFields <- inheritObjectFields(clauses, fieldTypes, effect)
             effect <- effect match {
               case Some(eff) => Getting.pure(eff)
-              case None => Getting.pure(NoEffect(sourcePos))
+              case None => Getting.pure(NoEffect(convertMeta(meta)))
             }
-          } yield Judge(ObjectTerm(inheritedFields, sourcePos), ty, effect)
+          } yield Judge(ObjectTerm(inheritedFields, convertMeta(meta)), ty, effect)
         case _ => Getting.error(TyckError("Expected an ObjectType for inheritance"))
       }
     case default => Getting.error(TyckError("Unsupported expression type"))

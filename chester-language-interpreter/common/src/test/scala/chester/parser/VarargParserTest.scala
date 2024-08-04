@@ -13,35 +13,35 @@ class VarargParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "func",
-          sourcePos = None
+          
         ),
         telescope = Tuple(
           terms = Vector(
             IntegerLiteral(
               value = 1,
-              sourcePos = None
+              
             ),
             IntegerLiteral(
               value = 2,
-              sourcePos = None
+              
             ),
             OpSeq(
               seq = Vector(
                 Identifier(
                   name = "xs",
-                  sourcePos = None
+                  
                 ),
                 Identifier(
                   name = "*",
-                  sourcePos = None
+                  
                 )
               ),
-              sourcePos = None
+              
             )
           ),
-          sourcePos = None
+          
         ),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }
@@ -52,7 +52,7 @@ class VarargParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "func",
-          sourcePos = None
+          
         ),
         telescope = Tuple(
           terms = Vector(
@@ -60,27 +60,27 @@ class VarargParserTest extends FunSuite {
               seq = Vector(
                 Identifier(
                   name = "x",
-                  sourcePos = None
+                  
                 ),
                 Identifier(
                   name = ":",
-                  sourcePos = None
+                  
                 ),
                 Identifier(
                   name = "Integer",
-                  sourcePos = None
+                  
                 ),
                 Identifier(
                   name = "*",
-                  sourcePos = None
+                  
                 )
               ),
-              sourcePos = None
+              
             )
           ),
-          sourcePos = None
+          
         ),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }

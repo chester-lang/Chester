@@ -1,4 +1,4 @@
-package chester.parser;
+package chester.parser
 
 import fastparse.*
 import NoWhitespace.*
@@ -26,8 +26,9 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   @deprecated("comment is lost")
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ nEnd)
 
-  def commentOneLine: P[Comment] = PwithPos("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map(Comment(_, CommentType.OneLine, _))
-
+  def commentOneLine: P[Comment] = PwithMeta("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map { case (content, meta) =>
+    Comment(content, CommentType.OneLine, meta.flatMap(_.sourcePos))
+  }
   def allComment: P[Comment] = P(commentOneLine)
 
   def simpleDelimiter: P[Unit] = P(CharsWhileIn(" \t\r\n"))
@@ -59,7 +60,6 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def end: P[Int] = Index
 
-
   val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input))
 
   private def loc(begin: Int, end0: Int): Option[SourcePos] = {
@@ -74,7 +74,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   extension [T](inline parse0: P[T]) {
-    inline def withPos[R](using s: fastparse.Implicits.Sequencer[T, Option[SourcePos], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) => s(x, loc(b, e)) }
+    inline def withMeta[R](using s: fastparse.Implicits.Sequencer[T, Option[ExprMeta], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) => s(x, Some(ExprMeta(loc(b, e), None))) }
 
     inline def withSpaceAtStart[R](using s: fastparse.Implicits.Sequencer[T, Vector[Comment], R]): P[R] = (maybeSpace1 ~ parse0).map { case (comments, x) => s(x, comments) }
 
@@ -93,11 +93,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     }
   }
 
-  inline def PwithPos[T, R](inline parse0: P[T])(using s: fastparse.Implicits.Sequencer[T, Option[SourcePos], R]): P[R] = P(parse0.withPos)
+  inline def PwithMeta[T, R](inline parse0: P[T])(using s: fastparse.Implicits.Sequencer[T, Option[ExprMeta], R]): P[R] = P(parse0.withMeta)
 
-  def identifier: P[Identifier] = P(id.withPos).map { case (name, pos) => Identifier(name, pos) }
+  def identifier: P[Identifier] = P(id.withMeta).map { case (name, meta) => Identifier(name, meta) }
 
-  def infixIdentifier: P[Identifier] = P(operatorId.withPos).map { case (name, pos) => Identifier(name, pos) }
+  def infixIdentifier: P[Identifier] = P(operatorId.withMeta).map { case (name, meta) => Identifier(name, meta) }
 
   def signed: P[String] = P("".!) // P(CharIn("+\\-").?.!)
 
@@ -109,19 +109,18 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def expLiteral: P[String] = P(CharsWhileIn("0-9") ~ "." ~ CharsWhileIn("0-9") ~ (CharIn("eE") ~ signed ~ CharsWhileIn("0-9")).?).!
 
-  def integerLiteral: P[ParsedExpr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withPos.map {
-    case (sign, value, pos) =>
+  def integerLiteral: P[ParsedExpr] = P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withMeta.map {
+    case (sign, value, meta) =>
       val actualValue = if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
       else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
       else BigInt(sign + value)
-      IntegerLiteral(actualValue, pos)
+      IntegerLiteral(actualValue, meta)
   }
 
-  def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withPos).map {
-    case (sign, (value, pos)) =>
-      DoubleLiteral(BigDecimal(sign + value), pos)
+  def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withMeta).map {
+    case (sign, (value, meta)) =>
+      DoubleLiteral(BigDecimal(sign + value), meta)
   }
-
 
   def escapeSequence: P[String] = P("\\" ~ CharIn("rnt\\\"").!).map {
     case "r" => "\r"
@@ -156,8 +155,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     } ~ "\"\"\"")
   }
 
-  def stringLiteralExpr: P[ParsedExpr] = P((stringLiteral | heredocLiteral).withPos).map {
-    case (value, pos) => StringLiteral(value, pos)
+  def stringLiteralExpr: P[ParsedExpr] = P((stringLiteral | heredocLiteral).withMeta).map {
+    case (value, meta) => StringLiteral(value, meta)
   }
 
   def literal: P[ParsedExpr] = P(doubleLiteral | integerLiteral | stringLiteralExpr)
@@ -169,18 +168,18 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def comma1: P[Unit] = ","
 
-  def list: P[ListExpr] = PwithPos("[" ~ (parse().withSpaceAtStart.map((x, c) => x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, pos) =>
-    ListExpr(terms.toVector, pos)
+  def list: P[ListExpr] = PwithMeta("[" ~ (parse().withSpaceAtStart.map((x, c) => x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, meta) =>
+    ListExpr(terms.toVector, meta)
   }
 
-  def tuple: P[Tuple] = PwithPos("(" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, pos) =>
-    Tuple(terms.toVector, pos)
+  def tuple: P[Tuple] = PwithMeta("(" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, meta) =>
+    Tuple(terms.toVector, meta)
   }
 
   def annotation: P[(Identifier, Vector[ParsedMaybeTelescope])] = P("@" ~ identifier ~ callingZeroOrMore())
 
-  def annotated: P[AnnotatedExpr] = PwithPos(annotation ~ parse()).map { case (annotation, telescope, expr, pos) =>
-    AnnotatedExpr(annotation, telescope, expr, pos)
+  def annotated: P[AnnotatedExpr] = PwithMeta(annotation ~ parse()).map { case (annotation, telescope, expr, meta) =>
+    AnnotatedExpr(annotation, telescope, expr, meta)
   }
 
   // TODO blockAndLineEndEnds
@@ -190,28 +189,28 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     def blockCall = !inOpSeq && !dontAllowBlockApply
   }
 
-  def callingOnce(ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((list | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withPos.map { case (block, pos) =>
-    Tuple(Vector(block), pos)
+  def callingOnce(ctx: ParsingContext = ParsingContext()): P[ParsedMaybeTelescope] = P((list | tuple) | (lineNonEndingSpace.? ~ anonymousBlockLikeFunction.on(ctx.blockCall)).withMeta.map { case (block, meta) =>
+    Tuple(Vector(block), meta)
   })
 
   def callingMultiple(ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx = ctx).rep(min = 1).map(_.toVector))
 
   def callingZeroOrMore(ctx: ParsingContext = ParsingContext()): P[Vector[ParsedMaybeTelescope]] = P(callingOnce(ctx = ctx).rep.map(_.toVector))
 
-  def functionCall(function: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithPos(callingOnce(ctx = ctx)).map { case (telescope, pos) =>
-    FunctionCall(function, telescope, p(pos))
+  def functionCall(function: ParsedExpr, p: Option[ExprMeta] => Option[ExprMeta], ctx: ParsingContext = ParsingContext()): P[FunctionCall] = PwithMeta(callingOnce(ctx = ctx)).map { case (telescope, meta) =>
+    FunctionCall(function, telescope, p(meta))
   }
 
-  def dotCall(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithPos(maybeSpace ~ "." ~ identifier ~ callingZeroOrMore(ctx = ctx)).map { case (field, telescope, pos) =>
-    DotCall(expr, field, telescope, p(pos))
+  def dotCall(expr: ParsedExpr, p: Option[ExprMeta] => Option[ExprMeta], ctx: ParsingContext = ParsingContext()): P[DotCall] = PwithMeta(maybeSpace ~ "." ~ identifier ~ callingZeroOrMore(ctx = ctx)).map { case (field, telescope, meta) =>
+    DotCall(expr, field, telescope, p(meta))
   }
 
-  def insideBlock: P[Block] = PwithPos((maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace).flatMap { case (heads, tail, pos) =>
-    if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
+  def insideBlock: P[Block] = PwithMeta((maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace).flatMap { case (heads, tail, meta) =>
+    if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, meta))
   }
 
-  def block: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case (heads, tail, pos) =>
-    if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, pos))
+  def block: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case (heads, tail, meta) =>
+    if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, meta))
   }
 
   inline def anonymousBlockLikeFunction: P[ParsedExpr] = block | objectParse
@@ -221,21 +220,21 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     Pass(expr) ~ (maybeSpace ~ ";" | lineEnding.on(itWasBlockEnding))
   }))
 
-  def opSeq(expr: ParsedExpr, p: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext): P[OpSeq] = {
-    PwithPos(opSeqGettingExprs(ctx = ctx)).flatMap { case (exprs, pos) =>
+  def opSeq(expr: ParsedExpr, p: Option[ExprMeta] => Option[ExprMeta], ctx: ParsingContext): P[OpSeq] = {
+    PwithMeta(opSeqGettingExprs(ctx = ctx)).flatMap { case (exprs, meta) =>
       val xs = (expr +: exprs)
       lazy val exprCouldPrefix = expr match {
-        case Identifier(name, _, _) if strIsOperator(name) => true
+        case Identifier(name, _) if strIsOperator(name) => true
         case _ => false
       }
 
       lazy val failEqualCheck = ctx.dontAllowEqualSymbol && xs.exists {
-        case Identifier("=", _, _) => true
+        case Identifier("=", _) => true
         case _ => false
       }
 
       lazy val failVarargCheck = ctx.dontAllowVararg && xs.exists {
-        case Identifier("...", _, _) => true
+        case Identifier("...", _) => true
         case _ => false
       }
 
@@ -246,13 +245,13 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       } else if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) {
         Fail("Expected identifier")
       } else {
-        Pass(OpSeq(xs.toVector, p(pos)))
+        Pass(OpSeq(xs.toVector, p(meta)))
       }
     }
   }
 
-  def qualifiedNameOn(x: QualifiedName): P[QualifiedName] = PwithPos("." ~ identifier).flatMap { (id, pos) =>
-    val built = QualifiedName.build(x, id, x.sourcePos.combineInOption(pos))
+  def qualifiedNameOn(x: QualifiedName): P[QualifiedName] = PwithMeta("." ~ identifier).flatMap { (id, meta) =>
+    val built = QualifiedName.build(x, id, meta)
     qualifiedNameOn(built) | Pass(built)
   }
 
@@ -260,12 +259,12 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     qualifiedNameOn(id) | Pass(id)
   }
 
-  def objectParse: P[ParsedExpr] = PwithPos("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, pos) =>
-    ObjectExpr(fields.toVector, pos)
+  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
+    ObjectExpr(fields.toVector, meta)
   }
 
-  def keyword: P[ParsedExpr] = PwithPos("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, pos) =>
-    Keyword(id, telescope, pos)
+  def keyword: P[ParsedExpr] = PwithMeta("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>
+    Keyword(id, telescope, meta)
   }
 
   def opSeqGettingExprs(ctx: ParsingContext): P[Vector[ParsedExpr]] = P(maybeSpace ~ parse(ctx = ctx.copy(inOpSeq = true)) ~ Index).flatMap { (expr, index) =>
@@ -273,19 +272,29 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
   }
 
-  def tailExpr(expr: ParsedExpr, getPos: Option[SourcePos] => Option[SourcePos], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getPos, ctx) | functionCall(expr, getPos, ctx = ctx).on(expr.isInstanceOf[Identifier] || expr.isInstanceOf[FunctionCall] || !ctx.inOpSeq) | opSeq(expr, getPos, ctx = ctx).on(ctx.opSeq)).withPos ~ Index).flatMap({ (expr, pos, index) => {
+  private def combineMeta(meta1: Option[ExprMeta], meta2: Option[ExprMeta]): Option[ExprMeta] = {
+    (meta1, meta2) match {
+      case (Some(ExprMeta(pos1, comments1)), Some(ExprMeta(pos2, comments2))) =>
+        Some(ExprMeta(pos1.orElse(pos2), comments1.orElse(comments2)))
+      case (Some(meta), None) => Some(meta)
+      case (None, Some(meta)) => Some(meta)
+      case (None, None) => None
+    }
+  }
+
+  def tailExpr(expr: ParsedExpr, getMeta: Option[ExprMeta] => Option[ExprMeta], ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P((dotCall(expr, getMeta, ctx) | functionCall(expr, getMeta, ctx = ctx).on(expr.isInstanceOf[Identifier] || expr.isInstanceOf[FunctionCall] || !ctx.inOpSeq) | opSeq(expr, getMeta, ctx = ctx).on(ctx.opSeq)).withMeta ~ Index).flatMap({ (expr, meta, index) => {
     val itWasBlockEnding = p.input(index - 1) == '}'
-    val getPos1 = ((endPos: Option[SourcePos]) => getPos(pos).combineInOption(endPos))
-    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos1, ctx = ctx)) | Pass(expr)
+    val getMeta1 = ((endMeta: Option[ExprMeta]) => getMeta(combineMeta(meta, endMeta)))
+    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getMeta1, ctx = ctx)) | Pass(expr)
   }
   })
 
   inline def parse0: P[ParsedExpr] = keyword | objectParse | block | annotated | list | tuple | literal | identifier
 
-  def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withPos ~ Index).flatMap { (expr, pos, index) =>
+  def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withMeta ~ Index).flatMap { (expr, meta, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
-    val getPos = ((endPos: Option[SourcePos]) => pos.combineInOption(endPos))
-    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getPos, ctx = ctx)) | Pass(expr)
+    val getMeta = ((endMeta: Option[ExprMeta]) => combineMeta(meta, endMeta))
+    ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getMeta, ctx = ctx)) | Pass(expr)
   }
 
   def exprEntrance: P[ParsedExpr] = P(Start ~ maybeSpace ~ parse() ~ maybeSpace ~ End)
@@ -363,8 +372,8 @@ object Parser {
 
   def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
     block.heads.headOption match {
-      case Some(OpSeq(Vector(Identifier("module", _, _), identifiers*), _, _)) =>
-        val names = identifiers.collect { case Identifier(name, _, _) => name }.toVector
+      case Some(OpSeq(Vector(Identifier("module", _), identifiers*), _)) =>
+        val names = identifiers.collect { case Identifier(name, _) => name }.toVector
         if (names.nonEmpty) Right(names) else Left(ParseError("Module identifiers could not be parsed", Pos.Zero))
       case _ => Right(Vector.empty)
     }

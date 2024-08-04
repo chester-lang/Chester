@@ -68,37 +68,37 @@ class DotParserTest extends FunSuite {
       DotCall(
         expr = Identifier(
           name = "obj",
-          sourcePos = None
+          
         ),
         field = Identifier(
           name = "method",
-          sourcePos = None
+          
         ),
         telescope = Vector(
           Tuple(
             terms = Vector(
               Identifier(
                 name = "arg1",
-                sourcePos = None
+                
               ),
               Identifier(
                 name = "arg2",
-                sourcePos = None
+                
               )
             ),
-            sourcePos = None
+            
           ),
           Tuple(
             terms = Vector(
               Identifier(
                 name = "arg1",
-                sourcePos = None
+                
               )
             ),
-            sourcePos = None
+            
           )
         ),
-        sourcePos = None
+        
       )
     parseAndCheck(input, expected)
   }
