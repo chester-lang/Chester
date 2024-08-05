@@ -102,14 +102,6 @@ object Block {
   def apply(heads: Vector[Expr], tail: Expr, meta: Option[ExprMeta]): Block = Block(heads, Some(tail), meta)
 }
 
-case class MacroCall(macroName: Expr, args: Vector[Expr], meta: Option[ExprMeta] = None) extends Expr {
-  override def descent(operator: Expr => Expr): Expr = {
-    MacroCall(macroName.descentAndApply(operator), args.map(_.descentAndApply(operator)), meta)
-  }
-
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): MacroCall = copy(meta = updater(meta))
-}
-
 // maybe argument in function call or in function declaration
 case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr], vararg: Boolean = false) {
   require(name.isDefined || exprOrDefault.isDefined)

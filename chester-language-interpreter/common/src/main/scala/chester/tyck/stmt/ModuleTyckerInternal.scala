@@ -2,13 +2,13 @@ package chester.tyck.stmt
 
 import chester.syntax.concrete.{Block, ModuleFile, Modules, QualifiedIDString}
 import chester.syntax.core.stmt.{TyckedBlock, TyckedDefinition, TyckedExpression, TyckedModule, TyckedModuleFile}
-import chester.tyck.{ExprTyckerInternal, Getting, LocalCtx, TyckError, TyckGetting, TyckState, TyckWarning}
+import chester.tyck.{ExprTyckerInternal, Getting, TyckError, TyckGetting, TyckState, TyckWarning}
 
 case class ModuleTyckState()
 
 type ModuleTyckGetting[T] = Getting[TyckWarning, TyckError, ModuleTyckState, T]
 
-case class ModuleTyckerInternal() {
+case class ModuleTyckerInternal(macroExpander: MacroExpander = MacroExpander()) {
 
   // Type-check a single module file
   def tyckModuleFile(moduleFile: ModuleFile): ModuleTyckGetting[TyckedModuleFile] = {
