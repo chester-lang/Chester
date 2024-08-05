@@ -1,8 +1,11 @@
 package chester.tyck
 
+import cats.data.State
 import chester.error.SourcePos
-import chester.syntax.concrete._
-import chester.syntax.core._
+import chester.syntax.concrete.*
+import chester.syntax.core.*
+
+import scala.language.implicitConversions
 
 case class TyckState()
 
@@ -16,11 +19,13 @@ object LocalCtx {
   val Empty = LocalCtx()
 }
 
-case class Judge(wellTyped: Term, ty: Term, effect: EffectTerm)
+case class Judge(wellTyped: Term, ty: Term, effect: Term)
 
 sealed trait TyckError {
   def message: String
+
   def cause: Option[Term | Expr]
+
   def location: Option[SourcePos] = cause match {
     case Some(term: Term) => term.sourcePos
     case Some(expr: Expr) => expr.sourcePos
@@ -30,26 +35,31 @@ sealed trait TyckError {
 
 case class EmptyResultsError() extends TyckError {
   def message: String = "Empty Results"
+
   def cause: Option[Term | Expr] = None
 }
 
 case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
   def message: String = s"Unification failed: $subType is not a subtype of $superType"
+
   def cause: Option[Term | Expr] = Some(subType)
 }
 
 case class UnsupportedExpressionError(expr: Expr) extends TyckError {
   def message: String = s"Unsupported expression type: $expr"
+
   def cause: Option[Term | Expr] = Some(expr)
 }
 
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName) extends TyckError {
   def message: String = s"Field type not found for $qualifiedName"
+
   def cause: Option[Term | Expr] = Some(qualifiedName)
 }
 
 case class ExpectedObjectTypeError() extends TyckError {
   def message: String = "Expected an ObjectType for inheritance"
+
   def cause: Option[Term | Expr] = None
 }
 
@@ -92,6 +102,10 @@ case class Getting[S, T](xs: S => LazyList[Either[Vector[TyckError], (S, T)]]) {
   }
 }
 
+implicit def stateToGetting[T, U](state: State[T, U]): Getting[T, U] = Getting { s =>
+  LazyList(Right(state.run(s).value))
+}
+
 object Getting {
   def pure[S, T](x: T): Getting[S, T] = Getting(state => LazyList(Right((state, x))))
 
@@ -115,7 +129,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
-  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm): TyckGetting[EffectTerm] = {
+  def unifyEffect(subEffect: Term, superEffect: Term): TyckGetting[Term] = {
     (subEffect, superEffect) match {
       case (_, NoEffect(_)) => Getting.pure(subEffect)
       case (NoEffect(_), _) => Getting.pure(superEffect)
@@ -198,7 +212,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     case _ => Getting.error(UnsupportedExpressionError(expr))
   }
 
-  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Vector[(String, Term)], effect: Option[EffectTerm]): TyckGetting[Vector[(String, Term)]] = {
+  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Vector[(String, Term)], effect: Option[Term]): TyckGetting[Vector[(String, Term)]] = {
     clauses.foldLeft(Getting.pure(Vector.empty[(String, Term)])) { (acc, clause) =>
       for {
         typedClauses <- acc
@@ -211,23 +225,30 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
-  def inherit0(expr: Expr, ty: Term, effect: Option[EffectTerm]): TyckGetting[Judge] = expr match {
-    case ObjectExpr(clauses, meta) =>
-      ty match {
-        case ObjectType(fieldTypes, _) =>
-          for {
-            inheritedFields <- inheritObjectFields(clauses, fieldTypes, effect)
-            effect <- effect match {
-              case Some(eff) => Getting.pure(eff)
-              case None => Getting.pure(NoEffect(convertMeta(meta)))
-            }
-          } yield Judge(ObjectTerm(inheritedFields, convertMeta(meta)), ty, effect)
-        case _ => Getting.error(ExpectedObjectTypeError())
+  val normalizer = new Normalizer()
+  val whnf: Term => TyckGetting[Term] = normalizer.apply
+
+  def inherit0(expr: Expr, ty: Term, effect: Option[Term]): TyckGetting[Judge] = {
+    whnf(ty).flatMap { ty =>
+      expr match {
+        case ObjectExpr(clauses, meta) =>
+          ty match {
+            case ObjectType(fieldTypes, _) =>
+              for {
+                inheritedFields <- inheritObjectFields(clauses, fieldTypes, effect)
+                effect <- effect match {
+                  case Some(eff) => Getting.pure(eff)
+                  case None => Getting.pure(NoEffect(convertMeta(meta)))
+                }
+              } yield Judge(ObjectTerm(inheritedFields, convertMeta(meta)), ty, effect)
+            case _ => Getting.error(ExpectedObjectTypeError())
+          }
+        case default => Getting.error(UnsupportedExpressionError(default))
       }
-    case default => Getting.error(UnsupportedExpressionError(default))
+    }
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None): TyckGetting[Judge] = effect match {
+  def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): TyckGetting[Judge] = effect match {
     case Some(eff) => inherit0(expr, ty, Some(eff)) || (for {
       Judge(wellTyped, judgeTy, judgeEffect) <- synthesize(expr)
       ty1 <- unify(judgeTy, ty)
@@ -245,7 +266,7 @@ object ExprTycker {
     ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
   }
 
-  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], EffectTerm] = {
+  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
   }
 
