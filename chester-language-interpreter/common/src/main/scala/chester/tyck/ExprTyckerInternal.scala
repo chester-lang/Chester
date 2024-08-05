@@ -31,6 +31,8 @@ sealed trait TyckError {
     case Some(expr: Expr) => expr.sourcePos
     case _ => None
   }
+  
+  val stack: Array[StackTraceElement] = new Exception().getStackTrace
 }
 
 case class EmptyResultsError() extends TyckError {
@@ -63,63 +65,70 @@ case class ExpectedObjectTypeError() extends TyckError {
   def cause: Option[Term | Expr] = None
 }
 
-case class Getting[S, T](xs: S => LazyList[Either[Vector[TyckError], (S, T)]]) {
+case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[(S, T)])]) {
 
-  private def nonEmptyErrors(errors: Vector[TyckError]): Vector[TyckError] = {
-    require(errors.nonEmpty, "Errors vector cannot be empty")
-    errors
-  }
-
-  def map[U](f: T => U): Getting[S, U] = Getting { state =>
-    xs(state).map {
-      case Left(err) => Left(nonEmptyErrors(err))
-      case Right((nextState, value)) => Right((nextState, f(value)))
+  def map[U](f: T => U): Getting[W, E, S, U] = Getting { state =>
+    run(state).map {
+      case (warnings, errors, Some((nextState, value))) => (warnings, errors, Some((nextState, f(value))))
+      case (warnings, errors, None) => (warnings, errors, None)
     }
   }
 
-  def flatMap[U](f: T => Getting[S, U]): Getting[S, U] = Getting { state =>
-    xs(state).flatMap {
-      case Left(err) => LazyList(Left(nonEmptyErrors(err)))
-      case Right((nextState, value)) => f(value).xs(nextState)
+  def flatMap[U](f: T => Getting[W, E, S, U]): Getting[W, E, S, U] = Getting { state =>
+    run(state).flatMap {
+      case (warnings, errors, Some((nextState, value))) => f(value).run(nextState).map {
+        case (w2, e2, res2) => (warnings ++ w2, errors ++ e2, res2)
+      }
+      case (warnings, errors, None) => LazyList((warnings, errors, None))
     }
   }
 
-  def getOne(state: S): Either[Vector[TyckError], (S, T)] = {
-    xs(state).collectFirst {
-      case right@Right(_) => right
-    }.getOrElse(xs(state).headOption.getOrElse(Left(nonEmptyErrors(Vector(EmptyResultsError())))))
+  @deprecated("some error information might be lost")
+  def getOne(state: S): Either[Vector[E], (S, T)] = {
+    // Try to collect the first non-error result
+    run(state).collectFirst {
+      case (_, errors, Some(result)) if errors.isEmpty => Right(result)
+    }.orElse(
+      // Try to collect the first item regardless of errors
+      run(state).collectFirst {
+        case (_, _, Some(result)) => Right(result)
+      }
+    ).getOrElse(
+      // Fallback to an empty results error
+      run(state).collectFirst {
+        case (_, errors, None) if errors.nonEmpty => Left(errors)
+      }.getOrElse(Left(Vector(EmptyResultsError().asInstanceOf[E])))
+    )
   }
-
-  def explainError(explain: TyckError => TyckError): Getting[S, T] = Getting { state =>
-    xs(state).map {
-      case Left(err) => Left(nonEmptyErrors(err.map(explain)))
-      case right => right
+  
+  def explainError(explain: E => E): Getting[W, E, S, T] = Getting { state =>
+    run(state).map {
+      case (warnings, errors, result) => (warnings, errors.map(explain), result)
     }
   }
 
-  def ||(other: => Getting[S, T]): Getting[S, T] = Getting { state =>
-    xs(state) #::: other.xs(state)
+  def ||(other: => Getting[W, E, S, T]): Getting[W, E, S, T] = Getting { state =>
+    run(state) #::: other.run(state)
   }
-}
-
-implicit def stateToGetting[T, U](state: State[T, U]): Getting[T, U] = Getting { s =>
-  LazyList(Right(state.run(s).value))
 }
 
 object Getting {
-  def pure[S, T](x: T): Getting[S, T] = Getting(state => LazyList(Right((state, x))))
+  def pure[W, E, S, T](x: T): Getting[W, E, S, T] = Getting(state => LazyList((Vector.empty, Vector.empty, Some((state, x)))))
 
-  def error[S, T](err: TyckError): Getting[S, T] = Getting(_ => LazyList(Left(Vector(err))))
+  def error[W, E, S, T](err: E): Getting[W, E, S, T] = Getting(_ => LazyList((Vector.empty, Vector(err), None)))
 
-  def errors[S, T](errs: Vector[TyckError]): Getting[S, T] = Getting(_ => LazyList(Left(errs)))
+  def errors[W, E, S, T](errs: Vector[E]): Getting[W, E, S, T] = Getting(_ => LazyList((Vector.empty, errs, None)))
 
-  def read[S]: Getting[S, S] = Getting(state => LazyList(Right((state, state))))
+  def read[W, E, S]: Getting[W, E, S, S] = Getting(state => LazyList((Vector.empty, Vector.empty, Some((state, state)))))
 
-  def write[S](newState: S): Getting[S, Unit] = Getting(_ => LazyList(Right((newState, ()))))
+  def write[W, E, S](newState: S): Getting[W, E, S, Unit] = Getting(_ => LazyList((Vector.empty, Vector.empty, Some((newState, ())))))
 }
 
-type TyckGetting[T] = Getting[TyckState, T]
+implicit def stateToGetting[W, E, T, U](state: State[T, U]): Getting[W, E, T, U] = Getting { s =>
+  LazyList((Vector.empty, Vector.empty, Some(state.run(s).value)))
+}
 
+type TyckGetting[T] = Getting[String, TyckError, TyckState, T]
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): TyckGetting[Term] = {
     if (subType == superType) return Getting.pure(subType)
