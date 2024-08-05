@@ -35,6 +35,10 @@ sealed trait TyckError {
   val stack: Array[StackTraceElement] = new Exception().getStackTrace
 }
 
+sealed trait TyckWarning {
+  
+}
+
 case class EmptyResultsError() extends TyckError {
   def message: String = "Empty Results"
 
@@ -128,7 +132,7 @@ implicit def stateToGetting[W, E, T, U](state: State[T, U]): Getting[W, E, T, U]
   LazyList((Vector.empty, Vector.empty, Some(state.run(s).value)))
 }
 
-type TyckGetting[T] = Getting[String, TyckError, TyckState, T]
+type TyckGetting[T] = Getting[TyckWarning, TyckError, TyckState, T]
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): TyckGetting[Term] = {
     if (subType == superType) return Getting.pure(subType)
@@ -271,18 +275,22 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 }
 
 object ExprTycker {
+  @deprecated("some error information might be lost")
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
   }
 
+  @deprecated("some error information might be lost")
   def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
   }
 
+  @deprecated("some error information might be lost")
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).inherit(expr, ty, effect).getOne(state).map(_._2)
   }
 
+  @deprecated("some error information might be lost")
   def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).synthesize(expr).getOne(state).map(_._2)
   }
