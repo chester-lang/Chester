@@ -2,20 +2,20 @@ package chester.tyck.stmt
 
 import chester.syntax.concrete.{Block, ModuleFile, Modules, QualifiedIDString}
 import chester.syntax.core.stmt.{TyckedBlock, TyckedDefinition, TyckedExpression, TyckedModule, TyckedModuleFile}
-import chester.tyck.{ExprTyckerInternal, Getting, LocalCtx, TyckError, TyckState}
+import chester.tyck.{ExprTyckerInternal, Getting, LocalCtx, TyckError, TyckState, TyckGetting}
 
 case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   // Type-check a single module file
-  def tyckModuleFile(moduleFile: ModuleFile): Getting[TyckedModuleFile] = {
+  def tyckModuleFile(moduleFile: ModuleFile): TyckGetting[TyckedModuleFile] = {
     for {
       block <- tyckBlock(moduleFile.content)
     } yield TyckedModuleFile(moduleFile.fileName, block)
   }
 
   // Type-check a vector of module files
-  def tyckModuleFiles(files: Vector[ModuleFile]): Getting[Vector[TyckedModuleFile]] = {
-    files.foldLeft(Getting.pure(Vector.empty[TyckedModuleFile])) { (acc, file) =>
+  def tyckModuleFiles(files: Vector[ModuleFile]): TyckGetting[Vector[TyckedModuleFile]] = {
+    files.foldLeft(Getting.pure[TyckState, Vector[TyckedModuleFile]](Vector.empty)) { (acc, file) =>
       for {
         accFiles <- acc
         fileTycked <- tyckModuleFile(file)
@@ -24,15 +24,15 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   // Type-check a module
-  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile]): Getting[TyckedModule] = {
+  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile]): TyckGetting[TyckedModule] = {
     for {
       fileTycked <- tyckModuleFiles(files)
     } yield TyckedModule(id, fileTycked)
   }
 
   // Type-check a collection of modules
-  def tyckModules(modules: Modules): Getting[Vector[TyckedModule]] = {
-    modules.modules.foldLeft(Getting.pure(Vector.empty[TyckedModule])) { case (acc, (id, files)) =>
+  def tyckModules(modules: Modules): TyckGetting[Vector[TyckedModule]] = {
+    modules.modules.foldLeft(Getting.pure[TyckState, Vector[TyckedModule]](Vector.empty)) { case (acc, (id, files)) =>
       for {
         accModules <- acc
         moduleTycked <- tyckModule(id, files)
@@ -41,8 +41,8 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   // Type-check a block of expressions
-  def tyckBlock(block: Block): Getting[TyckedBlock] = {
-    block.heads.foldLeft(Getting.pure(Vector.empty[TyckedDefinition])) { (acc, expr) =>
+  def tyckBlock(block: Block): TyckGetting[TyckedBlock] = {
+    block.heads.foldLeft(Getting.pure[TyckState, Vector[TyckedDefinition]](Vector.empty)) { (acc, expr) =>
       for {
         accExprs <- acc
         judge <- ExprTyckerInternal(localCtx).synthesize(expr)
@@ -50,6 +50,7 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }.map(TyckedBlock)
   }
 }
+
 object ModuleTycker {
 
   def tyckModuleFile(moduleFile: ModuleFile, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], TyckedModuleFile] = {
