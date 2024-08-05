@@ -2,9 +2,9 @@ package chester.tyck.stmt
 
 import chester.syntax.concrete.{Block, ModuleFile, Modules, QualifiedIDString}
 import chester.syntax.core.stmt.{TyckedBlock, TyckedDefinition, TyckedExpression, TyckedModule, TyckedModuleFile}
-import chester.tyck.{ExprTyckerInternal, Getting, LocalCtx, TyckError, TyckState, TyckGetting}
+import chester.tyck.{ExprTycker, Getting, LocalCtx, TyckError, TyckState, TyckGetting}
 
-case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
+case class ModuleTycker(localCtx: LocalCtx = LocalCtx.Empty) {
 
   // Type-check a single module file
   def tyckModuleFile(moduleFile: ModuleFile): TyckGetting[TyckedModuleFile] = {
@@ -45,7 +45,7 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     block.heads.foldLeft(Getting.pure[TyckState, Vector[TyckedDefinition]](Vector.empty)) { (acc, expr) =>
       for {
         accExprs <- acc
-        judge <- ExprTyckerInternal(localCtx).synthesize(expr)
+        judge <- ExprTycker(localCtx).synthesize(expr)
       } yield accExprs :+ TyckedExpression(judge)
     }.map(TyckedBlock)
   }
@@ -54,14 +54,14 @@ case class ModuleTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 object ModuleTycker {
 
   def tyckModuleFile(moduleFile: ModuleFile, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], TyckedModuleFile] = {
-    ModuleTyckerInternal(ctx).tyckModuleFile(moduleFile).getOne(state).map(_._2)
+    ModuleTycker(ctx).tyckModuleFile(moduleFile).getOne(state).map(_._2)
   }
 
   def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile], state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], TyckedModule] = {
-    ModuleTyckerInternal(ctx).tyckModule(id, files).getOne(state).map(_._2)
+    ModuleTycker(ctx).tyckModule(id, files).getOne(state).map(_._2)
   }
 
   def tyckModules(modules: Modules, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Vector[TyckedModule]] = {
-    ModuleTyckerInternal(ctx).tyckModules(modules).getOne(state).map(_._2)
+    ModuleTycker(ctx).tyckModules(modules).getOne(state).map(_._2)
   }
 }

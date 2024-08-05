@@ -106,7 +106,7 @@ object Getting {
 
 type TyckGetting[T] = Getting[TyckState, T]
 
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
+case class ExprTycker(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): TyckGetting[Term] = {
     if (subType == superType) return Getting.pure(subType)
     (subType, superType) match {
@@ -242,18 +242,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
 object ExprTycker {
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
+    ExprTycker(ctx).unify(subType, superType).getOne(state).map(_._2)
   }
 
   def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], EffectTerm] = {
-    ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
+    ExprTycker(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    ExprTyckerInternal(ctx).inherit(expr, ty, effect).getOne(state).map(_._2)
+    ExprTycker(ctx).inherit(expr, ty, effect).getOne(state).map(_._2)
   }
 
   def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    ExprTyckerInternal(ctx).synthesize(expr).getOne(state).map(_._2)
+    ExprTycker(ctx).synthesize(expr).getOne(state).map(_._2)
   }
 }
