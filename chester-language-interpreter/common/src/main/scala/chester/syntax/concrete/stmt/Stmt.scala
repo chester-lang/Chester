@@ -1,12 +1,10 @@
 package chester.syntax.concrete.stmt
 
 import chester.error.{SourcePos, WithPos}
+import chester.syntax.concrete.{Expr, ExprMeta}
 
 type ModuleName = ModuleNameQualified
 case class ModuleNameQualified(ids: Vector[String])
-sealed trait Stmt extends WithPos {
-
-}
 
 object ModuleName {
   def builtin = ModuleNameQualified(Vector())

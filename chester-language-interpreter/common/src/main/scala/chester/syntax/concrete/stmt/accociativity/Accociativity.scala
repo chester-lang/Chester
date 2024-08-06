@@ -1,6 +1,7 @@
-package chester.syntax.concrete.stmt
+package chester.syntax.concrete.stmt.accociativity
 
 import chester.parser.*
+import chester.syntax.concrete.stmt.QualifiedID
 
 case class PrecedenceGroup(
                             name: QualifiedID,
