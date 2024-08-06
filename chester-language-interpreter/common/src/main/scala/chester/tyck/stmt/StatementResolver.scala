@@ -2,22 +2,23 @@ package chester.tyck.stmt
 
 import chester.syntax.concrete._
 import chester.syntax.concrete.stmt._
-import chester.tyck.{TyckError, UnsupportedExpressionError}
+import chester.tyck._
 
 object StatementResolver {
-  def resolveStatement(expr: Expr): Either[TyckError, Statement] = expr match {
+  def resolveStatement(expr: Expr): (Vector[TyckWarning], Vector[TyckError], Option[Statement]) = expr match {
     case opSeq: OpSeq => opSeq.seq match {
       case Vector(Identifier("data", _), xs @ _*) =>
-        Right(DataStatement(xs.toVector, opSeq.meta))
+        (Vector.empty, Vector.empty, Some(DataStatement(xs.toVector, opSeq.meta)))
 
       case Vector(Identifier("trait", _), xs @ _*) =>
-        Right(TraitStatement(xs.toVector, opSeq.meta))
+        (Vector.empty, Vector.empty, Some(TraitStatement(xs.toVector, opSeq.meta)))
 
       case Vector(Identifier("implement", _), xs @ _*) =>
-        Right(ImplementStatement(xs.toVector, opSeq.meta))
+        (Vector.empty, Vector.empty, Some(ImplementStatement(xs.toVector, opSeq.meta)))
 
-      case _ => Left(UnsupportedExpressionError(opSeq))
+      case _ =>
+        (Vector.empty, Vector(UnsupportedExpressionError(opSeq)), None)
     }
-    case _ => Right(ExprStatement(expr))
+    case _ => (Vector.empty, Vector.empty, Some(ExprStatement(expr)))
   }
 }
