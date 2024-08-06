@@ -1,6 +1,7 @@
-package chester.tyck.stmt
+package chester.resolve
 
-import chester.syntax.concrete._
+import chester.syntax.concrete.*
+import chester.tyck.stmt.ModuleTyckGetting
 import chester.tyck.{Getting, TyckError, TyckWarning}
 
 case class MacroExpander() {
