@@ -4,7 +4,7 @@ val graalVersion = "22.0.2"
 val nativeImageOption = Seq(
   "--verbose",
   "--no-fallback",
-  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats", // runtime: org.jline
+  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,org.bitbucket.inkytonik.kiama", // runtime: org.jline
 )
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
@@ -32,6 +32,7 @@ lazy val common = (project in file("common"))
     name := "ChesterCommon",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
+      "org.bitbucket.inkytonik.kiama" %% "kiama" % "2.5.1",
       "org.typelevel" %% "cats-core" % "2.12.0",
       "org.scalameta" %% "munit" % "1.0.0" % Test,
       "com.lihaoyi" %% "fastparse" % "3.1.0",
