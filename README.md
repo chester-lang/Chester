@@ -85,3 +85,16 @@ enableEffect IO;
 
 functionCanEmitEffect(): Unit = println("はっぱ - もうすぐ楽になるからね");
 ```
+
+## Features, namings and designs are copied from:
+
++ Scala
++ Haskell
++ Swift
++ Aya
++ maybe Rust
++ Koka
++ Racket
++ Nix
++ Javascript, Typescript
++ Idris
