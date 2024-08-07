@@ -55,27 +55,27 @@ jobs:
           ${{ runner.os }}-sbt-
 
     - name: Build with SBT
-      working-directory: chester-language-interpreter
+      working-directory: chester-in-scala
       run: sbt clean assembly
       shell: bash
 
     - name: Run Tests
-      working-directory: chester-language-interpreter
+      working-directory: chester-in-scala
       run: sbt test
       shell: bash
 
     - name: Build Native Image for CLI
-      working-directory: chester-language-interpreter
+      working-directory: chester-in-scala
       run: sbt cli/nativeImage
       shell: bash
 
     - name: Build Native Image for LSP
-      working-directory: chester-language-interpreter
+      working-directory: chester-in-scala
       run: sbt lsp/nativeImage
       shell: bash
 
     - name: List files for debugging
-      run: find chester-language-interpreter -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "*.exe"
+      run: find chester-in-scala -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "*.exe"
       shell: bash
       continue-on-error: true
 
@@ -85,11 +85,11 @@ jobs:
       with:
         name: assembly-jars-and-native-images
         path: |
-          chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-          chester-language-interpreter/target/chester
-          chester-language-interpreter/target/chester-lsp
+          chester-in-scala/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-in-scala/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-in-scala/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/target/chester
+          chester-in-scala/target/chester-lsp
 
     - name: Upload Windows Executable
       if: runner.os == 'Windows'
@@ -97,8 +97,8 @@ jobs:
       with:
         name: windows-executables
         path: |
-          chester-language-interpreter/target/chester.exe
-          chester-language-interpreter/target/chester-lsp.exe
+          chester-in-scala/target/chester.exe
+          chester-in-scala/target/chester-lsp.exe
 
     - name: Check if release exists
       id: check_release
@@ -166,7 +166,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
+        asset_path: chester-in-scala/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
         asset_name: common.jar
         asset_content_type: application/zip
 
@@ -175,7 +175,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+        asset_path: chester-in-scala/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
         asset_name: chester.jar
         asset_content_type: application/zip
 
@@ -184,7 +184,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+        asset_path: chester-in-scala/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
         asset_name: chester-lsp.jar
         asset_content_type: application/zip
 
@@ -193,7 +193,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/target/chester
+        asset_path: chester-in-scala/target/chester
         asset_name: chester
         asset_content_type: application/zip
 
@@ -202,7 +202,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/target/chester-lsp
+        asset_path: chester-in-scala/target/chester-lsp
         asset_name: chester-lsp
         asset_content_type: application/zip
 
@@ -211,7 +211,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/target/chester.exe
+        asset_path: chester-in-scala/target/chester.exe
         asset_name: chester.exe
         asset_content_type: application/zip
 
@@ -220,6 +220,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-language-interpreter/target/chester-lsp.exe
+        asset_path: chester-in-scala/target/chester-lsp.exe
         asset_name: chester-lsp.exe
         asset_content_type: application/zip
