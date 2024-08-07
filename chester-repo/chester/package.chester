@@ -1,0 +1,3 @@
+version := "0.1.0-SNAPSHOT";
+name := "chester";
+description := "Rewrite cheser in chester";
