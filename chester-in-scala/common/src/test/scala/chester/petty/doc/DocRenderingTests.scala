@@ -2,6 +2,8 @@ package chester.petty.doc
 
 import munit.FunSuite
 
+import Doc._
+
 class DocRenderingTests extends FunSuite {
 
   test("Render single text") {

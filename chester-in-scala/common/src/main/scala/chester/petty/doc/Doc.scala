@@ -3,14 +3,69 @@ package chester.petty.doc
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-sealed trait Doc:
-  def <>(other: Doc): Doc = concat(this, other)
+object Implicits {
+  implicit def stringToDoc(s: String): Doc = Doc.text(s)
+}
 
-  def <+>(other: Doc): Doc = concat(this, text(" "), other)
+object Doc {
 
-  def </>(other: Doc): Doc = concat(this, line(text(" ")), other)
+  implicit def text(s: String): Doc = {
+    @tailrec
+    def loop(chars: List[Char], acc: Vector[Doc], current: String): Vector[Doc] = {
+      chars match {
+        case Nil =>
+          if (current.nonEmpty) acc :+ Text(current) else acc
+        case '\n' :: tail =>
+          val updatedAcc = if (current.nonEmpty) acc :+ Text(current) :+ NewLine else acc :+ NewLine
+          loop(tail, updatedAcc, "")
+        case '\r' :: tail =>
+          loop(tail, acc, current) // Skip \r
+        case ch :: tail =>
+          loop(tail, acc, current + ch)
+      }
+    }
 
-  def <\>(other: Doc): Doc = concat(this, line(text("")), other)
+    val parts = loop(s.toList, Vector.empty, "")
+    if (parts.isEmpty) Text("") else concat(parts *)
+  }
+
+  def concat(docs: Doc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head else Concat(docs)
+
+  def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
+
+  def line(repl: Doc): Doc = Line(repl)
+
+  def linebreak: Doc = line(text(""))
+
+  def group(doc: Doc): Doc = Group(doc)
+
+  def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
+
+  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*): Doc =
+    docs match
+      case Nil => begin.toDoc <> end.toDoc
+      case head :: tail =>
+        val init = head.toDoc <> sep.toDoc
+        val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc <> acc.toDoc }
+        begin.toDoc <> init <> last.toDoc
+}
+
+trait ToDoc {
+  def toDoc: Doc
+}
+
+import Doc._
+
+sealed trait Doc extends ToDoc:
+  def <>(other: ToDoc): Doc = concat(this, other.toDoc)
+
+  def <+>(other: ToDoc): Doc = concat(this, text(" "), other.toDoc)
+
+  def </>(other: ToDoc): Doc = concat(this, line(text(" ")), other.toDoc)
+
+  def <\>(other: ToDoc): Doc = concat(this, line(text("")), other.toDoc)
+  
+  override def toDoc: Doc = this
 
 case class Text(content: String) extends Doc:
   require(!content.contains("\n") && !content.contains("\r"), "Text cannot contain newlines or carriage returns")
@@ -42,38 +97,6 @@ case class TokenText(content: String) extends Token
 case object TokenNewLine extends Token
 
 case class TokenColor(tokens: Vector[Token], color: Color) extends Token
-
-implicit def text(s: String): Doc = {
-  @tailrec
-  def loop(chars: List[Char], acc: Vector[Doc], current: String): Vector[Doc] = {
-    chars match {
-      case Nil =>
-        if (current.nonEmpty) acc :+ Text(current) else acc
-      case '\n' :: tail =>
-        val updatedAcc = if (current.nonEmpty) acc :+ Text(current) :+ NewLine else acc :+ NewLine
-        loop(tail, updatedAcc, "")
-      case '\r' :: tail =>
-        loop(tail, acc, current) // Skip \r
-      case ch :: tail =>
-        loop(tail, acc, current + ch)
-    }
-  }
-
-  val parts = loop(s.toList, Vector.empty, "")
-  if (parts.isEmpty) Text("") else concat(parts *)
-}
-
-def concat(docs: Doc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head else Concat(docs)
-
-def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
-
-def line(repl: Doc): Doc = Line(repl)
-
-def linebreak: Doc = line(text(""))
-
-def group(doc: Doc): Doc = Group(doc)
-
-def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
 
 private def measureWithinLine(doc: Doc, charCounter: CharCounter, maxWidth: Int): Option[Int] = doc match {
   case Text(content) =>
