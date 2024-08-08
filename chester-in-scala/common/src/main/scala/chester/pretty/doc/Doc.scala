@@ -1,4 +1,6 @@
-package chester.petty.doc
+package chester.pretty.doc
+
+import chester.pretty
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -259,7 +261,7 @@ abstract class Renderer[T]:
   def charCounter: CharCounter = DefaultCharCounter
 
   def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T =
-    val tokens = chester.petty.doc.renderTokens(doc, maxWidth, charCounter)
+    val tokens = pretty.doc.renderTokens(doc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
 def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T =

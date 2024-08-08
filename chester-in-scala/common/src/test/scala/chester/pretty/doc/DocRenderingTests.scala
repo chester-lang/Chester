@@ -1,4 +1,4 @@
-package chester.petty.doc
+package chester.pretty.doc
 
 import munit.FunSuite
 

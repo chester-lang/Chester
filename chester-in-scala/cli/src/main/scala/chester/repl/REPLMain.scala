@@ -7,7 +7,8 @@ import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.reader.{EndOfFileException, LineReader, LineReaderBuilder, UserInterruptException}
 import org.jline.terminal.TerminalBuilder
-import chester.petty.doc._
+import chester.pretty.doc.*
+import chester.pretty.doc.{Doc, render}
 
 object REPLMain {
   // Define prompts as constants with the same length

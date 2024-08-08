@@ -1,8 +1,9 @@
 package chester.syntax.core
 
 import chester.error.{SourcePos, WithPos}
-import chester.petty.doc._
-import chester.petty.doc.Implicits._
+import chester.pretty.doc.*
+import chester.pretty.doc.{Doc, PrettierOptions, ToDoc}
+import chester.pretty.doc.Implicits.*
 
 case class TermMeta(sourcePos: Option[SourcePos])
 

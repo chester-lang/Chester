@@ -1,4 +1,4 @@
-package chester.petty.doc
+package chester.pretty.doc
 
 sealed trait Color
 
@@ -79,7 +79,7 @@ object BackgroundColor:
 import fansi.Attr
 
 object ColorMapping:
-  def toFansiAttr(color: ForegroundColor): Attr = color match
+  def toFansiAttr(color: Color): Attr = color match
     case ForegroundColor.Black => fansi.Color.Black
     case ForegroundColor.Red => fansi.Color.Red
     case ForegroundColor.Green => fansi.Color.Green
@@ -97,27 +97,6 @@ object ColorMapping:
     case ForegroundColor.LightCyan => fansi.Color.LightCyan
     case ForegroundColor.White => fansi.Color.White
     case ForegroundColor.Reset => fansi.Color.Reset
-
-  def toHtmlCss(color: ForegroundColor): String = color match
-    case ForegroundColor.Black => "black"
-    case ForegroundColor.Red => "red"
-    case ForegroundColor.Green => "green"
-    case ForegroundColor.Yellow => "yellow"
-    case ForegroundColor.Blue => "blue"
-    case ForegroundColor.Magenta => "magenta"
-    case ForegroundColor.Cyan => "cyan"
-    case ForegroundColor.LightGray => "lightgray"
-    case ForegroundColor.DarkGray => "darkgray"
-    case ForegroundColor.LightRed => "lightcoral"
-    case ForegroundColor.LightGreen => "lightgreen"
-    case ForegroundColor.LightYellow => "lightyellow"
-    case ForegroundColor.LightBlue => "lightblue"
-    case ForegroundColor.LightMagenta => "lightpink"
-    case ForegroundColor.LightCyan => "lightcyan"
-    case ForegroundColor.White => "white"
-    case ForegroundColor.Reset => "initial"
-
-  def toFansiAttr(color: BackgroundColor): Attr = color match
     case BackgroundColor.Black => fansi.Back.Black
     case BackgroundColor.Red => fansi.Back.Red
     case BackgroundColor.Green => fansi.Back.Green
@@ -136,7 +115,24 @@ object ColorMapping:
     case BackgroundColor.White => fansi.Back.White
     case BackgroundColor.Reset => fansi.Back.Reset
 
-  def toHtmlCss(color: BackgroundColor): String = color match
+  def toHtmlCss(color: Color): String = color match
+    case ForegroundColor.Black => "black"
+    case ForegroundColor.Red => "red"
+    case ForegroundColor.Green => "green"
+    case ForegroundColor.Yellow => "yellow"
+    case ForegroundColor.Blue => "blue"
+    case ForegroundColor.Magenta => "magenta"
+    case ForegroundColor.Cyan => "cyan"
+    case ForegroundColor.LightGray => "lightgray"
+    case ForegroundColor.DarkGray => "darkgray"
+    case ForegroundColor.LightRed => "lightcoral"
+    case ForegroundColor.LightGreen => "lightgreen"
+    case ForegroundColor.LightYellow => "lightyellow"
+    case ForegroundColor.LightBlue => "lightblue"
+    case ForegroundColor.LightMagenta => "lightpink"
+    case ForegroundColor.LightCyan => "lightcyan"
+    case ForegroundColor.White => "white"
+    case ForegroundColor.Reset => "initial"
     case BackgroundColor.Black => "black"
     case BackgroundColor.Red => "red"
     case BackgroundColor.Green => "green"
