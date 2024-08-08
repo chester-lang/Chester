@@ -255,5 +255,5 @@ abstract class Renderer[T]:
     val tokens = chester.petty.doc.renderTokens(doc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
-def render[T](doc: Doc, maxWidth: Int, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T =
-  renderer.render(doc, maxWidth, useCRLF)
+def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T =
+  renderer.render(doc.toDoc, maxWidth, useCRLF)

@@ -67,12 +67,12 @@ object REPLMain {
             } else {
               REPL.addLine(replLines, line) match {
                 case Left(_) =>
-                  currentPrompt = continuationPrompt  // Update prompt to indicate multi-line input
+                  currentPrompt = continuationPrompt // Update prompt to indicate multi-line input
 
                 case Right(UnmatchedPair(error)) =>
                   println(s"Error: ${error.message} at ${error.index}")
                   replLines.clearPendingLines()
-                  currentPrompt = mainPrompt  // Reset prompt
+                  currentPrompt = mainPrompt // Reset prompt
 
                 case Right(Complete(result)) =>
                   result match {
@@ -115,8 +115,9 @@ object REPLMain {
     val termDoc = judge.wellTyped
     val typeDoc = judge.ty
     val effectDoc = judge.effect
-
-    val doc = termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
+    
+    val checkOnEffect: String = render(effectDoc)
+    val doc = if (checkOnEffect == "NoEffect") then termDoc <+> Doc.text(":") <+> typeDoc else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
     render(doc, 80, useCRLF = false)
   }
 }
