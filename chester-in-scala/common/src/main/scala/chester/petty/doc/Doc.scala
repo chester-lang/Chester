@@ -1,27 +1,186 @@
 package chester.petty.doc
 
+import scala.annotation.tailrec
+import scala.language.implicitConversions
+
 import fansi.*
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-sealed trait Doc {
-  def <> (other: Doc): Doc = concat(this, other)
-  def <+> (other: Doc): Doc = concat(this, text(" "), other)
-  def </> (other: Doc): Doc = concat(this, line(text(" ")), other)
-  def <\> (other: Doc): Doc = concat(this, line(text("")), other)
-}
+sealed trait Color
 
-case class Text(content: String) extends Doc {
+sealed trait ForegroundColor extends Color
+
+object ForegroundColor:
+  case object Black extends ForegroundColor
+
+  case object Red extends ForegroundColor
+
+  case object Green extends ForegroundColor
+
+  case object Yellow extends ForegroundColor
+
+  case object Blue extends ForegroundColor
+
+  case object Magenta extends ForegroundColor
+
+  case object Cyan extends ForegroundColor
+
+  case object LightGray extends ForegroundColor
+
+  case object DarkGray extends ForegroundColor
+
+  case object LightRed extends ForegroundColor
+
+  case object LightGreen extends ForegroundColor
+
+  case object LightYellow extends ForegroundColor
+
+  case object LightBlue extends ForegroundColor
+
+  case object LightMagenta extends ForegroundColor
+
+  case object LightCyan extends ForegroundColor
+
+  case object White extends ForegroundColor
+
+  case object Reset extends ForegroundColor
+
+sealed trait BackgroundColor extends Color
+
+object BackgroundColor:
+  case object Black extends BackgroundColor
+
+  case object Red extends BackgroundColor
+
+  case object Green extends BackgroundColor
+
+  case object Yellow extends BackgroundColor
+
+  case object Blue extends BackgroundColor
+
+  case object Magenta extends BackgroundColor
+
+  case object Cyan extends BackgroundColor
+
+  case object LightGray extends BackgroundColor
+
+  case object DarkGray extends BackgroundColor
+
+  case object LightRed extends BackgroundColor
+
+  case object LightGreen extends BackgroundColor
+
+  case object LightYellow extends BackgroundColor
+
+  case object LightBlue extends BackgroundColor
+
+  case object LightMagenta extends BackgroundColor
+
+  case object LightCyan extends BackgroundColor
+
+  case object White extends BackgroundColor
+
+  case object Reset extends BackgroundColor
+
+import fansi.Attr
+
+object ColorMapping:
+  def toFansiAttr(color: ForegroundColor): Attr = color match
+    case ForegroundColor.Black => fansi.Color.Black
+    case ForegroundColor.Red => fansi.Color.Red
+    case ForegroundColor.Green => fansi.Color.Green
+    case ForegroundColor.Yellow => fansi.Color.Yellow
+    case ForegroundColor.Blue => fansi.Color.Blue
+    case ForegroundColor.Magenta => fansi.Color.Magenta
+    case ForegroundColor.Cyan => fansi.Color.Cyan
+    case ForegroundColor.LightGray => fansi.Color.LightGray
+    case ForegroundColor.DarkGray => fansi.Color.DarkGray
+    case ForegroundColor.LightRed => fansi.Color.LightRed
+    case ForegroundColor.LightGreen => fansi.Color.LightGreen
+    case ForegroundColor.LightYellow => fansi.Color.LightYellow
+    case ForegroundColor.LightBlue => fansi.Color.LightBlue
+    case ForegroundColor.LightMagenta => fansi.Color.LightMagenta
+    case ForegroundColor.LightCyan => fansi.Color.LightCyan
+    case ForegroundColor.White => fansi.Color.White
+    case ForegroundColor.Reset => fansi.Color.Reset
+
+  def toHtmlCss(color: ForegroundColor): String = color match
+    case ForegroundColor.Black => "black"
+    case ForegroundColor.Red => "red"
+    case ForegroundColor.Green => "green"
+    case ForegroundColor.Yellow => "yellow"
+    case ForegroundColor.Blue => "blue"
+    case ForegroundColor.Magenta => "magenta"
+    case ForegroundColor.Cyan => "cyan"
+    case ForegroundColor.LightGray => "lightgray"
+    case ForegroundColor.DarkGray => "darkgray"
+    case ForegroundColor.LightRed => "lightcoral"
+    case ForegroundColor.LightGreen => "lightgreen"
+    case ForegroundColor.LightYellow => "lightyellow"
+    case ForegroundColor.LightBlue => "lightblue"
+    case ForegroundColor.LightMagenta => "lightpink"
+    case ForegroundColor.LightCyan => "lightcyan"
+    case ForegroundColor.White => "white"
+    case ForegroundColor.Reset => "initial"
+
+  def toFansiAttr(color: BackgroundColor): Attr = color match
+    case BackgroundColor.Black => fansi.Back.Black
+    case BackgroundColor.Red => fansi.Back.Red
+    case BackgroundColor.Green => fansi.Back.Green
+    case BackgroundColor.Yellow => fansi.Back.Yellow
+    case BackgroundColor.Blue => fansi.Back.Blue
+    case BackgroundColor.Magenta => fansi.Back.Magenta
+    case BackgroundColor.Cyan => fansi.Back.Cyan
+    case BackgroundColor.LightGray => fansi.Back.LightGray
+    case BackgroundColor.DarkGray => fansi.Back.DarkGray
+    case BackgroundColor.LightRed => fansi.Back.LightRed
+    case BackgroundColor.LightGreen => fansi.Back.LightGreen
+    case BackgroundColor.LightYellow => fansi.Back.LightYellow
+    case BackgroundColor.LightBlue => fansi.Back.LightBlue
+    case BackgroundColor.LightMagenta => fansi.Back.LightMagenta
+    case BackgroundColor.LightCyan => fansi.Back.LightCyan
+    case BackgroundColor.White => fansi.Back.White
+    case BackgroundColor.Reset => fansi.Back.Reset
+
+  def toHtmlCss(color: BackgroundColor): String = color match
+    case BackgroundColor.Black => "black"
+    case BackgroundColor.Red => "red"
+    case BackgroundColor.Green => "green"
+    case BackgroundColor.Yellow => "yellow"
+    case BackgroundColor.Blue => "blue"
+    case BackgroundColor.Magenta => "magenta"
+    case BackgroundColor.Cyan => "cyan"
+    case BackgroundColor.LightGray => "lightgray"
+    case BackgroundColor.DarkGray => "darkgray"
+    case BackgroundColor.LightRed => "lightcoral"
+    case BackgroundColor.LightGreen => "lightgreen"
+    case BackgroundColor.LightYellow => "lightyellow"
+    case BackgroundColor.LightBlue => "lightblue"
+    case BackgroundColor.LightMagenta => "lightpink"
+    case BackgroundColor.LightCyan => "lightcyan"
+    case BackgroundColor.White => "white"
+    case BackgroundColor.Reset => "initial"
+
+sealed trait Doc:
+  def <>(other: Doc): Doc = concat(this, other)
+
+  def <+>(other: Doc): Doc = concat(this, text(" "), other)
+
+  def </>(other: Doc): Doc = concat(this, line(text(" ")), other)
+
+  def <\>(other: Doc): Doc = concat(this, line(text("")), other)
+
+case class Text(content: String) extends Doc:
   require(!content.contains("\n") && !content.contains("\r"), "Text cannot contain newlines or carriage returns")
+
   override def toString: String = content
-}
 
-case class Colored(doc: Doc, color: Attr) extends Doc
+case class Colored(doc: Doc, color: Color) extends Doc
 
-case class Concat(docs: Seq[Doc]) extends Doc {
+case class Concat(docs: Seq[Doc]) extends Doc:
   require(docs.nonEmpty, "Concat requires at least one document")
-}
 
 case object NewLine extends Doc
 
@@ -36,9 +195,12 @@ enum Indent:
   case Tab
 
 sealed trait Token
+
 case class TokenText(content: String) extends Token
+
 case object TokenNewLine extends Token
-case class TokenColor(tokens: Vector[Token], color: Attr) extends Token
+
+case class TokenColor(tokens: Vector[Token], color: Color) extends Token
 
 implicit def text(s: String): Doc = {
   @tailrec
@@ -62,7 +224,7 @@ implicit def text(s: String): Doc = {
 
 def concat(docs: Doc*): Doc = Concat(docs)
 
-def colored(doc: Doc, color: Attr): Doc = Colored(doc, color)
+def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
 
 def line(repl: Doc): Doc = Line(repl)
 
@@ -144,86 +306,59 @@ private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vec
   render(flattenedDocs, Vector.empty[Token], 0, maxWidth, "")
 }
 
-trait CharCounter {
+trait CharCounter:
   def countCodePoint: Int => Int
+
   def countString: String => Int = _.codePoints().toArray.foldLeft(0)((acc, cp) => acc + countCodePoint(cp))
-}
 
-object DefaultCharCounter extends CharCounter {
+object DefaultCharCounter extends CharCounter:
   override val countCodePoint: Int => Int = _ => 1
-}
 
-abstract class Renderer[T] {
+abstract class Renderer[T]:
   def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): T
+
   def charCounter: CharCounter = DefaultCharCounter
-  def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T = {
+
+  def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T =
     val tokens = chester.petty.doc.renderTokens(doc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
-  }
-}
 
-implicit object StringRenderer extends Renderer[String] {
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String = {
+implicit object StringRenderer extends Renderer[String]:
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String =
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.map {
       case TokenText(content) => content
       case TokenNewLine => newline
       case TokenColor(innerTokens, _) => renderTokens(innerTokens, useCRLF)
     }.mkString
-  }
-}
 
-implicit object FansiRenderer extends Renderer[fansi.Str] {
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): fansi.Str = {
+implicit object FansiRenderer extends Renderer[fansi.Str]:
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): fansi.Str =
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.foldLeft(fansi.Str("")) {
-      case (acc, TokenText(content)) => acc ++ Str(content)
-      case (acc, TokenNewLine) => acc ++ Str(newline)
-      case (acc, TokenColor(innerTokens, color)) =>
+      case (acc, TokenText(content)) => acc ++ fansi.Str(content)
+      case (acc, TokenNewLine) => acc ++ fansi.Str(newline)
+      case (acc, TokenColor(innerTokens, color: ForegroundColor)) =>
         acc ++ innerTokens.foldLeft(fansi.Str("")) {
-          case (innerAcc, TokenText(content)) => innerAcc ++ color(content)
-          case (innerAcc, TokenNewLine) => innerAcc ++ color(newline)
+          case (innerAcc, TokenText(content)) => innerAcc ++ ColorMapping.toFansiAttr(color)(content)
+          case (innerAcc, TokenNewLine) => innerAcc ++ fansi.Str(newline)
           case (innerAcc, TokenColor(innerInnerTokens, innerColor)) =>
             innerAcc ++ innerInnerTokens.foldLeft(fansi.Str("")) {
-              case (innermostAcc, TokenText(content)) => innermostAcc ++ innerColor(content)
-              case (innermostAcc, TokenNewLine) => innermostAcc ++ innerColor(newline)
+              case (innermostAcc, TokenText(content)) => innermostAcc ++ ColorMapping.toFansiAttr(innerColor.asInstanceOf[ForegroundColor])(content)
+              case (innermostAcc, TokenNewLine) => innermostAcc ++ fansi.Str(newline)
               case (innermostAcc, TokenColor(_, _)) => innermostAcc // This would rarely be the case, you might want to throw an exception here
             }
         }
     }
-  }
-}
 
-object HtmlRenderer extends Renderer[String] {
-  private def colorToHtml(color: Attr): String = color match {
-    case fansi.Color.Black => "black"
-    case fansi.Color.Red => "red"
-    case fansi.Color.Green => "green"
-    case fansi.Color.Yellow => "yellow"
-    case fansi.Color.Blue => "blue"
-    case fansi.Color.Magenta => "magenta"
-    case fansi.Color.Cyan => "cyan"
-    case fansi.Color.White => "white"
-    case fansi.Color.DarkGray | fansi.Color.LightGray => "gray"
-    case fansi.Color.LightRed => "lightcoral"
-    case fansi.Color.LightGreen => "lightgreen"
-    case fansi.Color.LightYellow => "lightyellow"
-    case fansi.Color.LightBlue => "lightblue"
-    case fansi.Color.LightMagenta => "lightpink"
-    case fansi.Color.LightCyan => "lightcyan"
-    case _ => "black"
-  }
-
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String = {
+object HtmlRenderer extends Renderer[String]:
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String =
     val newline = "<br />"
     tokens.map {
       case TokenText(content) => content
       case TokenNewLine => newline
-      case TokenColor(innerTokens, color) => s"<span style='color: ${colorToHtml(color)};'>${renderTokens(innerTokens, useCRLF)}</span>"
+      case TokenColor(innerTokens, color: ForegroundColor) => s"<span style='color: ${ColorMapping.toHtmlCss(color)};'>${renderTokens(innerTokens, useCRLF)}</span>"
     }.mkString
-  }
-}
 
-def render[T](doc: Doc, maxWidth: Int, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T = {
+def render[T](doc: Doc, maxWidth: Int, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T =
   renderer.render(doc, maxWidth, useCRLF)
-}
