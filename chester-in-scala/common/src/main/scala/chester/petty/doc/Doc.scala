@@ -5,19 +5,23 @@ import scala.language.implicitConversions
 
 sealed trait Doc:
   def <>(other: Doc): Doc = concat(this, other)
+
   def <+>(other: Doc): Doc = concat(this, text(" "), other)
+
   def </>(other: Doc): Doc = concat(this, line(text(" ")), other)
+
   def <\>(other: Doc): Doc = concat(this, line(text("")), other)
 
 case class Text(content: String) extends Doc:
   require(!content.contains("\n") && !content.contains("\r"), "Text cannot contain newlines or carriage returns")
+
   override def toString: String = content
 
 case class Colored(doc: Doc, color: Color) extends Doc
 
 case class Concat(docs: Seq[Doc]) extends Doc:
   require(docs.nonEmpty, "Concat requires at least one document")
-  require(docs.length>1, "Concat requires at least two documents")
+  require(docs.length > 1, "Concat requires at least two documents")
 
 case object NewLine extends Doc
 
@@ -56,10 +60,10 @@ implicit def text(s: String): Doc = {
   }
 
   val parts = loop(s.toList, Vector.empty, "")
-  if (parts.isEmpty) Text("") else concat(parts*)
+  if (parts.isEmpty) Text("") else concat(parts *)
 }
 
-def concat(docs: Doc*): Doc = if(docs.isEmpty) Text("") else if(docs.length==1) docs.head else Concat(docs)
+def concat(docs: Doc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head else Concat(docs)
 
 def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
 
@@ -104,34 +108,51 @@ private def flatten(doc: Doc): Vector[Doc] = doc match {
   case other => Vector(other)
 }
 
-private def decideGroup(group: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Doc] = {
+private def decideGroup(group: Doc, maxWidth: Int, charCounter: CharCounter): (Boolean, Vector[Doc]) = {
   val flat = flatten(group)
-  if (flat.map(d => measureWithinLine(d, charCounter, maxWidth)).forall(_.isDefined)) flat
-  else flat.flatMap {
+  val fitsInOneLine = flat.map(d => measureWithinLine(d, charCounter, maxWidth)).forall(_.isDefined)
+  val content = if (fitsInOneLine) flat else flat.flatMap {
     case Line(_) => Vector(NewLine)
-    case other => Vector(other, NewLine)
+    case other => Vector(other)
   }
+  (fitsInOneLine, content)
 }
 
-private def renderWithinLine(doc: Doc, currentWidth: Int, charCounter: CharCounter, maxWidth: Int): Vector[Token] = doc match {
+private def renderWithinLine(doc: Doc, charCounter: CharCounter, maxWidth: Int): Vector[Token] = doc match {
   case Text(content) =>
     Vector(TokenText(content))
 
   case Colored(innerDoc, color) =>
-    val coloredTokens = renderWithinLine(innerDoc, currentWidth, charCounter, maxWidth)
+    val coloredTokens = renderWithinLine(innerDoc, charCounter, maxWidth)
     Vector(TokenColor(coloredTokens, color))
 
   case Concat(innerDocs) =>
-    innerDocs.flatMap(renderWithinLine(_, currentWidth, charCounter, maxWidth)).toVector
+    innerDocs.flatMap(renderWithinLine(_, charCounter, maxWidth)).toVector
 
   case Line(repl) =>
-    renderWithinLine(repl, currentWidth, charCounter, maxWidth)
+    renderWithinLine(repl, charCounter, maxWidth)
 
   case Group(innerDoc) =>
-    renderWithinLine(innerDoc, currentWidth, charCounter, maxWidth)
+    renderWithinLine(innerDoc, charCounter, maxWidth)
 
+  case Indented(indent, innerDoc) => renderWithinLine(innerDoc, charCounter, maxWidth)
   case _ =>
     throw new UnsupportedOperationException("This doc type should not be rendered within a line")
+}
+
+private def splitDocByNewLine(docs: Seq[Doc]): Vector[Vector[Doc]] = {
+  @tailrec
+  def loop(remaining: List[Doc], current: Vector[Doc], acc: Vector[Vector[Doc]]): Vector[Vector[Doc]] = remaining match {
+    case Nil =>
+      if (current.nonEmpty) acc :+ current else acc
+    case NewLine :: tail =>
+      val updatedAcc = acc :+ current
+      loop(tail, Vector.empty, updatedAcc)
+    case head :: tail =>
+      loop(tail, current :+ head, acc)
+  }
+
+  loop(docs.toList, Vector.empty, Vector.empty)
 }
 
 private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: CharCounter, maxWidth: Int): Vector[Token] = doc match {
@@ -148,13 +169,18 @@ private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: Ch
   case Line(repl) =>
     measureWithinLine(repl, charCounter, maxWidth) match {
       case Some(length) if length <= maxWidth =>
-        renderWithinLine(repl, 0, charCounter, maxWidth)
+        renderWithinLine(repl, charCounter, maxWidth)
       case _ =>
         Vector(TokenNewLine)
     }
 
   case Group(innerDoc) =>
-    decideGroup(innerDoc, maxWidth, charCounter).flatMap(renderFromLineStart(_, "", charCounter, maxWidth))
+    val (fitsInOneLine, content) = decideGroup(innerDoc, maxWidth, charCounter)
+    if (fitsInOneLine) {
+      content.flatMap(renderWithinLine(_, charCounter, maxWidth))
+    } else {
+      renderFromLineStart(concat(content *), currentIndent, charCounter, maxWidth)
+    }
 
   case Indented(indent, innerDoc) =>
     val indentStr = indent match {
@@ -162,10 +188,12 @@ private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: Ch
       case Indent.Tab => "\t"
     }
     renderFromLineStart(innerDoc, currentIndent + indentStr, charCounter, maxWidth)
+  case Concat(innerDocs) if innerDocs.forall(_.isInstanceOf[NewLine.type]) =>
+    val splitContent = splitDocByNewLine(innerDocs)
+    splitContent.init.flatMap(line => renderFromLineStart(concat(line*), currentIndent, charCounter, maxWidth) :+ TokenNewLine) ++
+      renderFromLineStart(concat(splitContent.last*), currentIndent, charCounter, maxWidth)
 
-  case Concat(innerDocs) =>
-    innerDocs.flatMap(renderFromLineStart(_, currentIndent, charCounter, maxWidth)).toVector
-
+  case Concat(docs) => TokenText(currentIndent) +: docs.flatMap(renderWithinLine(_, charCounter, maxWidth)).toVector
   case _ =>
     throw new UnsupportedOperationException("This doc type should not be rendered from the line start")
 }
@@ -176,6 +204,7 @@ private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vec
 
 trait CharCounter:
   def countCodePoint: Int => Int
+
   def countString: String => Int = _.codePoints().toArray.foldLeft(0)((acc, cp) => acc + countCodePoint(cp))
 
 object DefaultCharCounter extends CharCounter:
@@ -183,7 +212,9 @@ object DefaultCharCounter extends CharCounter:
 
 abstract class Renderer[T]:
   def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): T
+
   def charCounter: CharCounter = DefaultCharCounter
+
   def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T =
     val tokens = chester.petty.doc.renderTokens(doc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
