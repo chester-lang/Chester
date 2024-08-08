@@ -41,13 +41,17 @@ object Doc {
 
   def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
 
-  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc =
-    docs match
-      case Nil => begin.toDoc <> end.toDoc
-      case head :: tail =>
+  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc = {
+    docs match {
+      case Seq() => begin.toDoc <> end.toDoc
+      case Seq(head) => begin.toDoc <> head.toDoc <> end.toDoc
+      case Seq(head, tail) => begin.toDoc <> head.toDoc <> sep.toDoc <> tail.toDoc <> end.toDoc
+      case Seq(head, tail*) =>
         val init = head.toDoc <> sep.toDoc
         val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc <> acc.toDoc }
         begin.toDoc <> init <> last.toDoc
+    }
+  }
 }
 
 trait PrettierOptionsKey
