@@ -98,3 +98,4 @@ functionCanEmitEffect(): Unit = println("はっぱ - もうすぐ楽になるか
 + Nix
 + Javascript, Typescript
 + Idris
++ https://github.com/inkytonik/kiama

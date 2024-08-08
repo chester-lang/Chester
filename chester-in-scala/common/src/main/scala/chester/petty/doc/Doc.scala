@@ -1,7 +1,9 @@
 package chester.petty.doc
 
-import fansi._
+import fansi.*
+
 import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 sealed trait Doc {
   def <> (other: Doc): Doc = concat(this, other)
@@ -143,44 +145,36 @@ private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vec
 }
 
 trait CharCounter {
-  def countChar: Char => Int
-  def countString: String => Int = _.foldLeft(0)((acc, c) => acc + countChar(c))
+  def countCodePoint: Int => Int
+  def countString: String => Int = _.codePoints().toArray.foldLeft(0)((acc, cp) => acc + countCodePoint(cp))
 }
 
 object DefaultCharCounter extends CharCounter {
-  override val countChar: Char => Int = _ => 1
+  override val countCodePoint: Int => Int = _ => 1
 }
 
-trait TokenRenderer[T] {
-  def render(tokens: Vector[Token], useCRLF: Boolean = false): T
+abstract class Renderer[T] {
+  def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): T
   def charCounter: CharCounter = DefaultCharCounter
+  def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T = {
+    val tokens = chester.petty.doc.renderTokens(doc, maxWidth, charCounter)
+    renderTokens(tokens, useCRLF)
+  }
 }
 
-implicit object StringTokenRenderer extends TokenRenderer[String] {
-  override def render(tokens: Vector[Token], useCRLF: Boolean = false): String = {
+implicit object StringRenderer extends Renderer[String] {
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String = {
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.map {
       case TokenText(content) => content
       case TokenNewLine => newline
-      case TokenColor(tokens, color) => tokens.map {
-        case TokenText(content) => color(content).render
-        case TokenNewLine => newline
-        case TokenColor(innerTokens, innerColor) => innerColor(innerTokens.map {
-          case TokenText(content) => content
-          case TokenNewLine => newline
-          case TokenColor(innerInnerTokens, innerInnerColor) => innerInnerColor(innerInnerTokens.map {
-            case TokenText(content) => content
-            case TokenNewLine => newline
-            case TokenColor(_, _) => "" // This would rarely be the case, you might want to throw an exception here
-          }.mkString).render
-        }.mkString).render
-      }.mkString
+      case TokenColor(innerTokens, _) => renderTokens(innerTokens, useCRLF)
     }.mkString
   }
 }
 
-implicit object FansiTokenRenderer extends TokenRenderer[fansi.Str] {
-  override def render(tokens: Vector[Token], useCRLF: Boolean = false): fansi.Str = {
+implicit object FansiRenderer extends Renderer[fansi.Str] {
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): fansi.Str = {
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.foldLeft(fansi.Str("")) {
       case (acc, TokenText(content)) => acc ++ Str(content)
@@ -200,7 +194,36 @@ implicit object FansiTokenRenderer extends TokenRenderer[fansi.Str] {
   }
 }
 
-def render[T](doc: Doc, maxWidth: Int, useCRLF: Boolean = false)(implicit tokenRenderer: TokenRenderer[T]): T = {
-  val tokens = renderTokens(doc, maxWidth, tokenRenderer.charCounter)
-  tokenRenderer.render(tokens, useCRLF)
+object HtmlRenderer extends Renderer[String] {
+  private def colorToHtml(color: Attr): String = color match {
+    case fansi.Color.Black => "black"
+    case fansi.Color.Red => "red"
+    case fansi.Color.Green => "green"
+    case fansi.Color.Yellow => "yellow"
+    case fansi.Color.Blue => "blue"
+    case fansi.Color.Magenta => "magenta"
+    case fansi.Color.Cyan => "cyan"
+    case fansi.Color.White => "white"
+    case fansi.Color.DarkGray | fansi.Color.LightGray => "gray"
+    case fansi.Color.LightRed => "lightcoral"
+    case fansi.Color.LightGreen => "lightgreen"
+    case fansi.Color.LightYellow => "lightyellow"
+    case fansi.Color.LightBlue => "lightblue"
+    case fansi.Color.LightMagenta => "lightpink"
+    case fansi.Color.LightCyan => "lightcyan"
+    case _ => "black"
+  }
+
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String = {
+    val newline = "<br />"
+    tokens.map {
+      case TokenText(content) => content
+      case TokenNewLine => newline
+      case TokenColor(innerTokens, color) => s"<span style='color: ${colorToHtml(color)};'>${renderTokens(innerTokens, useCRLF)}</span>"
+    }.mkString
+  }
+}
+
+def render[T](doc: Doc, maxWidth: Int, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T = {
+  renderer.render(doc, maxWidth, useCRLF)
 }
