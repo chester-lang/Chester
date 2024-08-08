@@ -79,7 +79,6 @@ object REPLMain {
                     case Left(parseError) =>
                       println(s"Parse Error: ${parseError.message} at ${parseError.index}")
                     case Right(parsedExpr) =>
-                      println(s"Parsed Expression: $parsedExpr")
 
                       // Type-check the parsed expression
                       val typeCheckResult = typeCheck(parsedExpr)
@@ -115,7 +114,7 @@ object REPLMain {
     val termDoc = judge.wellTyped
     val typeDoc = judge.ty
     val effectDoc = judge.effect
-    
+
     val checkOnEffect: String = render(effectDoc)
     val doc = if (checkOnEffect == "NoEffect") then termDoc <+> Doc.text(":") <+> typeDoc else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
     render(doc, 80, useCRLF = false)
