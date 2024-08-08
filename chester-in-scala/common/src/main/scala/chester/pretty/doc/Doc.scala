@@ -52,8 +52,24 @@ object Doc {
   }
 }
 
-trait PrettierOptionsKey
-implicit class PrettierOptions(options: scala.collection.Map[PrettierOptionsKey, Boolean])
+trait PrettierOptionsKey[T]
+
+implicit class PrettierOptions(options: scala.collection.Map[PrettierOptionsKey[?], Any]) {
+  def get[T](key: PrettierOptionsKey[T]): Option[T] = options.get(key).map(_.asInstanceOf[T])
+
+  def getOrElse[T](key: PrettierOptionsKey[T], default: T): T = get(key).getOrElse(default)
+
+  def updated[T](key: PrettierOptionsKey[T], value: T): PrettierOptions = options.updated(key, value)
+}
+
+case class PrettierKeyValue[T](key: PrettierOptionsKey[T], value: T)
+
+implicit def tuple2PrettyKeyValue[T](tuple: (PrettierOptionsKey[T], T)): PrettierKeyValue[T] = PrettierKeyValue(tuple._1, tuple._2)
+implicit def prettyKeyValue2Tuple[T](kv: PrettierKeyValue[T]): (PrettierOptionsKey[T], T) = (kv.key, kv.value)
+
+object PrettierOptions {
+  def apply(options: PrettierKeyValue[?]*): PrettierOptions = options.map(prettyKeyValue2Tuple).toMap
+}
 
 trait ToDoc {
   def toDoc(implicit options: PrettierOptions = Map()): Doc
