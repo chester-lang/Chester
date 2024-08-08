@@ -18,6 +18,7 @@ object REPLMain {
   val continuationPrompt: String = "...      "
   assert(mainPrompt.length == continuationPrompt.length)
 
+
   def runREPL(): Unit = {
     val terminal = TerminalBuilder.terminal()
     val history = new DefaultHistory()
@@ -32,9 +33,11 @@ object REPLMain {
     val replLines = new ReplLines()
     var currentPrompt = mainPrompt
 
+    def render(x: fansi.Str): String = x.render
+
     while (true) {
       try {
-        val line = reader.readLine(currentPrompt.plainText)
+        val line = reader.readLine(render(currentPrompt))
 
         line match {
           case "exit" | ":q" =>
