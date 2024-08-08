@@ -70,35 +70,32 @@ def group(doc: Doc): Doc = Group(doc)
 
 def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
 
-private def measure(doc: Doc, charCounter: CharCounter, maxWidth: Int): Option[Int] = doc match {
+private def measureWithinLine(doc: Doc, charCounter: CharCounter, maxWidth: Int): Option[Int] = doc match {
   case Text(content) =>
     val length = charCounter.countString(content)
     if (length > maxWidth) None else Some(length)
 
   case Colored(innerDoc, _) =>
-    measure(innerDoc, charCounter, maxWidth)
+    measureWithinLine(innerDoc, charCounter, maxWidth)
 
   case Concat(docs) =>
     docs.foldLeft(Option(0)) {
       case (Some(acc), d) =>
-        measure(d, charCounter, maxWidth).flatMap { length =>
+        measureWithinLine(d, charCounter, maxWidth).flatMap { length =>
           val newLength = acc + length
           if (newLength > maxWidth) None else Some(newLength)
         }
       case (None, _) => None
     }
 
-  case NewLine =>
-    None
-
   case Line(repl) =>
-    measure(repl, charCounter, maxWidth)
+    measureWithinLine(repl, charCounter, maxWidth)
 
   case Group(innerDoc) =>
-    measure(innerDoc, charCounter, maxWidth)
+    measureWithinLine(innerDoc, charCounter, maxWidth)
 
-  case Indented(_, innerDoc) =>
-    measure(innerDoc, charCounter, maxWidth)
+  case _ =>
+    None
 }
 
 private def flatten(doc: Doc): Vector[Doc] = doc match {
@@ -108,54 +105,72 @@ private def flatten(doc: Doc): Vector[Doc] = doc match {
 
 private def decideGroup(group: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Doc] = {
   val flat = flatten(group)
-  if (flat.map(d => measure(d, charCounter, maxWidth)).forall(_.isDefined)) flat
+  if (flat.map(d => measureWithinLine(d, charCounter, maxWidth)).forall(_.isDefined)) flat
   else flat.flatMap {
     case Line(_) => Vector(NewLine)
     case other => Vector(other, NewLine)
   }
 }
 
+private def renderWithinLine(doc: Doc, currentWidth: Int, charCounter: CharCounter, maxWidth: Int): Vector[Token] = doc match {
+  case Text(content) =>
+    Vector(TokenText(content))
+
+  case Colored(innerDoc, color) =>
+    val coloredTokens = renderWithinLine(innerDoc, currentWidth, charCounter, maxWidth)
+    Vector(TokenColor(coloredTokens, color))
+
+  case Concat(innerDocs) =>
+    innerDocs.flatMap(renderWithinLine(_, currentWidth, charCounter, maxWidth)).toVector
+
+  case Line(repl) =>
+    renderWithinLine(repl, currentWidth, charCounter, maxWidth)
+
+  case Group(innerDoc) =>
+    renderWithinLine(innerDoc, currentWidth, charCounter, maxWidth)
+
+  case _ =>
+    throw new UnsupportedOperationException("This doc type should not be rendered within a line")
+}
+
+private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: CharCounter, maxWidth: Int): Vector[Token] = doc match {
+  case Text(content) =>
+    Vector(TokenText(currentIndent + content))
+
+  case Colored(innerDoc, color) =>
+    val coloredTokens = renderFromLineStart(innerDoc, currentIndent, charCounter, maxWidth)
+    Vector(TokenColor(coloredTokens, color))
+
+  case NewLine =>
+    Vector(TokenNewLine)
+
+  case Line(repl) =>
+    measureWithinLine(repl, charCounter, maxWidth) match {
+      case Some(length) if length <= maxWidth =>
+        renderWithinLine(repl, 0, charCounter, maxWidth)
+      case _ =>
+        Vector(TokenNewLine)
+    }
+
+  case Group(innerDoc) =>
+    decideGroup(innerDoc, maxWidth, charCounter).flatMap(renderFromLineStart(_, "", charCounter, maxWidth))
+
+  case Indented(indent, innerDoc) =>
+    val indentStr = indent match {
+      case Indent.Spaces(count) => " " * count
+      case Indent.Tab => "\t"
+    }
+    renderFromLineStart(innerDoc, currentIndent + indentStr, charCounter, maxWidth)
+
+  case Concat(innerDocs) =>
+    innerDocs.flatMap(renderFromLineStart(_, currentIndent, charCounter, maxWidth)).toVector
+
+  case _ =>
+    throw new UnsupportedOperationException("This doc type should not be rendered from the line start")
+}
+
 private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Token] = {
-  def render(doc: Doc, currentWidth: Int, currentIndent: String, atLineStart: Boolean): Vector[Token] = doc match {
-    case Text(content) =>
-      if (atLineStart) Vector(TokenText(currentIndent + content))
-      else Vector(TokenText(content))
-
-    case Colored(innerDoc, color) =>
-      val coloredTokens = renderTokens(innerDoc, maxWidth, charCounter)
-      Vector(TokenColor(coloredTokens, color))
-
-    case NewLine =>
-      Vector(TokenNewLine)
-
-    case Line(repl) =>
-      measure(repl, charCounter, maxWidth) match {
-        case Some(length) if currentWidth + length <= maxWidth =>
-          renderTokens(repl, maxWidth, charCounter)
-        case _ =>
-          Vector(TokenNewLine)
-      }
-
-    case Group(innerDoc) =>
-      decideGroup(innerDoc, maxWidth, charCounter).flatMap(render(_, 0, "", atLineStart = true))
-
-    case Indented(indent, innerDoc) =>
-      val indentStr = indent match {
-        case Indent.Spaces(count) => " " * count
-        case Indent.Tab => "\t"
-      }
-      if (atLineStart) {
-        val indentedTokens = render(innerDoc, 0, currentIndent + indentStr, atLineStart = false)
-        Vector(TokenText(indentStr)) ++ indentedTokens
-      } else {
-        render(innerDoc, currentWidth, currentIndent, atLineStart = false)
-      }
-
-    case Concat(innerDocs) =>
-      innerDocs.flatMap(render(_, currentWidth, currentIndent, atLineStart)).toVector
-  }
-
-  render(doc, 0, "", atLineStart = true)
+  renderFromLineStart(doc, "", charCounter, maxWidth)
 }
 
 trait CharCounter:
