@@ -41,7 +41,7 @@ object Doc {
 
   def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
 
-  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*): Doc =
+  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc =
     docs match
       case Nil => begin.toDoc <> end.toDoc
       case head :: tail =>
@@ -50,8 +50,11 @@ object Doc {
         begin.toDoc <> init <> last.toDoc
 }
 
+trait PrettierOptionsKey
+implicit class PrettierOptions(options: scala.collection.Map[PrettierOptionsKey, Boolean])
+
 trait ToDoc {
-  def toDoc: Doc
+  def toDoc(implicit options: PrettierOptions = Map()): Doc
 }
 
 extension (d: ToDoc) {
@@ -71,8 +74,8 @@ sealed trait Doc extends ToDoc:
   def </>(other: ToDoc): Doc = concat(this, line(text(" ")), other.toDoc)
 
   def <\>(other: ToDoc): Doc = concat(this, line(text("")), other.toDoc)
-  
-  override def toDoc: Doc = this
+
+  override def toDoc(implicit options: PrettierOptions): Doc = this
 
 case class Text(content: String) extends Doc:
   require(!content.contains("\n") && !content.contains("\r"), "Text cannot contain newlines or carriage returns")
@@ -220,13 +223,13 @@ private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: Ch
       case Indent.Tab => "\t"
     }
     renderFromLineStart(innerDoc, currentIndent + indentStr, charCounter, maxWidth)
-  case c:Concat => renderFromLineStart(Group(c), currentIndent, charCounter, maxWidth)
+  case c: Concat => renderFromLineStart(Group(c), currentIndent, charCounter, maxWidth)
   case _ =>
     throw new UnsupportedOperationException("This doc type should not be rendered from the line start")
 }
 
 private def renderFromLineStartDocs(docs: Seq[Doc], currentIndent: String, charCounter: CharCounter, maxWidth: Int): Vector[Token] =
-  if(docs.exists(_.isInstanceOf[NewLine.type])) {
+  if (docs.exists(_.isInstanceOf[NewLine.type])) {
     val splitContent = splitDocByNewLine(docs)
     splitContent.init.flatMap(line => renderFromLineStartDocs(line, currentIndent, charCounter, maxWidth) :+ TokenNewLine) ++
       renderFromLineStartDocs(splitContent.last, currentIndent, charCounter, maxWidth)
