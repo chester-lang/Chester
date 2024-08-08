@@ -17,6 +17,7 @@ case class Colored(doc: Doc, color: Color) extends Doc
 
 case class Concat(docs: Seq[Doc]) extends Doc:
   require(docs.nonEmpty, "Concat requires at least one document")
+  require(docs.length>1, "Concat requires at least two documents")
 
 case object NewLine extends Doc
 
@@ -55,10 +56,10 @@ implicit def text(s: String): Doc = {
   }
 
   val parts = loop(s.toList, Vector.empty, "")
-  if (parts.isEmpty) Text("") else Concat(parts)
+  if (parts.isEmpty) Text("") else concat(parts*)
 }
 
-def concat(docs: Doc*): Doc = Concat(docs)
+def concat(docs: Doc*): Doc = if(docs.isEmpty) Text("") else if(docs.length==1) docs.head else Concat(docs)
 
 def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
 
