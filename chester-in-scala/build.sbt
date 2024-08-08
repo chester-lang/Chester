@@ -32,7 +32,7 @@ lazy val common = (project in file("common"))
     name := "ChesterCommon",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "org.bitbucket.inkytonik.kiama" %% "kiama" % "2.5.1",
+      "com.lihaoyi" %% "fansi" % "0.5.0",
       "org.typelevel" %% "cats-core" % "2.12.0",
       "org.scalameta" %% "munit" % "1.0.0" % Test,
       "com.lihaoyi" %% "fastparse" % "3.1.0",
