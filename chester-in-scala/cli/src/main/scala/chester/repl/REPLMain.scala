@@ -92,7 +92,7 @@ object REPLMain {
                         case Left(errors) =>
                           println(s"Type Error: ${errors.head.message}") // Print the first error
                         case Right(judge) =>
-                          println(prettyPrintJudge(judge))
+                          println(prettyPrintJudgeWellTyped(judge))
                       }
                   }
               }
@@ -124,5 +124,9 @@ object REPLMain {
     val checkOnEffect: String = render(effectDoc)
     val doc = if (checkOnEffect == "NoEffect") then termDoc <+> Doc.text(":") <+> typeDoc else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
     render(doc, 80, useCRLF = false)
+  }
+  def prettyPrintJudgeWellTyped(judge: Judge): String = {
+    val termDoc = judge.wellTyped
+    render(judge.wellTyped, 80, useCRLF = false)
   }
 }
