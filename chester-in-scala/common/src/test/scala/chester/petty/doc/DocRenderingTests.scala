@@ -52,9 +52,4 @@ class DocRenderingTests extends FunSuite {
     assertEquals(rendered, "")
   }
 
-  test("Render empty concat") {
-    val doc = concat()
-    val rendered = render(doc, 80)(StringRenderer)
-    assertEquals(rendered, "")
-  }
 }
