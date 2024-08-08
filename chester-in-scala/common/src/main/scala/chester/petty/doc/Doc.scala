@@ -98,6 +98,7 @@ private def measureWithinLine(doc: Doc, charCounter: CharCounter, maxWidth: Int)
 
   case Group(innerDoc) =>
     measureWithinLine(innerDoc, charCounter, maxWidth)
+  case Indented(_, innerDoc) => measureWithinLine(innerDoc, charCounter, maxWidth)
 
   case _ =>
     None
@@ -110,7 +111,8 @@ private def flatten(doc: Doc): Vector[Doc] = doc match {
 
 private def decideGroup(group: Doc, maxWidth: Int, charCounter: CharCounter): (Boolean, Vector[Doc]) = {
   val flat = flatten(group)
-  val fitsInOneLine = flat.map(d => measureWithinLine(d, charCounter, maxWidth)).forall(_.isDefined)
+  val len = flat.map(d => measureWithinLine(d, charCounter, maxWidth))
+  val fitsInOneLine = len.forall(_.isDefined) && len.map(_.get).sum <= maxWidth
   val content = if (fitsInOneLine) flat else flat.flatMap {
     case Line(_) => Vector(NewLine)
     case other => Vector(other)
@@ -177,9 +179,9 @@ private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: Ch
   case Group(innerDoc) =>
     val (fitsInOneLine, content) = decideGroup(innerDoc, maxWidth, charCounter)
     if (fitsInOneLine) {
-      content.flatMap(renderWithinLine(_, charCounter, maxWidth))
+      TokenText(currentIndent) +: content.flatMap(renderWithinLine(_, charCounter, maxWidth))
     } else {
-      renderFromLineStart(concat(content *), currentIndent, charCounter, maxWidth)
+      renderFromLineStartDocs(content, currentIndent, charCounter, maxWidth)
     }
 
   case Indented(indent, innerDoc) =>
@@ -188,15 +190,19 @@ private def renderFromLineStart(doc: Doc, currentIndent: String, charCounter: Ch
       case Indent.Tab => "\t"
     }
     renderFromLineStart(innerDoc, currentIndent + indentStr, charCounter, maxWidth)
-  case Concat(innerDocs) if innerDocs.forall(_.isInstanceOf[NewLine.type]) =>
-    val splitContent = splitDocByNewLine(innerDocs)
-    splitContent.init.flatMap(line => renderFromLineStart(concat(line*), currentIndent, charCounter, maxWidth) :+ TokenNewLine) ++
-      renderFromLineStart(concat(splitContent.last*), currentIndent, charCounter, maxWidth)
-
-  case Concat(docs) => TokenText(currentIndent) +: docs.flatMap(renderWithinLine(_, charCounter, maxWidth)).toVector
+  case c:Concat => renderFromLineStart(Group(c), currentIndent, charCounter, maxWidth)
   case _ =>
     throw new UnsupportedOperationException("This doc type should not be rendered from the line start")
 }
+
+private def renderFromLineStartDocs(docs: Seq[Doc], currentIndent: String, charCounter: CharCounter, maxWidth: Int): Vector[Token] =
+  if(docs.exists(_.isInstanceOf[NewLine.type])) {
+    val splitContent = splitDocByNewLine(docs)
+    splitContent.init.flatMap(line => renderFromLineStartDocs(line, currentIndent, charCounter, maxWidth) :+ TokenNewLine) ++
+      renderFromLineStartDocs(splitContent.last, currentIndent, charCounter, maxWidth)
+  }
+  else
+    renderFromLineStart(docs.head, currentIndent, charCounter, maxWidth) ++ docs.tail.flatMap(renderWithinLine(_, charCounter, maxWidth)).toVector
 
 private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Token] = {
   renderFromLineStart(doc, "", charCounter, maxWidth)
