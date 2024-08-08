@@ -116,9 +116,10 @@ private def decideGroup(group: Doc, maxWidth: Int, charCounter: CharCounter): Ve
 }
 
 private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Token] = {
-  def render(doc: Doc, currentWidth: Int, currentIndent: String): Vector[Token] = doc match {
+  def render(doc: Doc, currentWidth: Int, currentIndent: String, atLineStart: Boolean): Vector[Token] = doc match {
     case Text(content) =>
-      Vector(TokenText(currentIndent + content))
+      if (atLineStart) Vector(TokenText(currentIndent + content))
+      else Vector(TokenText(content))
 
     case Colored(innerDoc, color) =>
       val coloredTokens = renderTokens(innerDoc, maxWidth, charCounter)
@@ -136,26 +137,25 @@ private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vec
       }
 
     case Group(innerDoc) =>
-      decideGroup(innerDoc, maxWidth, charCounter).flatMap(render(_, 0, ""))
+      decideGroup(innerDoc, maxWidth, charCounter).flatMap(render(_, 0, "", atLineStart = true))
 
     case Indented(indent, innerDoc) =>
       val indentStr = indent match {
         case Indent.Spaces(count) => " " * count
         case Indent.Tab => "\t"
       }
-      val indentedTokens = render(innerDoc, currentWidth + charCounter.countString(indentStr), currentIndent + indentStr)
-      measure(doc, charCounter, maxWidth) match {
-        case Some(length) if length <= maxWidth =>
-          render(innerDoc, currentWidth, currentIndent)
-        case _ =>
-          Vector(TokenText(currentIndent + indentStr)) ++ indentedTokens
+      if (atLineStart) {
+        val indentedTokens = render(innerDoc, 0, currentIndent + indentStr, atLineStart = false)
+        Vector(TokenText(indentStr)) ++ indentedTokens
+      } else {
+        render(innerDoc, currentWidth, currentIndent, atLineStart = false)
       }
 
     case Concat(innerDocs) =>
-      innerDocs.flatMap(render(_, currentWidth, currentIndent)).toVector
+      innerDocs.flatMap(render(_, currentWidth, currentIndent, atLineStart)).toVector
   }
 
-  render(doc, 0, "")
+  render(doc, 0, "", atLineStart = true)
 }
 
 trait CharCounter:
