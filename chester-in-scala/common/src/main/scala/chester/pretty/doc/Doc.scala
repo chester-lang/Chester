@@ -80,6 +80,7 @@ extension (d: ToDoc) {
   def <+>(other: ToDoc): Doc = d.toDoc <+> other.toDoc
   def </>(other: ToDoc): Doc = d.toDoc </> other.toDoc
   def <\>(other: ToDoc): Doc = d.toDoc <\> other.toDoc
+  def colored(color: Color): Doc = Doc.colored(d.toDoc, color)
 }
 
 import Doc._
