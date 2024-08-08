@@ -1,4 +1,5 @@
 package chester.repl
+
 import chester.parser.REPL.{Complete, REPLResult, UnmatchedPair}
 import chester.parser.{REPL, ReplLines}
 import chester.syntax.concrete.Expr
@@ -6,6 +7,7 @@ import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.reader.{EndOfFileException, LineReader, LineReaderBuilder, UserInterruptException}
 import org.jline.terminal.TerminalBuilder
+import chester.petty.doc._
 
 object REPLMain {
   // Define prompts as constants with the same length
@@ -22,7 +24,7 @@ object REPLMain {
       .build()
 
     println("Welcome to the Chester REPL!")
-    println("Type your expressions below. Type 'exit' to quit.")
+    println("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
 
     val replLines = new ReplLines()
     var currentPrompt = mainPrompt
@@ -31,38 +33,67 @@ object REPLMain {
       try {
         val line = reader.readLine(currentPrompt)
 
-        if (line == "exit") {
-          println("Exiting REPL.")
-          return
-        }
+        line match {
+          case "exit" | ":q" =>
+            println("Exiting REPL.")
+            return
+          case ":?" =>
+            println("Commands:")
+            println(":t <expr> - Check the type of an expression")
+            println(":q - Quit the REPL")
+            println("You can also just type any expression to evaluate it.")
+          case _ =>
+            if (line.startsWith(":t ")) {
+              val exprStr = line.drop(3)
+              REPL.addLine(replLines, exprStr) match {
+                case Left(_) =>
+                  println("Incomplete expression.")
+                case Right(UnmatchedPair(error)) =>
+                  println(s"Error: ${error.message} at ${error.index}")
+                case Right(Complete(result)) =>
+                  result match {
+                    case Left(parseError) =>
+                      println(s"Parse Error: ${parseError.message} at ${parseError.index}")
+                    case Right(parsedExpr) =>
+                      val typeCheckResult = typeCheck(parsedExpr)
+                      typeCheckResult match {
+                        case Left(errors) =>
+                          println(s"Type Error: ${errors.head.message}") // Print the first error
+                        case Right(judge) =>
+                          println(prettyPrintJudge(judge))
+                      }
+                  }
+              }
+            } else {
+              REPL.addLine(replLines, line) match {
+                case Left(_) =>
+                  currentPrompt = continuationPrompt  // Update prompt to indicate multi-line input
 
-        REPL.addLine(replLines, line) match {
-          case Left(_) =>
-            currentPrompt = continuationPrompt  // Update prompt to indicate multi-line input
+                case Right(UnmatchedPair(error)) =>
+                  println(s"Error: ${error.message} at ${error.index}")
+                  replLines.clearPendingLines()
+                  currentPrompt = mainPrompt  // Reset prompt
 
-          case Right(UnmatchedPair(error)) =>
-            println(s"Error: ${error.message} at ${error.index}")
-            replLines.clearPendingLines()
-            currentPrompt = mainPrompt  // Reset prompt
+                case Right(Complete(result)) =>
+                  result match {
+                    case Left(parseError) =>
+                      println(s"Parse Error: ${parseError.message} at ${parseError.index}")
+                    case Right(parsedExpr) =>
+                      println(s"Parsed Expression: $parsedExpr")
 
-          case Right(Complete(result)) =>
-            result match {
-              case Left(parseError) =>
-                println(s"Parse Error: ${parseError.message} at ${parseError.index}")
-              case Right(parsedExpr) =>
-                println(s"Parsed Expression: $parsedExpr")
-
-                // Type-check the parsed expression
-                val typeCheckResult = typeCheck(parsedExpr)
-                typeCheckResult match {
-                  case Left(error) =>
-                    println(s"Type Error: ${error(0).message}") // TODO: correctly print error
-                  case Right(judge) =>
-                    println(s"Type Check Successful: ${judge}")
-                }
+                      // Type-check the parsed expression
+                      val typeCheckResult = typeCheck(parsedExpr)
+                      typeCheckResult match {
+                        case Left(errors) =>
+                          println(s"Type Error: ${errors.head.message}") // Print the first error
+                        case Right(judge) =>
+                          println(prettyPrintJudge(judge))
+                      }
+                  }
+              }
             }
-            currentPrompt = mainPrompt  // Reset prompt
         }
+        currentPrompt = mainPrompt
       } catch {
         case _: UserInterruptException => // Ignore, continue REPL loop
         case _: EndOfFileException =>
@@ -77,5 +108,15 @@ object REPLMain {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
     ExprTycker.synthesize(expr, initialState, initialCtx)
+  }
+
+  // Function to pretty print the Judge
+  def prettyPrintJudge(judge: Judge): String = {
+    val termDoc = judge.wellTyped
+    val typeDoc = judge.ty
+    val effectDoc = judge.effect
+
+    val doc = termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
+    render(doc, 80, useCRLF = false)
   }
 }

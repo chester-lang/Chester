@@ -54,6 +54,13 @@ trait ToDoc {
   def toDoc: Doc
 }
 
+extension (d: ToDoc) {
+  def <>(other: ToDoc): Doc = d.toDoc <> other.toDoc
+  def <+>(other: ToDoc): Doc = d.toDoc <+> other.toDoc
+  def </>(other: ToDoc): Doc = d.toDoc </> other.toDoc
+  def <\>(other: ToDoc): Doc = d.toDoc <\> other.toDoc
+}
+
 import Doc._
 
 sealed trait Doc extends ToDoc:
