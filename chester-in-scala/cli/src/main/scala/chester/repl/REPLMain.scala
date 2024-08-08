@@ -11,7 +11,7 @@ import chester.petty.doc._
 
 object REPLMain {
   // Define prompts as constants with the same length
-  val mainPrompt: String = "chester> "
+  val mainPrompt: String = "Chester> "
   val continuationPrompt: String = "...      "
   assert(mainPrompt.length == continuationPrompt.length)
 
