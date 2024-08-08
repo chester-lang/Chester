@@ -1,6 +1,8 @@
 package chester.pretty.const
 
+import chester.pretty.doc.Color
 
-object ColorMapping {
-  
+
+object Colors {
+  val REPLPrompt = Color.Red
 }

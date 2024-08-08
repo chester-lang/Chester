@@ -15,13 +15,13 @@ implicit object FansiRenderer extends Renderer[fansi.Str]:
     tokens.foldLeft(fansi.Str("")) {
       case (acc, TokenText(content)) => acc ++ fansi.Str(content)
       case (acc, TokenNewLine) => acc ++ fansi.Str(newline)
-      case (acc, TokenColor(innerTokens, color: ForegroundColor)) =>
+      case (acc, TokenColor(innerTokens, color: Color)) =>
         acc ++ innerTokens.foldLeft(fansi.Str("")) {
           case (innerAcc, TokenText(content)) => innerAcc ++ ColorMapping.toFansiAttr(color)(content)
           case (innerAcc, TokenNewLine) => innerAcc ++ fansi.Str(newline)
           case (innerAcc, TokenColor(innerInnerTokens, innerColor)) =>
             innerAcc ++ innerInnerTokens.foldLeft(fansi.Str("")) {
-              case (innermostAcc, TokenText(content)) => innermostAcc ++ ColorMapping.toFansiAttr(innerColor.asInstanceOf[ForegroundColor])(content)
+              case (innermostAcc, TokenText(content)) => innermostAcc ++ ColorMapping.toFansiAttr(innerColor.asInstanceOf[Color])(content)
               case (innermostAcc, TokenNewLine) => innermostAcc ++ fansi.Str(newline)
               case (innermostAcc, TokenColor(_, _)) => innermostAcc // This would rarely be the case, you might want to throw an exception here
             }
@@ -34,5 +34,5 @@ object HtmlRenderer extends Renderer[String]:
     tokens.map {
       case TokenText(content) => content
       case TokenNewLine => newline
-      case TokenColor(innerTokens, color: ForegroundColor) => s"<span style='color: ${ColorMapping.toHtmlCss(color)};'>${renderTokens(innerTokens, useCRLF)}</span>"
+      case TokenColor(innerTokens, color: Color) => s"<span style='color: ${ColorMapping.toHtmlCss(color)};'>${renderTokens(innerTokens, useCRLF)}</span>"
     }.mkString

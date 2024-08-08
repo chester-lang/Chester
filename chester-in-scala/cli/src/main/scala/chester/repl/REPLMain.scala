@@ -2,6 +2,7 @@ package chester.repl
 
 import chester.parser.REPL.{Complete, REPLResult, UnmatchedPair}
 import chester.parser.{REPL, ReplLines}
+import chester.pretty.const.Colors
 import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import org.jline.reader.impl.history.DefaultHistory
@@ -9,10 +10,11 @@ import org.jline.reader.{EndOfFileException, LineReader, LineReaderBuilder, User
 import org.jline.terminal.TerminalBuilder
 import chester.pretty.doc.*
 import chester.pretty.doc.{Doc, render}
+import chester.pretty.doc.Implicits._
 
 object REPLMain {
   // Define prompts as constants with the same length
-  val mainPrompt: String = "Chester> "
+  val mainPrompt: fansi.Str = fansi.Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt: String = "...      "
   assert(mainPrompt.length == continuationPrompt.length)
 
@@ -32,7 +34,7 @@ object REPLMain {
 
     while (true) {
       try {
-        val line = reader.readLine(currentPrompt)
+        val line = reader.readLine(currentPrompt.plainText)
 
         line match {
           case "exit" | ":q" =>

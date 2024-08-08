@@ -2,42 +2,40 @@ package chester.pretty.doc
 
 sealed trait Color
 
-sealed trait ForegroundColor extends Color
+object Color:
+  case object Black extends Color
 
-object ForegroundColor:
-  case object Black extends ForegroundColor
+  case object Red extends Color
 
-  case object Red extends ForegroundColor
+  case object Green extends Color
 
-  case object Green extends ForegroundColor
+  case object Yellow extends Color
 
-  case object Yellow extends ForegroundColor
+  case object Blue extends Color
 
-  case object Blue extends ForegroundColor
+  case object Magenta extends Color
 
-  case object Magenta extends ForegroundColor
+  case object Cyan extends Color
 
-  case object Cyan extends ForegroundColor
+  case object LightGray extends Color
 
-  case object LightGray extends ForegroundColor
+  case object DarkGray extends Color
 
-  case object DarkGray extends ForegroundColor
+  case object LightRed extends Color
 
-  case object LightRed extends ForegroundColor
+  case object LightGreen extends Color
 
-  case object LightGreen extends ForegroundColor
+  case object LightYellow extends Color
 
-  case object LightYellow extends ForegroundColor
+  case object LightBlue extends Color
 
-  case object LightBlue extends ForegroundColor
+  case object LightMagenta extends Color
 
-  case object LightMagenta extends ForegroundColor
+  case object LightCyan extends Color
 
-  case object LightCyan extends ForegroundColor
+  case object White extends Color
 
-  case object White extends ForegroundColor
-
-  case object Reset extends ForegroundColor
+  case object Reset extends Color
 
 sealed trait BackgroundColor extends Color
 
@@ -80,23 +78,23 @@ import fansi.Attr
 
 object ColorMapping:
   def toFansiAttr(color: Color): Attr = color match
-    case ForegroundColor.Black => fansi.Color.Black
-    case ForegroundColor.Red => fansi.Color.Red
-    case ForegroundColor.Green => fansi.Color.Green
-    case ForegroundColor.Yellow => fansi.Color.Yellow
-    case ForegroundColor.Blue => fansi.Color.Blue
-    case ForegroundColor.Magenta => fansi.Color.Magenta
-    case ForegroundColor.Cyan => fansi.Color.Cyan
-    case ForegroundColor.LightGray => fansi.Color.LightGray
-    case ForegroundColor.DarkGray => fansi.Color.DarkGray
-    case ForegroundColor.LightRed => fansi.Color.LightRed
-    case ForegroundColor.LightGreen => fansi.Color.LightGreen
-    case ForegroundColor.LightYellow => fansi.Color.LightYellow
-    case ForegroundColor.LightBlue => fansi.Color.LightBlue
-    case ForegroundColor.LightMagenta => fansi.Color.LightMagenta
-    case ForegroundColor.LightCyan => fansi.Color.LightCyan
-    case ForegroundColor.White => fansi.Color.White
-    case ForegroundColor.Reset => fansi.Color.Reset
+    case Color.Black => fansi.Color.Black
+    case Color.Red => fansi.Color.Red
+    case Color.Green => fansi.Color.Green
+    case Color.Yellow => fansi.Color.Yellow
+    case Color.Blue => fansi.Color.Blue
+    case Color.Magenta => fansi.Color.Magenta
+    case Color.Cyan => fansi.Color.Cyan
+    case Color.LightGray => fansi.Color.LightGray
+    case Color.DarkGray => fansi.Color.DarkGray
+    case Color.LightRed => fansi.Color.LightRed
+    case Color.LightGreen => fansi.Color.LightGreen
+    case Color.LightYellow => fansi.Color.LightYellow
+    case Color.LightBlue => fansi.Color.LightBlue
+    case Color.LightMagenta => fansi.Color.LightMagenta
+    case Color.LightCyan => fansi.Color.LightCyan
+    case Color.White => fansi.Color.White
+    case Color.Reset => fansi.Color.Reset
     case BackgroundColor.Black => fansi.Back.Black
     case BackgroundColor.Red => fansi.Back.Red
     case BackgroundColor.Green => fansi.Back.Green
@@ -116,23 +114,23 @@ object ColorMapping:
     case BackgroundColor.Reset => fansi.Back.Reset
 
   def toHtmlCss(color: Color): String = color match
-    case ForegroundColor.Black => "black"
-    case ForegroundColor.Red => "red"
-    case ForegroundColor.Green => "green"
-    case ForegroundColor.Yellow => "yellow"
-    case ForegroundColor.Blue => "blue"
-    case ForegroundColor.Magenta => "magenta"
-    case ForegroundColor.Cyan => "cyan"
-    case ForegroundColor.LightGray => "lightgray"
-    case ForegroundColor.DarkGray => "darkgray"
-    case ForegroundColor.LightRed => "lightcoral"
-    case ForegroundColor.LightGreen => "lightgreen"
-    case ForegroundColor.LightYellow => "lightyellow"
-    case ForegroundColor.LightBlue => "lightblue"
-    case ForegroundColor.LightMagenta => "lightpink"
-    case ForegroundColor.LightCyan => "lightcyan"
-    case ForegroundColor.White => "white"
-    case ForegroundColor.Reset => "initial"
+    case Color.Black => "black"
+    case Color.Red => "red"
+    case Color.Green => "green"
+    case Color.Yellow => "yellow"
+    case Color.Blue => "blue"
+    case Color.Magenta => "magenta"
+    case Color.Cyan => "cyan"
+    case Color.LightGray => "lightgray"
+    case Color.DarkGray => "darkgray"
+    case Color.LightRed => "lightcoral"
+    case Color.LightGreen => "lightgreen"
+    case Color.LightYellow => "lightyellow"
+    case Color.LightBlue => "lightblue"
+    case Color.LightMagenta => "lightpink"
+    case Color.LightCyan => "lightcyan"
+    case Color.White => "white"
+    case Color.Reset => "initial"
     case BackgroundColor.Black => "black"
     case BackgroundColor.Red => "red"
     case BackgroundColor.Green => "green"

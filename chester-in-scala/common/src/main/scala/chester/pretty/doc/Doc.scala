@@ -5,10 +5,6 @@ import chester.pretty
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-object Implicits {
-  implicit def stringToDoc(s: String): Doc = Doc.text(s)
-}
-
 object Doc {
 
   implicit def text(s: String): Doc = {
