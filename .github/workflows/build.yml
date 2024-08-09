@@ -69,6 +69,11 @@ jobs:
       run: sbt cli/nativeImage
       shell: bash
 
+    - name: Test Native Image for CLI integrity
+      working-directory: chester-in-scala
+      run: ./chester-in-scala/target/chester integrity
+      shell: bash
+
     - name: Build Native Image for LSP
       working-directory: chester-in-scala
       run: sbt lsp/nativeImage
