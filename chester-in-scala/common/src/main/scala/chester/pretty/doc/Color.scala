@@ -1,6 +1,14 @@
 package chester.pretty.doc
 
-sealed trait Color
+sealed trait Attribute
+
+object Attribute {
+  case object BoldOn extends Attribute
+
+  case object BoldOff extends Attribute
+}
+
+sealed trait Color extends Attribute
 
 object Color:
   case object Black extends Color
@@ -74,10 +82,14 @@ object BackgroundColor:
 
   case object Reset extends BackgroundColor
 
-import fansi.Attr
+import fansi.{Attr, Attrs}
 
 object ColorMapping:
-  def toFansiAttr(color: Color): Attr = color match
+  def toFansiAttrs(colors: Vector[Attribute]): Attrs = Attrs(colors.map(toFansiAttr) *)
+
+  def toFansiAttr(color: Attribute): Attr = color match
+    case Attribute.BoldOn => fansi.Bold.On
+    case Attribute.BoldOff => fansi.Bold.Off
     case Color.Black => fansi.Color.Black
     case Color.Red => fansi.Color.Red
     case Color.Green => fansi.Color.Green
@@ -113,7 +125,7 @@ object ColorMapping:
     case BackgroundColor.White => fansi.Back.White
     case BackgroundColor.Reset => fansi.Back.Reset
 
-  def toHtmlCss(color: Color): String = color match
+  def toHtmlCss(color: Attribute): String = color match
     case Color.Black => "black"
     case Color.Red => "red"
     case Color.Green => "green"

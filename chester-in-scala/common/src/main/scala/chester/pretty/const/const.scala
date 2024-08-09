@@ -1,14 +1,15 @@
 package chester.pretty.const
 
-import chester.pretty.doc.{Color, PrettierOptions, PrettierOptionsKey}
+import chester.pretty.doc._
 
 
 object Colors {
-  val REPLPrompt = Color.LightCyan
+  def REPLPrompt: Vector[Attribute] = Vector(Color.LightBlue, Attribute.BoldOn)
 }
 
 class ColorProfile {
   def literalColor: Color = Color.Red
+  def typeColor: Color = Color.LightBlue
 }
 
 object ColorProfile {

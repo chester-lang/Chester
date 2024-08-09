@@ -29,7 +29,7 @@ object Doc {
 
   def concat(docs: ToDoc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
 
-  def colored(doc: ToDoc, color: Color): Doc = Colored(doc.toDoc, color)
+  def colored(doc: ToDoc, color: Attribute): Doc = Colored(doc.toDoc, color)
 
   def line(repl: ToDoc): Doc = Line(repl.toDoc)
 
@@ -82,7 +82,7 @@ extension (d: ToDoc) {
   def <+>(other: ToDoc): Doc = concat(d, text(" "), other.toDoc)
   def </>(other: ToDoc): Doc = concat(d, line(text(" ")), other.toDoc)
   def <\>(other: ToDoc): Doc = concat(d, line(text("")), other.toDoc)
-  def colored(color: Color): Doc = Doc.colored(d.toDoc, color)
+  def colored(color: Attribute): Doc = Doc.colored(d.toDoc, color)
 }
 
 sealed trait Doc extends ToDoc:
@@ -94,7 +94,7 @@ case class Text(content: String) extends Doc:
 
   override def toString: String = content
 
-case class Colored(doc: Doc, color: Color) extends Doc
+case class Colored(doc: Doc, color: Attribute) extends Doc
 
 case class Concat(docs: Seq[Doc]) extends Doc:
   require(docs.nonEmpty, "Concat requires at least one document")
@@ -118,7 +118,7 @@ case class TokenText(content: String) extends Token
 
 case object TokenNewLine extends Token
 
-case class TokenColor(tokens: Vector[Token], color: Color) extends Token
+case class TokenColor(tokens: Vector[Token], color: Attribute) extends Token
 
 private def measureWithinLine(doc: Doc, charCounter: CharCounter, maxWidth: Int): Option[Int] = doc match {
   case Text(content) =>
