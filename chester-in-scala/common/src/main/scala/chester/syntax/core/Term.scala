@@ -29,7 +29,7 @@ val Type0 = Type(IntegerTerm(0))
 
 // Referencing Setω in Agda
 case class Typeω(meta: Option[TermMeta] = None) extends Sort {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω").colored(ColorProfile.typeColor)
 }
 
 case class IntegerTerm(value: BigInt, meta: Option[TermMeta] = None) extends Term {
@@ -39,7 +39,7 @@ case class IntegerTerm(value: BigInt, meta: Option[TermMeta] = None) extends Ter
 sealed trait TypeTerm extends Term
 
 case class IntegerType(meta: Option[TermMeta] = None) extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
 }
 
 case class DoubleTerm(value: BigDecimal, meta: Option[TermMeta] = None) extends Term {
@@ -59,7 +59,7 @@ case class StringType(meta: Option[TermMeta] = None) extends TypeTerm {
 }
 
 case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
 type Id = String

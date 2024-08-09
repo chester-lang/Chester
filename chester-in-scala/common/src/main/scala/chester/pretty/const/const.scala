@@ -18,6 +18,7 @@ object ColorProfile {
   def get(implicit options: PrettierOptions): ColorProfile = options.getOrElse(ColorProfileKey, Default)
 
   def literalColor(implicit options: PrettierOptions): Color = get.literalColor
+  def typeColor(implicit options: PrettierOptions): Color = get.typeColor
 }
 
 case object ColorProfileKey extends PrettierOptionsKey[ColorProfile]
