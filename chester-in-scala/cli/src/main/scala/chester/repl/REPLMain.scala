@@ -123,10 +123,10 @@ object REPLMain {
 
     val checkOnEffect: String = render(effectDoc)
     val doc = if (checkOnEffect == "NoEffect") then termDoc <+> Doc.text(":") <+> typeDoc else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
-    render(doc, 80, useCRLF = false)
+    FansiRenderer.render(doc, 80, useCRLF = false).render
   }
   def prettyPrintJudgeWellTyped(judge: Judge): String = {
     val termDoc = judge.wellTyped
-    render(judge.wellTyped, 80, useCRLF = false)
+    FansiRenderer.render(judge.wellTyped, 80, useCRLF = false).render
   }
 }

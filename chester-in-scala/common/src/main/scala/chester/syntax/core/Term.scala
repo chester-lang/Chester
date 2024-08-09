@@ -1,19 +1,22 @@
 package chester.syntax.core
 
 import chester.error.{SourcePos, WithPos}
+import chester.pretty.const.ColorProfile
 import chester.pretty.doc.*
 import chester.pretty.doc.{Doc, PrettierOptions, ToDoc}
 import chester.pretty.doc.Implicits.*
+import chester.utils.encodeString
 
 case class TermMeta(sourcePos: Option[SourcePos])
 
 sealed trait Term extends WithPos with ToDoc {
   def meta: Option[TermMeta]
+
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 }
 
 case class ListTerm(terms: Vector[Term], meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(terms*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(terms *)
 }
 
 sealed trait Sort extends Term
@@ -30,7 +33,7 @@ case class Typeω(meta: Option[TermMeta] = None) extends Sort {
 }
 
 case class IntegerTerm(value: BigInt, meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
 sealed trait TypeTerm extends Term
@@ -40,11 +43,11 @@ case class IntegerType(meta: Option[TermMeta] = None) extends TypeTerm {
 }
 
 case class DoubleTerm(value: BigDecimal, meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
 case class StringTerm(value: String, meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
 case class DoubleType(meta: Option[TermMeta] = None) extends TypeTerm {
@@ -95,11 +98,13 @@ object ObjectType {
 
 case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", " | ")(xs: _*)
 }
 
 case class AndType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", " & ")(xs: _*)
 }
 
@@ -107,6 +112,7 @@ sealed trait EffectTerm extends Term
 
 case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends EffectTerm {
   require(xs.nonEmpty)
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(xs: _*)
 }
 

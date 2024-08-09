@@ -27,17 +27,17 @@ object Doc {
     if (parts.isEmpty) Text("") else concat(parts *)
   }
 
-  def concat(docs: Doc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head else Concat(docs)
+  def concat(docs: ToDoc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
 
-  def colored(doc: Doc, color: Color): Doc = Colored(doc, color)
+  def colored(doc: ToDoc, color: Color): Doc = Colored(doc.toDoc, color)
 
-  def line(repl: Doc): Doc = Line(repl)
+  def line(repl: ToDoc): Doc = Line(repl.toDoc)
 
   def linebreak: Doc = line(text(""))
 
-  def group(doc: Doc): Doc = Group(doc)
+  def group(doc: ToDoc): Doc = Group(doc.toDoc)
 
-  def indented(indent: Indent, innerDoc: Doc): Doc = Indented(indent, innerDoc)
+  def indented(indent: Indent, innerDoc: ToDoc): Doc = Indented(indent, innerDoc.toDoc)
 
   def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc = {
     docs match {
@@ -75,24 +75,17 @@ trait ToDoc {
   def toDoc(implicit options: PrettierOptions = Map()): Doc
 }
 
+import Doc._
+
 extension (d: ToDoc) {
-  def <>(other: ToDoc): Doc = d.toDoc <> other.toDoc
-  def <+>(other: ToDoc): Doc = d.toDoc <+> other.toDoc
-  def </>(other: ToDoc): Doc = d.toDoc </> other.toDoc
-  def <\>(other: ToDoc): Doc = d.toDoc <\> other.toDoc
+  def <>(other: ToDoc): Doc = concat(d, other.toDoc)
+  def <+>(other: ToDoc): Doc = concat(d, text(" "), other.toDoc)
+  def </>(other: ToDoc): Doc = concat(d, line(text(" ")), other.toDoc)
+  def <\>(other: ToDoc): Doc = concat(d, line(text("")), other.toDoc)
   def colored(color: Color): Doc = Doc.colored(d.toDoc, color)
 }
 
-import Doc._
-
 sealed trait Doc extends ToDoc:
-  def <>(other: ToDoc): Doc = concat(this, other.toDoc)
-
-  def <+>(other: ToDoc): Doc = concat(this, text(" "), other.toDoc)
-
-  def </>(other: ToDoc): Doc = concat(this, line(text(" ")), other.toDoc)
-
-  def <\>(other: ToDoc): Doc = concat(this, line(text("")), other.toDoc)
 
   override def toDoc(implicit options: PrettierOptions): Doc = this
 
@@ -273,8 +266,8 @@ abstract class Renderer[T]:
 
   def charCounter: CharCounter = DefaultCharCounter
 
-  def render(doc: Doc, maxWidth: Int, useCRLF: Boolean = false): T =
-    val tokens = pretty.doc.renderTokens(doc, maxWidth, charCounter)
+  def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = false): T =
+    val tokens = pretty.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
 def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = false)(implicit renderer: Renderer[T]): T =
