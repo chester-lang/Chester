@@ -71,7 +71,7 @@ jobs:
 
     - name: Test Native Image for CLI integrity
       working-directory: chester-in-scala
-      run: ./chester-in-scala/target/chester integrity
+      run: ./target/chester integrity
       shell: bash
 
     - name: Build Native Image for LSP
