@@ -4,7 +4,7 @@ val graalVersion = "22.0.2"
 val nativeImageOption = Seq(
   "--verbose",
   "--no-fallback",
-  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode", // runtime: org.jline
+  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,cats,com.monovore.decline", // runtime: org.jline
 )
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
@@ -54,7 +54,7 @@ lazy val cli = (project in file("cli"))
     Compile / mainClass := Some("chester.cli.Main"),
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2",
-      "com.github.scopt" %% "scopt" % "4.1.0"
+      "com.monovore" %% "decline" % "2.4.1"
     )
   )
 

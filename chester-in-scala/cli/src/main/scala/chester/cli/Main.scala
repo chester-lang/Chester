@@ -1,74 +1,53 @@
 package chester.cli
 
-import scopt.OParser
+import cats.implicits.*
+import chester.cli.Main._
+import com.monovore.decline.*
 import chester.repl.REPLMain
-import chester.integrity.IntegrityCheck // Import the IntegrityCheck class
+import chester.integrity.IntegrityCheck
+
 import java.io.File
 
-object Main {
+object Main extends CommandApp(
+  name = "chester",
+  header = "Chester CLI Tool",
+  main = {
 
-  // Command line arguments case class
-  case class Config(
-                     subcommand: String = "run",
-                     input: Option[String] = None
-                   )
+    // Define the `input` argument
+    val inputOpt = Opts.argument[String]("input")
+      .orNone
+      .validate("Invalid input. Provide '-' for stdin, or a valid file/directory.") {
+        case Some("-") => true
+        case Some(path) => new File(path).exists()
+        case None => true
+      }
 
-  def main(args: Array[String]): Unit = {
-
-    // scopt parser definition
-    val builder = OParser.builder[Config]
-    val parser = {
-      import builder._
-      OParser.sequence(
-        programName("chester"),
-        head("chester", "1.0"),
-
-        // Subcommands
-        cmd("run")
-          .action((_, c) => c.copy(subcommand = "run"))
-          .text("run expressions")
-          .children(
-            arg[String]("input")
-              .optional()
-              .action((x, c) => c.copy(input = Some(x)))
-              .text("input can be '-', a file, or a directory")
-          ),
-
-        cmd("integrity")
-          .action((_, c) => c.copy(subcommand = "integrity"))
-          .text("run integrity check"),
-
-        cmd("help")
-          .text("display help")
-          .action((_, c) => c.copy(subcommand = "help")),
-
-        // Help options
-        help("help").text("prints this usage text"),
-        checkConfig { c =>
-          if (c.subcommand == "integrity" || c.input.isEmpty || c.input.exists(x => x == "-" || new File(x).exists())) success
-          else failure("Invalid input. Provide '-' for stdin, or a valid file/directory.")
-        }
-      )
+    // Define the `run` subcommand
+    val runCmd = Command("run", "Run expressions") {
+      inputOpt.map {
+        case None => REPLMain.runREPL() // Run interactive REPL when no input is provided
+        case Some("-") => REPLMain.runREPL()
+        case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
+      }
     }
 
-    // Parse CLI arguments
-    OParser.parse(parser, args, Config()) match {
-      case Some(config) =>
-        config.subcommand match {
-          case "run" =>
-            config.input match {
-              case None => REPLMain.runREPL() // Run interactive REPL when no input is provided
-              case Some("-") => REPLMain.runREPL()
-              case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
-            }
-          case "integrity" =>
-            runIntegrityCheck() // Call the integrity check
-          case "help" =>
-            OParser.usage(parser)
-        }
-      case _ => // Arguments are bad, error message will have been displayed
+    // Define the `integrity` subcommand
+    val integrityCmd = Command("integrity", "Run integrity check") {
+      Opts.unit.map(_ => runIntegrityCheck())
+    }
+
+    // Parse subcommands or default to the `run` command
+    Opts.subcommand(runCmd) orElse
+      Opts.subcommand(integrityCmd) orElse {
+      // Default behavior if no subcommand is specified
+      inputOpt.map {
+        case None => REPLMain.runREPL() // Run interactive REPL by default
+        case Some("-") => REPLMain.runREPL()
+        case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
+      }
     }
   }
+) {
 
   // Evaluate from file or directory
   def runFileOrDirectory(fileOrDir: String): Unit = {
