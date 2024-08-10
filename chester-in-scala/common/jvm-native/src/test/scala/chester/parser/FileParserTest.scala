@@ -1,3 +1,4 @@
+package chester.parser
 import munit.FunSuite
 import chester.syntax.concrete._
 import chester.parser._
