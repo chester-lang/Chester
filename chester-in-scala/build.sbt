@@ -18,7 +18,7 @@ ThisBuild / assemblyMergeStrategy := {
     oldStrategy(x)
 }
 
-ThisBuild / nativeConfig ~= System.getProperty("os.name").toLowerCase.match {
+ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   case mac if mac.contains("mac") => { // mac has some bugs with optimizations
     _.withGC(GC.commix)
   }
@@ -27,7 +27,7 @@ ThisBuild / nativeConfig ~= System.getProperty("os.name").toLowerCase.match {
       .withMode(Mode.releaseFast)
       .withGC(GC.commix)
   }
-}
+})
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
