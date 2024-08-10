@@ -4,7 +4,7 @@ import fastparse.*
 import NoWhitespace.*
 import chester.error.*
 import chester.syntax.concrete.*
-import chester.utils.StringIndex
+import chester.utils.{StringIndex, normalizeFilePath, readFileFrom}
 import chester.utils.parse.*
 
 import java.nio.file.{Files, Paths}
@@ -326,9 +326,9 @@ object Parser {
       case FileNameAndContent(fileName, content) =>
         Right((fileName, content))
       case FilePath(path) =>
-        Try(new String(Files.readAllBytes(Paths.get(path)))) match {
+        Try(readFileFrom(path)) match {
           case Success(content) =>
-            val fileName = Paths.get(path).getFileName.toString
+            val fileName = normalizeFilePath(path)
             Right((fileName, content))
           case Failure(exception) =>
             Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
