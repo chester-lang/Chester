@@ -82,7 +82,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.monovore" %%% "decline" % "2.4.0"
+      "com.monovore" %%% "decline" % "2.4.1"
     )
     // Native-specific settings
   )
