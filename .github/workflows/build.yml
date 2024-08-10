@@ -104,7 +104,7 @@ jobs:
       shell: bash
       continue-on-error: true
 
-    - name: Upload JAR and Native Image files (Unix)
+    - name: Upload Unix Artifacts
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
       with:
@@ -117,7 +117,7 @@ jobs:
           chester-in-scala/target/chester-lsp
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
 
-    - name: Upload Windows Executable
+    - name: Upload Windows Artifacts
       if: runner.os == 'Windows'
       uses: actions/upload-artifact@v4
       with:
@@ -130,141 +130,34 @@ jobs:
           chester-in-scala/target/chester-lsp.exe
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
 
-    - name: Check if release exists
-      id: check_release
-      run: |
-        if curl --silent --fail -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ matrix.release_name }}; then
-          echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
-        else
-          echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
-        fi
-      shell: bash
-
-    - name: Create or update GitHub Release
-      id: create_update_release
-      uses: actions/github-script@v4
-      with:
-        script: |
-          const { data: releases } = await github.repos.listReleases({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          });
-          const release = releases.find(r => r.tag_name === '${{ matrix.release_name }}');
-          if (process.env.RELEASE_EXISTS === 'true') {
-            // Delete existing assets
-            const assets = await github.repos.listReleaseAssets({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release.id
-            });
-            for (const asset of assets.data) {
-              await github.repos.deleteReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                asset_id: asset.id
-              });
-            }
-            // Update existing release
-            const { data: updatedRelease } = await github.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release.id,
-              tag_name: '${{ matrix.release_name }}',
-              name: '${{ matrix.release_name }}',
-              draft: false,
-              prerelease: true
-            });
-            return updatedRelease.upload_url;
-          } else {
-            // Create new release
-            const { data: newRelease } = await github.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: '${{ matrix.release_name }}',
-              name: '${{ matrix.release_name }}',
-              draft: false,
-              prerelease: true
-            });
-            return newRelease.upload_url;
-          }
-        result-encoding: string
-        result-format: string
-
-    - name: Upload Release Asset common.jar
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
-        asset_name: common.jar
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester.jar
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-        asset_name: chester.jar
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester-lsp.jar
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-        asset_name: chester-lsp.jar
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester binary
+    - name: Create or Update GitHub Release for Unix
       if: runner.os != 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/target/chester
-        asset_name: chester
-        asset_content_type: application/zip
+        files: |
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/target/chester
+          chester-in-scala/target/chester-lsp
+          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+        tag_name: ${{ matrix.release_name }}
+        name: ${{ matrix.release_name }}
+        draft: false
+        prerelease: true
 
-    - name: Upload Release Asset chester-lsp binary
-      if: runner.os != 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/target/chester-lsp
-        asset_name: chester-lsp
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester-out
-      if: runner.os != 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
-        asset_name: chester-out
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester.exe
+    - name: Create or Update GitHub Release for Windows
       if: runner.os == 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/target/chester.exe
-        asset_name: chester.exe
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester-lsp.exe
-      if: runner.os == 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/target/chester-lsp.exe
-        asset_name: chester-lsp.exe
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset chester-out.exe
-      if: runner.os == 'Windows'
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
-        asset_name: chester-out.exe
-        asset_content_type: application/zip
+        files: |
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/target/chester.exe
+          chester-in-scala/target/chester-lsp.exe
+          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+        tag_name: ${{ matrix.release_name }}
+        name: ${{ matrix.release_name }}
+        draft: false
+        prerelease: true
