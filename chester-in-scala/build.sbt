@@ -12,16 +12,21 @@ val nativeImageOption = Seq(
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("META-INF", "versions", xs @ _*) => MergeStrategy.first
+  case PathList("META-INF", "versions", xs@_*) => MergeStrategy.first
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
 }
 
-ThisBuild / nativeConfig ~= {
-  _.withLTO(LTO.thin)
-    .withMode(Mode.releaseFast)
-    .withGC(GC.commix)
+ThisBuild / nativeConfig ~= System.getProperty("os.name").toLowerCase.match {
+  case mac if mac.contains("mac") => { // mac has some bugs with optimizations
+    _.withGC(GC.commix)
+  }
+  case _ => {
+    _.withLTO(LTO.thin)
+      .withMode(Mode.releaseFast)
+      .withGC(GC.commix)
+  }
 }
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
