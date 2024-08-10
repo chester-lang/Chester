@@ -1,7 +1,10 @@
 package chester.syntax
 
+import chester.utils.codePointIsEmoji
+
 import java.lang.Character.{isDigit, isLetter}
 import chester.utils.parse.Character
+import chester.utils.getCodePoints
 
 object IdentifierRules {
   val AllowedOperatorSymbols = ".:=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
@@ -10,14 +13,7 @@ object IdentifierRules {
   val ReservedSymbols = ";,#()[]{}'\""
 
   def isEmoji(codePoint: Int): Boolean = {
-    val block = Character.UnicodeBlock.of(codePoint)
-
-    block == Character.UnicodeBlock.EMOTICONS ||
-      block == Character.UnicodeBlock.MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS ||
-      block == Character.UnicodeBlock.TRANSPORT_AND_MAP_SYMBOLS ||
-      block == Character.UnicodeBlock.SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS ||
-      block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_A ||
-      block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_B
+    codePointIsEmoji(codePoint)
   }
 
   def isWording(x: Character) = isLetter(x) || isEmoji(x)
@@ -37,9 +33,9 @@ object IdentifierRules {
   def operatorIdentifierRest(x: Character) = isOperatorSymbol(x) || isWordingSymbol(x)
 
   def strIsOperator(s: String): Boolean = {
-    val codepoints = s.codePoints().toArray.toVector
-    if(codepoints.isEmpty) return false
-    if(!isOperatorSymbol(codepoints.head)) return false
+    val codepoints = s.getCodePoints
+    if (codepoints.isEmpty) return false
+    if (!isOperatorSymbol(codepoints.head)) return false
     codepoints.forall(isOperatorSymbol)
   }
 

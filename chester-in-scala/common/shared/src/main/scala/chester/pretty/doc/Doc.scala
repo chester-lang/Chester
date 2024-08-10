@@ -252,11 +252,12 @@ private def renderFromLineStartDocs(docs: Seq[Doc], currentIndent: String, charC
 private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Token] = {
   renderFromLineStart(doc, "", charCounter, maxWidth)
 }
+import chester.utils.getCodePoints
 
 trait CharCounter:
   def countCodePoint: Int => Int
 
-  def countString: String => Int = _.codePoints().toArray.foldLeft(0)((acc, cp) => acc + countCodePoint(cp))
+  def countString: String => Int = _.getCodePoints.foldLeft(0)((acc, cp) => acc + countCodePoint(cp))
 
 object DefaultCharCounter extends CharCounter:
   override val countCodePoint: Int => Int = _ => 1
