@@ -61,7 +61,7 @@ class ParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
-  if(false) test("parse signed integer") { // we are see it as -(6789) now
+  if (false) test("parse signed integer") { // we are see it as -(6789) now
     val input = "-6789"
     val expected = IntegerLiteral(BigInt("-6789"))
     parseAndCheck(input, expected)
@@ -74,7 +74,7 @@ class ParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
-  if(false) test("parse signed double with exponent") { // we are see it as -(1.23e-4) now
+  if (false) test("parse signed double with exponent") { // we are see it as -(1.23e-4) now
     val input = "-1.23e-4"
     val expected = DoubleLiteral(BigDecimal("-1.23e-4"))
     parseAndCheck(input, expected)
@@ -119,7 +119,7 @@ class ParserTest extends FunSuite {
       case _ => fail(s"Expected StringLiteral but got $result")
     }
   }
-  if(false){ // heredoc broken
+  if (false) { // heredoc broken
 
     test("parse heredoc string literal") {
       val input = "\"\"\"\n  Hello,\n  world!\n\"\"\""
@@ -162,13 +162,19 @@ class ParserTest extends FunSuite {
         |      Identifier("c") -> IntegerLiteral(3)
         |    ))
         |""".stripMargin
-    val expected = FunctionCall(Identifier("ObjectExpr"),Tuple(Vector(FunctionCall(Identifier("Vector"),Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"),Tuple(Vector(StringLiteral("a")),None),None), Identifier("->"), FunctionCall(Identifier("ObjectExpr"),Tuple(Vector(FunctionCall(Identifier("Vector"),Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"),Tuple(Vector(StringLiteral("b")),None),None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"),Tuple(Vector(IntegerLiteral(2,None)),None),None)),None)),None),None)),None),None)),None), OpSeq(Vector(FunctionCall(Identifier("Identifier"),Tuple(Vector(StringLiteral("c")),None),None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"),Tuple(Vector(IntegerLiteral(3,None)),None),None)),None)),None),None)),None),None)
+    val expected = FunctionCall(Identifier("ObjectExpr"), Tuple(Vector(FunctionCall(Identifier("Vector"), Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("a")), None), None), Identifier("->"), FunctionCall(Identifier("ObjectExpr"), Tuple(Vector(FunctionCall(Identifier("Vector"), Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("b")), None), None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(2, None)), None), None)), None)), None), None)), None), None)), None), OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("c")), None), None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(3, None)), None), None)), None)), None), None)), None), None)
     parseAndCheck(input, expected)
   }
 
-  test("emoji"){
-    val input="👍"
+  test("emoji") {
+    val input = "👍"
     val expected = Identifier("👍")
+    parseAndCheck(input, expected)
+  }
+
+  test("Multiple UTF-16 characters for one codepoint") {
+    val input = "𠀋好"
+    val expected = Identifier("𠀋好")
     parseAndCheck(input, expected)
   }
 }
