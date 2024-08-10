@@ -76,7 +76,7 @@ jobs:
 
     - name: Run Tests
       working-directory: chester-in-scala
-      run: sbt test
+      run: sbt cli/test cliNative/test lsp/test common/test commonNative/test
       shell: bash
 
     - name: Build Native Image for CLI
