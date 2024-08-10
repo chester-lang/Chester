@@ -54,9 +54,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
-    - name: Build with SBT
+    - name: SBT Clean
       working-directory: chester-in-scala
-      run: sbt clean assembly
+      run: sbt clean
+      shell: bash
+
+    - name: Build Common JAR with SBT
+      working-directory: chester-in-scala
+      run: sbt common/assembly
+      shell: bash
+
+    - name: Build CLI JAR with SBT
+      working-directory: chester-in-scala
+      run: sbt cli/assembly
+      shell: bash
+
+    - name: Build LSP JAR with SBT
+      working-directory: chester-in-scala
+      run: sbt lsp/assembly
       shell: bash
 
     - name: Run Tests
@@ -90,9 +105,9 @@ jobs:
       with:
         name: assembly-jars-and-native-images
         path: |
-          chester-in-scala/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-in-scala/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-in-scala/target/chester
           chester-in-scala/target/chester-lsp
 
@@ -102,6 +117,9 @@ jobs:
       with:
         name: windows-executables
         path: |
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-in-scala/target/chester.exe
           chester-in-scala/target/chester-lsp.exe
 
@@ -118,7 +136,7 @@ jobs:
 
     - name: Create or update GitHub Release
       id: create_update_release
-      uses: actions/github-script@v7
+      uses: actions/github-script@v4
       with:
         script: |
           const { data: releases } = await github.repos.listReleases({
@@ -167,29 +185,26 @@ jobs:
         result-format: string
 
     - name: Upload Release Asset common.jar
-      if: runner.os != 'Windows'
       uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
+        asset_path: chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
         asset_name: common.jar
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester.jar
-      if: runner.os != 'Windows'
       uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+        asset_path: chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
         asset_name: chester.jar
         asset_content_type: application/zip
 
     - name: Upload Release Asset chester-lsp.jar
-      if: runner.os != 'Windows'
       uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
-        asset_path: chester-in-scala/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+        asset_path: chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
         asset_name: chester-lsp.jar
         asset_content_type: application/zip
 

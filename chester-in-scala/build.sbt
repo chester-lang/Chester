@@ -17,7 +17,7 @@ ThisBuild / assemblyMergeStrategy := {
     oldStrategy(x)
 }
 
-lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
   .settings(
@@ -53,7 +53,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     )
   )
 
-lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
   .enablePlugins(NativeImagePlugin)
@@ -86,7 +86,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     )
     // Native-specific settings
   )
-lazy val lsp = crossProject(JVMPlatform)
+lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("lsp"))
   .enablePlugins(NativeImagePlugin)
