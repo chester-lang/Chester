@@ -28,10 +28,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up JDK
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'adopt'
         java-version: '17'
@@ -44,7 +44,7 @@ jobs:
       shell: bash
 
     - name: Cache SBT
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.ivy2/cache
@@ -86,7 +86,7 @@ jobs:
 
     - name: Upload JAR and Native Image files (Unix)
       if: runner.os != 'Windows'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: assembly-jars-and-native-images
         path: |
@@ -98,7 +98,7 @@ jobs:
 
     - name: Upload Windows Executable
       if: runner.os == 'Windows'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-executables
         path: |
@@ -118,7 +118,7 @@ jobs:
 
     - name: Create or update GitHub Release
       id: create_update_release
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         script: |
           const { data: releases } = await github.repos.listReleases({
@@ -168,7 +168,7 @@ jobs:
 
     - name: Upload Release Asset common.jar
       if: runner.os != 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/common/target/scala-${{ env.SCALA_VERSION }}/common.jar
@@ -177,7 +177,7 @@ jobs:
 
     - name: Upload Release Asset chester.jar
       if: runner.os != 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/cli/target/scala-${{ env.SCALA_VERSION }}/chester.jar
@@ -186,7 +186,7 @@ jobs:
 
     - name: Upload Release Asset chester-lsp.jar
       if: runner.os != 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/lsp/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
@@ -195,7 +195,7 @@ jobs:
 
     - name: Upload Release Asset chester binary
       if: runner.os != 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/target/chester
@@ -204,7 +204,7 @@ jobs:
 
     - name: Upload Release Asset chester-lsp binary
       if: runner.os != 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/target/chester-lsp
@@ -213,7 +213,7 @@ jobs:
 
     - name: Upload Release Asset chester.exe
       if: runner.os == 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/target/chester.exe
@@ -222,7 +222,7 @@ jobs:
 
     - name: Upload Release Asset chester-lsp.exe
       if: runner.os == 'Windows'
-      uses: actions/upload-release-asset@v1
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_update_release.outputs.result }}
         asset_path: chester-in-scala/target/chester-lsp.exe
