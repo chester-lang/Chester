@@ -1,3 +1,4 @@
+import scala.scalanative.build._
 
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"
@@ -15,6 +16,12 @@ ThisBuild / assemblyMergeStrategy := {
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
+}
+
+ThisBuild / nativeConfig ~= {
+  _.withLTO(LTO.thin)
+    .withMode(Mode.releaseFast)
+    .withGC(GC.commix)
 }
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -59,7 +66,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
-    name := "ChesterCLI",
+    name := "chester",
     scalaVersion := scala3Version,
     nativeImageVersion := graalVersion,
     nativeImageOptions := nativeImageOption,
@@ -92,7 +99,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
-    name := "ChesterLanguageServer",
+    name := "chester-lsp",
     scalaVersion := scala3Version,
     nativeImageVersion := graalVersion,
     nativeImageOptions := nativeImageOption,
