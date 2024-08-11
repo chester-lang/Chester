@@ -21,7 +21,7 @@ object LocalCtx {
 
 case class Judge(wellTyped: Term, ty: Term, effect: Term)
 
-sealed trait TyckError {
+trait TyckErrorOrWarning {
   def message: String
 
   def cause: Option[Term | Expr]
@@ -35,7 +35,10 @@ sealed trait TyckError {
   val stack: Array[StackTraceElement] = new Exception().getStackTrace
 }
 
-sealed trait TyckWarning {
+trait TyckError extends TyckErrorOrWarning {
+}
+
+trait TyckWarning extends TyckErrorOrWarning {
 
 }
 
@@ -299,6 +302,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 case class StateAndResult[S, T](state: S, result: T)
 
 case class TyckResult[S, T](stateAndResult: Option[StateAndResult[S, T]], warnings: Vector[TyckWarning], errors: Vector[TyckError])
+
 object ExprTycker {
   @deprecated("some error information might be lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
