@@ -16,7 +16,7 @@ class ObjectWithIntegersSuite extends FunSuite {
 
     val intObjectExpr = ObjectExpr(Vector(intField1, intField2, intField3))
 
-    val result = ExprTycker.synthesize(intObjectExpr, state, ctx)
+    val result = ExprTycker.synthesizeV0(intObjectExpr, state, ctx)
 
     assert(result.isRight)
     result match {

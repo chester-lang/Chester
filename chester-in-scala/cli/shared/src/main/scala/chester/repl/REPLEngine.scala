@@ -92,7 +92,7 @@ class REPLEngine(terminalFactory: TerminalFactory) {
   private def typeCheck(expr: Expr): Either[Vector[chester.tyck.TyckError], Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
-    ExprTycker.synthesize(expr, initialState, initialCtx)
+    ExprTycker.synthesizeV0(expr, initialState, initialCtx)
   }
 
   private def prettyPrintJudge(judge: Judge): String = {

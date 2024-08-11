@@ -14,7 +14,7 @@ class ExprTyckerSuite extends FunSuite {
     val intType = IntegerType(None)
     val anyType = AnyTerm(None)
 
-    val result = ExprTycker.unify(intType, anyType, state, ctx)
+    val result = ExprTycker.unifyV0(intType, anyType, state, ctx)
     assertEquals(result, Right(intType))
   }
 
@@ -27,7 +27,7 @@ class ExprTyckerSuite extends FunSuite {
     val anyType = AnyTerm(None)
     val intExpr = IntegerLiteral(42, None)
 
-    val result = ExprTycker.inherit(intExpr, anyType, state = state, ctx = ctx)
+    val result = ExprTycker.inheritV0(intExpr, anyType, state = state, ctx = ctx)
 
     assert(result.isRight)
     assertEquals(result.map(_.wellTyped), Right(IntegerTerm(42, None)))

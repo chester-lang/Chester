@@ -296,24 +296,47 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 }
 
+case class StateAndResult[S, T](state: S, result: T)
+
+case class TyckResult[S, T](stateAndResult: Option[StateAndResult[S, T]], warnings: Vector[TyckWarning], errors: Vector[TyckError])
 object ExprTycker {
   @deprecated("some error information might be lost")
-  def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
+  def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unify(subType, superType).getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
-  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
+  def unifyEffectV0(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
-  def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
+  def inheritV0(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).inherit(expr, ty, effect).getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
-  def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
+  def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     ExprTyckerInternal(ctx).synthesize(expr).getOne(state).map(_._2)
+  }
+
+  def unifyFull(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
+    val result = ExprTyckerInternal(ctx).unify(subType, superType).getSome(state)
+    TyckResult(result._3.map { case (s, r) => StateAndResult(s, r) }, result._1, result._2)
+  }
+
+  def unifyEffectFull(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
+    val result = ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect).getSome(state)
+    TyckResult(result._3.map { case (s, r) => StateAndResult(s, r) }, result._1, result._2)
+  }
+
+  def inheritFull(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
+    val result = ExprTyckerInternal(ctx).inherit(expr, ty, effect).getSome(state)
+    TyckResult(result._3.map { case (s, r) => StateAndResult(s, r) }, result._1, result._2)
+  }
+
+  def synthesizeFull(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
+    val result = ExprTyckerInternal(ctx).synthesize(expr).getSome(state)
+    TyckResult(result._3.map { case (s, r) => StateAndResult(s, r) }, result._1, result._2)
   }
 }
