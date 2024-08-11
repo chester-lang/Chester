@@ -64,7 +64,7 @@ jobs:
           C:\Users\runneradmin\.ivy2\cache
           C:\Users\runneradmin\.sbt
           C:\Users\runneradmin\.coursier
-          C:\Users\runneradmin\AppData\Local\Coursier\Cache
+          C:\Users\runneradmin\AppData\Local\Coursier\cache
         key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
         restore-keys: |
           ${{ runner.os }}-sbt-
