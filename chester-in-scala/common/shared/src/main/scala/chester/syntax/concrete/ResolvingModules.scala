@@ -10,7 +10,7 @@ case class ResolvingBlock(statements: Vector[Statement], expr: Option[Expr])
 
 case class ResolvingModuleFile(fileName: FilePath, content: ResolvingBlock)
 
-case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], resolved: Option[TyckedModule])
+case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], tycked: Option[TyckedModule])
 
 case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) {
 }
