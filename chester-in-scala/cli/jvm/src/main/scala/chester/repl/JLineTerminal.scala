@@ -16,7 +16,7 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
       info.checkInputStatus(line) match {
         case Complete => super.parse(line, cursor, context) // Proceed normally
         case Incomplete => throw new EOFError(-1, cursor, "Incomplete input, missing matching bracket")
-        case Error(message) => throw new EOFError(-1, cursor, message)
+        case Error(message) => super.parse(line, cursor, context) // Can't parse, Proceed
       }
     }
   }
