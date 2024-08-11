@@ -387,11 +387,11 @@ object Parser {
     }
   }
 
-  def parseModule(source: ParserSource, modules: Modules = Modules.Empty, ignoreLocation: Boolean = false): Either[ParseError, Modules] = {
+  def parseModule(source: ParserSource, modules: ParsedModules = ParsedModules.Empty, ignoreLocation: Boolean = false): Either[ParseError, ParsedModules] = {
     getContentFromSource(source) match {
       case Right((fileName, content)) =>
         parseTopLevel(FileNameAndContent(fileName, content), ignoreLocation).flatMap { block =>
-          val moduleFile = ModuleFile(fileName, block)
+          val moduleFile = ParsedModuleFile(fileName, block)
           extractModuleName(block).map { id =>
             modules.addModule(id, moduleFile)
           }

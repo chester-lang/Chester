@@ -1,7 +1,7 @@
 package chester.tyck.stmt
 
 import chester.resolve.MacroExpander
-import chester.syntax.concrete.{Block, ModuleFile, Modules, QualifiedIDString}
+import chester.syntax.concrete.{Block, ParsedModuleFile, ParsedModules, QualifiedIDString}
 import chester.syntax.core.stmt.{TyckedBlock, TyckedDefinition, TyckedExpression, TyckedModule, TyckedModuleFile}
 import chester.tyck.{ExprTyckerInternal, Getting, TyckError, TyckGetting, TyckState, TyckWarning}
 
@@ -12,14 +12,14 @@ type ModuleTyckGetting[T] = Getting[TyckWarning, TyckError, ModuleTyckState, T]
 case class ModuleTyckerInternal(macroExpander: MacroExpander = MacroExpander()) {
 
   // Type-check a single module file
-  def tyckModuleFile(moduleFile: ModuleFile): ModuleTyckGetting[TyckedModuleFile] = {
+  def tyckModuleFile(moduleFile: ParsedModuleFile): ModuleTyckGetting[TyckedModuleFile] = {
     for {
       block <- tyckBlock(moduleFile.content)
     } yield TyckedModuleFile(moduleFile.fileName, block)
   }
 
   // Type-check a vector of module files
-  def tyckModuleFiles(files: Vector[ModuleFile]): ModuleTyckGetting[Vector[TyckedModuleFile]] = {
+  def tyckModuleFiles(files: Vector[ParsedModuleFile]): ModuleTyckGetting[Vector[TyckedModuleFile]] = {
     files.foldLeft(Getting.pure(Vector.empty)) { (acc, file) =>
       for {
         accFiles <- acc
@@ -29,14 +29,14 @@ case class ModuleTyckerInternal(macroExpander: MacroExpander = MacroExpander()) 
   }
 
   // Type-check a module
-  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile]): ModuleTyckGetting[TyckedModule] = {
+  def tyckModule(id: QualifiedIDString, files: Vector[ParsedModuleFile]): ModuleTyckGetting[TyckedModule] = {
     for {
       fileTycked <- tyckModuleFiles(files)
     } yield TyckedModule(id, fileTycked)
   }
 
   // Type-check a collection of modules
-  def tyckModules(modules: Modules): ModuleTyckGetting[Vector[TyckedModule]] = {
+  def tyckModules(modules: ParsedModules): ModuleTyckGetting[Vector[TyckedModule]] = {
     modules.modules.foldLeft(Getting.pure(Vector.empty)) { case (acc, (id, files)) =>
       for {
         accModules <- acc
@@ -51,15 +51,15 @@ case class ModuleTyckerInternal(macroExpander: MacroExpander = MacroExpander()) 
 
 object ModuleTycker {
 
-  def tyckModuleFile(moduleFile: ModuleFile, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModuleFile] = {
+  def tyckModuleFile(moduleFile: ParsedModuleFile, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModuleFile] = {
     ModuleTyckerInternal().tyckModuleFile(moduleFile).getOne(state).map(_._2)
   }
 
-  def tyckModule(id: QualifiedIDString, files: Vector[ModuleFile], state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModule] = {
+  def tyckModule(id: QualifiedIDString, files: Vector[ParsedModuleFile], state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModule] = {
     ModuleTyckerInternal().tyckModule(id, files).getOne(state).map(_._2)
   }
 
-  def tyckModules(modules: Modules, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], Vector[TyckedModule]] = {
+  def tyckModules(modules: ParsedModules, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], Vector[TyckedModule]] = {
     ModuleTyckerInternal().tyckModules(modules).getOne(state).map(_._2)
   }
 }
