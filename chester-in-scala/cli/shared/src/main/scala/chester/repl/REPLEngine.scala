@@ -1,16 +1,17 @@
 package chester.repl
 
 import chester.parser.{InputStatus, ParseError, ParserEngine}
+import chester.pretty.const.Colors
 import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import chester.pretty.doc.*
 import chester.pretty.doc.Implicits.*
-import fansi._
+import fansi.*
 
 class REPLEngine(terminalFactory: TerminalFactory) {
 
-  val mainPrompt: Str = Str("Chester> ").overlay(fansi.Color.Green)
-  val continuationPrompt0: Str = Str("...      ").overlay(fansi.Color.Yellow)
+  val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
+  val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
 
   def start(): Unit = {
     val terminalInfo = new TerminalInfo {

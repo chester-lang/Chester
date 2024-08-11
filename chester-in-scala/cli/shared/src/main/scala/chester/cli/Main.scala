@@ -3,7 +3,7 @@ package chester.cli
 import cats.implicits.*
 import chester.cli.Main.*
 import com.monovore.decline.*
-import chester.repl.REPLMainRun
+import chester.repl.{ startREPL}
 import chester.integrity.IntegrityCheck
 
 import java.io.File
@@ -25,8 +25,8 @@ object Main extends CommandApp(
     // Define the `run` subcommand
     val runCmd = Command("run", "Run expressions") {
       inputOpt.map {
-        case None => REPLMainRun() // Run interactive REPL when no input is provided
-        case Some("-") => REPLMainRun()
+        case None => startREPL() // Run interactive REPL when no input is provided
+        case Some("-") => startREPL()
         case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
       }
     }
@@ -41,8 +41,8 @@ object Main extends CommandApp(
       Opts.subcommand(integrityCmd) orElse {
       // Default behavior if no subcommand is specified
       inputOpt.map {
-        case None => REPLMainRun() // Run interactive REPL by default
-        case Some("-") => REPLMainRun()
+        case None => startREPL() // Run interactive REPL by default
+        case Some("-") => startREPL()
         case Some(fileOrDir) => runFileOrDirectory(fileOrDir) // Evaluate from file or directory
       }
     }

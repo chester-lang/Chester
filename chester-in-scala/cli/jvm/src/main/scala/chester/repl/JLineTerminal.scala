@@ -42,23 +42,12 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
         status match {
           case Complete =>
             val historySeq = (0 until history.size()).map(history.get(_).toString)
-            ParserEngine.parseInput(historySeq, line) match {
-              case Right(expr) =>
-                println(s"Parsed expression: $expr")
-                history.purge()
-                result = LineRead(line)
-                continue = false
-              case Left(error) =>
-                println(s"Parse error: ${error.message}")
-                history.purge()
-                result = LineRead("")
-                continue = false
-            }
+            result = LineRead(line)
+            continue = false
           case Incomplete =>
             prompt = info.continuationPrompt // Switch to continuation prompt
           case Error(message) =>
             println(s"Input error: $message")
-            history.purge()
             result = LineRead("") // Returning empty to indicate error
             continue = false
         }
