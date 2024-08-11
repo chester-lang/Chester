@@ -125,3 +125,14 @@ lazy val root = project
     name := "Chester",
     scalaVersion := scala3Version
   )
+
+Global / excludeLintKeys ++= Set[SettingKey[_]](
+  cli.jvm / nativeImageJvm,
+  cli.jvm / nativeImageVersion,
+  cli.js / nativeImageJvm,
+  cli.js / nativeImageVersion,
+  cli.native / nativeImageJvm,
+  cli.native / nativeImageVersion,
+  lsp.jvm / nativeImageJvm,
+  lsp.jvm / nativeImageVersion
+)
