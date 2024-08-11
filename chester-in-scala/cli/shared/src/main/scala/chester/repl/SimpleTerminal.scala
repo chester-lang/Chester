@@ -18,10 +18,10 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
     while (continue) {
       print(prompt)
       val line = StdIn.readLine()
-      if (line.forall(_.isWhitespace)) {
-      } else if (line == null) {
+      if (line == null) {
         continue = false
         result = EndOfFile
+      } else if (line.forall(_.isWhitespace)) {
       } else {
         currentInputs += line
         val status = ParserEngine.checkInputStatus(currentInputs)
@@ -37,6 +37,7 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
             result = StatusError(message)
             continue = false
         }
+        if (!continue) currentInputs = ""
       }
     }
     result
