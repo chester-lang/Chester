@@ -37,10 +37,10 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
       "org.scalameta" %%% "munit" % "1.0.0" % Test,
-    )
+    ),
+    assembly / assemblyJarName := "common.jar",
   )
   .jvmSettings(
-    assembly / assemblyJarName := "common.jar",
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
@@ -79,24 +79,22 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     nativeImageOutput := file("target") / "chester",
+    libraryDependencies ++= Seq(
+      "com.monovore" %%% "decline" % "2.4.1"
+    )
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2",
-      "com.monovore" %%% "decline" % "2.4.1"
     )
   )
   .jsSettings(
     libraryDependencies ++= Seq(
-      "com.monovore" %%% "decline" % "2.4.1"
     )
-    // JS-specific settings
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.monovore" %%% "decline" % "2.4.1"
     )
-    // Native-specific settings
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -115,7 +113,6 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageOutput := file("target") / "chester-lsp"
   )
   .jvmSettings(
-    // JVM-specific settings, if needed
   )
 
 lazy val root = project
