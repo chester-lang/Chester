@@ -2,9 +2,9 @@ package chester.syntax.core
 
 import chester.error.{SourcePos, WithPos}
 import chester.pretty.const.ColorProfile
-import chester.pretty.doc.Implicits.*
 import chester.pretty.doc.*
-import chester.syntax.Id
+import chester.pretty.doc.Implicits.*
+import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.encodeString
 
 case class TermMeta(sourcePos: Option[SourcePos])
@@ -124,4 +124,13 @@ case class PartialEffect(meta: Option[TermMeta] = None) extends EffectTerm {
 
 case class DivergeEffect(meta: Option[TermMeta] = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
+}
+
+
+case class LocalVar(id: Id, ty: Term, meta: Option[TermMeta] = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
+}
+
+case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, meta: Option[TermMeta] = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
 }

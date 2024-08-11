@@ -1,5 +1,6 @@
 package chester.syntax.concrete
 
+import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.stmt.Statement
 import chester.syntax.core.stmt.TyckedModule
 

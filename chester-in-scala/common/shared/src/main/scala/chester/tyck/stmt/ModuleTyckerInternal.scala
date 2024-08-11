@@ -1,7 +1,8 @@
 package chester.tyck.stmt
 
 import chester.resolve.MacroExpander
-import chester.syntax.concrete.{Block, ParsedModuleFile, ParsedModules, QualifiedIDString}
+import chester.syntax.QualifiedIDString
+import chester.syntax.concrete.{Block, ParsedModuleFile, ParsedModules}
 import chester.syntax.core.stmt.*
 import chester.tyck.*
 

@@ -2,6 +2,7 @@ package chester.parser
 
 import chester.error.*
 import chester.syntax.IdentifierRules.*
+import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
 import chester.utils.parse.*
 import chester.utils.{StringIndex, normalizeFilePath, readFileFrom}

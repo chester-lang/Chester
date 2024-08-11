@@ -1,7 +1,7 @@
 package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
-import chester.syntax.Id
+import chester.syntax.{Id, QualifiedIDString}
 import chester.syntax.IdentifierRules.strIsOperator
 import chester.utils.encodeString
 

@@ -1,6 +1,7 @@
 package chester.syntax.core.stmt
 
-import chester.syntax.concrete.{FilePath, QualifiedIDString}
+import chester.syntax.QualifiedIDString
+import chester.syntax.concrete.FilePath
 import chester.syntax.core.{Term, TermMeta}
 import chester.tyck.Judge
 

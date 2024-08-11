@@ -1,8 +1,8 @@
 package chester.syntax.concrete
 
-import scala.collection.immutable
+import chester.syntax.QualifiedIDString
 
-type QualifiedIDString = Vector[String]
+import scala.collection.immutable
 
 type FilePath = String
 
