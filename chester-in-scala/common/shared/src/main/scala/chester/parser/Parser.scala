@@ -1,17 +1,16 @@
 package chester.parser
 
-import fastparse.*
-import NoWhitespace.*
 import chester.error.*
+import chester.syntax.IdentifierRules.*
 import chester.syntax.concrete.*
-import chester.utils.{StringIndex, normalizeFilePath, readFileFrom}
 import chester.utils.parse.*
+import chester.utils.{StringIndex, normalizeFilePath, readFileFrom}
+import fastparse.*
+import fastparse.NoWhitespace.*
 
 import java.nio.file.{Files, Paths}
-import scala.util.*
-import chester.syntax.IdentifierRules.*
-
 import scala.collection.immutable
+import scala.util.*
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
   if (linesOffset != 0) require(posOffset != 0)
@@ -295,7 +294,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val itWasBlockEnding = p.input(index - 1) == '}'
     val getMeta1 = ((endMeta: Option[ExprMeta]) => getMeta(combineMeta(meta, endMeta)))
     ((!lineEnding).checkOn(itWasBlockEnding && ctx.newLineAfterBlockMeansEnds) ~ tailExpr(expr, getMeta1, ctx = ctx)) | Pass(expr)
-  }})
+  }
+  })
 
   inline def parse0: P[ParsedExpr] = keyword | objectParse | block | annotated | list | tuple | literal | identifier
 

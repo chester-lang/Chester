@@ -1,7 +1,7 @@
 package chester.tyck
 
 import cats.data.State
-import chester.syntax.core._
+import chester.syntax.core.*
 
 
 case class Normalizer() {

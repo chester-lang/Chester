@@ -5,7 +5,9 @@ import chester.syntax.core.{Term, TermMeta}
 import chester.tyck.Judge
 
 case class TyckedModule(id: QualifiedIDString, files: Vector[TyckedModuleFile])
+
 case class TyckedModuleFile(fileName: FilePath, content: TyckedBlock)
+
 case class TyckedBlock(definitions: Vector[TyckedDefinition])
 
 sealed trait TyckedDefinition {

@@ -1,8 +1,8 @@
 package chester.tyck
 
-import chester.tyck._
-import chester.syntax.concrete._
-import chester.syntax.core._
+import chester.syntax.concrete.*
+import chester.syntax.core.*
+import chester.tyck.*
 import munit.FunSuite
 
 class ExprTyckerSuite extends FunSuite {
@@ -27,7 +27,7 @@ class ExprTyckerSuite extends FunSuite {
     val anyType = AnyTerm(None)
     val intExpr = IntegerLiteral(42, None)
 
-    val result = ExprTycker.inherit(intExpr, anyType, state=state, ctx=ctx)
+    val result = ExprTycker.inherit(intExpr, anyType, state = state, ctx = ctx)
 
     assert(result.isRight)
     assertEquals(result.map(_.wellTyped), Right(IntegerTerm(42, None)))

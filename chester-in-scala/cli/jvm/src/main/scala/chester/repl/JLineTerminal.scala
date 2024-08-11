@@ -1,10 +1,10 @@
 package chester.repl
 
 import chester.parser.InputStatus.*
-import chester.parser.{ParseError, ParserEngine}
+import chester.parser.ParserEngine
+import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
-import org.jline.reader.*
 import org.jline.terminal.TerminalBuilder
 
 class JLineTerminal(info: TerminalInfo) extends Terminal {

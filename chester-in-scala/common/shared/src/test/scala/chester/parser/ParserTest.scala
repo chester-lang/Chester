@@ -1,8 +1,8 @@
 package chester.parser
 
-import munit.FunSuite
+import chester.syntax.concrete.*
 import fastparse.*
-import chester.syntax.concrete._
+import munit.FunSuite
 
 class ParserTest extends FunSuite {
   test("parse valid identifier") {

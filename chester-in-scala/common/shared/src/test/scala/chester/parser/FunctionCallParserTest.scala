@@ -1,8 +1,8 @@
 package chester.parser
 
+import chester.parser.*
+import chester.syntax.concrete.*
 import munit.FunSuite
-import chester.syntax.concrete._
-import chester.parser._
 
 class FunctionCallParserTest extends FunSuite {
 

@@ -1,16 +1,14 @@
 package chester.parser
 
-import chester.syntax.concrete.ParsedExpr
-import chester.error._
-import fastparse._
-import NoWhitespace._
-import chester.error._
-import chester.syntax.concrete._
+import chester.error.*
+import chester.syntax.concrete.*
 import chester.utils.StringIndex
-import chester.utils.parse._
+import chester.utils.parse.*
+import fastparse.*
+import fastparse.NoWhitespace.*
 
 import java.lang.Character.{isDigit, isLetter}
-import scala.util._
+import scala.util.*
 
 
 sealed trait InputStatus
@@ -24,13 +22,14 @@ object InputStatus {
   case class Error(message: String) extends InputStatus
 
 }
-import InputStatus._
+
+import chester.parser.InputStatus.*
 
 object ParserEngine {
 
   def parseInput(history: Seq[String], currentInput: String): Either[ParseError, ParsedExpr] = {
     val linesOffset = history.length
-    val posOffset = history.map(x=>x.length+1).sum
+    val posOffset = history.map(x => x.length + 1).sum
 
     parseCompleteExpression(currentInput, linesOffset, posOffset)
   }

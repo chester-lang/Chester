@@ -13,6 +13,7 @@ case class ParsedModules(modules: immutable.HashMap[QualifiedIDString, Vector[Pa
     val newModuleFile = ParsedModuleFile(filePath, block)
     addModule(id, newModuleFile)
   }
+
   def addModule(id: QualifiedIDString, moduleFile: ParsedModuleFile): ParsedModules = {
     val updatedModules = modules.get(id) match {
       case Some(files) => modules.updated(id, files :+ moduleFile)

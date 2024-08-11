@@ -18,6 +18,7 @@ case class StringIndex(val stringList: LazyList[String]) {
       case '\n' #:: tail => idx #:: lineBreakIndices(tail, idx + 1)
       case _ #:: tail => lineBreakIndices(tail, idx + 1)
     }
+
     lineBreakIndices(stringList.flatten)
   }
 

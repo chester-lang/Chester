@@ -1,9 +1,9 @@
 package chester.parser
 
-import munit.FunSuite
+import chester.parser.*
+import chester.syntax.concrete.*
 import fastparse.*
-import chester.syntax.concrete._
-import chester.parser._
+import munit.FunSuite
 
 class ListParserTest extends FunSuite {
 

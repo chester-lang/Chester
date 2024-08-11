@@ -1,6 +1,7 @@
 package chester.lsp
 
 import org.eclipse.lsp4j.launch.LSPLauncher
+
 import java.io.{InputStream, OutputStream}
 import java.util.concurrent.Executors
 

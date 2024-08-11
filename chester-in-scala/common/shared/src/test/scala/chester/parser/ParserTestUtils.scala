@@ -1,9 +1,9 @@
 package chester.parser
 
-import munit.FunSuite
-import fastparse.*
 import chester.syntax.concrete.*
+import fastparse.*
 import munit.Assertions.{assertEquals, fail}
+import munit.FunSuite
 
 def parseAndCheck(input: String, expected: Expr): Unit = {
   val resultignored = Parser.parseContent("testFile", input) // it must parse with location

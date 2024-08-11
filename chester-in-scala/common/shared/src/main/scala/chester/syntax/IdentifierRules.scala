@@ -1,10 +1,9 @@
 package chester.syntax
 
-import chester.utils.codePointIsEmoji
+import chester.utils.{codePointIsEmoji, getCodePoints}
+import chester.utils.parse.Character
 
 import java.lang.Character.{isDigit, isLetter}
-import chester.utils.parse.Character
-import chester.utils.getCodePoints
 
 object IdentifierRules {
   val AllowedOperatorSymbols = ".:=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)

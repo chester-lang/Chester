@@ -2,9 +2,8 @@ package chester.syntax.core
 
 import chester.error.{SourcePos, WithPos}
 import chester.pretty.const.ColorProfile
-import chester.pretty.doc.*
-import chester.pretty.doc.{Doc, PrettierOptions, ToDoc}
 import chester.pretty.doc.Implicits.*
+import chester.pretty.doc.*
 import chester.syntax.Id
 import chester.utils.encodeString
 

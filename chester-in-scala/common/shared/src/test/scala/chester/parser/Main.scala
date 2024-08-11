@@ -1,7 +1,7 @@
 package chester.parser
 
-import fastparse.*
 import chester.syntax.concrete.Expr
+import fastparse.*
 
 object Main {
   def main(args: Array[String]): Unit = {

@@ -1,8 +1,7 @@
 package chester.pretty.doc
 
+import chester.pretty.doc.Doc.*
 import munit.FunSuite
-
-import Doc._
 
 class DocRenderingTests extends FunSuite {
 

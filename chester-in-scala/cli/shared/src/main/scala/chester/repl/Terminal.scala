@@ -6,7 +6,9 @@ trait TerminalFactory {
 
 trait Terminal {
   def readLine(): ReadLineResult
+
   def close(): Unit
+
   def getHistory: Seq[String]
 }
 

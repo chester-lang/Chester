@@ -1,9 +1,9 @@
 package chester.parser
 
-import munit.FunSuite
+import chester.parser.*
+import chester.syntax.concrete.*
 import fastparse.*
-import chester.syntax.concrete._
-import chester.parser._
+import munit.FunSuite
 
 class VarargParserTest extends FunSuite {
 
@@ -13,35 +13,35 @@ class VarargParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "func",
-          
+
         ),
         telescope = Tuple(
           terms = Vector(
             IntegerLiteral(
               value = 1,
-              
+
             ),
             IntegerLiteral(
               value = 2,
-              
+
             ),
             OpSeq(
               seq = Vector(
                 Identifier(
                   name = "xs",
-                  
+
                 ),
                 Identifier(
                   name = "*",
-                  
+
                 )
               ),
-              
+
             )
           ),
-          
+
         ),
-        
+
       )
     parseAndCheck(input, expected)
   }
@@ -52,7 +52,7 @@ class VarargParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "func",
-          
+
         ),
         telescope = Tuple(
           terms = Vector(
@@ -60,27 +60,27 @@ class VarargParserTest extends FunSuite {
               seq = Vector(
                 Identifier(
                   name = "x",
-                  
+
                 ),
                 Identifier(
                   name = ":",
-                  
+
                 ),
                 Identifier(
                   name = "Integer",
-                  
+
                 ),
                 Identifier(
                   name = "*",
-                  
+
                 )
               ),
-              
+
             )
           ),
-          
+
         ),
-        
+
       )
     parseAndCheck(input, expected)
   }

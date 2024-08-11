@@ -1,7 +1,7 @@
 package chester.tyck.stmt
 
-import chester.syntax.concrete._
-import chester.syntax.concrete.stmt._
+import chester.syntax.concrete.*
+import chester.syntax.concrete.stmt.*
 import chester.tyck.{TyckError, TyckWarning, UnsupportedExpressionError}
 
 object StatementResolver {
@@ -27,13 +27,13 @@ object StatementResolver {
   private def resolveStatement(expr: Expr): (Vector[TyckWarning], Vector[TyckError], Option[Statement]) = expr match {
     case opSeq: OpSeq =>
       opSeq.seq match {
-        case Vector(Identifier("data", _), xs @ _*) =>
+        case Vector(Identifier("data", _), xs@_*) =>
           return (Vector.empty, Vector.empty, Some(DataStatement(xs.toVector, opSeq.meta)))
 
-        case Vector(Identifier("trait", _), xs @ _*) =>
+        case Vector(Identifier("trait", _), xs@_*) =>
           return (Vector.empty, Vector.empty, Some(TraitStatement(xs.toVector, opSeq.meta)))
 
-        case Vector(Identifier("implement", _), xs @ _*) =>
+        case Vector(Identifier("implement", _), xs@_*) =>
           return (Vector.empty, Vector.empty, Some(ImplementStatement(xs.toVector, opSeq.meta)))
 
         case _ =>

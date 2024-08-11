@@ -1,8 +1,8 @@
 package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
-import chester.syntax.IdentifierRules.strIsOperator
 import chester.syntax.Id
+import chester.syntax.IdentifierRules.strIsOperator
 import chester.utils.encodeString
 
 enum CommentType {
@@ -42,6 +42,7 @@ sealed trait Expr extends WithPos {
   }
 
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
+
   def commentInfo: Option[CommentInfo] = meta.flatMap(_.commentInfo)
 }
 

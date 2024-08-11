@@ -2,10 +2,10 @@ package chester.repl
 
 import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.pretty.const.Colors
-import chester.syntax.concrete.Expr
-import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import chester.pretty.doc.*
 import chester.pretty.doc.Implicits.*
+import chester.syntax.concrete.Expr
+import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import fansi.*
 
 class REPLEngine(terminalFactory: TerminalFactory) {
@@ -16,7 +16,9 @@ class REPLEngine(terminalFactory: TerminalFactory) {
   def start(): Unit = {
     val terminalInfo = new TerminalInfo {
       override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
+
       override def defaultPrompt: String = mainPrompt.render
+
       override def continuationPrompt: String = continuationPrompt0.render
     }
 

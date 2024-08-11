@@ -75,7 +75,7 @@ trait ToDoc {
   def toDoc(implicit options: PrettierOptions = Map()): Doc
 }
 
-import Doc._
+import chester.pretty.doc.Doc.*
 
 extension (d: ToDoc) {
   def <>(other: ToDoc): Doc = concat(d, other.toDoc)
@@ -252,6 +252,7 @@ private def renderFromLineStartDocs(docs: Seq[Doc], currentIndent: String, charC
 private def renderTokens(doc: Doc, maxWidth: Int, charCounter: CharCounter): Vector[Token] = {
   renderFromLineStart(doc, "", charCounter, maxWidth)
 }
+
 import chester.utils.getCodePoints
 
 trait CharCounter:

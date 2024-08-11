@@ -1,9 +1,9 @@
 package chester.parser
 
+import chester.parser.*
+import chester.syntax.concrete.*
+import fastparse.*
 import munit.FunSuite
-import fastparse._
-import chester.syntax.concrete._
-import chester.parser._
 
 class TelescopeParserTest extends FunSuite {
   test("parse tuple with simple arguments") {

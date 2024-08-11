@@ -1,10 +1,9 @@
 package chester.repl
 
-import chester.parser.InputStatus._
+import chester.parser.InputStatus.*
+import chester.parser.ParserEngine
 
 import scala.io.StdIn
-import chester.parser.{ParseError, ParserEngine}
-import chester.syntax.concrete.ParsedExpr
 
 class SimpleTerminal(info: TerminalInfo) extends Terminal {
   private var history: Vector[String] = Vector()

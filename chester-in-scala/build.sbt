@@ -1,4 +1,4 @@
-import scala.scalanative.build._
+import scala.scalanative.build.*
 
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"

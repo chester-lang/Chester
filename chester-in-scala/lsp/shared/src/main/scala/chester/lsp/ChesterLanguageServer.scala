@@ -1,15 +1,14 @@
 package chester.lsp
 
+import chester.error.*
+import chester.parser.*
+import chester.syntax.concrete.*
+import chester.utils.StringIndex
+import fastparse.Parsed
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
 
 import java.util.concurrent.CompletableFuture
-import chester.parser.*
-import chester.error.*
-import chester.syntax.concrete.*
-import chester.utils.StringIndex
-import fastparse.Parsed
-
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 
@@ -70,6 +69,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   import org.eclipse.lsp4j.jsonrpc.messages.Either
+
   import java.util.concurrent.CompletableFuture
 
   override def completion(params: CompletionParams): CompletableFuture[Either[java.util.List[CompletionItem], CompletionList]] = {

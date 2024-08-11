@@ -1,8 +1,8 @@
 package chester.parser
 
+import chester.parser.*
+import chester.syntax.concrete.*
 import munit.FunSuite
-import chester.syntax.concrete._
-import chester.parser._
 
 class OpSeqParserTest extends FunSuite {
 
@@ -90,78 +90,78 @@ class OpSeqParserTest extends FunSuite {
     val expected = OpSeq(Vector(
       Identifier(
         name = "if",
-        
+
       ),
       Identifier(
         name = "x",
-        
+
       ),
       Identifier(
         name = "then",
-        
+
       ),
       FunctionCall(
         function = Identifier(
           name = "f",
-          
+
         ),
         telescope = Tuple(Vector(
           OpSeq(
             seq = Vector(
               Identifier(
                 name = "if",
-                
+
               ),
               Identifier(
                 name = "o",
-                
+
               ),
               Identifier(
                 name = "then",
-                
+
               ),
               Identifier(
                 name = "a",
-                
+
               ),
               Identifier(
                 name = "else",
-                
+
               ),
               Identifier(
                 name = "b",
-                
+
               )
             ),
-            
+
           ))),
-        
+
       ),
       Identifier(
         name = "else",
-        
+
       ),
       Identifier(
         name = "w",
-        
+
       )
     ))
     parseAndCheck(input, expected)
   }
 
-    test("parse opSeq with mixed operators without spaces") {
-      val input = "1+2*4+5"
-      val expected = OpSeq(Vector(
-        IntegerLiteral(1),
-        Identifier("+"),
-        IntegerLiteral(2),
-        Identifier("*"),
-        IntegerLiteral(4),
-        Identifier("+"),
-        IntegerLiteral(5)
-      ))
-      parseAndCheck(input, expected)
-    }
+  test("parse opSeq with mixed operators without spaces") {
+    val input = "1+2*4+5"
+    val expected = OpSeq(Vector(
+      IntegerLiteral(1),
+      Identifier("+"),
+      IntegerLiteral(2),
+      Identifier("*"),
+      IntegerLiteral(4),
+      Identifier("+"),
+      IntegerLiteral(5)
+    ))
+    parseAndCheck(input, expected)
+  }
 
   test("parse opSeq with not") {
     val input = "!1"
@@ -187,22 +187,22 @@ class OpSeqParserTest extends FunSuite {
         seq = Vector(
           Identifier(
             name = "val",
-            
+
           ),
           Identifier(
             name = "input",
-            
+
           ),
           Identifier(
             name = "=",
-            
+
           ),
           StringLiteral(
             value = "1 -> 5",
-            
+
           )
         ),
-        
+
       )
     parseAndCheck(input, expected)
   }
@@ -223,22 +223,22 @@ class OpSeqParserTest extends FunSuite {
         seq = Vector(
           Identifier(
             name = "so",
-            
+
           ),
           Identifier(
             name = "getthen",
-            
+
           ),
           Block(
             heads = Vector(),
             tail = Identifier(
               name = "doSomething",
-              
+
             ),
-            
+
           )
         ),
-        
+
       )
     parseAndCheck(input, expected)
   }
@@ -250,7 +250,7 @@ class OpSeqParserTest extends FunSuite {
       FunctionCall(
         function = Identifier(
           name = "+",
-          
+
         ),
         telescope = Tuple(Vector(
           OpSeq(
@@ -259,23 +259,23 @@ class OpSeqParserTest extends FunSuite {
               Identifier("+"),
               IntegerLiteral(3)
             ),
-            
+
           )
         )),
-        
+
       )
     parseAndCheck(input, expected)
   }
 
   test("some macro") {
     val input = "def apply(heads: Vector[Expr], tail: Expr): Block = Block(heads, Some(tail), None)"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),ListExpr(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"),Tuple(Vector(Identifier("heads"), FunctionCall(Identifier("Some"),Tuple(Vector(Identifier("tail")),None),None), Identifier("None")),None),None)),None)
-      assertEquals(getParsed(input), expected)
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"), Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"), ListExpr(Vector(Identifier("Expr")), None), None)), None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")), None)), None), None), Identifier(":"), Identifier("Block"), Identifier("="), FunctionCall(Identifier("Block"), Tuple(Vector(Identifier("heads"), FunctionCall(Identifier("Some"), Tuple(Vector(Identifier("tail")), None), None), Identifier("None")), None), None)), None)
+    assertEquals(getParsed(input), expected)
   }
 
   test("more macro") {
     val input = "def apply(heads: Vector[Expr], tail: Expr): Block"
-    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"),Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"),ListExpr(Vector(Identifier("Expr")),None),None)),None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")),None)),None),None), Identifier(":"), Identifier("Block")),None)
+    val expected = OpSeq(Vector(Identifier("def"), FunctionCall(Identifier("apply"), Tuple(Vector(OpSeq(Vector(Identifier("heads"), Identifier(":"), FunctionCall(Identifier("Vector"), ListExpr(Vector(Identifier("Expr")), None), None)), None), OpSeq(Vector(Identifier("tail"), Identifier(":"), Identifier("Expr")), None)), None), None), Identifier(":"), Identifier("Block")), None)
     assertEquals(getParsed(input), expected)
   }
 

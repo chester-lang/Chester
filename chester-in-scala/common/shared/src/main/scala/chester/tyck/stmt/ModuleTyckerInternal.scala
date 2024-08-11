@@ -2,8 +2,8 @@ package chester.tyck.stmt
 
 import chester.resolve.MacroExpander
 import chester.syntax.concrete.{Block, ParsedModuleFile, ParsedModules, QualifiedIDString}
-import chester.syntax.core.stmt.{TyckedBlock, TyckedDefinition, TyckedExpression, TyckedModule, TyckedModuleFile}
-import chester.tyck.{ExprTyckerInternal, Getting, TyckError, TyckGetting, TyckState, TyckWarning}
+import chester.syntax.core.stmt.*
+import chester.tyck.*
 
 case class ModuleTyckState()
 

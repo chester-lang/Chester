@@ -1,10 +1,12 @@
 package chester.parser
+
+import chester.parser.*
+import chester.syntax.concrete.*
 import munit.FunSuite
-import chester.syntax.concrete._
-import chester.parser._
+
 import java.nio.file.{Files, Paths}
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
-import scala.jdk.CollectionConverters._
 
 class FileParserTest extends FunSuite {
 

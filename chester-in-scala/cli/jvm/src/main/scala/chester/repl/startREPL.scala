@@ -1,3 +1,3 @@
 package chester.repl
 
-def startREPL():Unit = REPLEngine(JLineTerminal).start()
+def startREPL(): Unit = REPLEngine(JLineTerminal).start()

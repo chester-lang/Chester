@@ -1,10 +1,9 @@
 package chester.cli
 
-import cats.implicits.*
 import chester.cli.Main.*
-import com.monovore.decline.*
-import chester.repl.{ startREPL}
 import chester.integrity.IntegrityCheck
+import chester.repl.startREPL
+import com.monovore.decline.*
 
 import java.io.File
 

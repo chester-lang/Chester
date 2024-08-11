@@ -1,8 +1,8 @@
 package chester.parser
 
+import chester.parser.*
+import chester.syntax.concrete.*
 import munit.FunSuite
-import chester.syntax.concrete._
-import chester.parser._
 
 class PatternMatchingTest extends FunSuite {
   test("match") {
@@ -14,7 +14,7 @@ class PatternMatchingTest extends FunSuite {
         |    case VoiceRecording(name, link) => C;
         |  }
         |""".stripMargin
-    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"),Tuple(Vector(Identifier("sender"), Identifier("title"), Identifier("_")),None),None), Identifier("=>"), Identifier("A")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"),Tuple(Vector(Identifier("number"), Identifier("message")),None),None), Identifier("=>"), Identifier("B")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"),Tuple(Vector(Identifier("name"), Identifier("link")),None),None), Identifier("=>"), Identifier("C")),None)),None,None)),None)
+    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"), Tuple(Vector(Identifier("sender"), Identifier("title"), Identifier("_")), None), None), Identifier("=>"), Identifier("A")), None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"), Tuple(Vector(Identifier("number"), Identifier("message")), None), None), Identifier("=>"), Identifier("B")), None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"), Tuple(Vector(Identifier("name"), Identifier("link")), None), None), Identifier("=>"), Identifier("C")), None)), None, None)), None)
     parseAndCheck(input, expected)
   }
 
@@ -32,7 +32,7 @@ class PatternMatchingTest extends FunSuite {
         |    case _ => D;
         |  }
         |""".stripMargin
-    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"),Tuple(Vector(Identifier("sender"), Identifier("title"), Identifier("_")),None),None), Identifier("=>"), Block(Vector(FunctionCall(Identifier("println"),Tuple(Vector(Identifier("sender")),None),None), FunctionCall(Identifier("println"),Tuple(Vector(Identifier("title")),None),None)),None,None)),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"),Tuple(Vector(Identifier("number"), Identifier("message")),None),None), Identifier("=>"), Identifier("B")),None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"),Tuple(Vector(Identifier("name"), Identifier("link")),None),None), Identifier("=>"), Identifier("C")),None), OpSeq(Vector(Identifier("case"), Identifier("_"), Identifier("=>"), Identifier("D")),None)),None,None)),None)
+    val expected = OpSeq(Vector(Identifier("notification"), Identifier("match"), Block(Vector(OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("Email"), Tuple(Vector(Identifier("sender"), Identifier("title"), Identifier("_")), None), None), Identifier("=>"), Block(Vector(FunctionCall(Identifier("println"), Tuple(Vector(Identifier("sender")), None), None), FunctionCall(Identifier("println"), Tuple(Vector(Identifier("title")), None), None)), None, None)), None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("SMS"), Tuple(Vector(Identifier("number"), Identifier("message")), None), None), Identifier("=>"), Identifier("B")), None), OpSeq(Vector(Identifier("case"), FunctionCall(Identifier("VoiceRecording"), Tuple(Vector(Identifier("name"), Identifier("link")), None), None), Identifier("=>"), Identifier("C")), None), OpSeq(Vector(Identifier("case"), Identifier("_"), Identifier("=>"), Identifier("D")), None)), None, None)), None)
     parseAndCheck(input, expected)
   }
 }

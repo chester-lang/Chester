@@ -31,12 +31,12 @@ sealed trait TyckError {
     case Some(expr: Expr) => expr.sourcePos
     case _ => None
   }
-  
+
   val stack: Array[StackTraceElement] = new Exception().getStackTrace
 }
 
 sealed trait TyckWarning {
-  
+
 }
 
 case class EmptyResultsError() extends TyckError {
@@ -104,7 +104,7 @@ case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[
       }.getOrElse(Left(Vector(EmptyResultsError().asInstanceOf[E])))
     )
   }
-  
+
   def explainError(explain: E => E): Getting[W, E, S, T] = Getting { state =>
     run(state).map {
       case (warnings, errors, result) => (warnings, errors.map(explain), result)
@@ -133,6 +133,7 @@ implicit def stateToGetting[W, E, T, U](state: State[T, U]): Getting[W, E, T, U]
 }
 
 type TyckGetting[T] = Getting[TyckWarning, TyckError, TyckState, T]
+
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): TyckGetting[Term] = {
     if (subType == superType) return Getting.pure(subType)

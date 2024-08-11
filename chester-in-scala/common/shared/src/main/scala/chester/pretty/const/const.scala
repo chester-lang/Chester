@@ -1,6 +1,6 @@
 package chester.pretty.const
 
-import chester.pretty.doc._
+import chester.pretty.doc.*
 
 
 object Colors {
@@ -9,6 +9,7 @@ object Colors {
 
 class ColorProfile {
   def literalColor: Color = Color.Red
+
   def typeColor: Color = Color.LightBlue
 }
 
@@ -18,6 +19,7 @@ object ColorProfile {
   def get(implicit options: PrettierOptions): ColorProfile = options.getOrElse(ColorProfileKey, Default)
 
   def literalColor(implicit options: PrettierOptions): Color = get.literalColor
+
   def typeColor(implicit options: PrettierOptions): Color = get.typeColor
 }
 

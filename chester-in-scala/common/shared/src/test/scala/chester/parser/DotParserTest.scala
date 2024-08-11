@@ -1,9 +1,9 @@
 package chester.parser
 
-import munit.FunSuite
+import chester.parser.*
+import chester.syntax.concrete.*
 import fastparse.*
-import chester.syntax.concrete._
-import chester.parser._
+import munit.FunSuite
 
 class DotParserTest extends FunSuite {
   test("world.execute(me)") {
@@ -68,37 +68,37 @@ class DotParserTest extends FunSuite {
       DotCall(
         expr = Identifier(
           name = "obj",
-          
+
         ),
         field = Identifier(
           name = "method",
-          
+
         ),
         telescope = Vector(
           Tuple(
             terms = Vector(
               Identifier(
                 name = "arg1",
-                
+
               ),
               Identifier(
                 name = "arg2",
-                
+
               )
             ),
-            
+
           ),
           Tuple(
             terms = Vector(
               Identifier(
                 name = "arg1",
-                
+
               )
             ),
-            
+
           )
         ),
-        
+
       )
     parseAndCheck(input, expected)
   }

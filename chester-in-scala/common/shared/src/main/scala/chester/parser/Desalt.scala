@@ -1,8 +1,8 @@
 package chester.parser
 
-import chester.syntax.concrete._
+import chester.syntax.concrete.*
 
-case class DesugarInfo ()
+case class DesugarInfo()
 
 case class Desalt(info: DesugarInfo) {
   def desugar(expr: Expr): Expr = expr.descentAndApply {
