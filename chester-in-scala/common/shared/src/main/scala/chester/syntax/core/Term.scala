@@ -66,33 +66,9 @@ case class ObjectTerm(clauses: Vector[(Id, Term)], meta: Option[TermMeta] = None
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}", ",")(clauses.map { case (id, term) => Doc.text(id) <+> Doc.text("=") <+> term }: _*)
 }
 
-object ObjectTerm {
-  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(clauses: Map[String, Term], meta: Option[TermMeta]): ObjectTerm = {
-    new ObjectTerm(clauses.toVector, meta)
-  }
-
-  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(clauses: Map[String, Term]): ObjectTerm = {
-    new ObjectTerm(clauses.toVector, None)
-  }
-}
-
 // TODO: add a modifier to disallow subtyping on fields - that is fields must be exact
 case class ObjectType(fieldTypes: Vector[(Id, Term)], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}", ",")(fieldTypes.map { case (id, term) => Doc.text(id) <+> Doc.text(":") <+> term }: _*)
-}
-
-object ObjectType {
-  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(fieldTypes: Map[String, Term], meta: Option[TermMeta]): ObjectType = {
-    new ObjectType(fieldTypes.toVector, meta)
-  }
-
-  @deprecated("Use the constructor with Vector[(String, Term)] instead of Map[String, Term]", "1.0")
-  def apply(fieldTypes: Map[String, Term]): ObjectType = {
-    new ObjectType(fieldTypes.toVector, None)
-  }
 }
 
 case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {

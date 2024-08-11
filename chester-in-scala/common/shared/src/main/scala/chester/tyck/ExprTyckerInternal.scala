@@ -89,19 +89,40 @@ case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[
 
   @deprecated("some error information might be lost")
   def getOne(state: S): Either[Vector[E], (S, T)] = {
+    val xs = run(state)
     // Try to collect the first non-error result
-    run(state).collectFirst {
+    xs.collectFirst {
       case (_, errors, Some(result)) if errors.isEmpty => Right(result)
     }.orElse(
       // Try to collect the first item regardless of errors
-      run(state).collectFirst {
+      xs.collectFirst {
         case (_, _, Some(result)) => Right(result)
       }
     ).getOrElse(
       // Fallback to an empty results error
-      run(state).collectFirst {
+      xs.collectFirst {
         case (_, errors, None) if errors.nonEmpty => Left(errors)
       }.getOrElse(Left(Vector(EmptyResultsError().asInstanceOf[E])))
+    )
+  }
+
+  def getSome(state: S): (Vector[W], Vector[E], Option[(S, T)]) = {
+    val xs = run(state)
+
+    // 1. Try to find the first result with no errors and a defined state and value
+    xs.collectFirst {
+      case (warnings, errors, Some(result)) if errors.isEmpty => (warnings, errors, Some(result))
+    }.orElse(
+      // 2. If not found, try to find the first result with a defined state and value, regardless of errors
+      xs.collectFirst {
+        case (warnings, errors, Some(result)) => (warnings, errors, Some(result))
+      }
+    ).orElse(
+      // 3. If not found, return the first result in xs
+      xs.headOption
+    ).getOrElse(
+      // 4. If still not found, fallback to returning an EmptyResultsError
+      (Vector.empty, Vector(EmptyResultsError().asInstanceOf[E]), None)
     )
   }
 
