@@ -51,8 +51,7 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
           case Incomplete =>
             prompt = info.continuationPrompt // Switch to continuation prompt
           case Error(message) =>
-            println(s"Input error: $message")
-            result = LineRead("") // Returning empty to indicate error
+            result = StatusError(message)
             continue = false
         }
       } catch {

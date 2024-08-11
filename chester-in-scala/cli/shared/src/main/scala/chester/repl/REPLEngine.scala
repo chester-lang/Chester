@@ -55,6 +55,8 @@ class REPLEngine(terminalFactory: TerminalFactory) {
         case EndOfFile =>
           println("End of input detected. Exiting REPL.")
           continue = false
+        case chester.repl.StatusError(_) =>
+          println("Error reading input. Continuing the REPL.")
       }
     }
 
