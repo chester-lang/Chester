@@ -3,7 +3,7 @@ package chester.syntax.core.stmt
 import chester.syntax.{Id, QualifiedIDString}
 import chester.syntax.concrete.FilePath
 import chester.syntax.core.{Term, TermMeta}
-import chester.tyck.Judge
+import chester.tyck.{Judge, LocalCtx}
 
 import scala.collection.immutable.HashMap
 
@@ -15,6 +15,7 @@ case class TyckedBlock(definitions: HashMap[Id, TyckedDefinitionNamed], others: 
 
 sealed trait TyckedDefinition {
   def meta: Option[TermMeta]
+  def ctx: LocalCtx = ???
 }
 
 sealed trait TyckedDefinitionNamed extends TyckedDefinition {
