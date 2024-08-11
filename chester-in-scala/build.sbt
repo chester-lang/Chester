@@ -93,6 +93,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
+    jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
     libraryDependencies ++= Seq(
     )
   )

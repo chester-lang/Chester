@@ -10,3 +10,5 @@ project/project/target
 
 .idea
 .bsp
+
+node_modules
