@@ -76,9 +76,6 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .settings(
     name := "chester",
     scalaVersion := scala3Version,
-    nativeImageVersion := graalVersion,
-    nativeImageOptions := nativeImageOption,
-    nativeImageJvm := graalVm,
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     nativeImageOutput := file("target") / "chester",
@@ -87,11 +84,15 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     )
   )
   .jvmSettings(
+    nativeImageVersion := graalVersion,
+    nativeImageOptions := nativeImageOption,
+    nativeImageJvm := graalVm,
     libraryDependencies ++= Seq(
       "org.jline" % "jline" % "3.26.2",
     )
   )
   .jsSettings(
+    scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
     )
   )
@@ -107,15 +108,15 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .settings(
     name := "chester-lsp",
     scalaVersion := scala3Version,
-    nativeImageVersion := graalVersion,
-    nativeImageOptions := nativeImageOption,
-    nativeImageJvm := graalVm,
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
     assembly / assemblyJarName := "chester-lsp.jar",
     nativeImageOutput := file("target") / "chester-lsp"
   )
   .jvmSettings(
+    nativeImageVersion := graalVersion,
+    nativeImageOptions := nativeImageOption,
+    nativeImageJvm := graalVm,
   )
 
 lazy val root = project

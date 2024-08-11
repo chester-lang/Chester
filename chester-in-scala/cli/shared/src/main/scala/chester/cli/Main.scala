@@ -3,9 +3,8 @@ package chester.cli
 import chester.cli.Main.*
 import chester.integrity.IntegrityCheck
 import chester.repl.startREPL
+import chester.utils.fileExists
 import com.monovore.decline.*
-
-import java.io.File
 
 object Main extends CommandApp(
   name = "chester",
@@ -17,7 +16,7 @@ object Main extends CommandApp(
       .orNone
       .validate("Invalid input. Provide '-' for stdin, or a valid file/directory.") {
         case Some("-") => true
-        case Some(path) => new File(path).exists()
+        case Some(path) => fileExists(path)
         case None => true
       }
 
