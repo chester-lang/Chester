@@ -5,6 +5,7 @@ import chester.pretty.const.ColorProfile
 import chester.pretty.doc.*
 import chester.pretty.doc.{Doc, PrettierOptions, ToDoc}
 import chester.pretty.doc.Implicits.*
+import chester.syntax.Id
 import chester.utils.encodeString
 
 case class TermMeta(sourcePos: Option[SourcePos])
@@ -61,8 +62,6 @@ case class StringType(meta: Option[TermMeta] = None) extends TypeTerm {
 case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
-
-type Id = String
 
 case class ObjectTerm(clauses: Vector[(Id, Term)], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}", ",")(clauses.map { case (id, term) => Doc.text(id) <+> Doc.text("=") <+> term }: _*)

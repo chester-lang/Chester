@@ -2,6 +2,7 @@ package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
 import chester.syntax.IdentifierRules.strIsOperator
+import chester.syntax.Id
 import chester.utils.encodeString
 
 enum CommentType {
@@ -53,6 +54,10 @@ case class Identifier(name: String, meta: Option[ExprMeta] = None) extends Parse
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Identifier = copy(meta = updater(meta))
+}
+
+case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[ExprMeta] = None) extends Expr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedIdentifier = copy(meta = updater(meta))
 }
 
 // infix prefix postfix
