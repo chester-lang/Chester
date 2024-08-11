@@ -18,21 +18,16 @@ ThisBuild / assemblyMergeStrategy := {
     oldStrategy(x)
 }
 
-ThisBuild / nativeConfig ~= {
-  val osName = System.getProperty("os.name").toLowerCase
-  val arch = System.getProperty("os.arch").toLowerCase
-
-  (osName, arch) match {
-    case (mac, "aarch64") if mac.contains("mac") =>
-      // https://github.com/scala-native/scala-native/issues/2779
-      _.withGC(GC.commix)
-        .withMode(Mode.releaseFast)
-    case _ =>
-      _.withLTO(LTO.thin)
-        .withMode(Mode.releaseFast)
-        .withGC(GC.commix)
+ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
+  case mac if mac.contains("mac") => { // mac has some bugs with optimizations
+    _.withGC(GC.commix)
   }
-}
+  case _ => {
+    _.withLTO(LTO.thin)
+      .withMode(Mode.releaseFast)
+      .withGC(GC.commix)
+  }
+})
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
