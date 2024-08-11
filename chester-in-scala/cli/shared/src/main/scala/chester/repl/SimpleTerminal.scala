@@ -23,13 +23,17 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
         result = EndOfFile
       } else if (line.forall(_.isWhitespace)) {
       } else {
-        currentInputs += line
+        if (currentInputs.isEmpty) {
+          currentInputs = line
+        } else {
+          currentInputs += "\n" + line
+        }
         val status = ParserEngine.checkInputStatus(currentInputs)
 
         status match {
           case Complete =>
-            history = history :+ line
-            result = LineRead(line)
+            history = history :+ currentInputs
+            result = LineRead(currentInputs)
             continue = false
           case Incomplete =>
             prompt = info.continuationPrompt // Switch to continuation prompt
