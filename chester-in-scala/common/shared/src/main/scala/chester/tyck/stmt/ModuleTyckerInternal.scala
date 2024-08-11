@@ -1,9 +1,7 @@
 package chester.tyck.stmt
 
 import chester.resolve.MacroExpander
-import chester.syntax.QualifiedIDString
-import chester.syntax.concrete.{Block, ParsedModuleFile, ParsedModules}
-import chester.syntax.core.stmt.*
+import chester.syntax.concrete.ResolvingModule
 import chester.tyck.*
 
 case class ModuleTyckState()
@@ -12,55 +10,9 @@ type ModuleTyckGetting[T] = Getting[TyckWarning, TyckError, ModuleTyckState, T]
 
 case class ModuleTyckerInternal(macroExpander: MacroExpander = MacroExpander()) {
 
-  // Type-check a single module file
-  def tyckModuleFile(moduleFile: ParsedModuleFile): ModuleTyckGetting[TyckedModuleFile] = {
-    for {
-      block <- tyckBlock(moduleFile.content)
-    } yield TyckedModuleFile(moduleFile.fileName, block)
-  }
-
-  // Type-check a vector of module files
-  def tyckModuleFiles(files: Vector[ParsedModuleFile]): ModuleTyckGetting[Vector[TyckedModuleFile]] = {
-    files.foldLeft(Getting.pure(Vector.empty)) { (acc, file) =>
-      for {
-        accFiles <- acc
-        fileTycked <- tyckModuleFile(file)
-      } yield accFiles :+ fileTycked
-    }
-  }
-
-  // Type-check a module
-  def tyckModule(id: QualifiedIDString, files: Vector[ParsedModuleFile]): ModuleTyckGetting[TyckedModule] = {
-    for {
-      fileTycked <- tyckModuleFiles(files)
-    } yield TyckedModule(id, fileTycked)
-  }
-
-  // Type-check a collection of modules
-  def tyckModules(modules: ParsedModules): ModuleTyckGetting[Vector[TyckedModule]] = {
-    modules.modules.foldLeft(Getting.pure(Vector.empty)) { case (acc, (id, files)) =>
-      for {
-        accModules <- acc
-        moduleTycked <- tyckModule(id, files)
-      } yield accModules :+ moduleTycked
-    }
-  }
-
-  // Type-check a block of expressions
-  def tyckBlock(block: Block): ModuleTyckGetting[TyckedBlock] = ???
 }
 
 object ModuleTycker {
 
-  def tyckModuleFile(moduleFile: ParsedModuleFile, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModuleFile] = {
-    ModuleTyckerInternal().tyckModuleFile(moduleFile).getOne(state).map(_._2)
-  }
-
-  def tyckModule(id: QualifiedIDString, files: Vector[ParsedModuleFile], state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], TyckedModule] = {
-    ModuleTyckerInternal().tyckModule(id, files).getOne(state).map(_._2)
-  }
-
-  def tyckModules(modules: ParsedModules, state: ModuleTyckState = ModuleTyckState()): Either[Vector[TyckError], Vector[TyckedModule]] = {
-    ModuleTyckerInternal().tyckModules(modules).getOne(state).map(_._2)
-  }
+  def tyckModule(module: ResolvingModule, state: ModuleTyckState = ModuleTyckState()) = ???
 }
