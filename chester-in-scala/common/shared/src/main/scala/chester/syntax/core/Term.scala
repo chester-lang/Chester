@@ -78,6 +78,7 @@ object ObjectTerm {
   }
 }
 
+// TODO: add a modifier to disallow subtyping on fields - that is fields must be exact
 case class ObjectType(fieldTypes: Vector[(Id, Term)], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}", ",")(fieldTypes.map { case (id, term) => Doc.text(id) <+> Doc.text(":") <+> term }: _*)
 }

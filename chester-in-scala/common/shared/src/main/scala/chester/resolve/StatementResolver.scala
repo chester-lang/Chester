@@ -1,4 +1,4 @@
-package chester.tyck.stmt
+package chester.resolve
 
 import chester.syntax.concrete.*
 import chester.syntax.concrete.stmt.*
