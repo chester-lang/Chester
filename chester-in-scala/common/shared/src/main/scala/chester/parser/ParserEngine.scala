@@ -30,7 +30,7 @@ object ParserEngine {
 
   def parseInput(history: Seq[String], currentInput: String): Either[ParseError, ParsedExpr] = {
     val linesOffset = history.length
-    val posOffset = history.map(_.length).sum
+    val posOffset = history.map(x=>x.length+1).sum
 
     parseCompleteExpression(currentInput, linesOffset, posOffset)
   }

@@ -34,8 +34,12 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
 
     while (continue) {
       try {
-        val line = reader.readLine(prompt)
+        var line = reader.readLine(prompt)
         history.add(line)
+        while (line.forall(_.isWhitespace)) {
+          line = reader.readLine(prompt)
+          history.add(line)
+        }
 
         val status = ParserEngine.checkInputStatus(line)
 
@@ -71,6 +75,6 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
   def getHistory: Seq[String] = (0 until history.size()).map(history.get(_).toString)
 }
 
-object JLineTerminal extends TerminalFactory{
+object JLineTerminal extends TerminalFactory {
   def apply(info: TerminalInfo): JLineTerminal = new JLineTerminal(info)
 }

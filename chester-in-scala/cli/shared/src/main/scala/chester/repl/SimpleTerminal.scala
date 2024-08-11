@@ -18,7 +18,7 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
     while (continue) {
       print(prompt)
       val line = StdIn.readLine()
-      if (line == "") {
+      if (line.forall(_.isWhitespace)) {
       } else if (line == null) {
         continue = false
         result = EndOfFile
