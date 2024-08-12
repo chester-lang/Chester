@@ -4,7 +4,7 @@ trait TerminalFactory {
   def apply(): Terminal
 }
 
-trait Terminal {
+trait Terminal extends AutoCloseable  {
   def readLine(info: TerminalInfo): ReadLineResult
 
   def close(): Unit
