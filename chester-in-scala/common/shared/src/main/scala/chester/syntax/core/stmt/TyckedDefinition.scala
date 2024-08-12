@@ -9,9 +9,7 @@ import scala.collection.immutable.HashMap
 
 case class TyckedSpace(modules: HashMap[QualifiedIDString, TyckedModule])
 
-case class TyckedModule(id: QualifiedIDString, content: TyckedBlock)
-
-case class TyckedBlock(definitions: HashMap[Id, TyckedDefinitionNamed], others: Vector[TyckedDefinition])
+case class TyckedModule(id: QualifiedIDString, definitions: HashMap[Id, TyckedDefinitionNamed], lastExpr: Option[Judge])
 
 sealed trait TyckedDefinition {
   def meta: Option[TermMeta]
