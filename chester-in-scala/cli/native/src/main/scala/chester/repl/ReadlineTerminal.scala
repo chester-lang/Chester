@@ -51,6 +51,7 @@ class ReadlineTerminal extends Terminal {
           currentInputs += "\n" + line
         }
 
+        add_history(line) //GNU Readline can only handle one line entry in history
         val status = info.checkInputStatus(currentInputs)
 
         status match {
@@ -58,7 +59,6 @@ class ReadlineTerminal extends Terminal {
             val prev = history_get(history_base + history_length - 1)
             if (prev == null || prev != currentInputs) {
               history = history :+ currentInputs
-              add_history(currentInputs)
               writeHistory() // Manage history based on existence
             }
             result = LineRead(currentInputs)

@@ -1,7 +1,5 @@
 import scala.scalanative.build.*
 
-ThisBuild / resolvers += Resolver.githubPackages("edadma", "readline")
-
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"
 val graalVersion = "22.0.2"
@@ -13,6 +11,15 @@ val nativeImageOption = Seq(
   "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
   "-O2",
 )
+
+
+val commonSettings = Seq(
+  scalaVersion := scala3Version,
+  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+  resolvers += Resolver.githubPackages("edadma", "readline"),
+)
+
+commonSettings
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
@@ -43,11 +50,11 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .in(file("common"))
   .settings(
     name := "ChesterCommon",
-    scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
       "org.scalameta" %%% "munit" % "1.0.0" % Test,
     ),
     assembly / assemblyJarName := "common.jar",
+    commonSettings
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
@@ -84,13 +91,13 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .dependsOn(common)
   .settings(
     name := "chester",
-    scalaVersion := scala3Version,
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     nativeImageOutput := file("target") / "chester",
     libraryDependencies ++= Seq(
       "com.monovore" %%% "decline" % "2.4.1"
     ),
+    commonSettings
   )
   .jvmSettings(
     nativeImageVersion := graalVersion,
@@ -119,11 +126,11 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .dependsOn(common)
   .settings(
     name := "chester-lsp",
-    scalaVersion := scala3Version,
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
     assembly / assemblyJarName := "chester-lsp.jar",
-    nativeImageOutput := file("target") / "chester-lsp"
+    nativeImageOutput := file("target") / "chester-lsp",
+    commonSettings
   )
   .jvmSettings(
     nativeImageVersion := graalVersion,
