@@ -12,3 +12,6 @@ project/project/target
 .bsp
 
 node_modules
+
+# This file has permission errors on windows
+/config.sh
