@@ -1,5 +1,5 @@
 package chester.syntax.concrete.stmt.accociativity
-
+// TODO: rewrite, refact and remove
 import chester.parser.*
 import chester.syntax.concrete.stmt.QualifiedID
 

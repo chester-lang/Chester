@@ -1,4 +1,4 @@
-package chester.parser
+package chester.resolve
 
 import chester.syntax.concrete.*
 
