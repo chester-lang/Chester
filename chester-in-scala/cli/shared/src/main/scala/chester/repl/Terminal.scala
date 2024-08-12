@@ -1,11 +1,11 @@
 package chester.repl
 
 trait TerminalFactory {
-  def apply(info: TerminalInfo): Terminal
+  def apply(): Terminal
 }
 
 trait Terminal {
-  def readLine(): ReadLineResult
+  def readLine(info: TerminalInfo): ReadLineResult
 
   def close(): Unit
 

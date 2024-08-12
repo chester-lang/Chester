@@ -5,18 +5,18 @@ import chester.parser.ParserEngine
 
 import scala.io.StdIn
 
-class SimpleTerminal(info: TerminalInfo) extends Terminal {
+class SimpleTerminal extends Terminal {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
-  def readLine(): ReadLineResult = {
+  def readLine(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
 
     while (continue) {
       print(prompt)
-      val line = StdIn.readLine()
+      val line = scala.io.StdIn.readLine()
       if (line == null) {
         continue = false
         result = EndOfFile
@@ -27,7 +27,7 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
         } else {
           currentInputs += "\n" + line
         }
-        val status = ParserEngine.checkInputStatus(currentInputs)
+        val status = chester.parser.ParserEngine.checkInputStatus(currentInputs)
 
         status match {
           case Complete =>
@@ -35,7 +35,7 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
             result = LineRead(currentInputs)
             continue = false
           case Incomplete =>
-            prompt = info.continuationPrompt // Switch to continuation prompt
+            prompt = info.continuationPrompt
           case Error(message) =>
             result = StatusError(message)
             continue = false
@@ -52,5 +52,5 @@ class SimpleTerminal(info: TerminalInfo) extends Terminal {
 }
 
 object SimpleTerminal extends TerminalFactory {
-  def apply(info: TerminalInfo): SimpleTerminal = new SimpleTerminal(info)
+  def apply(): SimpleTerminal = new SimpleTerminal()
 }

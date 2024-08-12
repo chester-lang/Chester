@@ -13,16 +13,17 @@ class REPLEngine(terminalFactory: TerminalFactory) {
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
 
+  val terminalInfo = new TerminalInfo {
+    override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
+
+    override def defaultPrompt: String = mainPrompt.render
+
+    override def continuationPrompt: String = continuationPrompt0.render
+  }
+
   def start(): Unit = {
-    val terminalInfo = new TerminalInfo {
-      override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
 
-      override def defaultPrompt: String = mainPrompt.render
-
-      override def continuationPrompt: String = continuationPrompt0.render
-    }
-
-    val terminal: Terminal = terminalFactory.apply(terminalInfo)
+    val terminal: Terminal = terminalFactory()
     runREPL(terminal)
   }
 
@@ -33,7 +34,7 @@ class REPLEngine(terminalFactory: TerminalFactory) {
     var continue = true
 
     while (continue) {
-      terminal.readLine() match {
+      terminal.readLine(terminalInfo) match {
         case LineRead(line) =>
           line match {
             case "exit" | ":q" =>

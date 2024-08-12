@@ -6,28 +6,28 @@ import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.terminal.TerminalBuilder
+class JLineTerminal extends Terminal {
+  private val terminal = org.jline.terminal.TerminalBuilder.terminal()
+  private val history = new org.jline.reader.impl.history.DefaultHistory()
 
-class JLineTerminal(info: TerminalInfo) extends Terminal {
-  private val terminal = TerminalBuilder.terminal()
-  private val history = new DefaultHistory()
-
-  private val jlineParser: Parser = new DefaultParser() {
-    override def parse(line: String, cursor: Int, context: Parser.ParseContext): ParsedLine = {
+  private def createParser(info: TerminalInfo): org.jline.reader.Parser = new org.jline.reader.impl.DefaultParser() {
+    override def parse(line: String, cursor: Int, context: org.jline.reader.Parser.ParseContext): org.jline.reader.ParsedLine = {
       info.checkInputStatus(line) match {
-        case Complete => super.parse(line, cursor, context) // Proceed normally
-        case Incomplete => throw new EOFError(-1, cursor, "Incomplete input, missing matching bracket")
-        case Error(message) => super.parse(line, cursor, context) // Can't parse, Proceed
+        case Complete => super.parse(line, cursor, context)
+        case Incomplete => throw new org.jline.reader.EOFError(-1, cursor, "Incomplete input, missing matching bracket")
+        case Error(message) => super.parse(line, cursor, context)
       }
     }
   }
 
-  private val reader: LineReader = LineReaderBuilder.builder()
-    .terminal(terminal)
-    .history(history)
-    .parser(jlineParser)
-    .build()
+  def readLine(info: TerminalInfo): ReadLineResult = {
+    val parser = createParser(info)
+    val reader: org.jline.reader.LineReader = org.jline.reader.LineReaderBuilder.builder()
+      .terminal(terminal)
+      .history(history)
+      .parser(parser)
+      .build()
 
-  def readLine(): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
@@ -41,7 +41,7 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
           history.add(line)
         }
 
-        val status = ParserEngine.checkInputStatus(line)
+        val status = chester.parser.ParserEngine.checkInputStatus(line)
 
         status match {
           case Complete =>
@@ -49,19 +49,19 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
             result = LineRead(line)
             continue = false
           case Incomplete =>
-            prompt = info.continuationPrompt // Switch to continuation prompt
+            prompt = info.continuationPrompt
           case Error(message) =>
             result = StatusError(message)
             continue = false
         }
       } catch {
-        case _: EOFError =>
+        case _: org.jline.reader.EOFError =>
           result = LineRead("")
           continue = false
-        case _: UserInterruptException =>
+        case _: org.jline.reader.UserInterruptException =>
           result = UserInterrupted
           continue = false
-        case _: EndOfFileException =>
+        case _: org.jline.reader.EndOfFileException =>
           result = EndOfFile
           continue = false
       }
@@ -75,5 +75,5 @@ class JLineTerminal(info: TerminalInfo) extends Terminal {
 }
 
 object JLineTerminal extends TerminalFactory {
-  def apply(info: TerminalInfo): JLineTerminal = new JLineTerminal(info)
+  def apply(): JLineTerminal = new JLineTerminal()
 }
