@@ -34,6 +34,9 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   }
 })
 
+val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
+val unix: Boolean = !windows
+
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
@@ -82,7 +85,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     nativeImageOutput := file("target") / "chester",
     libraryDependencies ++= Seq(
       "com.monovore" %%% "decline" % "2.4.1"
-    )
+    ),
   )
   .jvmSettings(
     nativeImageVersion := graalVersion,
@@ -101,7 +104,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .nativeSettings(
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "readline" % "0.1.3"
-    )
+    ),
+    ifDefDeclations ++= (if(unix) List("readline") else List())
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
