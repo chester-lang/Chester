@@ -37,6 +37,10 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
 val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 
+
+ifDefDeclations ++= (if(unix) List("readline") else List())
+ThisBuild / ifDefDeclations ++= (if(unix) List("readline") else List())
+
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
@@ -86,7 +90,6 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       "com.monovore" %%% "decline" % "2.4.1"
     ),
-    ifDefDeclations ++= (if(unix) List("readline") else List()),
   )
   .jvmSettings(
     nativeImageVersion := graalVersion,
