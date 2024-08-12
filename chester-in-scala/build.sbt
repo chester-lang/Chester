@@ -38,9 +38,6 @@ val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 
 
-ifDefDeclations ++= (if(unix) List("readline") else List())
-ThisBuild / ifDefDeclations ++= (if(unix) List("readline") else List())
-
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
@@ -108,7 +105,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .nativeSettings(
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "readline" % "0.1.3"
-    )
+    ),
+    scalacOptions ++= (if (unix) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
