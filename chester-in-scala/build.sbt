@@ -1,5 +1,7 @@
 import scala.scalanative.build.*
 
+ThisBuild / resolvers += Resolver.githubPackages("edadma", "readline")
+
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"
 val graalVersion = "22.0.2"
@@ -67,7 +69,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "com.lihaoyi" %%% "pprint" % "0.8.1"
     )
   )
-
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
