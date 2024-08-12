@@ -99,6 +99,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
+      "io.github.edadma" %%% "readline" % "0.1.3"
     )
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
