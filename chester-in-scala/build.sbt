@@ -73,6 +73,10 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "com.lihaoyi" %%% "pprint" % "0.8.1"
     )
   )
+
+// Blocking Scala Native 0.5:
+// https://github.com/bkirwi/decline/issues/551
+// https://github.com/edadma/readline/pull/1
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
