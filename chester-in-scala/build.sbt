@@ -86,6 +86,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       "com.monovore" %%% "decline" % "2.4.1"
     ),
+    ifDefDeclations ++= (if(unix) List("readline") else List()),
   )
   .jvmSettings(
     nativeImageVersion := graalVersion,
@@ -104,8 +105,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .nativeSettings(
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "readline" % "0.1.3"
-    ),
-    ifDefDeclations ++= (if(unix) List("readline") else List())
+    )
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
