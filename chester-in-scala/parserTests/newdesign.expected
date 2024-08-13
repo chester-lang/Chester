@@ -1136,8 +1136,8 @@ Block(
         ),
         ObjectExpr(
           clauses = Vector(
-            (
-              Identifier(
+            ObjecctExprClause(
+              key = Identifier(
                 name = "head",
                 meta = Some(
                   value = ExprMeta(
@@ -1154,7 +1154,7 @@ Block(
                   )
                 )
               ),
-              IntegerLiteral(
+              value = IntegerLiteral(
                 value = 0,
                 meta = Some(
                   value = ExprMeta(
@@ -1172,8 +1172,8 @@ Block(
                 )
               )
             ),
-            (
-              Identifier(
+            ObjecctExprClause(
+              key = Identifier(
                 name = "tail",
                 meta = Some(
                   value = ExprMeta(
@@ -1190,7 +1190,7 @@ Block(
                   )
                 )
               ),
-              Identifier(
+              value = Identifier(
                 name = "Nil",
                 meta = Some(
                   value = ExprMeta(

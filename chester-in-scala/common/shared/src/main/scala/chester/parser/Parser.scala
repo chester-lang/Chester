@@ -269,7 +269,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
-    ObjectExpr(fields.toVector, meta)
+    ObjectExpr(fields.map(ObjecctExprClause).toVector, meta)
   }
 
   def keyword: P[ParsedExpr] = PwithMeta("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>

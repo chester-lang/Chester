@@ -211,23 +211,23 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
       fields.foldLeft(base) {
         case (acc, (Vector(k), v)) =>
-          val updatedClauses = acc.clauses :+ (Identifier(k) -> v)
+          val updatedClauses = acc.clauses :+ ObjecctExprClause(Identifier(k) -> v)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(k, ks@_*), v)) =>
           val nestedExpr = acc.clauses.find(_._1 == Identifier(k)) match {
-            case Some((_, nestedObj: ObjectExpr)) =>
+            case Some(ObjecctExprClause(_, nestedObj: ObjectExpr)) =>
               insertNested(Vector((ks.toVector, v)), nestedObj)
             case _ =>
               insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
           }
-          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ (Identifier(k) -> nestedExpr)
+          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ ObjecctExprClause(Identifier(k) -> nestedExpr)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(), _)) => acc
       }
     }
 
     val desugaredClauses = expr.clauses.map {
-      case (qname, expr) => (desugarQualifiedName(qname), expr)
+      case ObjecctExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
     }
     insertNested(desugaredClauses, ObjectExpr(Vector.empty))
   }
@@ -266,8 +266,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       Judge(StringTerm(value, termMeta), StringType(termMeta), NoEffect(termMeta))
     case objExpr: ObjectExpr =>
       val desugaredExpr = desugarObjectExpr(objExpr)
-      val objTerm = synthesizeObjectExpr(desugaredExpr.clauses)
-      val objType = synthesizeObjectType(desugaredExpr.clauses)
+      val objTerm = synthesizeObjectExpr(desugaredExpr.clauses.map(_.toPair))
+      val objType = synthesizeObjectType(desugaredExpr.clauses.map(_.toPair))
       Judge(objTerm, objType, NoEffect(convertMeta(objExpr.meta)))
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))
@@ -302,7 +302,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
     whnf(ty) match {
       case ObjectType(fieldTypes, _) =>
-        val inheritedFields = inheritObjectFields(clauses = expr.asInstanceOf[ObjectExpr].clauses, fieldTypes = fieldTypes, effect = effect)
+        val inheritedFields = inheritObjectFields(clauses = expr.asInstanceOf[ObjectExpr].clauses.map(_.toPair), fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effect.getOrElse(NoEffect(None)))
       case _ =>
         // call synthesis on the expression

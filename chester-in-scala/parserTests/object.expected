@@ -2,8 +2,8 @@ Block(
   heads = Vector(
     ObjectExpr(
       clauses = Vector(
-        (
-          DotCall(
+        ObjecctExprClause(
+          key = DotCall(
             expr = DotCall(
               expr = DotCall(
                 expr = Identifier(
@@ -122,7 +122,7 @@ Block(
               )
             )
           ),
-          Identifier(
+          value = Identifier(
             name = "true",
             meta = Some(
               value = ExprMeta(
@@ -140,8 +140,8 @@ Block(
             )
           )
         ),
-        (
-          DotCall(
+        ObjecctExprClause(
+          key = DotCall(
             expr = Identifier(
               name = "boot",
               meta = Some(
@@ -192,7 +192,7 @@ Block(
               )
             )
           ),
-          OpSeq(
+          value = OpSeq(
             seq = Vector(
               ListExpr(
                 terms = Vector(),
@@ -264,8 +264,8 @@ Block(
               ),
               ObjectExpr(
                 clauses = Vector(
-                  (
-                    Identifier(
+                  ObjecctExprClause(
+                    key = Identifier(
                       name = "font",
                       meta = Some(
                         value = ExprMeta(
@@ -282,7 +282,7 @@ Block(
                         )
                       )
                     ),
-                    StringLiteral(
+                    value = StringLiteral(
                       value = "Lat2-Terminus16",
                       meta = Some(
                         value = ExprMeta(
@@ -300,8 +300,8 @@ Block(
                       )
                     )
                   ),
-                  (
-                    Identifier(
+                  ObjecctExprClause(
+                    key = Identifier(
                       name = "keyMap",
                       meta = Some(
                         value = ExprMeta(
@@ -318,7 +318,7 @@ Block(
                         )
                       )
                     ),
-                    StringLiteral(
+                    value = StringLiteral(
                       value = "us",
                       meta = Some(
                         value = ExprMeta(
