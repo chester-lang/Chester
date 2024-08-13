@@ -211,23 +211,23 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
       fields.foldLeft(base) {
         case (acc, (Vector(k), v)) =>
-          val updatedClauses = acc.clauses :+ ObjecctExprClause(Identifier(k) -> v)
+          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k) -> v)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(k, ks@_*), v)) =>
           val nestedExpr = acc.clauses.find(_._1 == Identifier(k)) match {
-            case Some(ObjecctExprClause(_, nestedObj: ObjectExpr)) =>
+            case Some(ObjectExprClause(_, nestedObj: ObjectExpr)) =>
               insertNested(Vector((ks.toVector, v)), nestedObj)
             case _ =>
               insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
           }
-          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ ObjecctExprClause(Identifier(k) -> nestedExpr)
+          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ ObjectExprClause(Identifier(k) -> nestedExpr)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(), _)) => acc
       }
     }
 
     val desugaredClauses = expr.clauses.map {
-      case ObjecctExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
+      case ObjectExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
     }
     insertNested(desugaredClauses, ObjectExpr(Vector.empty))
   }

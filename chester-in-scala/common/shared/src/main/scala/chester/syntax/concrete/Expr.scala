@@ -238,22 +238,22 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescop
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): AnnotatedExpr = copy(meta = updater(meta))
 }
 
-case class ObjecctExprClause(key: QualifiedName, value: Expr) {
+case class ObjectExprClause(key: QualifiedName, value: Expr) {
   def toPair: (QualifiedName, Expr) = (key, value)
 }
 
-object ObjecctExprClause {
-  def apply(key: QualifiedName, value: Expr): ObjecctExprClause = new ObjecctExprClause(key, value)
-  def apply(pair: (QualifiedName, Expr)): ObjecctExprClause = new ObjecctExprClause(pair._1, pair._2)
+object ObjectExprClause {
+  def apply(key: QualifiedName, value: Expr): ObjectExprClause = new ObjectExprClause(key, value)
+  def apply(pair: (QualifiedName, Expr)): ObjectExprClause = new ObjectExprClause(pair._1, pair._2)
 }
 
-implicit def toObjectExprClause(pair: (QualifiedName, Expr)): ObjecctExprClause = ObjecctExprClause(pair._1, pair._2)
-implicit def objectExprClauseTo(pair: ObjecctExprClause): (QualifiedName, Expr) = (pair.key, pair.value)
+implicit def toObjectExprClause(pair: (QualifiedName, Expr)): ObjectExprClause = ObjectExprClause(pair._1, pair._2)
+implicit def objectExprClauseTo(pair: ObjectExprClause): (QualifiedName, Expr) = (pair.key, pair.value)
 
 
-case class ObjectExpr(clauses: Vector[ObjecctExprClause], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class ObjectExpr(clauses: Vector[ObjectExprClause], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
-    ObjectExpr(clauses.map { case ObjecctExprClause(k, v) => (k, v.descentAndApply(operator)) }, meta)
+    ObjectExpr(clauses.map { case ObjectExprClause(k, v) => (k, v.descentAndApply(operator)) }, meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ObjectExpr = copy(meta = updater(meta))

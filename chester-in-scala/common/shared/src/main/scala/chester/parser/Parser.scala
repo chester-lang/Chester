@@ -271,7 +271,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
 
   def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
-    ObjectExpr(fields.map(ObjecctExprClause).toVector, meta)
+    ObjectExpr(fields.map(ObjectExprClause).toVector, meta)
   }
 
   def keyword: P[ParsedExpr] = PwithMeta("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>
