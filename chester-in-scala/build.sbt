@@ -143,25 +143,6 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageJvm := graalVm,
   )
 
-// taken from https://github.com/JetBrains/sbt-idea-example/commit/888d2b037bb0a8ce7b0c42e47db76bf24978707b
-lazy val idea = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("idea"))
-  .enablePlugins(SbtIdeaPlugin)
-  .settings(
-    common0Settings,
-    packageMethod := PackagingMethod.Standalone(), // https://github.com/JetBrains/sbt-idea-plugin/issues/116
-    version := "0.0.1-SNAPSHOT",
-    scalaVersion := "2.13.10",
-    ThisBuild / intellijPluginName := "My Awesome Framework",
-    ThisBuild / intellijBuild := "231.9011.34",
-    ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
-    Global / intellijAttachSources := true,
-    Compile / javacOptions ++= "--release" :: "17" :: Nil,
-    intellijPlugins += "com.intellij.properties".toPlugin,
-    libraryDependencies += "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5" withSources(),
-  )
-
 lazy val root = project
   .in(file("."))
   .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, idea.jvm)
