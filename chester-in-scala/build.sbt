@@ -25,7 +25,8 @@ val commonSettings = Seq(
 
 commonSettings
 
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.1-RC0")
+ThisBuild / organization := "com.github.chester-lang"
 
 ThisBuild / assemblyMergeStrategy := {
   case PathList("META-INF", "versions", xs@_*) => MergeStrategy.first
@@ -53,7 +54,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .crossType(CrossType.Full)
   .in(file("common"))
   .settings(
-    name := "ChesterCommon",
+    name := "chester",
     libraryDependencies ++= Seq(
       "org.scalameta" %%% "munit" % "1.0.0" % Test,
     ),
@@ -94,7 +95,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .enablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
-    name := "chester",
+    name := "chester-cli",
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     nativeImageOutput := file("target") / "chester",
