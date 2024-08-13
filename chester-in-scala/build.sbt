@@ -160,8 +160,6 @@ lazy val idea = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     Compile / javacOptions ++= "--release" :: "17" :: Nil,
     intellijPlugins += "com.intellij.properties".toPlugin,
     libraryDependencies += "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5" withSources(),
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    Test / unmanagedResourceDirectories += baseDirectory.value / "testResources"
   )
 
 lazy val root = project
