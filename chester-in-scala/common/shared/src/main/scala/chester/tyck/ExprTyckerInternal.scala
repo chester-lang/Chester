@@ -2,6 +2,7 @@ package chester.tyck
 
 import cats.data.State
 import chester.error.SourcePos
+import chester.syntax.Id
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 
@@ -211,16 +212,22 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
       fields.foldLeft(base) {
         case (acc, (Vector(k), v)) =>
-          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k) -> v)
+          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k), v)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(k, ks@_*), v)) =>
-          val nestedExpr = acc.clauses.find(_._1 == Identifier(k)) match {
-            case Some(ObjectExprClause(_, nestedObj: ObjectExpr)) =>
-              insertNested(Vector((ks.toVector, v)), nestedObj)
-            case _ =>
+          val nestedExpr = acc.clauses.collectFirst {
+            case ObjectExprClause(id: Identifier, nestedObj: ObjectExpr) if id.name == k =>
+              nestedObj
+          } match {
+            case Some(existingNestedObj) =>
+              insertNested(Vector((ks.toVector, v)), existingNestedObj)
+            case None =>
               insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
           }
-          val updatedClauses = acc.clauses.filterNot(_._1 == Identifier(k)) :+ ObjectExprClause(Identifier(k) -> nestedExpr)
+          val updatedClauses = acc.clauses.filter {
+            case ObjectExprClause(id: Identifier, _) => id.name != k
+            case _ => true
+          } :+ ObjectExprClause(Identifier(k), nestedExpr)
           acc.copy(clauses = updatedClauses)
         case (acc, (Vector(), _)) => acc
       }
@@ -232,23 +239,41 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     insertNested(desugaredClauses, ObjectExpr(Vector.empty))
   }
 
-  def synthesizeObjectExpr(clauses: Vector[(QualifiedName, Expr)]): ObjectTerm = {
-    val typedClauses = clauses.map {
-      case (qualifiedName, expr) =>
+  def synthesizeObjectExpr(clauses: Vector[ObjectClause]): ObjectTerm = {
+    val typedClauses: Vector[ObjectClauseTrait] = clauses.map {
+      case ObjectExprClause(id: QualifiedName, expr) =>
         synthesize(expr) match {
-          case Judge(wellTypedExpr, _, _) => desugarQualifiedName(qualifiedName).mkString(".") -> wellTypedExpr
-          case _ => desugarQualifiedName(qualifiedName).mkString(".") -> new ErrorTerm(UnsupportedExpressionError(expr))
+          case Judge(wellTypedExpr, _, _) =>
+            ObjectClauseTerm(id.asInstanceOf[Id], wellTypedExpr)
+          case _ =>
+            ObjectClauseTerm(id.asInstanceOf[Id], new ErrorTerm(UnsupportedExpressionError(expr)))
+        }
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
+        synthesize(valueExpr) match {
+          case Judge(wellTypedExpr, _, _) =>
+            ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], wellTypedExpr)
+          case _ =>
+            ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], new ErrorTerm(UnsupportedExpressionError(valueExpr)))
         }
     }
     ObjectTerm(typedClauses)
   }
 
-  def synthesizeObjectType(clauses: Vector[(QualifiedName, Expr)]): ObjectType = {
-    val typedClauses = clauses.map {
-      case (qualifiedName, expr) =>
+  def synthesizeObjectType(clauses: Vector[ObjectClause]): ObjectType = {
+    val typedClauses: Vector[ObjectClauseTrait] = clauses.map {
+      case ObjectExprClause(id: QualifiedName, expr) =>
         synthesize(expr) match {
-          case Judge(_, exprType, _) => desugarQualifiedName(qualifiedName).mkString(".") -> exprType
-          case _ => desugarQualifiedName(qualifiedName).mkString(".") -> new ErrorTerm(UnsupportedExpressionError(expr))
+          case Judge(_, exprType, _) =>
+            ObjectClauseTerm(id.asInstanceOf[Id], exprType)
+          case _ =>
+            ObjectClauseTerm(id.asInstanceOf[Id], new ErrorTerm(UnsupportedExpressionError(expr)))
+        }
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
+        synthesize(valueExpr) match {
+          case Judge(_, exprType, _) =>
+            ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], exprType)
+          case _ =>
+            ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], new ErrorTerm(UnsupportedExpressionError(valueExpr)))
         }
     }
     ObjectType(typedClauses)
@@ -266,25 +291,44 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       Judge(StringTerm(value, termMeta), StringType(termMeta), NoEffect(termMeta))
     case objExpr: ObjectExpr =>
       val desugaredExpr = desugarObjectExpr(objExpr)
-      val objTerm = synthesizeObjectExpr(desugaredExpr.clauses.map(_.toPair))
-      val objType = synthesizeObjectType(desugaredExpr.clauses.map(_.toPair))
+      val objTerm = synthesizeObjectExpr(desugaredExpr.clauses)
+      val objType = synthesizeObjectType(desugaredExpr.clauses)
       Judge(objTerm, objType, NoEffect(convertMeta(objExpr.meta)))
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect(None))
   }
 
-  def inheritObjectFields(clauses: Vector[(QualifiedName, Expr)], fieldTypes: Vector[(String, Term)], effect: Option[Term]): Vector[(String, Term)] = {
+  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseTrait], effect: Option[Term]): Vector[ObjectClauseTrait] = {
     clauses.flatMap {
-      case (qualifiedName, expr) =>
-        fieldTypes.find(_._1 == desugarQualifiedName(qualifiedName).head) match {
-          case Some((name, ft)) =>
-            inherit(expr, ft, effect) match {
-              case Judge(wellTyped, _, _) => Some(name -> wellTyped)
+      case ObjectExprClause(id: QualifiedName, expr) =>
+        fieldTypes.collectFirst {
+          case ObjectClauseTerm(fid, _) if fid == id.asInstanceOf[Id] => fid
+        } match {
+          case Some(name) =>
+            val fieldType = fieldTypes.collectFirst {
+              case ObjectClauseTerm(_, ty) if name == id.asInstanceOf[Id] => ty
+            }
+            inherit(expr, fieldType.getOrElse(new ErrorTerm(FieldTypeNotFoundError(id))), effect) match {
+              case Judge(wellTyped, _, _) => Some(ObjectClauseTerm(name, wellTyped))
               case _ => None
             }
           case None =>
-            S.errors.report(FieldTypeNotFoundError(qualifiedName))
+            S.errors.report(FieldTypeNotFoundError(id))
+            None
+        }
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
+        val fieldType = fieldTypes.collectFirst {
+          case ObjectClauseValueTerm(k, _) if k == keyExpr.asInstanceOf[Term] => k
+        }
+        fieldType match {
+          case Some(_) =>
+            inherit(valueExpr, fieldType.get, effect) match {
+              case Judge(wellTyped, _, _) => Some(ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], wellTyped))
+              case _ => None
+            }
+          case None =>
+            S.errors.report(FieldTypeNotFoundError(keyExpr.asInstanceOf[QualifiedName]))
             None
         }
     }
@@ -302,13 +346,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
     whnf(ty) match {
       case ObjectType(fieldTypes, _) =>
-        val inheritedFields = inheritObjectFields(clauses = expr.asInstanceOf[ObjectExpr].clauses.map(_.toPair), fieldTypes = fieldTypes, effect = effect)
+        val inheritedFields = inheritObjectFields(clauses = expr.asInstanceOf[ObjectExpr].clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effect.getOrElse(NoEffect(None)))
       case _ =>
         // call synthesis on the expression
         val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
         val ty1 = unify(exprType, ty)
-        val effect1 = if(effect.isDefined) unifyEffect(exprEffect, effect.getOrElse(NoEffect(None))) else exprEffect
+        val effect1 = if (effect.isDefined) unifyEffect(exprEffect, effect.getOrElse(NoEffect(None))) else exprEffect
         Judge(wellTypedExpr, ty1, effect1)
     }
   }
