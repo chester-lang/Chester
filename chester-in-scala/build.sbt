@@ -150,6 +150,7 @@ lazy val idea = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .enablePlugins(SbtIdeaPlugin)
   .settings(
     common0Settings,
+    packageMethod := PackagingMethod.Standalone(), // https://github.com/JetBrains/sbt-idea-plugin/issues/116
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.10",
     ThisBuild / intellijPluginName := "My Awesome Framework",
