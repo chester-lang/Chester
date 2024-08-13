@@ -1,5 +1,6 @@
 package chester.tyck
 
+import chester.parser.getParsed
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import munit.FunSuite
@@ -29,5 +30,30 @@ class ObjectWithIntegersSuite extends FunSuite {
         assertEquals(fieldTypes.find(_._1 == "field3").map(_._2), Some(IntegerType(None)))
       case _ => fail("Synthesis failed")
     }
+  }
+  test("{x.y=1}") {
+    val toparse = "{x.y=1}"
+    val result = ExprTycker.synthesize(getParsed(toparse))
+    assertEquals(result.result.wellTyped,
+      ObjectTerm(
+        clauses = Vector(
+          Tuple2(
+            _1 = "x",
+            _2 = ObjectTerm(
+              clauses = Vector(
+                Tuple2(
+                  _1 = "y",
+                  _2 = IntegerTerm(
+                    value = 1,
+                    meta = None
+                  )
+                )
+              ),
+              meta = None
+            )
+          )
+        ),
+        meta = None
+      ))
   }
 }

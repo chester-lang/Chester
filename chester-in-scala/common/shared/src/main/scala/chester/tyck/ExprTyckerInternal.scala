@@ -244,9 +244,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       case ObjectExprClause(id: QualifiedName, expr) =>
         synthesize(expr) match {
           case Judge(wellTypedExpr, _, _) =>
-            ObjectClauseTerm(id.asInstanceOf[Id], wellTypedExpr)
+            ObjectClauseTerm(id.asInstanceOf[Identifier].name, wellTypedExpr)
           case _ =>
-            ObjectClauseTerm(id.asInstanceOf[Id], new ErrorTerm(UnsupportedExpressionError(expr)))
+            ObjectClauseTerm(id.asInstanceOf[Identifier].name, new ErrorTerm(UnsupportedExpressionError(expr)))
         }
       case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
         synthesize(valueExpr) match {
@@ -264,9 +264,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       case ObjectExprClause(id: QualifiedName, expr) =>
         synthesize(expr) match {
           case Judge(_, exprType, _) =>
-            ObjectClauseTerm(id.asInstanceOf[Id], exprType)
+            ObjectClauseTerm(id.asInstanceOf[Identifier].name, exprType)
           case _ =>
-            ObjectClauseTerm(id.asInstanceOf[Id], new ErrorTerm(UnsupportedExpressionError(expr)))
+            ObjectClauseTerm(id.asInstanceOf[Identifier].name, new ErrorTerm(UnsupportedExpressionError(expr)))
         }
       case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
         synthesize(valueExpr) match {
