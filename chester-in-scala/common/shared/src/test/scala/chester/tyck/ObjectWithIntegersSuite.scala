@@ -6,44 +6,52 @@ import chester.syntax.core.*
 import munit.FunSuite
 
 class ObjectWithIntegersSuite extends FunSuite {
-
   test("Synthesize Object with Integer Fields") {
     val state = TyckState()
     val ctx = LocalCtx.Empty
 
-    val intField1 = (Identifier("field1"), IntegerLiteral(42))
-    val intField2 = (Identifier("field2"), IntegerLiteral(24))
-    val intField3 = (Identifier("field3"), IntegerLiteral(100))
+    // Create ObjectExprClauses instead of tuples
+    val intField1 = ObjectExprClause(Identifier("field1"), IntegerLiteral(42))
+    val intField2 = ObjectExprClause(Identifier("field2"), IntegerLiteral(24))
+    val intField3 = ObjectExprClause(Identifier("field3"), IntegerLiteral(100))
 
+    // Create the ObjectExpr with the clauses
     val intObjectExpr = ObjectExpr(Vector(intField1, intField2, intField3))
 
+    // Synthesize the object expression
     val result = ExprTycker.synthesizeV0(intObjectExpr, state, ctx)
 
+    // Validate the result
     assert(result.isRight)
     result match {
       case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _), _)) =>
-        assertEquals(clauses.find(_._1 == "field1").map(_._2), Some(IntegerTerm(42)))
-        assertEquals(clauses.find(_._1 == "field2").map(_._2), Some(IntegerTerm(24)))
-        assertEquals(clauses.find(_._1 == "field3").map(_._2), Some(IntegerTerm(100)))
-        assertEquals(fieldTypes.find(_._1 == "field1").map(_._2), Some(IntegerType(None)))
-        assertEquals(fieldTypes.find(_._1 == "field2").map(_._2), Some(IntegerType(None)))
-        assertEquals(fieldTypes.find(_._1 == "field3").map(_._2), Some(IntegerType(None)))
+        // Check each clause for the correct field name and value
+        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field1", IntegerTerm(42, _)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field2", IntegerTerm(24, _)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field3", IntegerTerm(100, _)) => true }.isDefined, true)
+
+        // Check the field types
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field1", IntegerType(_)) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field2", IntegerType(_)) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field3", IntegerType(_)) => true }.isDefined, true)
+
       case _ => fail("Synthesis failed")
     }
   }
+
   test("{x.y=1}") {
     val toparse = "{x.y=1}"
     val result = ExprTycker.synthesize(getParsed(toparse))
     assertEquals(result.result.wellTyped,
       ObjectTerm(
         clauses = Vector(
-          Tuple2(
-            _1 = "x",
-            _2 = ObjectTerm(
+          ObjectClauseTerm(
+            id = "x",
+            term = ObjectTerm(
               clauses = Vector(
-                Tuple2(
-                  _1 = "y",
-                  _2 = IntegerTerm(
+                ObjectClauseTerm(
+                  id = "y",
+                  term = IntegerTerm(
                     value = 1,
                     meta = None
                   )
