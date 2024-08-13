@@ -1136,7 +1136,7 @@ Block(
         ),
         ObjectExpr(
           clauses = Vector(
-            ObjecctExprClause(
+            ObjectExprClause(
               key = Identifier(
                 name = "head",
                 meta = Some(
@@ -1172,7 +1172,7 @@ Block(
                 )
               )
             ),
-            ObjecctExprClause(
+            ObjectExprClause(
               key = Identifier(
                 name = "tail",
                 meta = Some(

@@ -2120,7 +2120,7 @@ Block(
         ),
         ObjectExpr(
           clauses = Vector(
-            ObjecctExprClause(
+            ObjectExprClause(
               key = Identifier(
                 name = "val",
                 meta = Some(

@@ -2,7 +2,7 @@ Block(
   heads = Vector(
     ObjectExpr(
       clauses = Vector(
-        ObjecctExprClause(
+        ObjectExprClause(
           key = DotCall(
             expr = DotCall(
               expr = DotCall(
@@ -140,7 +140,7 @@ Block(
             )
           )
         ),
-        ObjecctExprClause(
+        ObjectExprClause(
           key = DotCall(
             expr = Identifier(
               name = "boot",
@@ -264,7 +264,7 @@ Block(
               ),
               ObjectExpr(
                 clauses = Vector(
-                  ObjecctExprClause(
+                  ObjectExprClause(
                     key = Identifier(
                       name = "font",
                       meta = Some(
@@ -300,7 +300,7 @@ Block(
                       )
                     )
                   ),
-                  ObjecctExprClause(
+                  ObjectExprClause(
                     key = Identifier(
                       name = "keyMap",
                       meta = Some(
