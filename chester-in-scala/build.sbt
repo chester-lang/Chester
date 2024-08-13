@@ -1,5 +1,4 @@
 import scala.scalanative.build.*
-import org.jetbrains.sbtidea.Keys._
 
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"
@@ -145,7 +144,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, idea.jvm)
+  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version
