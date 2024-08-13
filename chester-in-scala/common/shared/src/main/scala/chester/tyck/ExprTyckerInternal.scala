@@ -5,7 +5,10 @@ import chester.error.SourcePos
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 
+import scala.annotation.targetName
 import scala.language.implicitConversions
+import scala.language.implicitConversions
+
 
 case class MutBox[T](var value: T)
 case class TyckState()
@@ -311,39 +314,35 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 }
 
-
-case class StateAndResult[S, T](state: S, result: T)
-
-case class TyckResult[S, T](stateAndResult: Option[StateAndResult[S, T]], warnings: Vector[TyckWarning], errors: Vector[TyckError])
-import scala.annotation.targetName
+case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning], errors: Vector[TyckError])
 
 object ExprTycker {
 
   // Deprecated API using the old `Getting` monadic approach
   @deprecated("some error information might be lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    convertToGettingTerm(ctx) { implicit tyck =>
+    convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().unify(subType, superType)
     }.getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
   def unifyEffectV0(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    convertToGettingTerm(ctx) { implicit tyck =>
+    convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().unifyEffect(subEffect, superEffect)
     }.getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
   def inheritV0(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGettingJudge(ctx) { implicit tyck =>
+    convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().inherit(expr, ty, effect)
     }.getOne(state).map(_._2)
   }
 
   @deprecated("some error information might be lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGettingJudge(ctx) { implicit tyck =>
+    convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().synthesize(expr)
     }.getOne(state).map(_._2)
   }
@@ -357,7 +356,7 @@ object ExprTycker {
 
     val result = ExprTyckerInternal(ctx).unify(subType, superType)
 
-    TyckResult(Some(StateAndResult(mutBox.value, result)), reporterW.getReports, reporterE.getReports)
+    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
   def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
@@ -368,7 +367,7 @@ object ExprTycker {
 
     val result = ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect)
 
-    TyckResult(Some(StateAndResult(mutBox.value, result)), reporterW.getReports, reporterE.getReports)
+    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
@@ -379,7 +378,7 @@ object ExprTycker {
 
     val result = ExprTyckerInternal(ctx).inherit(expr, ty, effect)
 
-    TyckResult(Some(StateAndResult(mutBox.value, result)), reporterW.getReports, reporterE.getReports)
+    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
   def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
@@ -390,23 +389,10 @@ object ExprTycker {
 
     val result = ExprTyckerInternal(ctx).synthesize(expr)
 
-    TyckResult(Some(StateAndResult(mutBox.value, result)), reporterW.getReports, reporterE.getReports)
+    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
-  @targetName("convertToGettingTerm")
-  private def convertToGettingTerm(ctx: LocalCtx)(f: Tyck => Term): Getting[TyckWarning, TyckError, TyckState, Term] = {
-    Getting { state =>
-      val reporterW = new VectorReporter[TyckWarning]()
-      val reporterE = new VectorReporter[TyckError]()
-      val mutBox = MutBox(state)
-      implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-      val result = f(tyck)
-      LazyList((reporterW.getReports, reporterE.getReports, Some((mutBox.value, result))))
-    }
-  }
-
-  @targetName("convertToGettingJudge")
-  private def convertToGettingJudge(ctx: LocalCtx)(f: Tyck => Judge): Getting[TyckWarning, TyckError, TyckState, Judge] = {
+  private def convertToGetting[T](ctx: LocalCtx)(f: Tyck => T): Getting[TyckWarning, TyckError, TyckState, T] = {
     Getting { state =>
       val reporterW = new VectorReporter[TyckWarning]()
       val reporterE = new VectorReporter[TyckError]()
