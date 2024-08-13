@@ -1,4 +1,5 @@
 import scala.scalanative.build.*
+import org.jetbrains.sbtidea.Keys._
 
 val scala3Version = "3.4.2"
 val graalVm = "graalvm-java22"
@@ -12,6 +13,10 @@ val nativeImageOption = Seq(
   "-O2",
 )
 
+
+val common0Settings = Seq(
+  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+)
 
 val commonSettings = Seq(
   scalaVersion := scala3Version,
@@ -138,9 +143,28 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageJvm := graalVm,
   )
 
+lazy val idea = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("idea"))
+  .enablePlugins(SbtIdeaPlugin)
+  .settings(
+    common0Settings,
+    version := "0.0.1-SNAPSHOT",
+    scalaVersion := "2.13.10",
+    ThisBuild / intellijPluginName := "My Awesome Framework",
+    ThisBuild / intellijBuild := "231.9011.34",
+    ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
+    Global / intellijAttachSources := true,
+    Compile / javacOptions ++= "--release" :: "17" :: Nil,
+    intellijPlugins += "com.intellij.properties".toPlugin,
+    libraryDependencies += "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5" withSources(),
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    Test / unmanagedResourceDirectories += baseDirectory.value / "testResources"
+  )
+
 lazy val root = project
   .in(file("."))
-  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm)
+  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, idea.jvm)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version
