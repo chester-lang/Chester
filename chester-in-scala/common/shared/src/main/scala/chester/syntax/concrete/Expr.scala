@@ -206,6 +206,10 @@ case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends P
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
 case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): ListExpr = {
     ListExpr(terms.map(_.descentAndApply(operator)), meta)

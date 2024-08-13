@@ -268,6 +268,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     qualifiedNameOn(id) | Pass(id)
   }
 
+  def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
+
   def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
     ObjectExpr(fields.map(ObjecctExprClause).toVector, meta)
   }
@@ -298,7 +300,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
   })
 
-  inline def parse0: P[ParsedExpr] = keyword | objectParse | block | annotated | list | tuple | literal | identifier
+  inline def parse0: P[ParsedExpr] = symbol | keyword | objectParse | block | annotated | list | tuple | literal | identifier
 
   def parse(ctx: ParsingContext = ParsingContext()): P[ParsedExpr] = P(parse0.withMeta ~ Index).flatMap { (expr, meta, index) =>
     val itWasBlockEnding = p.input(index - 1) == '}'
