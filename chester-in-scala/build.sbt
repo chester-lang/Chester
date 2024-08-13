@@ -48,6 +48,7 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
 
 val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
+val permitGPLcontamination: Boolean = false
 
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -122,7 +123,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "readline" % "0.1.3"
     ),
-    scalacOptions ++= (if (unix) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
+    scalacOptions ++= (if (unix && permitGPLcontamination) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
