@@ -5,6 +5,7 @@ import chester.pretty.const.ColorProfile
 import chester.pretty.doc.*
 import chester.pretty.doc.Implicits.*
 import chester.syntax.{Id, QualifiedIDString}
+import chester.tyck.TyckError
 import chester.utils.encodeString
 
 case class TermMeta(sourcePos: Option[SourcePos])
@@ -110,4 +111,9 @@ case class LocalVar(id: Id, ty: Term, meta: Option[TermMeta] = None) extends Ter
 
 case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
+}
+
+class ErrorTerm(val error: TyckError) extends Term {
+  override def meta: Option[TermMeta] = None
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message) 
 }
