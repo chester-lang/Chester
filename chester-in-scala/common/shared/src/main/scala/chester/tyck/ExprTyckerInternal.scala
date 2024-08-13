@@ -299,8 +299,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect(None))
   }
 
-  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseTrait], effect: Option[Term]): Vector[ObjectClauseTrait] = {
-    clauses.flatMap {
+  case class EffectWith[T](effect: Term, value: T)
+
+  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseTrait], effect: Option[Term]): EffectWith[Vector[ObjectClauseTrait]] = {
+    val inheritedFields = clauses.flatMap {
       case ObjectExprClause(id: QualifiedName, expr) =>
         fieldTypes.collectFirst {
           case ObjectClauseTerm(fid, _) if fid == id.asInstanceOf[Id] => fid
@@ -310,7 +312,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
               case ObjectClauseTerm(_, ty) if name == id.asInstanceOf[Id] => ty
             }
             inherit(expr, fieldType.getOrElse(new ErrorTerm(FieldTypeNotFoundError(id))), effect) match {
-              case Judge(wellTyped, _, _) => Some(ObjectClauseTerm(name, wellTyped))
+              case Judge(wellTyped, _, fieldEffect) =>
+                Some(ObjectClauseTerm(name, wellTyped))
               case _ => None
             }
           case None =>
@@ -324,7 +327,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
         fieldType match {
           case Some(_) =>
             inherit(valueExpr, fieldType.get, effect) match {
-              case Judge(wellTyped, _, _) => Some(ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], wellTyped))
+              case Judge(wellTyped, _, fieldEffect) =>
+                Some(ObjectClauseValueTerm(keyExpr.asInstanceOf[Term], wellTyped))
               case _ => None
             }
           case None =>
@@ -332,6 +336,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
             None
         }
     }
+    EffectWith(effect.getOrElse(NoEffect(None)), inheritedFields)
   }
 
   val normalizer = new Normalizer()
@@ -344,18 +349,20 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    whnf(ty) match {
-      case ObjectType(fieldTypes, _) =>
-        val inheritedFields = inheritObjectFields(clauses = expr.asInstanceOf[ObjectExpr].clauses, fieldTypes = fieldTypes, effect = effect)
-        Judge(ObjectTerm(inheritedFields), ty, effect.getOrElse(NoEffect(None)))
+    (expr, whnf(ty)) match {
+      case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
+        val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
+        Judge(ObjectTerm(inheritedFields), ty, inheritedEffect)
+
       case _ =>
-        // call synthesis on the expression
+        // Handle cases where expr is not an ObjectExpr or ty is not an ObjectType
         val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
         val ty1 = unify(exprType, ty)
         val effect1 = if (effect.isDefined) unifyEffect(exprEffect, effect.getOrElse(NoEffect(None))) else exprEffect
         Judge(wellTypedExpr, ty1, effect1)
     }
   }
+
 }
 
 case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning], errors: Vector[TyckError])
