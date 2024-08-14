@@ -270,7 +270,7 @@ case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = No
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ObjectExpr = copy(meta = updater(meta))
 }
 
-case class Keyword(key: Identifier, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = {
     Keyword(key, telescope.map(_.descent(operator)), meta)
   }

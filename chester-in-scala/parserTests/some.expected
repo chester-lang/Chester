@@ -300,23 +300,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "abstract",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/some.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 93, line = 8, column = 6),
-                      end = Pos(index = 100, line = 8, column = 13)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "abstract",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -936,23 +920,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "sealed",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/some.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 216, line = 18, column = 6),
-                      end = Pos(index = 221, line = 18, column = 11)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "sealed",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -970,23 +938,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "abstract",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/some.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 224, line = 18, column = 14),
-                      end = Pos(index = 231, line = 18, column = 21)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "abstract",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(

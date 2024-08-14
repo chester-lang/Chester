@@ -485,23 +485,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "abstract",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 324, line = 10, column = 6),
-                      end = Pos(index = 331, line = 10, column = 13)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "abstract",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -1361,23 +1345,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "sealed",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 904, line = 25, column = 6),
-                      end = Pos(index = 909, line = 25, column = 11)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "sealed",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -1395,23 +1363,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "abstract",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 912, line = 25, column = 14),
-                      end = Pos(index = 919, line = 25, column = 21)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "abstract",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -1898,23 +1850,7 @@ Block(
             OpSeq(
               seq = Vector(
                 Keyword(
-                  key = Identifier(
-                    name = "override",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            fileName = "parserTests/readme.chester",
-                            range = RangeInFile(
-                              start = Pos(index = 1016, line = 31, column = 3),
-                              end = Pos(index = 1023, line = 31, column = 10)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
+                  key = "override",
                   telescope = Vector(),
                   meta = Some(
                     value = ExprMeta(
@@ -2400,23 +2336,7 @@ Block(
             OpSeq(
               seq = Vector(
                 Keyword(
-                  key = Identifier(
-                    name = "override",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            fileName = "parserTests/readme.chester",
-                            range = RangeInFile(
-                              start = Pos(index = 1295, line = 40, column = 3),
-                              end = Pos(index = 1302, line = 40, column = 10)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
+                  key = "override",
                   telescope = Vector(),
                   meta = Some(
                     value = ExprMeta(
@@ -2553,23 +2473,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "sealed",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 1325, line = 43, column = 6),
-                      end = Pos(index = 1330, line = 43, column = 11)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "sealed",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -2587,23 +2491,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "abstract",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 1333, line = 43, column = 14),
-                      end = Pos(index = 1340, line = 43, column = 21)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "abstract",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(
@@ -5421,23 +5309,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "UnsizedType",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/readme.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 1878, line = 71, column = 8),
-                      end = Pos(index = 1888, line = 71, column = 18)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "UnsizedType",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(

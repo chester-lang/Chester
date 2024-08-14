@@ -63,23 +63,7 @@ Block(
           )
         ),
         Keyword(
-          key = Identifier(
-            name = "sealed",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/newdesign.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 19, line = 2, column = 7),
-                      end = Pos(index = 24, line = 2, column = 12)
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = "sealed",
           telescope = Vector(),
           meta = Some(
             value = ExprMeta(

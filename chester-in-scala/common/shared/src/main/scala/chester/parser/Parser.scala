@@ -274,7 +274,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ObjectExpr(fields.map(ObjectExprClause).toVector, meta)
   }
 
-  def keyword: P[ParsedExpr] = PwithMeta("#" ~ identifier ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>
+  def keyword: P[ParsedExpr] = PwithMeta("#" ~ id ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>
     Keyword(id, telescope, meta)
   }
 
