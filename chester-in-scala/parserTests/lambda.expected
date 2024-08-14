@@ -547,25 +547,7 @@ Block(
                       commentInfo = None
                     )
                   )
-                )
-              ),
-              meta = Some(
-                value = ExprMeta(
-                  sourcePos = Some(
-                    value = SourcePos(
-                      fileName = "parserTests/lambda.chester",
-                      range = RangeInFile(
-                        start = Pos(index = 140, line = 9, column = 21),
-                        end = Pos(index = 140, line = 9, column = 21)
-                      )
-                    )
-                  ),
-                  commentInfo = None
-                )
-              )
-            ),
-            OpSeq(
-              seq = Vector(
+                ),
                 Identifier(
                   name = "let",
                   meta = Some(
@@ -574,8 +556,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 148, line = 10, column = 2),
-                            end = Pos(index = 150, line = 10, column = 4)
+                            start = Pos(index = 147, line = 10, column = 2),
+                            end = Pos(index = 149, line = 10, column = 4)
                           )
                         )
                       ),
@@ -591,8 +573,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 152, line = 10, column = 6),
-                            end = Pos(index = 152, line = 10, column = 6)
+                            start = Pos(index = 151, line = 10, column = 6),
+                            end = Pos(index = 151, line = 10, column = 6)
                           )
                         )
                       ),
@@ -608,8 +590,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 154, line = 10, column = 8),
-                            end = Pos(index = 154, line = 10, column = 8)
+                            start = Pos(index = 153, line = 10, column = 8),
+                            end = Pos(index = 153, line = 10, column = 8)
                           )
                         )
                       ),
@@ -625,8 +607,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 156, line = 10, column = 10),
-                            end = Pos(index = 156, line = 10, column = 10)
+                            start = Pos(index = 155, line = 10, column = 10),
+                            end = Pos(index = 155, line = 10, column = 10)
                           )
                         )
                       ),
@@ -642,8 +624,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 158, line = 10, column = 12),
-                            end = Pos(index = 158, line = 10, column = 12)
+                            start = Pos(index = 157, line = 10, column = 12),
+                            end = Pos(index = 157, line = 10, column = 12)
                           )
                         )
                       ),
@@ -659,8 +641,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 160, line = 10, column = 14),
-                            end = Pos(index = 160, line = 10, column = 14)
+                            start = Pos(index = 159, line = 10, column = 14),
+                            end = Pos(index = 159, line = 10, column = 14)
                           )
                         )
                       ),
@@ -675,8 +657,8 @@ Block(
                     value = SourcePos(
                       fileName = "parserTests/lambda.chester",
                       range = RangeInFile(
-                        start = Pos(index = 148, line = 10, column = 2),
-                        end = Pos(index = 150, line = 10, column = 4)
+                        start = Pos(index = 140, line = 9, column = 21),
+                        end = Pos(index = 140, line = 9, column = 21)
                       )
                     )
                   ),
@@ -694,8 +676,8 @@ Block(
                     value = SourcePos(
                       fileName = "parserTests/lambda.chester",
                       range = RangeInFile(
-                        start = Pos(index = 165, line = 11, column = 2),
-                        end = Pos(index = 165, line = 11, column = 2)
+                        start = Pos(index = 164, line = 11, column = 2),
+                        end = Pos(index = 164, line = 11, column = 2)
                       )
                     )
                   ),
@@ -711,7 +693,7 @@ Block(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
                     start = Pos(index = 138, line = 9, column = 19),
-                    end = Pos(index = 167, line = 12, column = 0)
+                    end = Pos(index = 166, line = 12, column = 0)
                   )
                 )
               ),
@@ -742,8 +724,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 171, line = 14, column = 0),
-                    end = Pos(index = 185, line = 14, column = 14)
+                    start = Pos(index = 170, line = 14, column = 0),
+                    end = Pos(index = 184, line = 14, column = 14)
                   )
                 )
               ),
@@ -759,8 +741,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 187, line = 14, column = 16),
-                    end = Pos(index = 187, line = 14, column = 16)
+                    start = Pos(index = 186, line = 14, column = 16),
+                    end = Pos(index = 186, line = 14, column = 16)
                   )
                 )
               ),
@@ -778,8 +760,8 @@ Block(
                     value = SourcePos(
                       fileName = "parserTests/lambda.chester",
                       range = RangeInFile(
-                        start = Pos(index = 190, line = 14, column = 19),
-                        end = Pos(index = 190, line = 14, column = 19)
+                        start = Pos(index = 189, line = 14, column = 19),
+                        end = Pos(index = 189, line = 14, column = 19)
                       )
                     )
                   ),
@@ -794,8 +776,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 189, line = 14, column = 18),
-                    end = Pos(index = 191, line = 14, column = 20)
+                    start = Pos(index = 188, line = 14, column = 18),
+                    end = Pos(index = 190, line = 14, column = 20)
                   )
                 )
               ),
@@ -815,8 +797,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 193, line = 14, column = 22),
-                            end = Pos(index = 193, line = 14, column = 22)
+                            start = Pos(index = 192, line = 14, column = 22),
+                            end = Pos(index = 192, line = 14, column = 22)
                           )
                         )
                       ),
@@ -832,8 +814,8 @@ Block(
                         value = SourcePos(
                           fileName = "parserTests/lambda.chester",
                           range = RangeInFile(
-                            start = Pos(index = 194, line = 14, column = 23),
-                            end = Pos(index = 195, line = 14, column = 24)
+                            start = Pos(index = 193, line = 14, column = 23),
+                            end = Pos(index = 194, line = 14, column = 24)
                           )
                         )
                       ),
@@ -848,8 +830,8 @@ Block(
                     value = SourcePos(
                       fileName = "parserTests/lambda.chester",
                       range = RangeInFile(
-                        start = Pos(index = 193, line = 14, column = 22),
-                        end = Pos(index = 193, line = 14, column = 22)
+                        start = Pos(index = 192, line = 14, column = 22),
+                        end = Pos(index = 192, line = 14, column = 22)
                       )
                     )
                   ),
@@ -864,8 +846,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 192, line = 14, column = 21),
-                    end = Pos(index = 196, line = 14, column = 25)
+                    start = Pos(index = 191, line = 14, column = 21),
+                    end = Pos(index = 195, line = 14, column = 25)
                   )
                 )
               ),
@@ -881,8 +863,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 197, line = 14, column = 26),
-                    end = Pos(index = 198, line = 14, column = 27)
+                    start = Pos(index = 196, line = 14, column = 26),
+                    end = Pos(index = 197, line = 14, column = 27)
                   )
                 )
               ),
@@ -898,8 +880,8 @@ Block(
                 value = SourcePos(
                   fileName = "parserTests/lambda.chester",
                   range = RangeInFile(
-                    start = Pos(index = 199, line = 14, column = 28),
-                    end = Pos(index = 199, line = 14, column = 28)
+                    start = Pos(index = 198, line = 14, column = 28),
+                    end = Pos(index = 198, line = 14, column = 28)
                   )
                 )
               ),
@@ -914,8 +896,8 @@ Block(
             value = SourcePos(
               fileName = "parserTests/lambda.chester",
               range = RangeInFile(
-                start = Pos(index = 171, line = 14, column = 0),
-                end = Pos(index = 185, line = 14, column = 14)
+                start = Pos(index = 170, line = 14, column = 0),
+                end = Pos(index = 184, line = 14, column = 14)
               )
             )
           ),
@@ -930,7 +912,7 @@ Block(
       sourcePos = Some(
         value = SourcePos(
           fileName = "parserTests/lambda.chester",
-          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 200, line = 14, column = 29))
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 199, line = 14, column = 29))
         )
       ),
       commentInfo = None

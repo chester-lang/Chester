@@ -7,7 +7,7 @@ functionType = Integer => Integer;
 
 functionSimple = x -> x + 1;
 
-blockingFunction = { x ->;
+blockingFunction = { x ->
   let y = x + 1;
   y
 };
