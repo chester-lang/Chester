@@ -282,6 +282,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     Judge(objectTerm, objectType, combinedEffect)
   }
 
+  def synthesizeBlock(block: Block): Judge = {???
+  }
+
   def synthesize(expr: Expr): Judge = expr match {
     case IntegerLiteral(value, meta) =>
       val termMeta = convertMeta(meta)
@@ -297,6 +300,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
     case objExpr: ObjectExpr =>
       synthesizeObjectExpr(objExpr)
+    case block: Block => synthesizeBlock(block)
 
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))

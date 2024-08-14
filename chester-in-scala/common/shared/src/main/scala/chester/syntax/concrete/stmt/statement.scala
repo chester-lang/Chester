@@ -75,3 +75,6 @@ case class PrecedenceGroupResolved(
                                   ) extends Statement with PrecedenceGroup {
   def getName: Option[Id] = Some(name.name)
 }
+
+
+case class LetStatement(name: Id, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends NameKnown
