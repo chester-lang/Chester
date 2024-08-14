@@ -1,5 +1,6 @@
 package chester.resolve
 
+import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.syntax.concrete.stmt.*
 import chester.tyck.{TyckError, TyckWarning, UnsupportedExpressionError}
@@ -29,13 +30,13 @@ object BasicStatementResolver {
   def resolveStatement(expr: Expr): (Vector[TyckWarning], Vector[TyckError], Statement) = expr match {
     case opSeq: OpSeq =>
       opSeq.seq match {
-        case Vector(Identifier("data", _), xs@_*) =>
+        case Vector(Identifier(Const.Data, _), xs@_*) =>
           return (Vector.empty, Vector.empty, DataStatement(xs.toVector, opSeq.meta))
 
-        case Vector(Identifier("trait", _), xs@_*) =>
+        case Vector(Identifier(Const.Trait, _), xs@_*) =>
           return (Vector.empty, Vector.empty, TraitStatement(xs.toVector, opSeq.meta))
 
-        case Vector(Identifier("implement", _), xs@_*) =>
+        case Vector(Identifier(Const.Implement, _), xs@_*) =>
           return (Vector.empty, Vector.empty, ImplementStatement(xs.toVector, opSeq.meta))
 
         case _ =>
