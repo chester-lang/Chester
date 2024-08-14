@@ -63,6 +63,10 @@ case class StringType(meta: Option[TermMeta] = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String")
 }
 
+case class SymbolType(meta: Option[TermMeta] = None) extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol")
+}
+
 case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }

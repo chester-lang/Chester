@@ -298,6 +298,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       val termMeta = convertMeta(meta)
       Judge(StringTerm(value, termMeta), StringType(termMeta), NoEffect(termMeta))
 
+    case SymbolLiteral(value, meta) =>
+      val termMeta = convertMeta(meta)
+      Judge(SymbolTerm(value, termMeta), SymbolType(termMeta), NoEffect(termMeta))
+
     case objExpr: ObjectExpr =>
       synthesizeObjectExpr(objExpr)
     case block: Block => synthesizeBlock(block)
