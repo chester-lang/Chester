@@ -109,12 +109,15 @@ case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends E
 
 object EffectList {
   // do flatten
-  def apply(xs: Vector[Term], meta: Option[TermMeta] = None): EffectList = {
+  def apply(xs: Vector[Term], meta: Option[TermMeta] = None): EffectTerm = {
     val flattened = xs.flatMap {
       case EffectList(ys, _) => ys
       case x => Vector(x)
+    } .filter {
+      case NoEffect(_) => false
+      case _ => true
     }
-    new EffectList(flattened, meta)
+    if(flattened.nonEmpty) new EffectList(flattened, meta) else NoEffect(meta)
   }
 }
 
