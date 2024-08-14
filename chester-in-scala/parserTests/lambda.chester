@@ -1,0 +1,15 @@
+matchingLambda = {
+  case 1 => 0;
+  case 2 => 2;
+};
+
+functionType = Integer => Integer;
+
+functionSimple = x -> x + 1;
+
+blockingFunction = { x ->;
+  let y = x + 1;
+  y
+};
+
+complexFunction = [T](x:T)->x;

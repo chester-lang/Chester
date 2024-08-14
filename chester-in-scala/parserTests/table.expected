@@ -1,0 +1,208 @@
+Block(
+  heads = Vector(
+    ObjectExpr(
+      clauses = Vector(
+        ObjectExprClause(
+          key = DotCall(
+            expr = Identifier(
+              name = "x",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/table.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 2, line = 0, column = 2),
+                        end = Pos(index = 2, line = 0, column = 2)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            field = Identifier(
+              name = "x",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      fileName = "parserTests/table.chester",
+                      range = RangeInFile(
+                        start = Pos(index = 4, line = 0, column = 4),
+                        end = Pos(index = 4, line = 0, column = 4)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            telescope = Vector(),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/table.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 3, line = 0, column = 3),
+                      end = Pos(index = 4, line = 0, column = 4)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            )
+          ),
+          value = IntegerLiteral(
+            value = 0,
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/table.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 8, line = 0, column = 8),
+                      end = Pos(index = 8, line = 0, column = 8)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            )
+          )
+        ),
+        ObjectExprClause(
+          key = Identifier(
+            name = "y",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/table.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 11, line = 0, column = 11),
+                      end = Pos(index = 11, line = 0, column = 11)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            )
+          ),
+          value = Block(
+            heads = Vector(),
+            tail = Some(
+              value = OpSeq(
+                seq = Vector(
+                  StringLiteral(
+                    value = "x",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos(
+                            fileName = "parserTests/table.chester",
+                            range = RangeInFile(
+                              start = Pos(index = 17, line = 0, column = 17),
+                              end = Pos(index = 19, line = 0, column = 19)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = "=>",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos(
+                            fileName = "parserTests/table.chester",
+                            range = RangeInFile(
+                              start = Pos(index = 21, line = 0, column = 21),
+                              end = Pos(index = 22, line = 0, column = 22)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  IntegerLiteral(
+                    value = 1,
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos(
+                            fileName = "parserTests/table.chester",
+                            range = RangeInFile(
+                              start = Pos(index = 24, line = 0, column = 24),
+                              end = Pos(index = 24, line = 0, column = 24)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  )
+                ),
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos(
+                        fileName = "parserTests/table.chester",
+                        range = RangeInFile(
+                          start = Pos(index = 17, line = 0, column = 17),
+                          end = Pos(index = 19, line = 0, column = 19)
+                        )
+                      )
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(
+                  value = SourcePos(
+                    fileName = "parserTests/table.chester",
+                    range = RangeInFile(
+                      start = Pos(index = 15, line = 0, column = 15),
+                      end = Pos(index = 26, line = 0, column = 26)
+                    )
+                  )
+                ),
+                commentInfo = None
+              )
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              fileName = "parserTests/table.chester",
+              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 28, line = 0, column = 28))
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    )
+  ),
+  tail = None,
+  meta = Some(
+    value = ExprMeta(
+      sourcePos = Some(
+        value = SourcePos(
+          fileName = "parserTests/table.chester",
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 28, line = 0, column = 28))
+        )
+      ),
+      commentInfo = None
+    )
+  )
+)
