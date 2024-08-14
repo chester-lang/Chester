@@ -18,10 +18,13 @@ object BuiltinCtx {
   val builtinSyntax = Vector("data", "module")
 }
 
-case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map())
+case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map()) {
+  def getLocal(name: LocalVar): Option[JudgeNoEffect] = map.get(name)
+}
 
 object LocalCtx {
   val Empty = LocalCtx()
+  def fromParent(parent: LocalCtx): LocalCtx = parent
 }
 
 trait Reporter[T] {
