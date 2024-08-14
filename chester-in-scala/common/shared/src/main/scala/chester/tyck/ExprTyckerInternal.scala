@@ -16,6 +16,9 @@ case class TyckState()
 
 object BuiltinCtx {
   val builtinSyntax = Vector("data", "module")
+  val builtinCtx: Map[LocalVar, JudgeNoEffect] = Map(
+    
+  )
 }
 
 case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map()) {
