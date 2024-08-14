@@ -313,6 +313,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       S.errors.report(UnsupportedExpressionError(expr))
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect(None))
   }
+  
+  def synthesizeTerm(term: Term): JudgeNoEffect = term match {
+    case _ => ???
+  }
 
   case class EffectWith[T](effect: Term, value: T)
 
