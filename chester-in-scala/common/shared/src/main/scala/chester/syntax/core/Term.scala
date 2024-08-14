@@ -51,6 +51,10 @@ case class StringTerm(value: String, meta: Option[TermMeta] = None) extends Term
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
+case class SymbolTerm(value: String, meta: Option[TermMeta] = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
+}
+
 case class DoubleType(meta: Option[TermMeta] = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Double")
 }
@@ -63,32 +67,18 @@ case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
-sealed trait ObjectClauseTrait {
-  def meta: Option[TermMeta]
-
-  def toDoc(implicit options: PrettierOptions): Doc
+case class ObjectClauseValueTerm(key: Term, value: Term, meta: Option[TermMeta] = None) {
+  def toDoc(implicit options: PrettierOptions): Doc = key <+> Doc.text("=") <+> value
 }
 
-case class ObjectClauseTerm(id: Id, term: Term) extends ObjectClauseTrait {
-  override def meta: Option[TermMeta] = None
-
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id) <+> Doc.text("=") <+> term
-}
-
-case class ObjectClauseValueTerm(key: Term, value: Term) extends ObjectClauseTrait {
-  override def meta: Option[TermMeta] = None
-
-  override def toDoc(implicit options: PrettierOptions): Doc = key <+> Doc.text("=") <+> value
-}
-
-case class ObjectTerm(clauses: Vector[ObjectClauseTrait], meta: Option[TermMeta] = None) extends Term {
+case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist("{", "}", ",")(clauses.map(_.toDoc): _*)
 }
 
 
 // TODO: add a modifier to disallow subtyping on fields - that is fields must be exact
-case class ObjectType(fieldTypes: Vector[ObjectClauseTrait], meta: Option[TermMeta] = None) extends Term {
+case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist("{", "}", ",")(fieldTypes.map(_.toDoc): _*)
 }
@@ -111,6 +101,17 @@ case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends E
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(xs: _*)
+}
+
+object EffectList {
+  // do flatten
+  def apply(xs: Vector[Term], meta: Option[TermMeta] = None): EffectList = {
+    val flattened = xs.flatMap {
+      case EffectList(ys, _) => ys
+      case x => Vector(x)
+    }
+    new EffectList(flattened, meta)
+  }
 }
 
 case class NoEffect(meta: Option[TermMeta] = None) extends EffectTerm {

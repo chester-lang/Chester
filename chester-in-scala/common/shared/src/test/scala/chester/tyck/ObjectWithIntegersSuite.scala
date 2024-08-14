@@ -26,14 +26,14 @@ class ObjectWithIntegersSuite extends FunSuite {
     result match {
       case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _), _)) =>
         // Check each clause for the correct field name and value
-        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field1", IntegerTerm(42, _)) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field2", IntegerTerm(24, _)) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseTerm("field3", IntegerTerm(100, _)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1",_), IntegerTerm(42, _),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2",_), IntegerTerm(24, _),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3",_), IntegerTerm(100, _),_) => true }.isDefined, true)
 
         // Check the field types
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field1", IntegerType(_)) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field2", IntegerType(_)) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseTerm("field3", IntegerType(_)) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1",_), IntegerType(_),_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2",_), IntegerType(_),_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3",_), IntegerType(_),_) => true }.isDefined, true)
 
       case _ => fail("Synthesis failed")
     }
@@ -45,20 +45,28 @@ class ObjectWithIntegersSuite extends FunSuite {
     assertEquals(result.result.wellTyped,
       ObjectTerm(
         clauses = Vector(
-          ObjectClauseTerm(
-            id = "x",
-            term = ObjectTerm(
+          ObjectClauseValueTerm(
+            key = SymbolTerm(
+              value = "x",
+              meta = None
+            ),
+            value = ObjectTerm(
               clauses = Vector(
-                ObjectClauseTerm(
-                  id = "y",
-                  term = IntegerTerm(
+                ObjectClauseValueTerm(
+                  key = SymbolTerm(
+                    value = "y",
+                    meta = None
+                  ),
+                  value = IntegerTerm(
                     value = 1,
                     meta = None
-                  )
+                  ),
+                  meta = None
                 )
               ),
               meta = None
-            )
+            ),
+            meta = None
           )
         ),
         meta = None
