@@ -146,8 +146,12 @@ case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, varId:
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
 }
 
-class ErrorTerm(val error: TyckError) extends Term {
+case class ErrorTerm(val error: TyckError) extends Term {
   override def meta: Option[TermMeta] = None
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
+}
+
+case class MetaTerm(id: VarId, meta: Option[TermMeta] = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
