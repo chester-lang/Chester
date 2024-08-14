@@ -148,32 +148,32 @@ jobs:
 
     - name: Create or Update GitHub Release for Unix
       if: runner.os != 'Windows'
-      uses: softprops/action-gh-release@v2
+      uses: ncipollo/release-action@v1
       with:
-        files: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-          chester-in-scala/target/chester
-          chester-in-scala/target/chester-lsp
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
-        tag_name: ${{ matrix.release_name }}
+        tag: ${{ matrix.release_name }}
         name: ${{ matrix.release_name }}
-        draft: false
+        allowUpdates: true
         prerelease: true
+        artifacts: |
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/target/chester,
+          chester-in-scala/target/chester-lsp,
+          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
 
     - name: Create or Update GitHub Release for Windows
       if: runner.os == 'Windows'
-      uses: softprops/action-gh-release@v2
+      uses: ncipollo/release-action@v1
       with:
-        files: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-          chester-in-scala/target/chester.exe
-          chester-in-scala/target/chester-lsp.exe
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
-        tag_name: ${{ matrix.release_name }}
+        tag: ${{ matrix.release_name }}
         name: ${{ matrix.release_name }}
-        draft: false
+        allowUpdates: true
         prerelease: true
+        artifacts: |
+          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
+          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
+          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/target/chester.exe,
+          chester-in-scala/target/chester-lsp.exe,
+          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
