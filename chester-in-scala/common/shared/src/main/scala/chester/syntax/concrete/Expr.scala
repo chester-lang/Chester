@@ -2,7 +2,6 @@ package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
 import chester.syntax.{Id, QualifiedIDString}
-import chester.syntax.IdentifierRules.strIsOperator
 import chester.utils.encodeString
 
 enum CommentType {
@@ -12,14 +11,22 @@ enum CommentType {
 
 case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])
 
-case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty) {
-  if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty) {
+case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty, commentEndInThisLine: Vector[Comment] = Vector.empty) {
+  if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty && commentEndInThisLine.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
 
 case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) {
   require(sourcePos.isDefined || commentInfo.isDefined)
+}
+
+object MetaFactory {
+  def add(commentBefore: Vector[Comment] = Vector(), commentEndInThisLine: Vector[Comment] = Vector())(updateOn: Option[ExprMeta]): Option[ExprMeta] = (commentBefore, commentEndInThisLine, updateOn) match {
+    case (Vector(), Vector(), _) => updateOn
+    case (before, end, Some(ExprMeta(sourcePos, None))) => Some(ExprMeta(sourcePos, Some(CommentInfo(commentBefore = before, commentEndInThisLine = end))))
+    case (before, end, Some(ExprMeta(sourcePos, Some(commentInfo)))) => Some(ExprMeta(sourcePos, Some(commentInfo.copy(commentBefore = before++commentInfo.commentBefore, commentEndInThisLine = commentInfo.commentEndInThisLine ++ end))))
+  }
 }
 
 sealed trait Expr extends WithPos {

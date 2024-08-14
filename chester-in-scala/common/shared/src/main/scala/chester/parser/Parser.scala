@@ -79,7 +79,23 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     }
   }
 
+  extension [T <: Expr](inline parse0: P[T]) {
+    inline def relax(start: Boolean = true, onEnd: Boolean = false): P[T] = (start, onEnd) match {
+      case (true, true) => (maybeSpace1 ~ parse0 ~ maybeSpace1).map { case (b, x, e) =>
+        x.updateMeta(MetaFactory.add(commentBefore = b, commentEndInThisLine = e)).asInstanceOf[T]
+      }
+      case (true, false) => (maybeSpace1 ~ parse0).map { case (b, x) =>
+        x.updateMeta(MetaFactory.add(commentBefore = b)).asInstanceOf[T]
+      }
+      case (false, true) => (parse0 ~ maybeSpace1).map { case (x, e) =>
+        x.updateMeta(MetaFactory.add(commentEndInThisLine = e)).asInstanceOf[T]
+      }
+      case (false, false) => parse0
+    }
+  }
+
   extension [T](inline parse0: P[T]) {
+    @deprecated("I forgot what is this doing seemingly wrong logic")
     inline def withMeta[R](using s: fastparse.Implicits.Sequencer[T, Option[ExprMeta], R]): P[R] = (begin ~ parse0 ~ end).map { case (b, x, e) =>
       val meta = createMeta(loc(b, e), None)
       s(x, meta)
@@ -270,8 +286,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
 
-  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
-    ObjectExpr(fields.map(ObjectExprClause).toVector, meta)
+  def objectClause0: P[ObjectClause] = (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClause)
+  def objectClause1: P[ObjectClause] = (parse().relax() ~ "=>" ~ parse().relax()).map(ObjectExprClauseOnValue)
+
+  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
+    ObjectExpr(fields.toVector, meta)
   }
 
   def keyword: P[ParsedExpr] = PwithMeta("#" ~ id ~ callingZeroOrMore(ParsingContext(dontAllowBlockApply = true))).map { case (id, telescope, meta) =>
