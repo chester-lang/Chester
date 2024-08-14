@@ -246,7 +246,6 @@ sealed trait ObjectClause {
 }
 
 case class ObjectExprClause(key: QualifiedName, value: Expr) extends ObjectClause {
-  def toPair: (QualifiedName, Expr) = (key, value)
 }
 
 case class ObjectExprClauseOnValue(key: Expr, value: Expr) extends ObjectClause {
@@ -259,7 +258,6 @@ object ObjectExprClause {
 }
 
 implicit def toObjectExprClause(pair: (QualifiedName, Expr)): ObjectExprClause = ObjectExprClause(pair._1, pair._2)
-implicit def objectExprClauseTo(pair: ObjectExprClause): (QualifiedName, Expr) = (pair.key, pair.value)
 
 
 case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = None) extends ParsedExpr {
