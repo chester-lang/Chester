@@ -18,7 +18,7 @@ object BuiltinCtx {
   val builtinSyntax = Vector("data", "module")
 }
 
-case class LocalCtx()
+case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map())
 
 object LocalCtx {
   val Empty = LocalCtx()
@@ -37,6 +37,7 @@ class VectorReporter[T] extends Reporter[T] {
 }
 
 case class Judge(wellTyped: Term, ty: Term, effect: Term)
+case class JudgeNoEffect(wellTyped: Term, ty: Term)
 
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
 
