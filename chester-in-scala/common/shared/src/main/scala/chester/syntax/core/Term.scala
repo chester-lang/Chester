@@ -125,12 +125,24 @@ case class DivergeEffect(meta: Option[TermMeta] = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
 }
 
+private object ResolvedVarCounter {
+  var varIdCounter = 0
+}
 
-case class LocalVar(id: Id, ty: Term, meta: Option[TermMeta] = None) extends Term {
+case class VarId(id: Int)
+
+object VarId {
+  def generate: VarId = ResolvedVarCounter.synchronized {
+    ResolvedVarCounter.varIdCounter += 1
+    VarId(ResolvedVarCounter.varIdCounter)
+  }
+}
+
+case class LocalVar(id: Id, ty: Term, varId: VarId, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
-case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, meta: Option[TermMeta] = None) extends Term {
+case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, varId: VarId, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
 }
 
