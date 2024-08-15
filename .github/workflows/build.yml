@@ -75,6 +75,11 @@ jobs:
       run: sbt clean
       shell: bash
 
+    - name: Run Tests
+      working-directory: chester-in-scala
+      run: sbt test
+      shell: bash
+
     - name: Build Common JAR with SBT
       working-directory: chester-in-scala
       run: sbt common/assembly
@@ -88,11 +93,6 @@ jobs:
     - name: Build LSP JAR with SBT
       working-directory: chester-in-scala
       run: sbt lsp/assembly
-      shell: bash
-
-    - name: Run Tests
-      working-directory: chester-in-scala
-      run: sbt test
       shell: bash
 
     - name: Build Native Image for CLI
@@ -115,6 +115,13 @@ jobs:
       run: sbt lsp/nativeImage
       shell: bash
 
+    - name: Generate JS Artifacts
+      working-directory: chester-in-scala
+      run: |
+        sbt cliJS/fullLinkJS
+        mv chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+      shell: bash
+
     - name: List files for debugging
       run: find chester-in-scala -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
       shell: bash
@@ -129,6 +136,7 @@ jobs:
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
           chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           chester-in-scala/target/chester
           chester-in-scala/target/chester-lsp
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
@@ -142,6 +150,7 @@ jobs:
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
           chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           chester-in-scala/target/chester.exe
           chester-in-scala/target/chester-lsp.exe
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
@@ -158,6 +167,7 @@ jobs:
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
           chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           chester-in-scala/target/chester,
           chester-in-scala/target/chester-lsp,
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
@@ -174,6 +184,7 @@ jobs:
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
           chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           chester-in-scala/target/chester.exe,
           chester-in-scala/target/chester-lsp.exe,
           chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
