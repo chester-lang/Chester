@@ -62,6 +62,14 @@ case class ExpectedObjectTypeError() extends TyckError {
 }
 
 
-case class ExpectCase() extends TyckError {
+case class ExpectCase(x: Expr) extends TyckError {
   override def message: String = "case clause must have a pattern and a return expression"
+
+  override def cause: Some[Expr] = Some(x)
+}
+
+case class ExpectFullCaseBlock(block: Expr) extends TyckError {
+  override def message: String = s"Expected a full case block, got $block"
+
+  override def cause: Some[Expr] = Some(block)
 }

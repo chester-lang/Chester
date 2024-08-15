@@ -288,7 +288,13 @@ sealed trait DesaltExpr extends Expr
 case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
 
-  override def descent(operator: Expr => Expr): Expr = DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta)
+  override def descent(operator: Expr => Expr): DesaltCaseClause = DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta)
+}
+
+case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltMatching = copy(meta = updater(meta))
+
+  override def descent(operator: Expr => Expr): Expr = DesaltMatching(clauses.map(_.descent(operator)), meta)
 }
 
 case class FunctionExpr(telescope: Vector[MaybeTelescope], effect: Option[Expr], result: Option[Expr], body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
