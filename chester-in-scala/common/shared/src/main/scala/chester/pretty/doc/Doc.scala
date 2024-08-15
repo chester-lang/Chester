@@ -26,30 +26,32 @@ object Doc {
     val parts = loop(s.toList, Vector.empty, "")
     if (parts.isEmpty) Text("") else concat(parts *)
   }
-  
+
   val empty: Doc = ""
 
   def concat(docs: ToDoc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
 
   def colored(doc: ToDoc, color: Attribute): Doc = Colored(doc.toDoc, color)
 
+  @deprecated("please use <> family combinators instead")
   def line(repl: ToDoc): Doc = Line(repl.toDoc)
 
+  @deprecated("please use <> family combinators instead")
   def linebreak: Doc = line(text(""))
 
   def group(doc: ToDoc): Doc = Group(doc.toDoc)
 
-  def indented(indent: Indent, innerDoc: ToDoc): Doc = Indented(indent, innerDoc.toDoc)
+  def indented(innerDoc: ToDoc, indent: Indent = Indent.Default): Doc = Indented(indent, innerDoc.toDoc)
 
   def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc = {
     docs match {
-      case Seq() => begin.toDoc <> end.toDoc
-      case Seq(head) => begin.toDoc <> head.toDoc <> end.toDoc
-      case Seq(head, tail) => begin.toDoc <> head.toDoc <> sep.toDoc <> tail.toDoc <> end.toDoc
+      case Seq() => group(begin.toDoc <> end.toDoc)
+      case Seq(head) => group(begin.toDoc <> head.toDoc <> end.toDoc)
+      case Seq(head, tail) => group(begin.toDoc <> group(head.toDoc <> sep.toDoc) </> tail.toDoc <> end.toDoc)
       case Seq(head, tail*) =>
-        val init = head.toDoc <> sep.toDoc
-        val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc <> acc.toDoc }
-        begin.toDoc <> init <> last.toDoc
+        val init = group(head.toDoc <> sep.toDoc)
+        val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc </> acc.toDoc }
+        group(begin.toDoc <> init <> last.toDoc)
     }
   }
 }
@@ -114,6 +116,10 @@ case class Indented(indent: Indent, innerDoc: Doc) extends Doc
 enum Indent:
   case Spaces(count: Int)
   case Tab
+
+object Indent {
+  val Default: Indent = Spaces(2)
+}
 
 sealed trait Token
 
