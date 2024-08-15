@@ -1,3 +1,4 @@
+// TODO: More correctly implement toDoc
 package chester.syntax.core
 
 import chester.error._
