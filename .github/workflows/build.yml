@@ -72,7 +72,7 @@ jobs:
 
     - name: SBT Clean
       working-directory: chester-in-scala
-      run: sbt clean
+      run: sbt -J-Xmx4G clean
       shell: bash
       # for some reason clean calls stImport and stImport usually fails at first run
       continue-on-error: true
@@ -80,32 +80,32 @@ jobs:
     # maybe test will fail on the first try because of stImport, the typescript to scala thing.
     - name: Run Tests
       working-directory: chester-in-scala
-      run: sbt test || sbt test
+      run: sbt -J-Xmx4G test || sbt -J-Xmx4G test
       shell: bash
 
     - name: Build Common JAR with SBT
       working-directory: chester-in-scala
-      run: sbt common/assembly
+      run: sbt -J-Xmx4G common/assembly
       shell: bash
 
     - name: Build CLI JAR with SBT
       working-directory: chester-in-scala
-      run: sbt cli/assembly
+      run: sbt -J-Xmx4G cli/assembly
       shell: bash
 
     - name: Build LSP JAR with SBT
       working-directory: chester-in-scala
-      run: sbt lsp/assembly
+      run: sbt -J-Xmx4G lsp/assembly
       shell: bash
 
     - name: Build Native Image for CLI
       working-directory: chester-in-scala
-      run: sbt cli/nativeImage
+      run: sbt -J-Xmx4G cli/nativeImage
       shell: bash
 
     - name: Build CLI Native Executable
       working-directory: chester-in-scala
-      run: sbt cliNative/nativeLink
+      run: sbt -J-Xmx4G cliNative/nativeLink
       shell: bash
 
     - name: Test Native Image for CLI integrity
@@ -115,13 +115,13 @@ jobs:
 
     - name: Build Native Image for LSP
       working-directory: chester-in-scala
-      run: sbt lsp/nativeImage
+      run: sbt -J-Xmx4G lsp/nativeImage
       shell: bash
 
     - name: Generate JS Artifacts
       working-directory: chester-in-scala
       run: |
-        sbt cliJS/fullLinkJS
+        sbt -J-Xmx4G cliJS/fullLinkJS
         mv cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
       shell: bash
 
