@@ -127,7 +127,7 @@ jobs:
       working-directory: chester-in-scala
       run: |
         sbt cliJS/fullLinkJS
-        mv chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+        mv cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
       shell: bash
 
     - name: List files for debugging
