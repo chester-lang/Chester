@@ -6,18 +6,19 @@ import chester.error._
 
 case class DesugarInfo()
 
-case class DesaltCaseClause(pattern: Expr, returning: Expr)
-object DesaltCaseClauseMatch {
+private object DesaltCaseClauseMatch {
   @throws[TyckError]
-  def unapply(x: Expr): Option[(Expr, Expr)] = x match {
-    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.>=, _), returning), _) => Some(pattern, returning)
+  def unapply(x: Expr): Option[(Expr, Expr, Option[ExprMeta])] = x match {
+    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.>=, _), returning), meta) => Some(pattern, returning, meta)
     case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => throw ExpectCase()
+    case _ => None
   }
 }
 
 case class Desalt(info: DesugarInfo) {
   @throws[TyckError]
   def desugar(expr: Expr): Expr = expr.descentAndApply {
+    case DesaltCaseClauseMatch(pattern, returning, meta) => DesaltCaseClause(pattern, returning, meta)
     case OpSeq(seq, _) => ???
     case default => default
   }

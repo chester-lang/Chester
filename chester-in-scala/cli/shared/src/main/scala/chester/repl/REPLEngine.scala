@@ -90,7 +90,7 @@ class REPLEngine(terminalFactory: TerminalFactory) {
     }
   }
 
-  private def typeCheck(expr: Expr): Either[Vector[chester.tyck.TyckError], Judge] = {
+  private def typeCheck(expr: Expr): Either[Vector[chester.error.TyckError], Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
     ExprTycker.synthesizeV0(expr, initialState, initialCtx)

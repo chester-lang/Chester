@@ -2,8 +2,8 @@ package chester.tyck.stmt
 
 import chester.resolve.MacroExpander
 import chester.syntax.concrete.ResolvingModule
-import chester.tyck.*
-import chester.error._
+import chester.error.*
+import chester.tyck.Getting
 
 case class ModuleTyckState()
 

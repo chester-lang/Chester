@@ -282,3 +282,11 @@ case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[Expr
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Keyword = copy(meta = updater(meta))
 }
+
+sealed trait DesaltExpr extends Expr
+
+case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
+  override def descent(operator: Expr => Expr): Expr = DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta)
+  
+}
