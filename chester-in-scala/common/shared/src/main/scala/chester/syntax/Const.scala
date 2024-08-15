@@ -5,4 +5,5 @@ object Const {
   val Data: String = "data"
   val Trait: String = "trait"
   val Implement: String = "implement"
+  val `>=`: String = ">="
 }

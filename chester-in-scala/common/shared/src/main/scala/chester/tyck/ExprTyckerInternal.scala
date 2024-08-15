@@ -1,7 +1,7 @@
 package chester.tyck
 
 import cats.data.State
-import chester.error.SourcePos
+import chester.error._
 import chester.syntax.Id
 import chester.syntax.concrete.*
 import chester.syntax.core.*
@@ -48,61 +48,6 @@ case class JudgeNoEffect(wellTyped: Term, ty: Term)
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
 
 type Tyck = Get[TyckWarning, TyckError, TyckState]
-
-trait TyckErrorOrWarning {
-  def message: String
-
-  def cause: Option[Term | Expr]
-
-  def location: Option[SourcePos] = cause match {
-    case Some(term: Term) => term.sourcePos
-    case Some(expr: Expr) => expr.sourcePos
-    case _ => None
-  }
-
-  val stack: Array[StackTraceElement] = new Exception().getStackTrace
-}
-
-trait TyckError extends TyckErrorOrWarning {
-}
-
-trait TyckWarning extends TyckErrorOrWarning {
-
-}
-
-case class EmptyResultsError() extends TyckError {
-  def message: String = "Empty Results"
-
-  def cause: Option[Term | Expr] = None
-}
-
-case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
-  def message: String = s"Unification failed: $subType is not a subtype of $superType"
-
-  def cause: Option[Term | Expr] = Some(subType)
-}
-
-case class UnsupportedExpressionError(expr: Expr) extends TyckError {
-  def message: String = s"Unsupported expression type: $expr"
-
-  def cause: Option[Term | Expr] = Some(expr)
-}
-
-case class FieldTypeNotFoundError(qualifiedName: QualifiedName|String) extends TyckError {
-  def message: String = s"Field type not found for $qualifiedName"
-
-  def cause: Option[Term | Expr] = qualifiedName match {
-    case x: Term => Some(x)
-    case x: Expr => Some(x)
-    case _ => None
-  }
-}
-
-case class ExpectedObjectTypeError() extends TyckError {
-  def message: String = "Expected an ObjectType for inheritance"
-
-  def cause: Option[Term | Expr] = None
-}
 
 case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[(S, T)])]) {
 

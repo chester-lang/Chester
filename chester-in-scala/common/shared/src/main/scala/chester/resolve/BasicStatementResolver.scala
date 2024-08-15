@@ -3,7 +3,7 @@ package chester.resolve
 import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.syntax.concrete.stmt.*
-import chester.tyck.{TyckError, TyckWarning, UnsupportedExpressionError}
+import chester.error._
 
 import scala.annotation.tailrec
 

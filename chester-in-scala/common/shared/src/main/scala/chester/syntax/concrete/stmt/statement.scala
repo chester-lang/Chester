@@ -3,7 +3,7 @@ package chester.syntax.concrete.stmt
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.concrete.{Expr, ExprMeta}
 import chester.syntax.{Id, UnresolvedID}
-import chester.tyck.{TyckError, TyckWarning}
+import chester.error._
 
 sealed trait Statement {
   def meta: Option[ExprMeta]

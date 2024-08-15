@@ -1,11 +1,10 @@
 package chester.syntax.core
 
-import chester.error.{SourcePos, WithPos}
+import chester.error._
 import chester.pretty.const.ColorProfile
 import chester.pretty.doc.*
 import chester.pretty.doc.Implicits.*
 import chester.syntax.{Id, QualifiedIDString}
-import chester.tyck.TyckError
 import chester.utils.encodeString
 
 case class TermMeta(sourcePos: Option[SourcePos])

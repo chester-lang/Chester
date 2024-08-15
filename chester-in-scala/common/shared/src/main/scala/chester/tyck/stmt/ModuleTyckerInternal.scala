@@ -3,6 +3,7 @@ package chester.tyck.stmt
 import chester.resolve.MacroExpander
 import chester.syntax.concrete.ResolvingModule
 import chester.tyck.*
+import chester.error._
 
 case class ModuleTyckState()
 
