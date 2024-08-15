@@ -20,7 +20,7 @@ case object SimpleDesalt {
   def desugar(expr: Expr): Expr = expr.descentAndApply {
     case DesaltCaseClauseMatch(pattern, returning, meta) => DesaltCaseClause(pattern, returning, meta)
     case b@Block(heads, tail, meta) if heads.contains(DesaltCaseClause) || tail.contains(DesaltCaseClause) => {
-      if (tail.nonEmpty || !heads.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
+      if (heads.isEmpty || tail.nonEmpty || !heads.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
       val heads1: Vector[DesaltCaseClause] = heads.map(_.asInstanceOf[DesaltCaseClause])
       DesaltMatching(heads1, meta)
     }
