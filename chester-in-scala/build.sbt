@@ -60,31 +60,19 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.scalameta" %%% "munit" % "1.0.0" % Test,
     ),
     assembly / assemblyJarName := "common.jar",
-    commonSettings
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "pprint" % "0.9.0"
+    )
   )
   .jvmSettings(
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0"
-    )
   )
   .jsSettings(
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0"
-    )
   )
   .nativeSettings(
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "fansi" % "0.4.0",
-      "org.typelevel" %%% "cats-core" % "2.11.0",
-      "com.lihaoyi" %%% "fastparse" % "3.0.2",
-      "com.lihaoyi" %%% "pprint" % "0.8.1"
-    )
   )
 
 // Blocking Scala Native 0.5:
@@ -101,7 +89,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     libraryDependencies ++= Seq(
-      "com.monovore" %%% "decline" % "2.4.1"
+      "com.github.scopt" %%% "scopt" % "4.1.0"
     ),
     commonSettings
   )
@@ -126,7 +114,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "io.github.edadma" %%% "readline" % "0.1.3"
+      //"io.github.edadma" %%% "readline" % "0.1.3"
     ),
     scalacOptions ++= (if (unix && permitGPLcontamination) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
