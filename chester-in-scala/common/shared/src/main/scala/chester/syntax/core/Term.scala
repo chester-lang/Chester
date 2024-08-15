@@ -3,7 +3,6 @@ package chester.syntax.core
 import chester.error._
 import chester.pretty.const.ColorProfile
 import chester.pretty.doc.*
-import chester.pretty.doc.Implicits.*
 import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.encodeString
 

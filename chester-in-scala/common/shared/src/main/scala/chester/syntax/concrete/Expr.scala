@@ -1,6 +1,7 @@
 package chester.syntax.concrete
 
 import chester.error.{SourcePos, WithPos}
+import chester.pretty.doc._
 import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.encodeString
 
@@ -29,7 +30,7 @@ object MetaFactory {
   }
 }
 
-sealed trait Expr extends WithPos {
+sealed trait Expr extends WithPos with ToDoc {
   def descent(operator: Expr => Expr): Expr = this
 
   def descentAndApply(operator: Expr => Expr): Expr = operator(this.descent(operator))
@@ -62,10 +63,14 @@ case class Identifier(name: String, meta: Option[ExprMeta] = None) extends Parse
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Identifier = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name)
 }
 
 case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedIdentifier = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.toString) <> Doc.text(".") <> name
 }
 
 // infix prefix postfix
@@ -75,6 +80,8 @@ case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends Parse
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): OpSeq = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = seq.map(_.toDoc).reduce(_ </> _)
 }
 
 case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = None) extends Expr {
@@ -83,6 +90,8 @@ case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = Non
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Infix = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = left.toDoc </> op.toDoc </> right.toDoc
 }
 
 case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
@@ -91,6 +100,8 @@ case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extend
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Prefix = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = op.toDoc </> operand.toDoc
 }
 
 case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
@@ -99,6 +110,8 @@ case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) exten
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Postfix = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = operand.toDoc </> op.toDoc
 }
 
 case class Block(heads: Vector[Expr], tail: Option[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -107,6 +120,14 @@ case class Block(heads: Vector[Expr], tail: Option[Expr], meta: Option[ExprMeta]
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Block = copy(meta = updater(meta))
+  
+  // toDoc: generate like { head1; head2; tail }
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val headDocs = heads.map(_.toDoc)
+    val tailDoc: Doc = tail.map(_.toDoc).getOrElse("")
+    val headDoc = headDocs.reduce(_ <> Doc.text(";") </> _)
+    headDoc </> tailDoc
+  }
 }
 
 object Block {
@@ -128,6 +149,15 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifi
     case Arg(decorations, name, ty, exorOrDefault, false) => s"Arg($decorations,$name,$ty,$exorOrDefault)"
     case Arg(decorations, name, ty, exorOrDefault, vararg) => s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
   }
+
+  def toDoc(implicit options: PrettierOptions): Doc = {
+    val decDoc = decorations.map(_.toDoc).reduce(_ <> _)
+    val nameDoc = name.map(_.toDoc).getOrElse(Doc.empty)
+    val tyDoc = ty.map(_.toDoc).getOrElse(Doc.empty)
+    val exprDoc = exprOrDefault.map(_.toDoc).getOrElse(Doc.empty)
+    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
+    decDoc <> nameDoc <> tyDoc <> exprDoc <> varargDoc
+  }
 }
 
 object Arg {
@@ -146,14 +176,18 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Tuple = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ",")(terms: _*)
 }
 
-case class Telescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope {
+case class Telescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
   override def descent(operator: Expr => Expr): Telescope = {
     Telescope(args.map(_.descentAndApply(operator)), implicitly, meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Telescope = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")")(args.map(_.toDoc)*)
 }
 
 object Telescope {
@@ -166,6 +200,8 @@ case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = function.toDoc <> telescope.toDoc
 }
 
 case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -186,6 +222,8 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], m
       case _ => false
     }
   }
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc <> Doc.text(".") <> field.toDoc <> telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty)
 }
 
 type QualifiedName = DotCall | Identifier
@@ -198,10 +236,14 @@ sealed trait NumberLiteral extends ParsedExpr
 
 case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends NumberLiteral {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
 case class DoubleLiteral(value: BigDecimal, meta: Option[ExprMeta] = None) extends NumberLiteral {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
 case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -211,10 +253,14 @@ case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends P
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"")
 }
 
 case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value)
 }
 
 case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
@@ -223,18 +269,24 @@ case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends 
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ListExpr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]")(terms: _*)
 }
 
 case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): HoleExpr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("?") <> Doc.text(description)
 }
 
-case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) extends Expr {
+case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def descent(operator: Expr => Expr): Expr = {
     TypeAnnotation(expr.descentAndApply(operator), ty.descentAndApply(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): TypeAnnotation = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc <> Doc.text(":") <> ty.toDoc
 }
 
 case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescope], expr: Expr, meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -243,6 +295,8 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescop
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): AnnotatedExpr = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = annotation.toDoc <> telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty) <> expr.toDoc
 }
 
 sealed trait ObjectClause {
@@ -273,6 +327,13 @@ case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = No
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ObjectExpr = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}") (
+    clauses.map {
+      case ObjectExprClause(key, value) => key.toDoc <> Doc.text(":") <> value.toDoc
+      case ObjectExprClauseOnValue(key, value) => key.toDoc <> value.toDoc
+    } *
+  )
 }
 
 case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -281,6 +342,8 @@ case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[Expr
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Keyword = copy(meta = updater(meta))
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(key) <> telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty)
 }
 
 sealed trait DesaltExpr extends Expr
@@ -289,16 +352,30 @@ case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMet
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
 
   override def descent(operator: Expr => Expr): DesaltCaseClause = DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta)
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("case") <> pattern.toDoc <> Doc.text("=>") <> returning.toDoc
 }
 
 case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltMatching = copy(meta = updater(meta))
 
   override def descent(operator: Expr => Expr): Expr = DesaltMatching(clauses.map(_.descent(operator)), meta)
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}") (
+    clauses.map(_.toDoc)*
+    )
 }
 
 case class FunctionExpr(telescope: Vector[MaybeTelescope], effect: Option[Expr], result: Option[Expr], body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
 
   override def descent(operator: Expr => Expr): Expr = FunctionExpr(telescope.map(_.descent(operator)), effect.map(_.descentAndApply(operator)), result.map(_.descentAndApply(operator)), body.descentAndApply(operator), meta)
+  
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val telescopeDoc = telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty)
+    val effectDoc = effect.map(_.toDoc).getOrElse(Doc.empty)
+    val resultDoc = result.map(_.toDoc).getOrElse(Doc.empty)
+    val bodyDoc = body.toDoc
+    telescopeDoc <> effectDoc <> resultDoc <> bodyDoc
+  }
 }

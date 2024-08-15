@@ -3,7 +3,6 @@ package chester.repl
 import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.pretty.const.Colors
 import chester.pretty.doc.*
-import chester.pretty.doc.Implicits.*
 import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import fansi.*

@@ -26,6 +26,8 @@ object Doc {
     val parts = loop(s.toList, Vector.empty, "")
     if (parts.isEmpty) Text("") else concat(parts *)
   }
+  
+  val empty: Doc = ""
 
   def concat(docs: ToDoc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
 
@@ -79,6 +81,7 @@ import chester.pretty.doc.Doc.*
 
 extension (d: ToDoc) {
   def <>(other: ToDoc): Doc = concat(d, other.toDoc)
+  @deprecated("Use </> or <\\> instead")
   def <+>(other: ToDoc): Doc = concat(d, text(" "), other.toDoc)
   def </>(other: ToDoc): Doc = concat(d, line(text(" ")), other.toDoc)
   def <\>(other: ToDoc): Doc = concat(d, line(text("")), other.toDoc)
