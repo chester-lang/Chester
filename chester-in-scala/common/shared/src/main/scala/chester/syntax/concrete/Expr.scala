@@ -53,6 +53,8 @@ sealed trait Expr extends WithPos with ToDoc {
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 
   def commentInfo: Option[CommentInfo] = meta.flatMap(_.commentInfo)
+
+  override def toString: String = render(this)
 }
 
 sealed trait ParsedExpr extends Expr
