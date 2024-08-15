@@ -15,11 +15,21 @@ private object DesaltCaseClauseMatch {
   }
 }
 
-case class Desalt(info: DesugarInfo) {
+case object SimpleDesalt {
   @throws[TyckError]
   def desugar(expr: Expr): Expr = expr.descentAndApply {
     case DesaltCaseClauseMatch(pattern, returning, meta) => DesaltCaseClause(pattern, returning, meta)
-    case OpSeq(seq, _) => ???
     case default => default
   }
+
+  def desugarEither(expr: Expr): Either[TyckError, Expr] = try {
+    Right(desugar(expr))
+  } catch {
+    case e: TyckError => Left(e)
+  }
+}
+
+case object OpSeqDesalt {
+  @throws[TyckError]
+  def desugar(expr: Expr): Expr = ???
 }
