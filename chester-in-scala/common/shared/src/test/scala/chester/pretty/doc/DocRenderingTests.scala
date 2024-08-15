@@ -36,25 +36,25 @@ class DocRenderingTests extends FunSuite {
   }
 
   test("Render indented text with spaces") {
-    val doc = indented(text("Indented Text"),Indent.Spaces(4))
+    val doc = indented(text("Indented Text"), Indent.Spaces(4))
     val rendered = render(doc, 80)(StringRenderer)
     assertEquals(rendered, "    Indented Text")
   }
 
   test("Render indented text with tabs") {
-    val doc = indented( text("Indented Text"), Indent.Tab)
+    val doc = indented(text("Indented Text"), Indent.Tab)
     val rendered = render(doc, 80)(StringRenderer)
     assertEquals(rendered, "\tIndented Text")
   }
 
   test("Render mixed document") {
-    val doc = text("Hello") <+> text("World") </> indented( text("Indented Text"),Indent.Spaces(2))
+    val doc = text("Hello") <+> text("World") </> indented(text("Indented Text"), Indent.Spaces(2))
     val rendered = render(doc, 999)(StringRenderer)
     assertEquals(rendered, "Hello World Indented Text")
   }
   test("Render mixed document") {
-    val doc = text("Hello") <+> text("World") </> indented( text("Indented Text"),Indent.Spaces(2))
-    val rendered = render(doc, 2)(StringRenderer)
+    val doc = text("Hello") <+> text("World") </> indented(text("Indented Text"), Indent.Spaces(2))
+    val rendered = render(doc, 2, useCRLF = false)(StringRenderer)
     assertEquals(rendered, "Hello World\n  Indented Text")
   }
 }
