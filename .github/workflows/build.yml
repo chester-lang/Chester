@@ -70,22 +70,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
-    # for some reason clean calls stImport and stImport usually fails at first run
-    - name: SBT Clean 0
+    - name: SBT Clean
       working-directory: chester-in-scala
       run: sbt clean
       shell: bash
+      # for some reason clean calls stImport and stImport usually fails at first run
       continue-on-error: true
 
-    - name: SBT Clean 1
-      working-directory: chester-in-scala
-      run: sbt clean
-      shell: bash
-      continue-on-error: true
-
+    # maybe test will fail on the first try because of stImport, the typescript to scala thing.
     - name: Run Tests
       working-directory: chester-in-scala
-      run: sbt test
+      run: sbt test || sbt test
       shell: bash
 
     - name: Build Common JAR with SBT
