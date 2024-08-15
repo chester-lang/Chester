@@ -176,7 +176,7 @@ permanent authorization for you to choose that version for the
 Library.
 ```
 
-## License notice for linenoise from msteveb/jimtcl
+## License notice for linenoise from msteveb/jimtcl - cli/native/src/main/resources/scala-native/linenoise/
 
 https://github.com/msteveb/jimtcl/
 
