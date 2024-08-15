@@ -70,10 +70,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
-    - name: SBT Clean
+    # for some reason clean calls stImport and stImport usually fails at first run
+    - name: SBT Clean 0
       working-directory: chester-in-scala
       run: sbt clean
       shell: bash
+      continue-on-error: true
+
+    - name: SBT Clean 1
+      working-directory: chester-in-scala
+      run: sbt clean
+      shell: bash
+      continue-on-error: true
 
     - name: Run Tests
       working-directory: chester-in-scala
