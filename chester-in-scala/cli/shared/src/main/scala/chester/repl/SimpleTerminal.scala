@@ -3,13 +3,14 @@ package chester.repl
 import chester.parser.InputStatus.*
 import chester.parser.ParserEngine
 
+import scala.concurrent.Future
 import scala.io.StdIn
 
 class SimpleTerminal extends Terminal {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
-  def readLine(info: TerminalInfo): ReadLineResult = {
+  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
@@ -43,7 +44,7 @@ class SimpleTerminal extends Terminal {
         if (!continue) currentInputs = ""
       }
     }
-    result
+    Future.successful(result)
   }
 
   def close(): Unit = {}

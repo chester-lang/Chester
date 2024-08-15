@@ -3,6 +3,8 @@ package chester.repl
 import chester.parser.InputStatus.*
 import io.github.edadma.readline.facade.*
 
+import scala.concurrent.Future
+
 class ReadlineTerminal extends Terminal {
   private var history: Vector[String] = Vector()
   private val homeDir = System.getProperty("user.home")
@@ -30,7 +32,7 @@ class ReadlineTerminal extends Terminal {
     }
   }
 
-  def readLine(info: TerminalInfo): ReadLineResult = {
+  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
@@ -75,7 +77,7 @@ class ReadlineTerminal extends Terminal {
         }
       }
     }
-    result
+    Future.successful(result)
   }
 
   def close(): Unit = {

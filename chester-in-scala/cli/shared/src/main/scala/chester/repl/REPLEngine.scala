@@ -8,7 +8,9 @@ import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import fansi.*
 
-class REPLEngine(terminalFactory: TerminalFactory) {
+import scala.concurrent.{Future, ExecutionContext}
+
+class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext) {
 
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
@@ -21,52 +23,54 @@ class REPLEngine(terminalFactory: TerminalFactory) {
     override def continuationPrompt: String = continuationPrompt0.render
   }
 
-  def start(): Unit = {
-
+  def start(): Future[Unit] = {
     val terminal: Terminal = terminalFactory()
-    runREPL(terminal)
-  }
-
-  private def runREPL(terminal: Terminal): Unit = {
     println("Welcome to the Chester REPL!")
     println("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
-
-    var continue = true
-
-    while (continue) {
-      terminal.readLine(terminalInfo) match {
-        case LineRead(line) =>
-          line match {
-            case "exit" | ":q" =>
-              println("Exiting REPL.")
-              continue = false
-            case ":?" =>
-              println("Commands:")
-              println(":t <expr> - Check the type of an expression")
-              println(":q - Quit the REPL")
-              println("You can also just type any expression to evaluate it.")
-            case _ =>
-              if (line.startsWith(":t ")) {
-                val exprStr = line.drop(3)
-                handleTypeCheck(terminal, exprStr)
-              } else {
-                handleExpression(terminal, line)
-              }
-          }
-        case UserInterrupted =>
-          println("User interrupted the input. Continuing the REPL.")
-        case EndOfFile =>
-          println("End of input detected. Exiting REPL.")
-          continue = false
-        case chester.repl.StatusError(_) =>
-          println("Error reading input. Continuing the REPL.")
-      }
-    }
-
-    terminal.close()
+    runREPL(terminal).map(_ => terminal.close())
   }
 
-  private def handleTypeCheck(terminal: Terminal, exprStr: String): Unit = {
+  private def runREPL(terminal: Terminal): Future[Unit] = {
+    terminal.readLine(terminalInfo).flatMap {
+      case LineRead(line) =>
+        processLine(terminal, line).flatMap {
+          case true => runREPL(terminal)
+          case false => Future.successful(())
+        }
+      case UserInterrupted =>
+        println("User interrupted the input. Continuing the REPL.")
+        runREPL(terminal)
+      case EndOfFile =>
+        println("End of input detected. Exiting REPL.")
+        Future.successful(())
+      case chester.repl.StatusError(_) =>
+        println("Error reading input. Continuing the REPL.")
+        runREPL(terminal)
+    }
+  }
+
+  private def processLine(terminal: Terminal, line: String): Future[Boolean] = {
+    line match {
+      case "exit" | ":q" =>
+        println("Exiting REPL.")
+        Future.successful(false)
+      case ":?" =>
+        println("Commands:")
+        println(":t <expr> - Check the type of an expression")
+        println(":q - Quit the REPL")
+        println("You can also just type any expression to evaluate it.")
+        Future.successful(true)
+      case _ =>
+        if (line.startsWith(":t ")) {
+          val exprStr = line.drop(3)
+          handleTypeCheck(terminal, exprStr).map(_ => true)
+        } else {
+          handleExpression(terminal, line).map(_ => true)
+        }
+    }
+  }
+
+  private def handleTypeCheck(terminal: Terminal, exprStr: String): Future[Unit] = {
     ParserEngine.parseInput(terminal.getHistory, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -76,9 +80,10 @@ class REPLEngine(terminalFactory: TerminalFactory) {
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
     }
+    Future.successful(())
   }
 
-  private def handleExpression(terminal: Terminal, line: String): Unit = {
+  private def handleExpression(terminal: Terminal, line: String): Future[Unit] = {
     ParserEngine.parseInput(terminal.getHistory, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -88,6 +93,7 @@ class REPLEngine(terminalFactory: TerminalFactory) {
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
     }
+    Future.successful(())
   }
 
   private def typeCheck(expr: Expr): Either[Vector[chester.error.TyckError], Judge] = {
@@ -115,5 +121,5 @@ class REPLEngine(terminalFactory: TerminalFactory) {
 }
 
 object REPLEngine {
-  def apply(terminalFactory: TerminalFactory): REPLEngine = new REPLEngine(terminalFactory)
+  def apply(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext): REPLEngine = new REPLEngine(terminalFactory)
 }

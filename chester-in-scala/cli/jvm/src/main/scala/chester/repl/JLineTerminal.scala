@@ -6,6 +6,8 @@ import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.terminal.TerminalBuilder
+
+import scala.concurrent.Future
 class JLineTerminal extends Terminal {
   private val terminal = org.jline.terminal.TerminalBuilder.terminal()
   private val history = new org.jline.reader.impl.history.DefaultHistory()
@@ -20,7 +22,7 @@ class JLineTerminal extends Terminal {
     }
   }
 
-  def readLine(info: TerminalInfo): ReadLineResult = {
+  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
     val parser = createParser(info)
     val reader: org.jline.reader.LineReader = org.jline.reader.LineReaderBuilder.builder()
       .terminal(terminal)
@@ -66,7 +68,7 @@ class JLineTerminal extends Terminal {
           continue = false
       }
     }
-    result
+    Future.successful(result)
   }
 
   def close(): Unit = terminal.close()
