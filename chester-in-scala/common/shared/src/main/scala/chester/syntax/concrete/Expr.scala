@@ -25,7 +25,7 @@ object MetaFactory {
   def add(commentBefore: Vector[Comment] = Vector(), commentEndInThisLine: Vector[Comment] = Vector())(updateOn: Option[ExprMeta]): Option[ExprMeta] = (commentBefore, commentEndInThisLine, updateOn) match {
     case (Vector(), Vector(), _) => updateOn
     case (before, end, Some(ExprMeta(sourcePos, None))) => Some(ExprMeta(sourcePos, Some(CommentInfo(commentBefore = before, commentEndInThisLine = end))))
-    case (before, end, Some(ExprMeta(sourcePos, Some(commentInfo)))) => Some(ExprMeta(sourcePos, Some(commentInfo.copy(commentBefore = before++commentInfo.commentBefore, commentEndInThisLine = commentInfo.commentEndInThisLine ++ end))))
+    case (before, end, Some(ExprMeta(sourcePos, Some(commentInfo)))) => Some(ExprMeta(sourcePos, Some(commentInfo.copy(commentBefore = before ++ commentInfo.commentBefore, commentEndInThisLine = commentInfo.commentEndInThisLine ++ end))))
   }
 }
 
@@ -287,6 +287,12 @@ sealed trait DesaltExpr extends Expr
 
 case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
+
   override def descent(operator: Expr => Expr): Expr = DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta)
-  
+}
+
+case class FunctionExpr(telescope: Vector[MaybeTelescope], effect: Option[Expr], result: Option[Expr], body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
+
+  override def descent(operator: Expr => Expr): Expr = FunctionExpr(telescope.map(_.descent(operator)), effect.map(_.descentAndApply(operator)), result.map(_.descentAndApply(operator)), body.descentAndApply(operator), meta)
 }
