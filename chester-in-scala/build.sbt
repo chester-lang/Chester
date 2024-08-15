@@ -93,19 +93,20 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
-  .enablePlugins(NativeImagePlugin)
+  .jvmEnablePlugins(NativeImagePlugin)
+  .jsEnablePlugins(ScalablyTypedConverterPlugin)
   .dependsOn(common)
   .settings(
     name := "chester-cli",
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
-    nativeImageOutput := file("target") / "chester",
     libraryDependencies ++= Seq(
       "com.monovore" %%% "decline" % "2.4.1"
     ),
     commonSettings
   )
   .jvmSettings(
+    nativeImageOutput := file("target") / "chester",
     nativeImageVersion := graalVersion,
     nativeImageOptions := nativeImageOption,
     nativeImageJvm := graalVm,
@@ -117,7 +118,11 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     scalaJSUseMainModuleInitializer := true,
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
     libraryDependencies ++= Seq(
-    )
+    ),
+    Compile / npmDependencies ++= Seq(
+      "@types/node" -> "22.3.0"
+    ),
+    stIgnore += "globals"
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -128,7 +133,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("lsp"))
-  .enablePlugins(NativeImagePlugin)
+  .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
     name := "chester-lsp",
