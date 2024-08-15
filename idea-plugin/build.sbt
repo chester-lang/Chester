@@ -5,7 +5,7 @@ lazy val myAwesomeFramework =
     .enablePlugins(SbtIdeaPlugin)
     .settings(
       version := "0.0.1-SNAPSHOT",
-      scalaVersion := "3.4.2",
+      scalaVersion := "3.5.0-RC7",
       ThisBuild / intellijPluginName := "My Awesome Framework",
       ThisBuild / intellijBuild      := "231.9011.34",
       ThisBuild / intellijPlatform   := IntelliJPlatform.IdeaCommunity,
