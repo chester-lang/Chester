@@ -1,6 +1,7 @@
 package chester.pretty.doc
 
 import chester.pretty
+import chester.utils.platformUseCRLF
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -281,7 +282,5 @@ abstract class Renderer[T]:
     val tokens = pretty.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
-private val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
-private val unix: Boolean = !windows
-def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = windows)(implicit renderer: Renderer[T]): T =
+def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit renderer: Renderer[T]): T =
   renderer.render(doc.toDoc, maxWidth, useCRLF)
