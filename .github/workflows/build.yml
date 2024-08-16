@@ -34,12 +34,15 @@ jobs:
     - name: Pick and display a random JDK version and distribution
       id: pick-jdk
       run: |
-        JDK_VERSION=$(shuf -e 8 11 17 -n 1)
-        JDK_DISTRIBUTION=$(shuf -e temurin semeru oracle -n 1)
+        JDK_VERSIONS=(8 11 17)
+        JDK_DISTRIBUTIONS=(temurin semeru oracle)
+        JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
+        JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
         echo "Selected JDK version: $JDK_VERSION"
         echo "Selected JDK distribution: $JDK_DISTRIBUTION"
         echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
         echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
+      shell: bash
 
     - name: Setup Java
       uses: actions/setup-java@v4
