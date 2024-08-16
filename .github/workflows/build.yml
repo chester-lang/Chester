@@ -34,7 +34,7 @@ jobs:
     - name: Pick and display a random JDK version and distribution
       id: pick-jdk
       run: |
-        JDK_VERSIONS=(8 11 17)
+        JDK_VERSIONS=(8 11 17 21)
         JDK_DISTRIBUTIONS=(temurin semeru oracle)
 
         while true; do
