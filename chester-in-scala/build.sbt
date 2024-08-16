@@ -1,8 +1,16 @@
+import java.nio.file.{Files, Paths}
 import scala.scalanative.build.*
 
 val scala3Version = "3.5.0-RC7"
-val graalVm = "graalvm-java22"
-val graalVersion = "22.0.2"
+
+val path2022 = Paths.get("C:\\Program Files\\Microsoft Visual Studio\\2022")
+val path2019 = Paths.get("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019")
+val path2022Exists = Files.exists(path2022)
+val path2019Exists = Files.exists(path2019)
+val vs2019 = path2019Exists && !path2022Exists
+val graalVm = if(vs2019) "graalvm-java21" else "graalvm-java22"
+val graalVersion = if(vs2019) "21.0.2" else "22.0.2"
+
 val nativeImageOption = Seq(
   "--verbose",
   "--no-fallback",
