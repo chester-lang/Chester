@@ -2,7 +2,7 @@ package chester.utils
 
 import com.eed3si9n.ifdef._
 
-@ifndef("jdk17")
+//@ifndef("jdk17")
 def codePointIsEmoji(codePoint: Int): Boolean = {
   (codePoint >= 0x1F600 && codePoint <= 0x1F64F) || // Emoticons
     (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) || // Miscellaneous Symbols and Pictographs
@@ -12,7 +12,7 @@ def codePointIsEmoji(codePoint: Int): Boolean = {
     (codePoint >= 0xF0000 && codePoint <= 0xFFFFF) || // Supplementary Private Use Area B
     (codePoint >= 0x100000 && codePoint <= 0x10FFFF) // Supplementary Private Use Area B continuation
 }
-
+/*
 @ifdef("jdk17")
 def codePointIsEmoji(codePoint: Int): Boolean = {
   val block = Character.UnicodeBlock.of(codePoint)
@@ -24,3 +24,4 @@ def codePointIsEmoji(codePoint: Int): Boolean = {
     block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_A ||
     block == Character.UnicodeBlock.SUPPLEMENTARY_PRIVATE_USE_AREA_B
 }
+*/
