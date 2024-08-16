@@ -35,7 +35,7 @@ jobs:
       id: pick-jdk
       run: |
         JDK_VERSIONS=(8 11 17 21 22)
-        JDK_DISTRIBUTIONS=(temurin semeru oracle)
+        JDK_DISTRIBUTIONS=(temurin semeru oracle dragonwell)
 
         while true; do
           JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
@@ -45,6 +45,8 @@ jobs:
             echo "Oracle JDK requires version 17 or later. Retrying..."
           elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_VERSION" -lt 11 ]]; then
             echo "Apple Silicon (arm64) requires JDK 11 or later. Retrying..."
+          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_DISTRIBUTION" == semeru ]]; then
+            echo "Apple Silicon (arm64) has problems with semeru. Retrying..."
           else
             echo "Selected JDK version: $JDK_VERSION"
             echo "Selected JDK distribution: $JDK_DISTRIBUTION"
