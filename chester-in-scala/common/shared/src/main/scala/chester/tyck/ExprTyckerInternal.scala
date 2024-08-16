@@ -1,7 +1,8 @@
 package chester.tyck
 
 import cats.data.State
-import chester.error._
+import chester.error.*
+import chester.resolve.ExprResolver
 import chester.syntax.Id
 import chester.syntax.concrete.*
 import chester.syntax.core.*
@@ -49,6 +50,7 @@ case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBo
 
 type Tyck = Get[TyckWarning, TyckError, TyckState]
 
+@deprecated
 case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[(S, T)])]) {
 
   def map[U](f: T => U): Getting[W, E, S, U] = Getting { state =>
@@ -117,6 +119,7 @@ case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[
   }
 }
 
+@deprecated
 object Getting {
   def pure[W, E, S, T](x: T): Getting[W, E, S, T] = Getting(state => LazyList((Vector.empty, Vector.empty, Some((state, x)))))
 
@@ -132,8 +135,6 @@ object Getting {
 implicit def stateToGetting[W, E, T, U](state: State[T, U]): Getting[W, E, T, U] = Getting { s =>
   LazyList((Vector.empty, Vector.empty, Some(state.run(s).value)))
 }
-
-type TyckGetting[T] = Getting[TyckWarning, TyckError, TyckState, T]
 
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: Tyck) {
 
@@ -233,7 +234,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   def synthesizeBlock(block: Block): Judge = {???
   }
 
-  def synthesize(expr: Expr): Judge = expr match {
+  def synthesize(expr: Expr): Judge = resolve(expr) match {
     case IntegerLiteral(value, meta) =>
       val termMeta = convertMeta(meta)
       Judge(IntegerTerm(value, termMeta), IntegerType(termMeta), NoEffect(termMeta))
@@ -327,9 +328,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     S.state.value = newState // Update the state with the new state from the normalizer
     normalizedTerm
   }
+  
+  def resolve(expr: Expr): Expr = {
+    ExprResolver.resolve(localCtx, expr, S.errors)
+  }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    (expr, whnf(ty)) match {
+    (resolve(expr), whnf(ty)) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect(None))))
