@@ -137,6 +137,16 @@ jobs:
       run: sbt cliNative/nativeLink
       shell: bash
 
+    - name: Rename CLI Native Executable
+      working-directory: chester-in-scala
+      run: |
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester-out.exe
+        else
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester-out
+        fi
+      shell: bash
+
     - name: Test Native Image for CLI integrity
       working-directory: chester-in-scala
       run: ./target/chester integrity
