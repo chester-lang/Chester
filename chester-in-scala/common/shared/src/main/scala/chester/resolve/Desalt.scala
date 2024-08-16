@@ -3,6 +3,7 @@ package chester.resolve
 import chester.syntax.concrete.*
 import chester.syntax.Const
 import chester.error._
+import cats.implicits._
 
 case class DesugarInfo()
 
@@ -13,6 +14,16 @@ private object DesaltCaseClauseMatch {
     case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => throw ExpectCase(x)
     case _ => None
   }
+}
+
+private object MatchDeclarationTelescope {
+  @throws[TyckError]
+  def unapply(x: Expr): Option[Telescope] = ???
+}
+
+private object MatchApplyingTelescope {
+  @throws[TyckError]
+  def unapply(x: Expr): Option[Telescope] = ???
 }
 
 private object DesaltSimpleFunction {
@@ -26,7 +37,10 @@ private object DesaltSimpleFunction {
       val index = xs.indexWhere(predicate)
       val before = xs.take(index)
       val after = xs.drop(index + 1)
-      ???
+      (before.traverse(MatchDeclarationTelescope.unapply), after) match {
+        case (Some(Vector(telescope*)),Vector(body)) => ???
+        case _ => ???
+      }
     }
     case _ => None
   }
