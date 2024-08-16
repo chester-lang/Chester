@@ -124,9 +124,9 @@ jobs:
       working-directory: chester-in-scala
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester-out.exe
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
         else
-          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester-out
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
         fi
       shell: bash
 
