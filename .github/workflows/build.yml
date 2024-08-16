@@ -48,6 +48,7 @@ jobs:
           else
             echo "Selected JDK version: $JDK_VERSION"
             echo "Selected JDK distribution: $JDK_DISTRIBUTION"
+            echo "Running on: $RUNNER_OS $RUNNER_ARCH"
             echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
             echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
             break
