@@ -38,7 +38,7 @@ jobs:
         if [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" ]]; then
           JDK_VERSION=11
         fi
-        JDK_DISTRIBUTION=semeru
+        JDK_DISTRIBUTION=temurin
         echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
         echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
       shell: bash
