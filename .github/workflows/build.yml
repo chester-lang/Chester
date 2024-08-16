@@ -36,12 +36,23 @@ jobs:
       run: |
         JDK_VERSIONS=(8 11 17)
         JDK_DISTRIBUTIONS=(temurin semeru oracle)
-        JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
-        JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
-        echo "Selected JDK version: $JDK_VERSION"
-        echo "Selected JDK distribution: $JDK_DISTRIBUTION"
-        echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
-        echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
+
+        while true; do
+          JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
+          JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
+
+          if [[ "$JDK_DISTRIBUTION" == "oracle" && "$JDK_VERSION" -lt 17 ]]; then
+            echo "Oracle JDK requires version 17 or later. Retrying..."
+          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "arm64" && "$JDK_VERSION" -lt 11 ]]; then
+            echo "Apple Silicon (arm64) requires JDK 11 or later. Retrying..."
+          else
+            echo "Selected JDK version: $JDK_VERSION"
+            echo "Selected JDK distribution: $JDK_DISTRIBUTION"
+            echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
+            echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
+            break
+          fi
+        done
       shell: bash
 
     - name: Setup Java
