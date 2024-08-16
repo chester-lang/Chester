@@ -6,4 +6,5 @@ object Const {
   val Trait: String = "trait"
   val Implement: String = "implement"
   val `>=`: String = ">="
+  val Arrow: String = ">-"
 }
