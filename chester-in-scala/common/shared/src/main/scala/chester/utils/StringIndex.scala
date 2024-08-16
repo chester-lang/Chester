@@ -137,10 +137,6 @@ object StringIndex {
   }
 
   def apply(parserInput: ParserInput): StringIndex = {
-    def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
-      LazyList.iterate(0)(_ + pi.innerLength).takeWhile(pi.isReachable).map(pi.slice(_, pi.length))
-    }
-
     StringIndex(parserInputToLazyList(parserInput))
   }
 }

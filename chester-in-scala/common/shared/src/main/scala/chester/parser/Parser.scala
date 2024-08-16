@@ -5,7 +5,7 @@ import chester.syntax.IdentifierRules.*
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
 import chester.utils.parse.*
-import chester.utils.{StringIndex, normalizeFilePath, readFileFrom}
+import chester.utils.{StringIndex, normalizeFilePath, parserInputToLazyList, readFileFrom}
 import fastparse.*
 import fastparse.NoWhitespace.*
 
@@ -69,7 +69,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val range = RangeInFile(
       Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
       Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
-    Some(SourcePos(fileName, range))
+    Some(SourcePos(fileName, p.input, range))
   }
 
   private def createMeta(pos: Option[SourcePos], comments: Option[CommentInfo]): Option[ExprMeta] = {
