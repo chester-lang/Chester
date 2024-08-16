@@ -31,11 +31,21 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up JDK
+    - name: Pick and display a random JDK version and distribution
+      id: pick-jdk
+      run: |
+        JDK_VERSION=$(shuf -e 8 11 17 -n 1)
+        JDK_DISTRIBUTION=$(shuf -e temurin semeru oracle -n 1)
+        echo "Selected JDK version: $JDK_VERSION"
+        echo "Selected JDK distribution: $JDK_DISTRIBUTION"
+        echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
+        echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
+
+    - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        distribution: 'adopt'
-        java-version: '17'
+        distribution: ${{ env.JDK_DISTRIBUTION }}
+        java-version: ${{ env.JDK_VERSION }}
 
     - name: Install SBT on macOS
       if: runner.os == 'macOS'
