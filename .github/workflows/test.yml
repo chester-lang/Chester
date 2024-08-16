@@ -58,13 +58,9 @@ jobs:
       with:
         distribution: ${{ env.JDK_DISTRIBUTION }}
         java-version: ${{ env.JDK_VERSION }}
+        cache: sbt
 
-    - name: Install SBT on macOS
-      if: runner.os == 'macOS'
-      run: |
-        brew update
-        brew install sbt
-      shell: bash
+    - uses: sbt/setup-sbt@v1
 
     - name: Cache SBT
       uses: actions/cache@v4
