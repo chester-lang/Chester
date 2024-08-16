@@ -41,6 +41,12 @@ jobs:
           JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
           JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
 
+          # Hard code the lowest JDK version
+          JDK_VERSION=8
+          if [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" ]]; then
+            JDK_VERSION=11
+          fi
+
           if [[ "$JDK_DISTRIBUTION" == "oracle" && "$JDK_VERSION" -lt 17 ]]; then
             echo "Oracle JDK requires version 17 or later. Retrying..."
           elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_VERSION" -lt 11 ]]; then

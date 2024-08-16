@@ -1,0 +1,72 @@
+name: Test on Multiple JDKs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        jdk_version: [8, 11, 17, 21, 22]
+        jdk_distribution: [temurin, semeru, oracle, dragonwell]
+
+        exclude:
+          - jdk_version: 8
+            jdk_distribution: oracle
+          - jdk_version: 11
+            jdk_distribution: oracle
+
+          - os: macos-latest
+            jdk_distribution: semeru
+          - os: macos-latest
+            jdk_distribution: dragonwell
+
+    env:
+      SCALA_VERSION: '3.5.0-RC7'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: ${{ matrix.jdk_distribution }}
+        java-version: ${{ matrix.jdk_version }}
+
+    - name: Install SBT on macOS
+      if: runner.os == 'macOS'
+      run: |
+        brew update
+        brew install sbt
+      shell: bash
+
+    - name: Cache SBT
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.ivy2/cache
+          ~/.sbt
+          ~/.coursier
+          ~/.cache/coursier
+        key: sbt-${{ runner.os }}-${{ matrix.jdk_distribution }}-${{ matrix.jdk_version }}-${{ hashFiles('**/*.sbt') }}
+        restore-keys: |
+          sbt-${{ runner.os }}-${{ matrix.jdk_distribution }}-${{ matrix.jdk_version }}-
+
+    - name: SBT Clean
+      working-directory: chester-in-scala
+      run: sbt clean
+      shell: bash
+      continue-on-error: true
+
+    - name: Run Tests
+      working-directory: chester-in-scala
+      run: sbt test || sbt test
+      shell: bash
