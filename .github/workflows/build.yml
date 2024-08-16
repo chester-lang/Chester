@@ -31,39 +31,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Pick and display a random JDK version and distribution
+    - name: Pick and display a JDK version and distribution
       id: pick-jdk
       run: |
-        JDK_VERSIONS=(8 11 17 21 22)
-        JDK_DISTRIBUTIONS=(temurin semeru oracle dragonwell)
-
-        while true; do
-          JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
-          JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
-
-          # Hard code the lowest JDK version
-          JDK_VERSION=8
-          if [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" ]]; then
-            JDK_VERSION=11
-          fi
-
-          if [[ "$JDK_DISTRIBUTION" == "oracle" && "$JDK_VERSION" -lt 17 ]]; then
-            echo "Oracle JDK requires version 17 or later. Retrying..."
-          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_VERSION" -lt 11 ]]; then
-            echo "Apple Silicon (arm64) requires JDK 11 or later. Retrying..."
-          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_DISTRIBUTION" == semeru ]]; then
-            echo "Apple Silicon (arm64) has problems with semeru. Retrying..."
-          elif [[ "$RUNNER_OS" == "macOS" && "$JDK_DISTRIBUTION" == dragonwell ]]; then
-            echo "Apple Silicon has problems with dragonwell. Retrying..."
-          else
-            echo "Selected JDK version: $JDK_VERSION"
-            echo "Selected JDK distribution: $JDK_DISTRIBUTION"
-            echo "Running on: $RUNNER_OS $RUNNER_ARCH"
-            echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
-            echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
-            break
-          fi
-        done
+        JDK_VERSION=8
+        if [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" ]]; then
+          JDK_VERSION=11
+        fi
+        JDK_DISTRIBUTION=semeru
+        echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
+        echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
       shell: bash
 
     - name: Setup Java

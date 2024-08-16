@@ -13,21 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        jdk_version: [8, 11, 17, 21, 22]
-        jdk_distribution: [temurin, semeru, oracle, dragonwell]
-
-        exclude:
-          - jdk_version: 8
-            jdk_distribution: oracle
-          - jdk_version: 11
-            jdk_distribution: oracle
-          - jdk_version: 22
-            jdk_distribution: dragonwell
-          - os: macos-latest
-            jdk_distribution: semeru
-          - os: macos-latest
-            jdk_distribution: dragonwell
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,11 +22,40 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Pick and display a random JDK version and distribution
+      id: pick-jdk
+      run: |
+        JDK_VERSIONS=(8 11 17 21 22)
+        JDK_DISTRIBUTIONS=(temurin semeru oracle dragonwell)
+
+        while true; do
+          JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
+          JDK_DISTRIBUTION=${JDK_DISTRIBUTIONS[$RANDOM % ${#JDK_DISTRIBUTIONS[@]}]}
+
+          if [[ "$JDK_DISTRIBUTION" == "oracle" && "$JDK_VERSION" -lt 17 ]]; then
+            echo "Oracle JDK requires version 17 or later. Retrying..."
+          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_VERSION" -lt 11 ]]; then
+            echo "Apple Silicon (arm64) requires JDK 11 or later. Retrying..."
+          elif [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" && "$JDK_DISTRIBUTION" == semeru ]]; then
+            echo "Apple Silicon (arm64) has problems with semeru. Retrying..."
+          elif [[ "$RUNNER_OS" == "macOS" && "$JDK_DISTRIBUTION" == dragonwell ]]; then
+            echo "Apple Silicon has problems with dragonwell. Retrying..."
+          else
+            echo "Selected JDK version: $JDK_VERSION"
+            echo "Selected JDK distribution: $JDK_DISTRIBUTION"
+            echo "Running on: $RUNNER_OS $RUNNER_ARCH"
+            echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
+            echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
+            break
+          fi
+        done
+      shell: bash
+
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        distribution: ${{ matrix.jdk_distribution }}
-        java-version: ${{ matrix.jdk_version }}
+        distribution: ${{ env.JDK_DISTRIBUTION }}
+        java-version: ${{ env.JDK_VERSION }}
 
     - name: Install SBT on macOS
       if: runner.os == 'macOS'
