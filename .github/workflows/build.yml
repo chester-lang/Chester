@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             release_name: snapshot-linux
-          - os: windows-latest
+          - os: windows-2019
             release_name: snapshot-windows
-          - os: macos-latest
+          - os: macos-14
             release_name: snapshot-macos
-          - os: macos-13
+          - os: macos-12
             release_name: snapshot-macos-intel
 
     env:
