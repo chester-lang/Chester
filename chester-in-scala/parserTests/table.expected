@@ -8,15 +8,7 @@ Block(
               name = "x",
               meta = Some(
                 value = ExprMeta(
-                  sourcePos = Some(
-                    value = SourcePos(
-                      fileName = "parserTests/table.chester",
-                      range = RangeInFile(
-                        start = Pos(index = 2, line = 0, column = 2),
-                        end = Pos(index = 2, line = 0, column = 2)
-                      )
-                    )
-                  ),
+                  sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(2,0,2),Pos(2,0,2)))),
                   commentInfo = None
                 )
               )
@@ -25,15 +17,7 @@ Block(
               name = "x",
               meta = Some(
                 value = ExprMeta(
-                  sourcePos = Some(
-                    value = SourcePos(
-                      fileName = "parserTests/table.chester",
-                      range = RangeInFile(
-                        start = Pos(index = 4, line = 0, column = 4),
-                        end = Pos(index = 4, line = 0, column = 4)
-                      )
-                    )
-                  ),
+                  sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(4,0,4),Pos(4,0,4)))),
                   commentInfo = None
                 )
               )
@@ -41,15 +25,7 @@ Block(
             telescope = Vector(),
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/table.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 3, line = 0, column = 3),
-                      end = Pos(index = 4, line = 0, column = 4)
-                    )
-                  )
-                ),
+                sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(3,0,3),Pos(4,0,4)))),
                 commentInfo = None
               )
             )
@@ -58,15 +34,7 @@ Block(
             value = 0,
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/table.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 8, line = 0, column = 8),
-                      end = Pos(index = 8, line = 0, column = 8)
-                    )
-                  )
-                ),
+                sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(8,0,8),Pos(8,0,8)))),
                 commentInfo = None
               )
             )
@@ -77,15 +45,7 @@ Block(
             name = "y",
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/table.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 11, line = 0, column = 11),
-                      end = Pos(index = 11, line = 0, column = 11)
-                    )
-                  )
-                ),
+                sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(11,0,11),Pos(11,0,11)))),
                 commentInfo = None
               )
             )
@@ -99,15 +59,7 @@ Block(
                     value = "x",
                     meta = Some(
                       value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            fileName = "parserTests/table.chester",
-                            range = RangeInFile(
-                              start = Pos(index = 17, line = 0, column = 17),
-                              end = Pos(index = 19, line = 0, column = 19)
-                            )
-                          )
-                        ),
+                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(17,0,17),Pos(19,0,19)))),
                         commentInfo = None
                       )
                     )
@@ -116,15 +68,7 @@ Block(
                     name = "=>",
                     meta = Some(
                       value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            fileName = "parserTests/table.chester",
-                            range = RangeInFile(
-                              start = Pos(index = 21, line = 0, column = 21),
-                              end = Pos(index = 22, line = 0, column = 22)
-                            )
-                          )
-                        ),
+                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(21,0,21),Pos(22,0,22)))),
                         commentInfo = None
                       )
                     )
@@ -133,15 +77,7 @@ Block(
                     value = 1,
                     meta = Some(
                       value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            fileName = "parserTests/table.chester",
-                            range = RangeInFile(
-                              start = Pos(index = 24, line = 0, column = 24),
-                              end = Pos(index = 24, line = 0, column = 24)
-                            )
-                          )
-                        ),
+                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(24,0,24),Pos(24,0,24)))),
                         commentInfo = None
                       )
                     )
@@ -149,15 +85,7 @@ Block(
                 ),
                 meta = Some(
                   value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        fileName = "parserTests/table.chester",
-                        range = RangeInFile(
-                          start = Pos(index = 17, line = 0, column = 17),
-                          end = Pos(index = 19, line = 0, column = 19)
-                        )
-                      )
-                    ),
+                    sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(17,0,17),Pos(19,0,19)))),
                     commentInfo = None
                   )
                 )
@@ -165,15 +93,7 @@ Block(
             ),
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    fileName = "parserTests/table.chester",
-                    range = RangeInFile(
-                      start = Pos(index = 15, line = 0, column = 15),
-                      end = Pos(index = 26, line = 0, column = 26)
-                    )
-                  )
-                ),
+                sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(15,0,15),Pos(26,0,26)))),
                 commentInfo = None
               )
             )
@@ -182,12 +102,7 @@ Block(
       ),
       meta = Some(
         value = ExprMeta(
-          sourcePos = Some(
-            value = SourcePos(
-              fileName = "parserTests/table.chester",
-              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 28, line = 0, column = 28))
-            )
-          ),
+          sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(0,0,0),Pos(28,0,28)))),
           commentInfo = None
         )
       )
@@ -196,12 +111,7 @@ Block(
   tail = None,
   meta = Some(
     value = ExprMeta(
-      sourcePos = Some(
-        value = SourcePos(
-          fileName = "parserTests/table.chester",
-          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 28, line = 0, column = 28))
-        )
-      ),
+      sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(0,0,0),Pos(28,0,28)))),
       commentInfo = None
     )
   )

@@ -24,7 +24,7 @@ object FileContent {
   }
 }
 
-case class SourcePos(fileName: String, fileContent: FileContent, range: RangeInFile) {
+class SourcePos(val fileName: String, val fileContent: FileContent, val range: RangeInFile) {
   def combine(other: SourcePos): SourcePos = {
     if (fileName != other.fileName) {
       throw new IllegalArgumentException("Cannot combine source positions from different files")
@@ -40,6 +40,12 @@ case class SourcePos(fileName: String, fileContent: FileContent, range: RangeInF
   }
 
   override def toString: String = s"SourcePos(\"${encodeString(fileName)}\",${range})"
+}
+
+object SourcePos {
+  def apply(fileName: String, fileContent: FileContent, range: RangeInFile): SourcePos = {
+    new SourcePos(fileName, fileContent, range)
+  }
 }
 
 extension (pos: Option[SourcePos]) {
