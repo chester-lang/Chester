@@ -4,7 +4,7 @@ import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.pretty.const.Colors
 import chester.pretty.doc.*
 import chester.syntax.concrete.Expr
-import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
+import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckResult, TyckState}
 import fansi.*
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -73,8 +73,8 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     ParserEngine.parseInput(terminal.getHistory, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
-          case Right(judge) => println(prettyPrintJudge(judge))
-          case Left(errors) => printErrors(errors)
+          case TyckResult.Success(judge,_,_) => println(prettyPrintJudge(judge))
+          case TyckResult.Failure(errors,_,_,_) => printErrors(errors)
         }
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
@@ -86,8 +86,8 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     ParserEngine.parseInput(terminal.getHistory, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
-          case Right(judge) => println(prettyPrintJudgeWellTyped(judge))
-          case Left(errors) => printErrors(errors)
+          case TyckResult.Success(judge,_,_) => println(prettyPrintJudgeWellTyped(judge))
+          case TyckResult.Failure(errors,_,_,_) => printErrors(errors)
         }
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
@@ -95,10 +95,10 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     Future.successful(())
   }
 
-  private def typeCheck(expr: Expr): Either[Vector[chester.error.TyckError], Judge] = {
+  private def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
-    ExprTycker.synthesizeV0(expr, initialState, initialCtx)
+    ExprTycker.synthesize(expr, initialState, initialCtx)
   }
 
   private def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): Unit = {

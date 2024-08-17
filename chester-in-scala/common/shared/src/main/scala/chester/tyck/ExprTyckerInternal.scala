@@ -351,38 +351,44 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
 case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning], errors: Vector[TyckError])
 
+object TyckResult {
+  object Success {
+    def unapply[S,T](x: TyckResult[S,T]): Option[(T,S,Vector[TyckWarning])] = {
+      if(x.errors.isEmpty) Some((x.result, x.state, x.warnings))
+      else None
+    }
+  }
+  object Failure {
+    def unapply[S,T](x: TyckResult[S,T]): Option[(Vector[TyckError],Vector[TyckWarning], S, T)] = {
+      if(x.errors.nonEmpty) Some((x.errors, x.warnings, x.state, x.result))
+      else None
+    }
+  }
+}
+
 object ExprTycker {
 
-  // Deprecated API using the old `Getting` monadic approach
-  @deprecated("some error information might be lost")
+  @deprecated("error information are lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
     convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().unify(subType, superType)
     }.getOne(state).map(_._2)
   }
 
-  @deprecated("some error information might be lost")
-  def unifyEffectV0(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().unifyEffect(subEffect, superEffect)
-    }.getOne(state).map(_._2)
-  }
-
-  @deprecated("some error information might be lost")
+  @deprecated("error information are lost")
   def inheritV0(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().inherit(expr, ty, effect)
     }.getOne(state).map(_._2)
   }
 
-  @deprecated("some error information might be lost")
+  @deprecated("error information are lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     convertToGetting(ctx) { implicit tyck =>
       ExprTyckerInternal().synthesize(expr)
     }.getOne(state).map(_._2)
   }
 
-  // New API using the `Get` approach
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
     val reporterW = new VectorReporter[TyckWarning]()
     val reporterE = new VectorReporter[TyckError]()
