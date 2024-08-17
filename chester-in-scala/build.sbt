@@ -82,11 +82,9 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
-    libraryDependencies += "ru.makkarpov" %% "scalingua" % "1.2.0" cross(CrossVersion.for3Use2_13),
     scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jsSettings(
-    libraryDependencies += "ru.makkarpov" %% "scalingua" % "1.2.0" cross(CrossVersion.for3Use2_13),
     //scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
   .nativeSettings(
