@@ -26,7 +26,7 @@ jobs:
       id: pick-jdk
       run: |
         JDK_VERSIONS=(8 11 17 21 22)
-        JDK_DISTRIBUTIONS=(temurin semeru oracle dragonwell)
+        JDK_DISTRIBUTIONS=(temurin semeru oracle)
 
         while true; do
           JDK_VERSION=${JDK_VERSIONS[$RANDOM % ${#JDK_VERSIONS[@]}]}
