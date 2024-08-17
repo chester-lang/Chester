@@ -1,9 +1,9 @@
 package chester.resolve
 
-import chester.syntax.concrete.*
+import cats.implicits.*
+import chester.error.*
 import chester.syntax.Const
-import chester.error._
-import cats.implicits._
+import chester.syntax.concrete.*
 
 case class DesugarInfo()
 
@@ -26,11 +26,30 @@ private object MatchApplyingTelescope {
   def unapply(x: Expr): Option[Telescope] = ???
 }
 
+private object SingleExpr {
+  def unapply(xs: Seq[Expr]): Option[Expr] = {
+    if (xs.isEmpty) return None
+    if (xs.tail.isEmpty) return Some(xs.head)
+    val xs0 = xs.tail.traverse(MatchApplyingTelescope.unapply)
+    if (xs0.isDefined) return Some(FunctionCall.calls(xs.head, xs0.get))
+    None
+  }
+
+  object Expect {
+    @throws[TyckError]
+    def unapply(xs: Seq[Expr]): Some[Expr] = SingleExpr.unapply(xs) match {
+      case Some(x) => Some(x)
+      case None => throw ExpectSingleExpr(xs)
+    }
+  }
+}
+
 private object DesaltSimpleFunction {
   def predicate(x: Expr): Boolean = x match {
     case Identifier(Const.Arrow, _) => true
     case _ => false
   }
+
   @throws[TyckError]
   def unapply(x: Expr) = x match {
     case OpSeq(xs, meta) if xs.exists(predicate) => {
@@ -38,8 +57,8 @@ private object DesaltSimpleFunction {
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(Vector(telescope*)),Vector(body)) => ???
-        case _ => ???
+        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => FunctionExpr(telescope = telescope.toVector, body = body, meta = meta)
+        case _ => throw ExpectLambda(x)
       }
     }
     case _ => None

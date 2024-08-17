@@ -73,3 +73,16 @@ case class ExpectFullCaseBlock(block: Expr) extends TyckError {
 
   override def cause: Some[Expr] = Some(block)
 }
+
+
+case class ExpectSingleExpr(xs: Seq[Expr]) extends TyckError {
+  override def message: String = s"Expected a single expression, got $xs"
+
+  override def cause: Some[Expr] = Some(xs.head)
+}
+
+case class ExpectLambda(x: Expr) extends TyckError {
+  override def message: String = s"Expected a lambda expression, got $x"
+
+  override def cause: Some[Expr] = Some(x)
+}

@@ -208,6 +208,15 @@ case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[
   override def toDoc(implicit options: PrettierOptions): Doc = function.toDoc <> Doc.text(" ") <> telescope.toDoc
 }
 
+object FunctionCall {
+  def calls(function: Expr, telescopes: Seq[MaybeTelescope]): FunctionCall = {
+    if(telescopes.isEmpty) throw new IllegalArgumentException("At least one telescope should be present")
+    if(telescopes.tail.isEmpty) return FunctionCall(function, telescopes.head)
+    val head = FunctionCall(function, telescopes.head)
+    calls(head, telescopes.tail)
+  }
+}
+
 case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     DotCall(expr.descentAndApply(operator), field.descentAndApply(operator), telescope.map(_.descent(operator)), meta)
@@ -369,7 +378,7 @@ case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMe
   )
 }
 
-case class FunctionExpr(telescope: Vector[MaybeTelescope], effect: Option[Expr], result: Option[Expr], body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+case class FunctionExpr(telescope: Vector[Telescope], effect: Option[Expr]=None, result: Option[Expr]=None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
 
   override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), effect.map(_.descentAndApply(operator)), result.map(_.descentAndApply(operator)), body.descentAndApply(operator), meta))
