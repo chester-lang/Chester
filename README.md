@@ -36,9 +36,7 @@ data IVal <: Expr[Integer] {
   #override eval = val;
 }
 
-// IVal is overloaded with `Type` and `Object { val = Integer } -> IVal`
-// Object here is a syntax/macro and doesn't have a type if we consider it as a function.
-ival0: IVal = IVal { val = 0 };
+ival0: IVal = new IVal { val = 0 };
 
 data BVal <: Expr[Boolean] {
   field val: Boolean;
