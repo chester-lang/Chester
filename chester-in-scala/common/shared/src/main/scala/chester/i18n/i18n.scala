@@ -2,11 +2,13 @@ package chester.i18n
 
 case class Language(tag: LanguageTag, region: RegionTag) {
   def name: String = s"${tag.name}_${region.name}"
+
   override def toString: String = name
 }
 
 object Language {
   def apply(tag: LanguageTag): Language = new Language(tag, tag.defaultRegion)
+
   private val languages = LanguageTag.values
   private val regions = RegionTag.values
 
@@ -47,9 +49,12 @@ enum RegionTag {
   def is(x: String): Boolean = x.toUpperCase() == name
 }
 
-object RegionTag {
-
+case class TranslationTable(table: Map[LanguageTag, Map[RegionTag, Map[StringContext, StringContext]]]) {
+  def get(context: StringContext)(implicit lang: Language): StringContext = {
+    table.get(lang.tag).flatMap(_.get(lang.region)).flatMap(_.get(context)).getOrElse(context)
+  }
 }
+
 
 extension (sc: StringContext)
   def t(args: Any*): String = {
