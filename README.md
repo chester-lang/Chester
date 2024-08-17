@@ -24,7 +24,7 @@ data InternetOverdose <: 舞;
 
 it: Type = InternetOverdose;
 i: InternetOverdose = new InternetOverdose;
-i: InternetOverdose = InternetOverdose.new; // .new is defined by default if no user definition
+i2: InternetOverdose = InternetOverdose.new; // .new is defined by default if no user definition // .new it is a function with no telescope here
 ia: Any = new InternetOverdose;
 
 trait #sealed Expr[T: Type]: Type {
@@ -37,6 +37,7 @@ data IVal <: Expr[Integer] {
 }
 
 ival0: IVal = new IVal { val = 0 };
+ival02: IVal = IVal.new(val = 0);
 
 data BVal <: Expr[Boolean] {
   field val: Boolean;
