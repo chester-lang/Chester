@@ -28,7 +28,7 @@ import chester.parser.InputStatus.*
 object ParserEngine {
 
   def parseInput(history: Seq[String], currentInput: String, useCRLF: Boolean = false): Either[ParseError, ParsedExpr] = {
-    assert(history.last.length == currentInput.length)
+    //assert(history.last == currentInput) // doesn't hold for :t commands in repl
     val linesOffset = history.init.map(x => x.count(_ == '\n') + 1).sum
     val posOffset = history.init.map(x => x.length + (if(useCRLF) 2 else 1)).sum
 
