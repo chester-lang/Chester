@@ -46,6 +46,7 @@ class NodejsSimpleTerminal extends Terminal {
   }
 
   def close(): Unit = {
+    rl.close()
   }
 
   def getHistory: Seq[String] = history
