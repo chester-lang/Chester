@@ -7,52 +7,51 @@ module 😿😿;
 
 me: String = "インターネット・エンジェル";
 world = {
-  execute = (me: String) |-> me;
+  execute = me: String -> me;
 };
 
 world.execute(me); // it type checks and does nothing? What's the point of having expressions at top level when they can't have effects? Checking something type checks? No we might allow module that init with specific effects.
 
-data #abstract 舞 extends Show;
+data #abstract 舞 <: Show;
 
 @derive(Show)
-data 超会議 extends 舞 {
-  field year: Nat;
+data 超会議 <: 舞 {
+  let year: Nat;
 }
 
 @derive(Show)
-data InternetOverdose extends 舞;
+data InternetOverdose <: 舞;
 
-// InternetOverdose is overloaded with `Type` and `InternetOverdose`. For design: using `.instance` and `.type` for distinguishing doesn't look good? 
 it: Type = InternetOverdose;
-i: InternetOverdose = InternetOverdose;
-ia: Any = InternetOverdose; // How do you choose from overloaded Type and InternetOverdose? People probably don't want a Type in a value, so one is chosen. Won't it bring ambiguous problem? Surely it will. What's the cost?
+i: InternetOverdose = new InternetOverdose;
+i2: InternetOverdose = InternetOverdose.new; // .new is defined by default if no user definition // .new it is a function with no telescope here
+ia: Any = new InternetOverdose;
 
-data #sealed #abstract Expr[T: Type]: Type {
+trait #sealed Expr[T: Type]: Type {
   eval: T;
 }
 
-data IVal extends Expr[Integer] {
-  field val: Integer;
+data IVal <: Expr[Integer] {
+  let val: Integer;
   #override eval = val;
 }
 
-// IVal is overloaded with `Type` and `Object { val = Integer } -> IVal`
-// Object here is a syntax/macro and doesn't have a type if we consider it as a function.
-ival0: IVal = IVal { val = 0 };
+ival0: IVal = new IVal { val = 0 };
+ival02: IVal = IVal.new(val = 0);
 
-data BVal extends Expr[Boolean] {
+data BVal <: Expr[Boolean] {
   field val: Boolean;
   #override eval = val;
 }
 
 data #sealed #abstract Vector[n: Nat, T: Type];
 
-data Nil extends Vector[0, T] {
+data Nil <: Vector[0, T] {
 }
 
-data Cons extends Vector[succ(n), T] {
-  field head: T;
-  field tail: Vector[n, T];
+data Cons <: Vector[succ(n), T] {
+  let head: T;
+  let tail: Vector[n, T];
 }
 
 proof1: Nil = Nil;
@@ -81,7 +80,7 @@ Expr = Integer | String | List[Expr];
 ```
 
 ```chester
-enableEffect IO;
+pragma #effect(IO);
 
 functionCanEmitEffect(): Unit = println("はっぱ - もうすぐ楽になるからね");
 ```

@@ -49,9 +49,27 @@ enum RegionTag {
   def is(x: String): Boolean = x.toUpperCase() == name
 }
 
-case class TranslationTable(table: Map[LanguageTag, Map[RegionTag, Map[StringContext, StringContext]]]) {
+case class RegionTable(table: Map[RegionTag, Map[StringContext, StringContext]]) {
+  private val alternatives: Vector[Map[StringContext, StringContext]] = table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
+
+  def get(region: RegionTag, context: StringContext): StringContext = {
+    table.get(region).flatMap(_.get(context)) match {
+      case Some(value) => return value
+      case None => {}
+    }
+    alternatives.foreach { map =>
+      map.get(context) match {
+        case Some(value) => return value
+        case None => {}
+      }
+    }
+    context
+  }
+}
+
+case class TranslationTable(table: Map[LanguageTag, RegionTable]) {
   def get(context: StringContext)(implicit lang: Language): StringContext = {
-    table.get(lang.tag).flatMap(_.get(lang.region)).flatMap(_.get(context)).getOrElse(context)
+    table.get(lang.tag).map(_.get(lang.region, context)).getOrElse(context)
   }
 }
 
