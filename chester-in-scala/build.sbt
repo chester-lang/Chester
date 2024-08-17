@@ -78,9 +78,9 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "pprint" % "0.9.0"
     ),
-    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jvmSettings(
+    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jsSettings(
   )
