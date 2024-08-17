@@ -81,13 +81,16 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
   )
   .jvmSettings(
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jsSettings(
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
   .nativeSettings(
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
   )
+
 
 // Blocking Scala Native 0.5:
 // https://github.com/bkirwi/decline/issues/551

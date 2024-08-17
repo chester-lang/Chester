@@ -12,6 +12,7 @@ import fastparse.NoWhitespace.*
 import java.nio.file.{Files, Paths}
 import scala.collection.immutable
 import scala.util.*
+import scala.scalajs.js.annotation._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
   if (linesOffset != 0) require(posOffset != 0)
@@ -342,6 +343,7 @@ case class FileNameAndContent(fileName: String, content: String) extends ParserS
 
 case class FilePath(path: String) extends ParserSource
 
+@JSExportTopLevel("Parser")
 object Parser {
   private def getContentFromSource(source: ParserSource): Either[ParseError, (String, String)] = {
     source match {
