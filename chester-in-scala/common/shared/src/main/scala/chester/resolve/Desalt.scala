@@ -7,6 +7,13 @@ import chester.syntax.concrete.*
 
 case class DesugarInfo()
 
+private object ExpectDesaltPattern {
+  @throws[TyckError]
+  def unapply(x: Expr): Some[DesaltPattern] = x match {
+    case _ => throw ExpectPattern(x)
+  }
+}
+
 private object DesaltCaseClauseMatch {
   @throws[TyckError]
   def unapply(x: Expr): Option[DesaltCaseClause] = x match {

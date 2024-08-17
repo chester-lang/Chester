@@ -245,21 +245,21 @@ object QualifiedName {
   def build(x: QualifiedName, field: Identifier, meta: Option[ExprMeta] = None): QualifiedName = DotCall(x, field, Vector(), meta)
 }
 
-sealed trait NumberLiteral extends ParsedExpr
+sealed trait Literal extends ParsedExpr
 
-case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends NumberLiteral {
+case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
-case class DoubleLiteral(value: BigDecimal, meta: Option[ExprMeta] = None) extends NumberLiteral {
+case class DoubleLiteral(value: BigDecimal, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
-case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"StringLiteral(\"${encodeString(value)}\")"
     case Some(pos) => s"StringLiteral(\"${encodeString(value)}\", ${pos.toString})"
@@ -270,7 +270,7 @@ case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends P
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"")
 }
 
-case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value)
@@ -400,3 +400,9 @@ case class DesaltFailed(origin: Expr, error: TyckError, meta: Option[ExprMeta] =
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")")
 }
+
+sealed trait DesaltPattern extends DesaltExpr
+
+sealed trait PatternCompare(literal: Expr, meta: Option[ExprMeta]) extends DesaltPattern
+
+sealed trait PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltPattern

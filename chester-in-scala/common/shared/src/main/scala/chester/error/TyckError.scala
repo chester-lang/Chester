@@ -115,3 +115,9 @@ case class ExpectLambda(x: Expr) extends TyckError {
 
   override def cause: Some[Expr] = Some(x)
 }
+
+case class ExpectPattern(x: Expr) extends TyckError {
+  override def message: String = s"Expected a pattern, got $x"
+
+  override def cause: Some[Expr] = Some(x)
+}
