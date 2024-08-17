@@ -254,6 +254,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     case objExpr: ObjectExpr =>
       synthesizeObjectExpr(objExpr)
     case block: Block => synthesizeBlock(block)
+    case expr: BlockStmt => {
+      val err = UnexpectedStmt(expr)
+      S.errors.report(err)
+      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect(None))
+    }
 
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))

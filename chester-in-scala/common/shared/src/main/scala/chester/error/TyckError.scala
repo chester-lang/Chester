@@ -1,7 +1,7 @@
 package chester.error
 
 import chester.pretty.doc.*
-import chester.syntax.concrete.{EmptyExpr, Expr, QualifiedName}
+import chester.syntax.concrete._
 import chester.syntax.core.Term
 
 abstract class TyckErrorOrWarning extends Exception with ToDoc {
@@ -63,6 +63,12 @@ case class UnsupportedExpressionError(expr: Expr) extends TyckError {
   override def message: String = s"Unsupported expression type: $expr"
 
   override def cause: Expr = expr
+}
+
+case class UnexpectedStmt(x: BlockStmt) extends TyckError {
+  override def message: String = s"Unexpected statement: $x"
+
+  override def cause: Expr = x
 }
 
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName | String) extends TyckError {

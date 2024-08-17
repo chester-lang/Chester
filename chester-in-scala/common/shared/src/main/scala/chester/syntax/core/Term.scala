@@ -162,3 +162,7 @@ case class ErrorTerm(val error: TyckError) extends Term {
 case class MetaTerm(id: VarId, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
+
+
+// TODO: tuple?
+val UnitType = ObjectType(Vector.empty)
