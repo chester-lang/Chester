@@ -20,14 +20,14 @@ data 超会議 <: 舞 {
 }
 
 @derive(Show)
-data InternetOverdose extends 舞;
+data InternetOverdose <: 舞;
 
-// InternetOverdose is overloaded with `Type` and `InternetOverdose`. For design: using `.instance` and `.type` for distinguishing doesn't look good? 
 it: Type = InternetOverdose;
-i: InternetOverdose = InternetOverdose;
-ia: Any = InternetOverdose; // How do you choose from overloaded Type and InternetOverdose? People probably don't want a Type in a value, so one is chosen. Won't it bring ambiguous problem? Surely it will. What's the cost?
+i: InternetOverdose = new InternetOverdose;
+i: InternetOverdose = InternetOverdose.new; // .new is defined by default if no user definition
+ia: Any = new InternetOverdose;
 
-data #sealed #abstract Expr[T: Type]: Type {
+trait #sealed Expr[T: Type]: Type {
   eval: T;
 }
 
