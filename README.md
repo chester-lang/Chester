@@ -7,16 +7,16 @@ module 😿😿;
 
 me: String = "インターネット・エンジェル";
 world = {
-  execute = (me: String) |-> me;
+  execute = me: String -> me;
 };
 
 world.execute(me); // it type checks and does nothing? What's the point of having expressions at top level when they can't have effects? Checking something type checks? No we might allow module that init with specific effects.
 
-data #abstract 舞 extends Show;
+data #abstract 舞 <: Show;
 
 @derive(Show)
-data 超会議 extends 舞 {
-  field year: Nat;
+data 超会議 <: 舞 {
+  let year: Nat;
 }
 
 @derive(Show)
@@ -31,8 +31,8 @@ data #sealed #abstract Expr[T: Type]: Type {
   eval: T;
 }
 
-data IVal extends Expr[Integer] {
-  field val: Integer;
+data IVal <: Expr[Integer] {
+  let val: Integer;
   #override eval = val;
 }
 
@@ -40,19 +40,19 @@ data IVal extends Expr[Integer] {
 // Object here is a syntax/macro and doesn't have a type if we consider it as a function.
 ival0: IVal = IVal { val = 0 };
 
-data BVal extends Expr[Boolean] {
+data BVal <: Expr[Boolean] {
   field val: Boolean;
   #override eval = val;
 }
 
 data #sealed #abstract Vector[n: Nat, T: Type];
 
-data Nil extends Vector[0, T] {
+data Nil <: Vector[0, T] {
 }
 
-data Cons extends Vector[succ(n), T] {
-  field head: T;
-  field tail: Vector[n, T];
+data Cons <: Vector[succ(n), T] {
+  let head: T;
+  let tail: Vector[n, T];
 }
 
 proof1: Nil = Nil;
@@ -81,7 +81,7 @@ Expr = Integer | String | List[Expr];
 ```
 
 ```chester
-enableEffect IO;
+pragma #effect(IO);
 
 functionCanEmitEffect(): Unit = println("はっぱ - もうすぐ楽になるからね");
 ```
