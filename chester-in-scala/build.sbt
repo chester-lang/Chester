@@ -58,6 +58,9 @@ val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 val permitGPLcontamination: Boolean = false
 
+val classVersion = java.lang.Float.parseFloat(System.getProperty("java.class.version"))
+val jdk17ClassVersion = 61.0f
+val jdk17: Boolean = classVersion >= jdk17ClassVersion
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -74,7 +77,8 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "pprint" % "0.9.0"
-    )
+    ),
+    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jvmSettings(
   )
