@@ -15,7 +15,7 @@ implicit object FansiRenderer extends Renderer[fansi.Str]:
     tokens.foldLeft(fansi.Str("")) {
       case (acc, TokenText(content)) => acc ++ fansi.Str(content)
       case (acc, TokenNewLine) => acc ++ fansi.Str(newline)
-      case (acc, TokenColor(innerTokens, color: Color)) =>
+      case (acc, TokenColor(innerTokens, color)) =>
         acc ++ innerTokens.foldLeft(fansi.Str("")) {
           case (innerAcc, TokenText(content)) => innerAcc ++ ColorMapping.toFansiAttr(color)(content)
           case (innerAcc, TokenNewLine) => innerAcc ++ fansi.Str(newline)
