@@ -2,20 +2,47 @@ package chester.repl
 
 import chester.parser.InputStatus.*
 import chester.parser.ParserEngine
+import typings.node.{processMod, readlineMod, readlinePromisesMod}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import typings.node.processMod
-import typings.node.readlinePromisesMod
-import scala.scalajs.js.Thenable.Implicits._
+import scala.scalajs.js.Thenable.Implicits.*
+import scala.concurrent.{Future, Promise}
 
 class NodejsSimpleTerminal extends Terminal {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
-  private val rl = readlinePromisesMod.createInterface(processMod.^.stdin.asInstanceOf, processMod.^.stdout.asInstanceOf)
+  private val rl = readlineMod.createInterface(processMod.^.stdin.asInstanceOf, processMod.^.stdout.asInstanceOf)
 
-  private def nodeReadLine(prompt: String): Future[String] = rl.question(prompt)
+  private var live: Boolean = true
+
+  private var reading: Promise[String] = null
+
+  private def closeCallback(): Unit = {
+    if (live) {
+      if (reading != null) {
+        val r = reading
+        reading = null
+        r.success(null)
+      }
+    }
+  }
+
+  rl.on("close", x=>closeCallback())
+
+  private def nodeReadLine(prompt: String): Future[String] = {
+    assert(reading == null)
+    assert(live)
+    val p = Promise[String]()
+    reading = p
+    rl.question(prompt, { result =>
+      assert(reading == p)
+      reading = null
+      p.success(result)
+    })
+    p.future
+  }
 
   def readLine(info: TerminalInfo): Future[ReadLineResult] = {
     def loop(prompt: String): Future[ReadLineResult] = {
@@ -46,6 +73,7 @@ class NodejsSimpleTerminal extends Terminal {
   }
 
   def close(): Unit = {
+    live = false
     rl.close()
   }
 
