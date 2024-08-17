@@ -395,6 +395,13 @@ case class FunctionExpr(telescope: Vector[Telescope], effect: Option[Expr]=None,
 
 sealed trait ErrorExpr extends Expr
 
+case object EmptyExpr extends ErrorExpr {
+  override def meta: Option[ExprMeta] = None
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): EmptyExpr.type = throw new UnsupportedOperationException()
+
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("EmptyExpr")
+}
+
 case class DesaltFailed(origin: Expr, error: TyckError, meta: Option[ExprMeta] = None) extends ErrorExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltFailed = copy(meta = updater(meta))
 
