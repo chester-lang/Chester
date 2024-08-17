@@ -12,6 +12,7 @@ val graalVm = if(graalvm17) "graalvm-java17" else "graalvm-java22"
 val graalVersion = if(graalvm17) "17.0.9" else "22.0.2"
 
 val nativeImageOption = Seq(
+  "-H:-CheckToolchain",
   "--verbose",
   "--no-fallback",
   "-enablesystemassertions",
