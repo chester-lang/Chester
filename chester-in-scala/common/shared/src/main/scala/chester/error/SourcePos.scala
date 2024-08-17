@@ -25,6 +25,29 @@ object FileContent {
 }
 
 class SourcePos(val fileName: String, val fileContent: FileContent, val range: RangeInFile) {
+
+
+  // Method to extract all lines within the range with line numbers
+  def getLinesInRange: Vector[(Int, String)] = {
+    val startLine = range.start.line
+    val endLine = range.end.line
+    val contentString = FileContent.convertToString(fileContent)
+    val lines = contentString.split('\n').toVector
+
+    // Assert that the start and end lines are within valid bounds
+    assert(startLine >= 0 && endLine < lines.length, s"Invalid line range: startLine=$startLine, endLine=$endLine, totalLines=${lines.length}")
+
+    // Slice the lines and keep their line numbers
+    lines.zipWithIndex
+      .slice(startLine, endLine + 1)
+      .map { case (line, index) => (index + 1, line) } // Line numbers are 1-based
+  }
+
+  // Method to format the lines within the range for display
+  def formatLinesInRange: String = {
+    getLinesInRange.map { case (lineNumber, line) => s"$lineNumber: $line" }.mkString("\n")
+  }
+
   def combine(other: SourcePos): SourcePos = {
     if (fileName != other.fileName) {
       throw new IllegalArgumentException("Cannot combine source positions from different files")

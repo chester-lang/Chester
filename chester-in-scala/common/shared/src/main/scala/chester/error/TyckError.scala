@@ -18,6 +18,35 @@ abstract class TyckErrorOrWarning extends Exception with ToDoc {
   }
 
   val stack: Array[StackTraceElement] = this.getStackTrace
+
+  def renderWithLocation(implicit options: PrettierOptions = Map()): Doc = {
+    val baseMessage = Doc.text("Error: ") <> Doc.text(message).colored(Attribute.BoldOn)
+
+    val locationInfo = location match {
+      case Some(pos) =>
+        val lines = pos.getLinesInRange.map { case (lineNumber, line) =>
+          Doc.text(s"$lineNumber: ") <> Doc.text(line).colored(Attribute.BoldOn)
+        }
+        val locationHeader = Doc.text("Location: ") <>
+          Doc.text(s"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column + 1}]").colored(Attribute.BoldOn)
+
+        val codeBlock = Doc.group(Doc.concat(lines.map(_ <|> Doc.empty): _*))
+
+        locationHeader <|> codeBlock
+
+      case None =>
+        cause match {
+          case Some(causeExpr) =>
+            val causeHeader = Doc.text("Cause: ").colored(Attribute.BoldOn)
+            val causeText = Doc.text(causeExpr.toString)
+            causeHeader <|> causeText
+          case None =>
+            Doc.empty
+        }
+    }
+
+    baseMessage <|> locationInfo
+  }
 }
 
 abstract class TyckError extends TyckErrorOrWarning {

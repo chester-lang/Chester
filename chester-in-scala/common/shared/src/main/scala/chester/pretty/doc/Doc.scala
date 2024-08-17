@@ -39,6 +39,8 @@ object Doc {
 
   @deprecated("please use <> family combinators instead")
   def linebreak: Doc = line(text(""))
+  
+  val newline: Doc = NewLine
 
   def group(doc: ToDoc): Doc = Group(doc.toDoc)
 
@@ -88,6 +90,7 @@ extension (d: ToDoc) {
   def <+>(other: ToDoc): Doc = concat(d, text(" "), other.toDoc)
   def </>(other: ToDoc): Doc = concat(d, line(text(" ")), other.toDoc)
   def <\>(other: ToDoc): Doc = concat(d, line(text("")), other.toDoc)
+  def <|>(other: ToDoc): Doc = concat(d, newline, other.toDoc)
   def colored(color: Attribute): Doc = Doc.colored(d.toDoc, color)
 }
 
