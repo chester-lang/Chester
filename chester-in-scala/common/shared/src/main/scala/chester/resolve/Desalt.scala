@@ -69,9 +69,10 @@ case object SimpleDesalt {
   @throws[TyckError]
   def desugar(expr: Expr): Expr = expr.descentAndApply {
     case DesaltCaseClauseMatch(x) => x
-    case b@Block(heads, tail, meta) if heads.contains(DesaltCaseClause) || tail.contains(DesaltCaseClause) => {
-      if (heads.isEmpty || tail.nonEmpty || !heads.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
-      val heads1: Vector[DesaltCaseClause] = heads.map(_.asInstanceOf[DesaltCaseClause])
+    case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
+      val seq: Vector[Expr] = heads ++ tail.toVector
+      if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
+      val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
       DesaltMatching(heads1, meta)
     }
     case default => default
