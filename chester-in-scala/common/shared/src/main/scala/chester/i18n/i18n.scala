@@ -49,9 +49,17 @@ enum RegionTag {
   def is(x: String): Boolean = x.toUpperCase() == name
 }
 
-case class TranslationTable(table: Map[LanguageTag, Map[RegionTag, Map[StringContext, StringContext]]]) {
+case class RegionTable(table: Map[RegionTag, Map[StringContext, StringContext]]) {
+  val best: RegionTag = table.maxBy((_, map) => map.size)._1
+
+  def get(region: RegionTag, context: StringContext): StringContext = {
+    table.get(region).flatMap(_.get(context)).getOrElse(table.get(best).flatMap(_.get(context)).getOrElse(context))
+  }
+}
+
+case class TranslationTable(table: Map[LanguageTag, RegionTable]) {
   def get(context: StringContext)(implicit lang: Language): StringContext = {
-    table.get(lang.tag).flatMap(_.get(lang.region)).flatMap(_.get(context)).getOrElse(context)
+    table.get(lang.tag).map(_.get(lang.region, context)).getOrElse(context)
   }
 }
 
