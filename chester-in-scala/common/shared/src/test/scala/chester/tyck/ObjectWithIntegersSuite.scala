@@ -24,7 +24,7 @@ class ObjectWithIntegersSuite extends FunSuite {
     // Validate the result
     assert(result.isRight)
     result match {
-      case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _), _)) =>
+      case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _, _), _)) =>
         // Check each clause for the correct field name and value
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1",_), IntegerTerm(42, _),_) => true }.isDefined, true)
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2",_), IntegerTerm(24, _),_) => true }.isDefined, true)

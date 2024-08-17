@@ -80,8 +80,8 @@ case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: Option[TermM
 }
 
 
-// TODO: add a modifier to disallow subtyping on fields - that is fields must be exact
-case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
+// exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
+case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist("{", "}", ",")(fieldTypes.map(_.toDoc): _*)
 }

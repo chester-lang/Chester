@@ -7,9 +7,9 @@ val path2022 = Paths.get("C:\\Program Files\\Microsoft Visual Studio\\2022")
 val path2019 = Paths.get("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019")
 val path2022Exists = Files.exists(path2022)
 val path2019Exists = Files.exists(path2019)
-val vs2019 = path2019Exists && !path2022Exists
-val graalVm = if(vs2019) "graalvm-java17" else "graalvm-java22"
-val graalVersion = if(vs2019) "17.0.9" else "22.0.2"
+val graalvm17 = path2019Exists && !path2022Exists
+val graalVm = if(graalvm17) "graalvm-java17" else "graalvm-java22"
+val graalVersion = if(graalvm17) "17.0.9" else "22.0.2"
 
 val nativeImageOption = Seq(
   "--verbose",
@@ -111,7 +111,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     nativeImageOptions := nativeImageOption,
     nativeImageJvm := graalVm,
     libraryDependencies ++= Seq(
-      "org.jline" % "jline" % "3.26.2",
+      // https://github.com/jline/jline3/issues/954
+      "org.jline" % "jline" % (if(graalvm17) "3.24.1" else "3.26.2"),
     )
   )
   .jsSettings(

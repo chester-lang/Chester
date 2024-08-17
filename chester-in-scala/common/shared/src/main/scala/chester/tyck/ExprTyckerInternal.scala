@@ -335,7 +335,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
     (resolve(expr), whnf(ty)) match {
-      case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
+      case (objExpr: ObjectExpr, ObjectType(fieldTypes, _, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect(None))))
 
