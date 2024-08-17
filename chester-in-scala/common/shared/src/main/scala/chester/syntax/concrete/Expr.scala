@@ -408,8 +408,32 @@ case class DesaltFailed(origin: Expr, error: TyckError, meta: Option[ExprMeta] =
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")")
 }
 
-sealed trait DesaltPattern extends DesaltExpr
+sealed trait DesaltPattern extends DesaltExpr {
+  override def descent(operator: Expr => Expr): DesaltPattern = this
+}
 
-sealed trait PatternCompare(literal: Expr, meta: Option[ExprMeta]) extends DesaltPattern
+case class PatternCompare(literal: Expr, meta: Option[ExprMeta]) extends DesaltPattern {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): PatternCompare = copy(meta = updater(meta))
 
-sealed trait PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltPattern
+  override def toDoc(implicit options: PrettierOptions): Doc = literal.toDoc
+}
+
+case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltPattern {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): PatternBind = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = name.toDoc
+}
+
+sealed trait BlockStmt extends DesaltExpr
+
+case class LetExpr(pattern: DesaltPattern, ty: Option[Expr], body: Option[Expr], meta: Option[ExprMeta]) extends BlockStmt {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): LetExpr = copy(meta = updater(meta))
+
+  override def descent(operator: Expr => Expr): LetExpr = thisOr(LetExpr(pattern.descent(operator), ty.map(_.descentAndApply(operator)), body.map(_.descentAndApply(operator)), meta))
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val patternDoc = pattern.toDoc
+    val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
+    val bodyDoc = body.map(b => Doc.text(" = ") <> b.toDoc).getOrElse(Doc.empty)
+    patternDoc <> tyDoc <> bodyDoc
+  }
+}
