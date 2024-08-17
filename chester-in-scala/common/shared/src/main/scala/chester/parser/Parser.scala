@@ -69,7 +69,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val range = RangeInFile(
       Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
       Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
-    Some(SourcePos(fileName, p.input, range))
+    Some(SourcePos(fileName, FileContent(p.input,linesOffset, posOffset), range))
   }
 
   private def createMeta(pos: Option[SourcePos], comments: Option[CommentInfo]): Option[ExprMeta] = {

@@ -13,15 +13,16 @@ object Pos {
 
 case class RangeInFile(start: Pos, end: Pos)
 
-type FileContent = String | LazyList[String] | ParserInput
+case class FileContent(content: String | LazyList[String] | ParserInput, lineOffset: Int, indexOffset: Int)
 
 object FileContent {
   @tailrec
-  def convertToString(fileContent: FileContent): String = fileContent match {
+  private def convertToString0(fileContent: String | LazyList[String] | ParserInput): String = fileContent match {
     case s: String => s
     case ll: LazyList[String] => ll.mkString
-    case pi: ParserInput => convertToString(parserInputToLazyList(pi))
+    case pi: ParserInput => convertToString0(parserInputToLazyList(pi))
   }
+  def convertToString(fileContent: FileContent): String = convertToString0(fileContent.content )
 }
 
 class SourcePos(val fileName: String, val fileContent: FileContent, val range: RangeInFile) {
@@ -29,8 +30,8 @@ class SourcePos(val fileName: String, val fileContent: FileContent, val range: R
 
   // Method to extract all lines within the range with line numbers
   def getLinesInRange: Vector[(Int, String)] = {
-    val startLine = range.start.line
-    val endLine = range.end.line
+    val startLine = range.start.line - fileContent.lineOffset
+    val endLine = range.end.line - fileContent.lineOffset
     val contentString = FileContent.convertToString(fileContent)
     val lines = contentString.split('\n').toVector
 
@@ -40,12 +41,7 @@ class SourcePos(val fileName: String, val fileContent: FileContent, val range: R
     // Slice the lines and keep their line numbers
     lines.zipWithIndex
       .slice(startLine, endLine + 1)
-      .map { case (line, index) => (index + 1, line) } // Line numbers are 1-based
-  }
-
-  // Method to format the lines within the range for display
-  def formatLinesInRange: String = {
-    getLinesInRange.map { case (lineNumber, line) => s"$lineNumber: $line" }.mkString("\n")
+      .map { case (line, index) => (fileContent.lineOffset + index + 1, line) } // Line numbers are 1-based
   }
 
   def combine(other: SourcePos): SourcePos = {
