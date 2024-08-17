@@ -50,10 +50,20 @@ enum RegionTag {
 }
 
 case class RegionTable(table: Map[RegionTag, Map[StringContext, StringContext]]) {
-  val best: RegionTag = table.maxBy((_, map) => map.size)._1
+  private val alternatives: Vector[Map[StringContext, StringContext]] = table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
 
   def get(region: RegionTag, context: StringContext): StringContext = {
-    table.get(region).flatMap(_.get(context)).getOrElse(table.get(best).flatMap(_.get(context)).getOrElse(context))
+    table.get(region).flatMap(_.get(context)) match {
+      case Some(value) => return value
+      case None => {}
+    }
+    alternatives.foreach { map =>
+      map.get(context) match {
+        case Some(value) => return value
+        case None => {}
+      }
+    }
+    context
   }
 }
 
