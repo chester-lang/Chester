@@ -5,6 +5,6 @@ object Const {
   val Data: String = "data"
   val Trait: String = "trait"
   val Implement: String = "implement"
-  val `>=`: String = ">="
-  val Arrow: String = ">-"
+  val Arrow2: String = "=>"
+  val Arrow: String = "->"
 }

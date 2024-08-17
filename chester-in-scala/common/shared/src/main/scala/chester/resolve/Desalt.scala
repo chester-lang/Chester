@@ -10,7 +10,7 @@ case class DesugarInfo()
 private object DesaltCaseClauseMatch {
   @throws[TyckError]
   def unapply(x: Expr): Option[DesaltCaseClause] = x match {
-    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.>=, _), returning), meta) => Some(DesaltCaseClause(pattern, returning, meta))
+    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) => Some(DesaltCaseClause(pattern, returning, meta))
     case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => throw ExpectCase(x)
     case _ => None
   }
