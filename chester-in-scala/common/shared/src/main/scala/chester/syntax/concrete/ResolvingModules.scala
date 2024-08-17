@@ -1,12 +1,12 @@
 package chester.syntax.concrete
 
 import chester.syntax.QualifiedIDString
-import chester.syntax.concrete.stmt.{ExprStatement, Statement}
+import chester.syntax.concrete.stmt.{ExprTopLevelStmt, TopLevelStmt}
 import chester.syntax.core.stmt.TyckedModule
 
 import scala.collection.immutable.HashMap
 
-case class ResolvingBlock(statements: Vector[Statement], expr: Option[Expr])
+case class ResolvingBlock(statements: Vector[TopLevelStmt], expr: Option[Expr])
 
 case class ResolvingModuleFile(fileName: FilePath, content: ResolvingBlock)
 
@@ -18,7 +18,7 @@ case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]
 object ResolvingBlock {
   def fromParsed(block: Block): ResolvingBlock = {
     ResolvingBlock(
-      statements = block.heads.map(x => ExprStatement(x, x.meta)),
+      statements = block.heads.map(x => ExprTopLevelStmt(x, x.meta)),
       expr = block.tail
     )
   }

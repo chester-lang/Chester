@@ -5,12 +5,12 @@ import chester.syntax.concrete.{Expr, ExprMeta}
 import chester.syntax.{Id, UnresolvedID}
 import chester.error._
 
-sealed trait Statement {
+sealed trait TopLevelStmt {
   def meta: Option[ExprMeta]
 
-  def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Statement) = (Vector.empty, Vector.empty, this)
+  def reduceOnce: (Vector[TyckWarning], Vector[TyckError], TopLevelStmt) = (Vector.empty, Vector.empty, this)
 
-  def reduce: (Vector[TyckWarning], Vector[TyckError], Statement) = {
+  def reduce: (Vector[TyckWarning], Vector[TyckError], TopLevelStmt) = {
     val (warnings, errors, stmt) = reduceOnce
     if (stmt == this) (Vector.empty, Vector.empty, stmt)
     else {
@@ -22,27 +22,27 @@ sealed trait Statement {
   def getName: Option[Id]
 }
 
-private sealed trait NameUnknown extends Statement {
+private sealed trait NameUnknown extends TopLevelStmt {
   def getName: Option[Id] = None
 }
 
-private sealed trait NameKnown extends Statement {
+private sealed trait NameKnown extends TopLevelStmt {
   def name: Id
 
   def getName: Option[Id] = Some(name)
 }
 
-private sealed trait NameOption extends Statement {
+private sealed trait NameOption extends TopLevelStmt {
   def name: Option[Id]
 
   def getName: Option[Id] = name
 }
 
-case class DataStatement(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Statement with NameUnknown
+case class DataTopLevelStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends TopLevelStmt with NameUnknown
 
-case class TraitStatement(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Statement with NameUnknown
+case class TraitTopLevelStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends TopLevelStmt with NameUnknown
 
-case class ImplementStatement(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Statement with NameUnknown
+case class ImplementTopLevelStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends TopLevelStmt with NameUnknown
 
 case class TypeDeclaration(name: Option[String], exprs: Vector[Expr], types: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption
 
@@ -50,11 +50,11 @@ case class Definition(name: Option[String], exprs: Vector[Expr], defns: Vector[E
 
 case class DeclarationAndDefinition(name: Option[String], declNameExprs: Vector[Expr], types: Vector[Expr], defns: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption
 
-case class ExprStatement(expr: Expr, meta: Option[ExprMeta] = None) extends Statement with NameUnknown
+case class ExprTopLevelStmt(expr: Expr, meta: Option[ExprMeta] = None) extends TopLevelStmt with NameUnknown
 
-case class GroupedStatement(name: Option[Id], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption
+case class GroupedTopLevelStmt(name: Option[Id], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption
 
-case class ErrorStatement(name: Option[Id], message: String, meta: Option[ExprMeta] = None) extends NameOption
+case class ErrorTopLevelStmt(name: Option[Id], message: String, meta: Option[ExprMeta] = None) extends NameOption
 
 sealed trait PrecedenceGroup
 
@@ -63,7 +63,7 @@ case class PrecedenceGroupResolving(
                                      higherThan: Vector[UnresolvedID] = Vector(),
                                      lowerThan: Vector[UnresolvedID] = Vector(),
                                      associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
-                                   ) extends Statement with PrecedenceGroup {
+                                   ) extends TopLevelStmt with PrecedenceGroup {
   def getName: Option[Id] = Some(name)
 }
 
@@ -72,9 +72,9 @@ case class PrecedenceGroupResolved(
                                     higherThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
-                                  ) extends Statement with PrecedenceGroup {
+                                  ) extends TopLevelStmt with PrecedenceGroup {
   def getName: Option[Id] = Some(name.name)
 }
 
 
-case class LetStatement(name: Id, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends NameKnown
+case class LetTopLevelStmt(name: Id, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends NameKnown
