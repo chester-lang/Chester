@@ -7,7 +7,7 @@ import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckState}
 import fansi.*
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext) {
 
@@ -74,7 +74,7 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
           case Right(judge) => println(prettyPrintJudge(judge))
-          case Left(errors) => println(s"Type Error: ${errors.head.message}")
+          case Left(errors) => printErrors(errors)
         }
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
@@ -87,7 +87,7 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
           case Right(judge) => println(prettyPrintJudgeWellTyped(judge))
-          case Left(errors) => println(s"Type Error: ${errors.head.message}")
+          case Left(errors) => printErrors(errors)
         }
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
@@ -101,6 +101,17 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     ExprTycker.synthesizeV0(expr, initialState, initialCtx)
   }
 
+  private def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): Unit = {
+    er.foreach(x => {
+      println(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false).render)
+    })
+    wr.foreach(x => {
+      println(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false).render)
+    })
+  }
+
+  val maxWidth = 80
+
   private def prettyPrintJudge(judge: Judge): String = {
     val termDoc = judge.wellTyped
     val typeDoc = judge.ty
@@ -110,12 +121,12 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     val doc = if (checkOnEffect == "NoEffect") termDoc <+> Doc.text(":") <+> typeDoc
     else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
 
-    FansiRenderer.render(doc, 80, useCRLF = false).render
+    FansiRenderer.render(doc, maxWidth, useCRLF = false).render
   }
 
   private def prettyPrintJudgeWellTyped(judge: Judge): String = {
     val termDoc = judge.wellTyped
-    FansiRenderer.render(termDoc, 80, useCRLF = false).render
+    FansiRenderer.render(termDoc, maxWidth, useCRLF = false).render
   }
 }
 
