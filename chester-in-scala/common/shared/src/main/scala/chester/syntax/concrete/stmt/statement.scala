@@ -5,6 +5,7 @@ import chester.syntax.concrete.{Expr, ExprMeta}
 import chester.syntax.{Id, UnresolvedID}
 import chester.error._
 
+// TODO: maybe merge with BlockStmt
 sealed trait TopLevelStmt {
   def meta: Option[ExprMeta]
 
