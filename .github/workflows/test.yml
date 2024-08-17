@@ -40,7 +40,7 @@ jobs:
             echo "Apple Silicon (arm64) has problems with semeru. Retrying..."
           elif [[ "$RUNNER_OS" == "macOS" && "$JDK_DISTRIBUTION" == dragonwell ]]; then
             echo "Apple Silicon has problems with dragonwell. Retrying..."
-          elif [[ "$JDK_DISTRIBUTION" == "22" && "$JDK_DISTRIBUTION" == dragonwell ]]; then
+          elif [[ "$JDK_VERSION" == "22" && "$JDK_DISTRIBUTION" == dragonwell ]]; then
             echo "No dragonwell 22. Retrying..."
           else
             echo "Selected JDK version: $JDK_VERSION"

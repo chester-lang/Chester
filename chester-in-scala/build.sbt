@@ -8,8 +8,8 @@ val path2019 = Paths.get("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019
 val path2022Exists = Files.exists(path2022)
 val path2019Exists = Files.exists(path2019)
 val vs2019 = path2019Exists && !path2022Exists
-val graalVm = if(vs2019) "graalvm-java21" else "graalvm-java22"
-val graalVersion = if(vs2019) "21.0.2" else "22.0.2"
+val graalVm = if(vs2019) "graalvm-java17" else "graalvm-java22"
+val graalVersion = if(vs2019) "17.0.9" else "22.0.2"
 
 val nativeImageOption = Seq(
   "--verbose",
