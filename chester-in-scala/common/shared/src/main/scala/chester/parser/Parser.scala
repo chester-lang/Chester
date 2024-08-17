@@ -15,6 +15,7 @@ import scala.util.*
 import scala.scalajs.js.annotation._
 
 case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
+  // TODO: column offset for :t command in repl
   if (linesOffset != 0) require(posOffset != 0)
   if (posOffset != 0) require(linesOffset != 0)
   require(posOffset >= 0)
