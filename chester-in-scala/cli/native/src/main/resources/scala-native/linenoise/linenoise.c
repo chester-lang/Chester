@@ -665,7 +665,7 @@ static void DRL_STR(const char *str)
 #endif
 
 #if defined(USE_WINCONSOLE)
-#include "linenoise-win32.inc"
+#include "linenoise-win32.h"
 #endif
 
 #if defined(USE_TERMIOS)
