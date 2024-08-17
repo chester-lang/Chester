@@ -84,6 +84,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
   )
   .jsSettings(
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
   .nativeSettings(
   )
