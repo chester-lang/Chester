@@ -4,7 +4,7 @@ import chester.pretty.doc.*
 import chester.syntax.concrete.{Expr, QualifiedName}
 import chester.syntax.core.Term
 
-trait TyckErrorOrWarning extends ToDoc {
+abstract class TyckErrorOrWarning extends Exception with ToDoc {
   def message: String = render(toDoc)
 
   override def toDoc(implicit options: PrettierOptions = Map()): Doc = message
@@ -17,13 +17,13 @@ trait TyckErrorOrWarning extends ToDoc {
     case _ => None
   }
 
-  val stack: Array[StackTraceElement] = new Exception().getStackTrace
+  val stack: Array[StackTraceElement] = this.getStackTrace
 }
 
-trait TyckError extends Exception with TyckErrorOrWarning {
+abstract class TyckError extends TyckErrorOrWarning {
 }
 
-trait TyckWarning extends TyckErrorOrWarning {
+abstract class TyckWarning extends TyckErrorOrWarning {
 
 }
 
