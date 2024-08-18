@@ -72,6 +72,7 @@ private object DesaltSimpleFunction {
   }
 }
 
+// TODO: this implementation looks ugly
 private object ObjectDesalt {
   def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
     case Identifier(name, _) => Vector(name)
@@ -115,7 +116,6 @@ private object ObjectDesalt {
     expr.copy(clauses = insertNested(desugaredClauses, ObjectExpr(Vector.empty)).clauses ++ moreClauses)
   }
 
-  // TODO: use this
   def desugarObjectExprStep2(expr: ObjectExpr): ObjectExpr = expr.copy(clauses = expr.clauses.map {
     case clause: ObjectExprClauseOnValue => clause
     case ObjectExprClause(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
