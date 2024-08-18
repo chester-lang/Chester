@@ -16,7 +16,7 @@ case class TermMeta(sourcePos: Option[SourcePos])
 case class OptionTermMeta(meta: Option[TermMeta] = None) {
   override def equals(obj: Any): Boolean = {
     obj match {
-      case _:OptionTermMeta => true
+      case _: OptionTermMeta => true
       case _ => false
     }
   }
@@ -38,7 +38,7 @@ case class ListTerm(terms: Vector[Term], meta: OptionTermMeta = None) extends Te
 sealed trait Sort extends Term
 
 case class Type(level: Term, meta: OptionTermMeta = None) extends Sort {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type"<>Docs.`(`, Docs.`)`)(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
 }
 
 val Type0 = Type(IntegerTerm(0))
@@ -96,13 +96,19 @@ case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boole
   }
 }
 
-case class TelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm], meta: OptionTermMeta = None) extends Term {
+sealed trait TelescopeTerm extends Term
+
+case class VisibleTelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm], meta: OptionTermMeta = None) extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
 }
 
-case class FunctionType(telescope: Option[TelescopeTerm], effect: Term, result: Term, meta: OptionTermMeta = None) extends TypeTerm {
+case class InvisibleTelescopeTerm(meta: OptionTermMeta = None) extends TelescopeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
+}
+
+case class FunctionType(telescope: TelescopeTerm, effect: Term, result: Term, meta: OptionTermMeta = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val telescopeDoc = telescope.map(_.toDoc).getOrElse(Doc.empty)
+    val telescopeDoc = telescope.toDoc
     val effectDoc = effect.toDoc
     val resultDoc = result.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
@@ -122,7 +128,7 @@ case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: OptionTermMe
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
 case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("Object"</> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
+    Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
 case class OrType(xs: Vector[Term], meta: OptionTermMeta = None) extends Term {
@@ -151,11 +157,12 @@ object EffectList {
     val flattened = xs.flatMap {
       case EffectList(ys, _) => ys
       case x => Vector(x)
-    } .filter {
+    }.filter {
       case NoEffect(_) => false
       case _ => true
     }
-    if(flattened.nonEmpty) new EffectList(flattened, meta) else NoEffect(meta)
+    val distinct = flattened.filterNot(_.isInstanceOf[NoEffect]).distinct
+    if (distinct.nonEmpty) new EffectList(distinct, meta) else NoEffect(meta)
   }
 }
 
