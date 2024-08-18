@@ -223,8 +223,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     AnnotatedExpr(annotation, telescope, expr, meta)
   }
 
-  // TODO blockAndLineEndEnds
-  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, dontallowBiggerSymbol: Boolean = false, dontAllowEqualSymbol: Boolean = false, dontAllowVararg: Boolean = false, newLineAfterBlockMeansEnds: Boolean = false, dontAllowBlockApply: Boolean = false) {
+  case class ParsingContext(inOpSeq: Boolean = false, dontallowOpSeq: Boolean = false, newLineAfterBlockMeansEnds: Boolean = false, dontAllowBlockApply: Boolean = false) {
     def opSeq = !inOpSeq && !dontallowOpSeq
 
     def blockCall = !inOpSeq && !dontAllowBlockApply
@@ -269,21 +268,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
         case _ => false
       }
 
-      lazy val failEqualCheck = ctx.dontAllowEqualSymbol && xs.exists {
-        case Identifier("=", _) => true
-        case _ => false
-      }
-
-      lazy val failVarargCheck = ctx.dontAllowVararg && xs.exists {
-        case Identifier("...", _) => true
-        case _ => false
-      }
-
-      if (failEqualCheck) {
-        Fail("Looks like a equal")
-      } else if (failVarargCheck) {
-        Fail("Looks like a vararg")
-      } else if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) {
+      if (!(exprCouldPrefix || xs.exists(_.isInstanceOf[Identifier]))) {
         Fail("Expected identifier")
       } else {
         Pass(OpSeq(xs.toVector, p(meta)))
