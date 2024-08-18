@@ -81,19 +81,33 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     }
   }
 
+  /*
+  TODO: difference bettween
+  x // comment
+  y
+
+  x
+  // comment
+  y
+   */
   extension [T <: Expr](inline parse0: P[T]) {
-    inline def relax(start: Boolean = true, onEnd: Boolean = false): P[T] = (start, onEnd) match {
+    inline def relax(inline start: Boolean = true, inline onEnd: Boolean = false): P[T] = (start, onEnd) match {
       case (true, true) => (maybeSpace1 ~ parse0 ~ maybeSpace1).map { case (b, x, e) =>
+        if(ignoreLocation) x else
         x.updateMeta(MetaFactory.add(commentBefore = b, commentEndInThisLine = e)).asInstanceOf[T]
       }
       case (true, false) => (maybeSpace1 ~ parse0).map { case (b, x) =>
+        if(ignoreLocation) x else
         x.updateMeta(MetaFactory.add(commentBefore = b)).asInstanceOf[T]
       }
       case (false, true) => (parse0 ~ maybeSpace1).map { case (x, e) =>
+        if(ignoreLocation) x else
         x.updateMeta(MetaFactory.add(commentEndInThisLine = e)).asInstanceOf[T]
       }
       case (false, false) => parse0
     }
+    inline def relax1: P[T] = relax(true, false)
+    inline def relax2: P[T] = relax(true, true)
   }
 
   extension [T](inline parse0: P[T]) {
@@ -195,11 +209,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def comma1: P[Unit] = ","
 
-  def list: P[ListExpr] = PwithMeta("[" ~ (parse().withSpaceAtStart.map((x, c) => x.commentAtStart(c))).rep(sep = comma1) ~ comma.? ~ maybeSpace ~ "]").map { (terms, meta) =>
+  def list: P[ListExpr] = PwithMeta("[" ~ (parse().relax2).rep(sep = comma1) ~ maybeSpace ~ comma1.? ~ maybeSpace ~ "]").map { (terms, meta) =>
     ListExpr(terms.toVector, meta)
   }
 
-  def tuple: P[Tuple] = PwithMeta("(" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, meta) =>
+  def tuple: P[Tuple] = PwithMeta("(" ~ parse().relax2.rep(sep = comma1) ~ maybeSpace ~ comma1.? ~ maybeSpace ~ ")").map { (terms, meta) =>
     Tuple(terms.toVector, meta)
   }
 
