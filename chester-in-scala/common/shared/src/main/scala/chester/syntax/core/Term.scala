@@ -233,6 +233,14 @@ case class MetaTerm(id: VarId, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 
+sealed trait Stmt {
+  
+}
+
+case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMeta = None) extends Stmt {
+  
+}
+
 
 // TODO: tuple?
 val UnitType = ObjectType(Vector.empty)
