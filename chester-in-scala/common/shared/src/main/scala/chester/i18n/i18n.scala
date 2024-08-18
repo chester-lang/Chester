@@ -49,10 +49,10 @@ enum RegionTag {
   def is(x: String): Boolean = x.toUpperCase() == name
 }
 
-case class RegionTable(table: Map[RegionTag, Map[StringContext, StringContext]]) {
-  private val alternatives: Vector[Map[StringContext, StringContext]] = table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
+case class RegionTable(table: Map[RegionTag, Map[String, String]]) {
+  private val alternatives: Vector[Map[String, String]] = table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
 
-  def get(region: RegionTag, context: StringContext): StringContext = {
+  def get(region: RegionTag, context: String): String = {
     table.get(region).flatMap(_.get(context)) match {
       case Some(value) => return value
       case None => {}
@@ -68,14 +68,36 @@ case class RegionTable(table: Map[RegionTag, Map[StringContext, StringContext]])
 }
 
 case class TranslationTable(table: Map[LanguageTag, RegionTable]) {
-  def get(context: StringContext)(implicit lang: Language): StringContext = {
+  def get(lang: Language, context: String): String = {
     table.get(lang.tag).map(_.get(lang.region, context)).getOrElse(context)
   }
 }
 
-
-extension (sc: StringContext)
-  def t(args: Any*): String = {
-    sc.s(args: _*)
+object Template {
+  def stringContextToString(sc: StringContext): String = {
+    val count = 1
+    val stringbuilder = new StringBuilder()
+    for (part <- sc.parts) {
+      if (part.isEmpty) {
+        stringbuilder.append(s"$${count}")
+      } else {
+        stringbuilder.append(part)
+      }
+    }
+    stringbuilder.result()
   }
 
+  def applyTemplate(template: String, args: Vector[Any]): String = {
+    if (args.length > 9) throw new IllegalArgumentException("Too many arguments")
+    var result = template
+    for (i <- args.indices) {
+      val newResult = result.replace(s"$${i+1}", args(i).toString)
+      if (newResult == result) throw new IllegalArgumentException(s"Missing argument ${i + 1} in template $template")
+      result = newResult
+    }
+    for (i <- 1 to 9) {
+      if (result.contains(s"$${i}")) throw new IllegalArgumentException(s"Missing argument $i in args $args")
+    }
+    result
+  }
+}
