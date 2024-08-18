@@ -183,7 +183,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       case _ => throw new IllegalArgumentException("Unexpected clause type")
     }
 
-    val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduce(effectUnion)
+    val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduceOption(effectUnion).getOrElse(NoEffect())
     val objectClauses = synthesizedClausesWithEffects.map(_.value)
 
     val objectTerm = ObjectTerm(objectClauses.map { case (key, value, _) => ObjectClauseValueTerm(key, value) })
