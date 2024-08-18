@@ -1,8 +1,9 @@
 // TODO: More correctly implement toDoc
 package chester.syntax.core
 
-import chester.doc.const.ColorProfile
-import chester.doc._
+import chester.doc.const.{ColorProfile, Docs}
+import chester.doc.*
+import chester.doc.Doc.group
 import chester.error.*
 import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.encodeString
@@ -16,13 +17,13 @@ sealed trait Term extends WithPos with ToDoc {
 }
 
 case class ListTerm(terms: Vector[Term], meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(terms *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginList, Docs.endList, ",")(terms *)
 }
 
 sealed trait Sort extends Term
 
 case class Type(level: Term, meta: Option[TermMeta] = None) extends Sort {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type(", ")")(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type"<>Docs.beginTuple, Docs.endTuple)(level)
 }
 
 val Type0 = Type(IntegerTerm(0))
@@ -71,31 +72,31 @@ case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
 }
 
 case class ObjectClauseValueTerm(key: Term, value: Term, meta: Option[TermMeta] = None) {
-  def toDoc(implicit options: PrettierOptions): Doc = key <+> Doc.text("=") <+> value
+  def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 }
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("{", "}", ",")(clauses.map(_.toDoc): _*)
+    Doc.wrapperlist(Docs.begin, Docs.end, ",")(clauses.map(_.toDoc): _*)
 }
 
 
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
 case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("{", "}", ",")(fieldTypes.map(_.toDoc): _*)
+    Doc.wrapperlist("Object"</> Docs.begin, Docs.end, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
 case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", " | ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginTuple, Docs.endTuple, " | ")(xs: _*)
 }
 
 case class AndType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", " & ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginTuple, Docs.endTuple, " & ")(xs: _*)
 }
 
 sealed trait EffectTerm extends Term
@@ -103,7 +104,7 @@ sealed trait EffectTerm extends Term
 case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends EffectTerm {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ",")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginList, Docs.endList, ",")(xs: _*)
 }
 
 object EffectList {

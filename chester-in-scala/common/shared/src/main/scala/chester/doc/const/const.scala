@@ -1,6 +1,6 @@
 package chester.doc.const
 
-import chester.doc.{Attribute, Color, PrettierOptions, PrettierOptionsKey}
+import chester.doc._
 
 
 object Colors {
