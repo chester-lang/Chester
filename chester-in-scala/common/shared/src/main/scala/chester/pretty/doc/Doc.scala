@@ -46,15 +46,15 @@ object Doc {
 
   def indented(innerDoc: ToDoc, indent: Indent = Indent.Default): Doc = Indented(indent, innerDoc.toDoc)
 
-  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc = {
+  def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(implicit options: PrettierOptions): Doc = group {
     docs match {
-      case Seq() => group(begin.toDoc <> end.toDoc)
-      case Seq(head) => group(begin.toDoc <> head.toDoc <> end.toDoc)
-      case Seq(head, tail) => group(begin.toDoc <> group(head.toDoc <> sep.toDoc) </> tail.toDoc <> end.toDoc)
+      case Seq() => (begin.toDoc <> end.toDoc)
+      case Seq(head) => (begin.toDoc <> head.toDoc <> end.toDoc)
+      case Seq(head, tail) => (begin.toDoc <> group(head.toDoc <> sep.toDoc) </> tail.toDoc <> end.toDoc)
       case Seq(head, tail*) =>
-        val init = group(head.toDoc <> sep.toDoc)
+        val init = (head.toDoc <> sep.toDoc)
         val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc </> acc.toDoc }
-        group(begin.toDoc <> init <> last.toDoc)
+        (begin.toDoc <> init <> last.toDoc)
     }
   }
 }
