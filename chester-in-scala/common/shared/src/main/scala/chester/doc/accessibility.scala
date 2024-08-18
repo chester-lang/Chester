@@ -1,4 +1,4 @@
-package chester.pretty.doc
+package chester.doc
 
 // will work better with Windows Narrator on Windows Terminal
 case object ReplaceBracketsWithWord extends PrettierOptionsKey[Boolean] {

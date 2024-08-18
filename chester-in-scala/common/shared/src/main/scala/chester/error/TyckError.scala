@@ -1,7 +1,7 @@
 package chester.error
 
+import chester.doc._
 import chester.i18n.t
-import chester.pretty.doc.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
 

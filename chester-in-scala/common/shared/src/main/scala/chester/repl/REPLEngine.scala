@@ -1,8 +1,8 @@
 package chester.repl
 
+import chester.doc.const.Colors
+import chester.doc._
 import chester.parser.{InputStatus, ParseError, ParserEngine}
-import chester.pretty.const.Colors
-import chester.pretty.doc.*
 import chester.syntax.concrete.Expr
 import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckResult, TyckState}
 import fansi.*

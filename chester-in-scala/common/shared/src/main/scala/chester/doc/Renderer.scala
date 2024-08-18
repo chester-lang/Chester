@@ -1,4 +1,4 @@
-package chester.pretty.doc
+package chester.doc
 
 implicit object StringRenderer extends Renderer[String]:
   override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String =

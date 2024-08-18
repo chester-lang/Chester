@@ -1,6 +1,5 @@
-package chester.pretty.doc
+package chester.doc
 
-import chester.pretty
 import chester.utils.platformUseCRLF
 
 import scala.annotation.tailrec
@@ -88,7 +87,7 @@ trait ToDoc {
   def toDoc(implicit options: PrettierOptions = Map()): Doc
 }
 
-import chester.pretty.doc.Doc.*
+import Doc.*
 
 extension (d: ToDoc) {
   def <>(other: ToDoc): Doc = concat(d, other.toDoc)
@@ -288,7 +287,7 @@ abstract class Renderer[T]:
   def charCounter: CharCounter = DefaultCharCounter
 
   def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = false): T =
-    val tokens = pretty.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
+    val tokens = chester.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
 def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit renderer: Renderer[T]): T =

@@ -1,9 +1,9 @@
 // TODO: Correctly implement toDoc. They are very broken
 package chester.syntax.concrete
 
+import chester.doc._
 import chester.error.{SourcePos, TyckError, WithPos}
-import chester.pretty.doc.*
-import chester.pretty.doc.Doc.group
+import chester.doc.Doc.group
 import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.{encodeString, reuse}
 

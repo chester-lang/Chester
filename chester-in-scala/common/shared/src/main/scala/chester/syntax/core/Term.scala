@@ -1,9 +1,9 @@
 // TODO: More correctly implement toDoc
 package chester.syntax.core
 
-import chester.error._
-import chester.pretty.const.ColorProfile
-import chester.pretty.doc.*
+import chester.doc.const.ColorProfile
+import chester.doc._
+import chester.error.*
 import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.encodeString
 

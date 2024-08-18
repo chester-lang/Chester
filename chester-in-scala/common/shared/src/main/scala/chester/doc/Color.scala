@@ -1,4 +1,4 @@
-package chester.pretty.doc
+package chester.doc
 
 sealed trait Attribute
 
