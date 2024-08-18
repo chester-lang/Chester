@@ -166,47 +166,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     }
   }
 
-  def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
-    case Identifier(name, _) => Vector(name)
-    case DotCall(expr, field: Identifier, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
-    case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
-  }
-
-  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
-    def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
-      fields.foldLeft(base) {
-        case (acc, (Vector(k), v)) =>
-          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k), v)
-          acc.copy(clauses = updatedClauses)
-        case (acc, (Vector(k, ks@_*), v)) =>
-          val nestedExpr = acc.clauses.collectFirst {
-            case ObjectExprClause(id: Identifier, nestedObj: ObjectExpr) if id.name == k =>
-              nestedObj
-          } match {
-            case Some(existingNestedObj) =>
-              insertNested(Vector((ks.toVector, v)), existingNestedObj)
-            case None =>
-              insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
-          }
-          val updatedClauses = acc.clauses.filter {
-            case ObjectExprClause(id: Identifier, _) => id.name != k
-            case _ => true
-          } :+ ObjectExprClause(Identifier(k), nestedExpr)
-          acc.copy(clauses = updatedClauses)
-        case (acc, (Vector(), _)) => acc
-      }
-    }
-
-    val desugaredClauses = expr.clauses.map {
-      case ObjectExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
-    }
-    insertNested(desugaredClauses, ObjectExpr(Vector.empty))
-  }
-
   def synthesizeObjectExpr(x: ObjectExpr): Judge = {
-    val desugaredExpr = desugarObjectExpr(x)
-
-    val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = desugaredExpr.clauses.map {
+    val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
       case ObjectExprClause(id: Identifier, expr) =>
         synthesize(expr) match {
           case Judge(wellTypedExpr, exprType, exprEffect) =>
@@ -272,9 +233,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   case class EffectWith[T](effect: Term, value: T)
 
   def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] = {
-    val desugaredClauses = desugarObjectExpr(ObjectExpr(clauses)).clauses
-
-    val inheritedFieldsWithEffects = desugaredClauses.flatMap {
+    val inheritedFieldsWithEffects = clauses.flatMap {
       case ObjectExprClause(id: Identifier, expr) =>
         val symbolTerm = SymbolTerm(id.name)
 

@@ -72,6 +72,45 @@ private object DesaltSimpleFunction {
   }
 }
 
+private object ObjectDesalt {
+  def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
+    case Identifier(name, _) => Vector(name)
+    case DotCall(expr, field: Identifier, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
+    case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
+  }
+
+  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
+    def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
+      fields.foldLeft(base) {
+        case (acc, (Vector(k), v)) =>
+          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k), v)
+          acc.copy(clauses = updatedClauses)
+        case (acc, (Vector(k, ks@_*), v)) =>
+          val nestedExpr = acc.clauses.collectFirst {
+            case ObjectExprClause(id: Identifier, nestedObj: ObjectExpr) if id.name == k =>
+              nestedObj
+          } match {
+            case Some(existingNestedObj) =>
+              insertNested(Vector((ks.toVector, v)), existingNestedObj)
+            case None =>
+              insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
+          }
+          val updatedClauses = acc.clauses.filter {
+            case ObjectExprClause(id: Identifier, _) => id.name != k
+            case _ => true
+          } :+ ObjectExprClause(Identifier(k), nestedExpr)
+          acc.copy(clauses = updatedClauses)
+        case (acc, (Vector(), _)) => acc
+      }
+    }
+
+    val desugaredClauses = expr.clauses.map {
+      case ObjectExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
+    }
+    insertNested(desugaredClauses, ObjectExpr(Vector.empty))
+  }
+}
+
 case object SimpleDesalt {
   @throws[TyckError]
   def desugar(expr: Expr): Expr = expr.descentAndApply {
@@ -82,6 +121,7 @@ case object SimpleDesalt {
       val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
       DesaltMatching(heads1, meta)
     }
+    case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case default => default
   }
 

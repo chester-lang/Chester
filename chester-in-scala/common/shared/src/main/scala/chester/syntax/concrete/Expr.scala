@@ -62,6 +62,8 @@ sealed trait Expr extends WithPos with ToDoc {
 
 sealed trait ParsedExpr extends Expr
 
+sealed trait MaybeSaltedExpr extends Expr
+
 case class Identifier(name: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"Identifier(\"${encodeString(name)}\")"
@@ -80,7 +82,7 @@ case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[
 }
 
 // infix prefix postfix
-case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     OpSeq(seq.map(_.descentAndApply(operator)), meta)
   }
@@ -333,7 +335,7 @@ object ObjectExprClause {
 
 implicit def toObjectExprClause(pair: (QualifiedName, Expr)): ObjectExprClause = ObjectExprClause(pair._1, pair._2)
 
-case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     ObjectExpr(clauses.map(_.descent(operator)), meta)
   }
