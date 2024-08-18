@@ -109,6 +109,12 @@ private object ObjectDesalt {
     }
     insertNested(desugaredClauses, ObjectExpr(Vector.empty))
   }
+  // TODO: use this
+  def desugarObjectExprStep2(expr: ObjectExpr): ObjectExpr = expr.copy(clauses=expr.clauses.map{
+    case clause: ObjectExprClauseOnValue => clause
+    case ObjectExprClause(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
+    case _ => throw new IllegalArgumentException("This is second step")
+  })
 }
 
 case object SimpleDesalt {
