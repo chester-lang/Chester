@@ -17,13 +17,13 @@ sealed trait Term extends WithPos with ToDoc {
 }
 
 case class ListTerm(terms: Vector[Term], meta: Option[TermMeta] = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginList, Docs.endList, ",")(terms *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
 }
 
 sealed trait Sort extends Term
 
 case class Type(level: Term, meta: Option[TermMeta] = None) extends Sort {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type"<>Docs.beginTuple, Docs.endTuple)(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type"<>Docs.`(`, Docs.`)`)(level)
 }
 
 val Type0 = Type(IntegerTerm(0))
@@ -77,26 +77,26 @@ case class ObjectClauseValueTerm(key: Term, value: Term, meta: Option[TermMeta] 
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist(Docs.begin, Docs.end, ",")(clauses.map(_.toDoc): _*)
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc): _*)
 }
 
 
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
 case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: Option[TermMeta] = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("Object"</> Docs.begin, Docs.end, ",")(fieldTypes.map(_.toDoc): _*)
+    Doc.wrapperlist("Object"</> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
 case class OrType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginTuple, Docs.endTuple, " | ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
 }
 
 case class AndType(xs: Vector[Term], meta: Option[TermMeta] = None) extends Term {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginTuple, Docs.endTuple, " & ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
 }
 
 sealed trait EffectTerm extends Term
@@ -104,7 +104,7 @@ sealed trait EffectTerm extends Term
 case class EffectList(xs: Vector[Term], meta: Option[TermMeta] = None) extends EffectTerm {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.beginList, Docs.endList, ",")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs: _*)
 }
 
 object EffectList {
