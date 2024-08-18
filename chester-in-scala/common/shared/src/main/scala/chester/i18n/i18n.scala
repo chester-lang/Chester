@@ -12,7 +12,7 @@ object Language {
   private val languages = LanguageTag.values
   private val regions = RegionTag.values
 
-  def from(x: String): Option[Language] = {
+  def fromOption(x: String): Option[Language] = {
     // split by _ or -
     val parts = x.split("[_\\-]")
     if (parts.length == 1) {
@@ -26,6 +26,8 @@ object Language {
       None
     }
   }
+  
+  def from(x: String): Language = fromOption(x).getOrElse(throw new IllegalArgumentException(s"Invalid language $x"))
 }
 
 enum LanguageTag {
@@ -81,7 +83,7 @@ object Template {
       if (part.isEmpty) {
         stringbuilder.append(s"$${count}")
       } else {
-        stringbuilder.append(part)
+        stringbuilder.append(part.replace("$", "$$"))
       }
     }
     stringbuilder.result()
