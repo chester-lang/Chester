@@ -37,6 +37,14 @@ class ObjectParserTest extends FunSuite {
       parseAndCheck(input, expected)
     }
 
+  test("parse object with single field 4") {
+    val input = "{:a=>1}"
+    val expected = ObjectExpr(Vector(
+      ObjectExprClauseOnValue(SymbolLiteral("a"), IntegerLiteral(1))
+    ))
+    parseAndCheck(input, expected)
+  }
+
   test("parse object with multiple fields") {
     val input = "{ a = 1, b = 2, c = 3 }"
     val expected = ObjectExpr(Vector(
