@@ -201,7 +201,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     ListExpr(terms.toVector, meta)
   }
 
-  def tuple: P[Tuple] = PwithMeta("(" ~ maybeSpace ~ parse().rep(sep = comma) ~ comma.? ~ maybeSpace ~ ")").map { (terms, meta) =>
+  def tuple: P[Tuple] = PwithMeta("(" ~ parse().relax2.rep(sep = comma1) ~ comma.? ~ maybeSpace ~ ")").map { (terms, meta) =>
     Tuple(terms.toVector, meta)
   }
 
@@ -234,11 +234,11 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     DotCall(expr, field, telescope, p(meta))
   }
 
-  def insideBlock: P[Block] = PwithMeta((maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace).flatMap { case (heads, tail, meta) =>
+  def insideBlock: P[Block] = PwithMeta((statement).relax0.rep ~ parse().relax0.? ~ maybeSpace).flatMap { case (heads, tail, meta) =>
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, meta))
   }
 
-  def block: P[ParsedExpr] = PwithMeta("{" ~ (maybeSpace ~ statement).rep ~ maybeSpace ~ parse().? ~ maybeSpace ~ "}").flatMap { case (heads, tail, meta) =>
+  def block: P[ParsedExpr] = PwithMeta("{" ~ (statement).relax0.rep ~ parse().relax0.? ~ maybeSpace ~ "}").flatMap { case (heads, tail, meta) =>
     if (heads.isEmpty && tail.isEmpty) Fail("expect something") else Pass(Block(Vector.from(heads), tail, meta))
   }
 

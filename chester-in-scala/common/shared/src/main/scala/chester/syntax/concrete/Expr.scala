@@ -28,11 +28,17 @@ object MetaFactory {
     case (Vector(), Vector(), _) => updateOn
     case (before, end, Some(ExprMeta(sourcePos, None))) => Some(ExprMeta(sourcePos, Some(CommentInfo(commentBefore = before, commentEndInThisLine = end))))
     case (before, end, Some(ExprMeta(sourcePos, Some(commentInfo)))) => Some(ExprMeta(sourcePos, Some(commentInfo.copy(commentBefore = before ++ commentInfo.commentBefore, commentEndInThisLine = commentInfo.commentEndInThisLine ++ end))))
+    case (before, end, None) => Some(ExprMeta(None, Some(CommentInfo(commentBefore = before, commentEndInThisLine = end))))
   }
 }
 
 sealed trait Expr extends WithPos with ToDoc {
   def descent(operator: Expr => Expr): Expr = this
+  
+  // TODO, another type of descent
+  trait Operator {
+    def apply[T<:Expr](x: T): T
+  }
 
   final def descentAndApply(operator: Expr => Expr): Expr = thisOr(operator(this.descent(operator)))
 
