@@ -9,6 +9,8 @@ trait T {
 
 private def tMacro(sc: Expr[StringContext])(using Quotes): Expr[T] = {
   println(sc.show)
+  println(System.getProperty("user.dir"))
+  println("aaa")
   // it works
   //Files.write(Paths.get("/Users/.../test.output"), sc.show.getBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
   '{
