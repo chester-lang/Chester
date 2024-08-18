@@ -71,7 +71,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val range = RangeInFile(
       Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
       Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
-    Some(SourcePos(fileName, FileContent(p.input,linesOffset, posOffset), range))
+    Some(SourcePos(fileName, FileContent(p.input, linesOffset, posOffset), range))
   }
 
   private def createMeta(pos: Option[SourcePos], comments: Option[CommentInfo]): Option[ExprMeta] = {
@@ -93,16 +93,16 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   extension [T <: Expr](inline parse0: P[T]) {
     inline def relax(inline start: Boolean = true, inline onEnd: Boolean = false): P[T] = (start, onEnd) match {
       case (true, true) => (maybeSpace1 ~ parse0 ~ maybeSpace1).map { case (b, x, e) =>
-        if(ignoreLocation) x else
-        x.updateMeta(MetaFactory.add(commentBefore = b, commentEndInThisLine = e)).asInstanceOf[T]
+        if (ignoreLocation) x else
+          x.updateMeta(MetaFactory.add(commentBefore = b, commentEndInThisLine = e)).asInstanceOf[T]
       }
       case (true, false) => (maybeSpace1 ~ parse0).map { case (b, x) =>
-        if(ignoreLocation) x else
-        x.updateMeta(MetaFactory.add(commentBefore = b)).asInstanceOf[T]
+        if (ignoreLocation) x else
+          x.updateMeta(MetaFactory.add(commentBefore = b)).asInstanceOf[T]
       }
       case (false, true) => (parse0 ~ maybeSpace1).map { case (x, e) =>
-        if(ignoreLocation) x else
-        x.updateMeta(MetaFactory.add(commentEndInThisLine = e)).asInstanceOf[T]
+        if (ignoreLocation) x else
+          x.updateMeta(MetaFactory.add(commentEndInThisLine = e)).asInstanceOf[T]
       }
       case (false, false) => parse0
     }
@@ -288,7 +288,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
 
   def objectClause0: P[ObjectClause] = (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClause)
-  def objectClause1: P[ObjectClause] = (parse().relax() ~ "=>" ~ parse().relax()).map(ObjectExprClauseOnValue)
+
+  def objectClause1: P[ObjectClause] = (maybeSpace ~ parse(ctx=ParsingContext(dontallowOpSeq = true)) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClauseOnValue)
 
   def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
     ObjectExpr(fields.toVector, meta)

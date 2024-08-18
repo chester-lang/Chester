@@ -329,10 +329,9 @@ case class ObjectExprClauseOnValue(key: Expr, value: Expr) extends ObjectClause 
 
 object ObjectExprClause {
   def apply(key: QualifiedName, value: Expr): ObjectExprClause = new ObjectExprClause(key, value)
-
-  def apply(pair: (QualifiedName, Expr)): ObjectExprClause = new ObjectExprClause(pair._1, pair._2)
 }
 
+@deprecated
 implicit def toObjectExprClause(pair: (QualifiedName, Expr)): ObjectExprClause = ObjectExprClause(pair._1, pair._2)
 
 case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
