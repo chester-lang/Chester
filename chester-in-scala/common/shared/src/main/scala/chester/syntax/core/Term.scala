@@ -86,6 +86,29 @@ case class AnyTerm(meta: OptionTermMeta = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
+case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boolean, meta: OptionTermMeta = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val patternDoc = pattern.toDoc
+    val tyDoc = ty.toDoc
+    val defaultDoc = default.map(_.toDoc).getOrElse(Doc.empty)
+    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
+  }
+}
+
+case class TelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm], meta: OptionTermMeta = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
+}
+
+case class FunctionType(telescope: Option[TelescopeTerm], effect: Term, result: Term, meta: OptionTermMeta = None) extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val telescopeDoc = telescope.map(_.toDoc).getOrElse(Doc.empty)
+    val effectDoc = effect.toDoc
+    val resultDoc = result.toDoc
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
+  }
+}
+
 case class ObjectClauseValueTerm(key: Term, value: Term, meta: OptionTermMeta = None) {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 }
