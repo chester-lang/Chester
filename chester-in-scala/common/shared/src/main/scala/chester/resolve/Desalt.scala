@@ -79,7 +79,7 @@ private object ObjectDesalt {
     case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
   }
 
-  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
+  def desugarObjectExpr0(expr: ObjectExpr): ObjectExpr = {
     def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
       fields.foldLeft(base) {
         case (acc, (Vector(k), v)) =>
@@ -109,12 +109,15 @@ private object ObjectDesalt {
     }
     insertNested(desugaredClauses, ObjectExpr(Vector.empty))
   }
+
   // TODO: use this
-  def desugarObjectExprStep2(expr: ObjectExpr): ObjectExpr = expr.copy(clauses=expr.clauses.map{
+  def desugarObjectExprStep2(expr: ObjectExpr): ObjectExpr = expr.copy(clauses = expr.clauses.map {
     case clause: ObjectExprClauseOnValue => clause
     case ObjectExprClause(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
     case _ => throw new IllegalArgumentException("This is second step")
   })
+
+  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
 }
 
 case object SimpleDesalt {

@@ -168,19 +168,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def synthesizeObjectExpr(x: ObjectExpr): Judge = {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
-      case ObjectExprClause(id: Identifier, expr) =>
-        synthesize(expr) match {
-          case Judge(wellTypedExpr, exprType, exprEffect) =>
-            EffectWith(exprEffect, (SymbolTerm(id.name), wellTypedExpr, exprType))
-        }
-      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
-        synthesize(valueExpr) match {
-          case Judge(wellTypedExpr, exprType, exprEffect) =>
-            val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr)
-            val combinedEffect = effectUnion(exprEffect, keyEffect)
-            EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
-        }
-      case _ => throw new IllegalArgumentException("Unexpected clause type")
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>{
+        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr)
+        val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr)
+        val combinedEffect = effectUnion(exprEffect, keyEffect)
+        EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
+      }
+      case _ => throw new IllegalArgumentException("Unexpected clause type, maybe no desalted")
     }
 
     val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduceOption(effectUnion).getOrElse(NoEffect())
@@ -234,26 +228,6 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] = {
     val inheritedFieldsWithEffects = clauses.flatMap {
-      case ObjectExprClause(id: Identifier, expr) =>
-        val symbolTerm = SymbolTerm(id.name)
-
-        fieldTypes.collectFirst {
-          case ObjectClauseValueTerm(SymbolTerm(fid, _), _, _) if fid == id.name => fid
-        } match {
-          case Some(fid) =>
-            val fieldType = fieldTypes.collectFirst {
-              case ObjectClauseValueTerm(_, ty, _) if fid == id.name => ty
-            }
-            inherit(expr, fieldType.getOrElse(new ErrorTerm(FieldTypeNotFoundError(id.name))), effect) match {
-              case Judge(wellTyped, _, fieldEffect) =>
-                Some(EffectWith(fieldEffect, ObjectClauseValueTerm(symbolTerm, wellTyped)))
-              case _ => None
-            }
-          case None =>
-            S.errors.report(FieldTypeNotFoundError(id.name))
-            None
-        }
-
       case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
         val synthesizedKey = synthesize(keyExpr)
         val fieldType = fieldTypes.collectFirst {
