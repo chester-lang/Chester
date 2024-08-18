@@ -50,43 +50,25 @@ Block(
               )
             )
           ),
-          value = Block(
-            heads = Vector(),
-            tail = Some(
-              value = OpSeq(
-                seq = Vector(
-                  StringLiteral(
-                    value = "x",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(17,0,17),Pos(19,0,19)))),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = "=>",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(21,0,21),Pos(22,0,22)))),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  IntegerLiteral(
-                    value = 1,
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(24,0,24),Pos(24,0,24)))),
-                        commentInfo = None
-                      )
+          value = ObjectExpr(
+            clauses = Vector(
+              ObjectExprClauseOnValue(
+                key = StringLiteral(
+                  value = "x",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(17,0,17),Pos(19,0,19)))),
+                      commentInfo = None
                     )
                   )
                 ),
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(17,0,17),Pos(19,0,19)))),
-                    commentInfo = None
+                value = IntegerLiteral(
+                  value = 1,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/table.chester",RangeInFile(Pos(24,0,24),Pos(24,0,24)))),
+                      commentInfo = None
+                    )
                   )
                 )
               )

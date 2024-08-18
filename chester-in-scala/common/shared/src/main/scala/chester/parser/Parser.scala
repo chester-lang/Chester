@@ -291,7 +291,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def objectClause1: P[ObjectClause] = (maybeSpace ~ parse(ctx=ParsingContext(dontallowOpSeq = true)) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClauseOnValue)
 
-  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
+  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0 | objectClause1).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
     ObjectExpr(fields.toVector, meta)
   }
 

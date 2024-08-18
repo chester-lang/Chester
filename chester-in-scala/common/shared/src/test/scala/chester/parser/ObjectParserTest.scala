@@ -29,7 +29,6 @@ class ObjectParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
-  if(false) { // TODO
     test("parse object with single field 3") {
       val input = "{ :a => 1}"
       val expected = ObjectExpr(Vector(
@@ -37,7 +36,6 @@ class ObjectParserTest extends FunSuite {
       ))
       parseAndCheck(input, expected)
     }
-  }
 
   test("parse object with multiple fields") {
     val input = "{ a = 1, b = 2, c = 3 }"
