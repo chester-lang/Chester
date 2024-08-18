@@ -1,5 +1,6 @@
 package chester.i18n
 
+import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.quoted.*
 
 trait T {
@@ -8,6 +9,8 @@ trait T {
 
 private def tMacro(sc: Expr[StringContext])(using Quotes): Expr[T] = {
   println(sc.show)
+  // it works
+  //Files.write(Paths.get("/Users/.../test.output"), sc.show.getBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
   '{
     new T {
       def t(args: Any*)(implicit lang: Language): String = {
