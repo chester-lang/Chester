@@ -13,12 +13,13 @@ import scala.language.implicitConversions
 
 
 case class MutBox[T](var value: T)
+
 case class TyckState()
 
 object BuiltinCtx {
   val builtinSyntax = Vector("data", "module")
   val builtinCtx: Map[LocalVar, JudgeNoEffect] = Map(
-    
+
   )
 }
 
@@ -28,6 +29,7 @@ case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map()) {
 
 object LocalCtx {
   val Empty = LocalCtx()
+
   def fromParent(parent: LocalCtx): LocalCtx = parent
 }
 
@@ -44,6 +46,7 @@ class VectorReporter[T] extends Reporter[T] {
 }
 
 case class Judge(wellTyped: Term, ty: Term, effect: Term)
+
 case class JudgeNoEffect(wellTyped: Term, ty: Term)
 
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
@@ -168,7 +171,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def synthesizeObjectExpr(x: ObjectExpr): Judge = {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
-      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>{
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
         val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr)
         val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr)
         val combinedEffect = effectUnion(exprEffect, keyEffect)
@@ -186,7 +189,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     Judge(objectTerm, objectType, combinedEffect)
   }
 
-  def synthesizeBlock(block: Block): Judge = {???
+  def synthesizeBlock(block: Block): Judge = {
+    ???
   }
 
   def synthesize(expr: Expr): Judge = resolve(expr) match {
@@ -219,7 +223,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       S.errors.report(UnsupportedExpressionError(expr))
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect(None))
   }
-  
+
   def synthesizeTerm(term: Term): JudgeNoEffect = term match {
     case _ => ???
   }
@@ -241,11 +245,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
               case _ => None
             }
           case None =>
-            synthesizedKey.wellTyped match {
+            S.errors.report(FieldTypeNotFoundError(synthesizedKey.wellTyped match {
               case k: SymbolTerm =>
-                S.errors.report(FieldTypeNotFoundError(k.value))
-              case _ => S.errors.report(FieldTypeNotFoundError(synthesizedKey.wellTyped.toString))
-            }
+                k.value
+              case _ => synthesizedKey.wellTyped.toString
+            }))
             None
         }
 
@@ -266,7 +270,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     S.state.value = newState // Update the state with the new state from the normalizer
     normalizedTerm
   }
-  
+
   def resolve(expr: Expr): Expr = {
     ExprResolver.resolve(localCtx, expr, S.errors)
   }
@@ -291,14 +295,15 @@ case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning], 
 
 object TyckResult {
   object Success {
-    def unapply[S,T](x: TyckResult[S,T]): Option[(T,S,Vector[TyckWarning])] = {
-      if(x.errors.isEmpty) Some((x.result, x.state, x.warnings))
+    def unapply[S, T](x: TyckResult[S, T]): Option[(T, S, Vector[TyckWarning])] = {
+      if (x.errors.isEmpty) Some((x.result, x.state, x.warnings))
       else None
     }
   }
+
   object Failure {
-    def unapply[S,T](x: TyckResult[S,T]): Option[(Vector[TyckError],Vector[TyckWarning], S, T)] = {
-      if(x.errors.nonEmpty) Some((x.errors, x.warnings, x.state, x.result))
+    def unapply[S, T](x: TyckResult[S, T]): Option[(Vector[TyckError], Vector[TyckWarning], S, T)] = {
+      if (x.errors.nonEmpty) Some((x.errors, x.warnings, x.state, x.result))
       else None
     }
   }
