@@ -66,7 +66,7 @@ case class UnsupportedExpressionError(expr: Expr) extends TyckError {
   override def cause: Expr = expr
 }
 
-case class UnexpectedStmt(x: BlockStmt) extends TyckError {
+case class UnexpectedStmt(x: Stmt) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =  t"Unexpected statement: $x"
 
   override def cause: Expr = x

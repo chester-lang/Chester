@@ -1,10 +1,12 @@
 // TODO: Correctly implement toDoc. They are very broken
 package chester.syntax.concrete
 
-import chester.doc._
-import chester.error.{SourcePos, TyckError, WithPos}
+import chester.doc.*
+import chester.error.{SourcePos, TyckError, TyckWarning, WithPos}
 import chester.doc.Doc.group
-import chester.syntax.{Id, QualifiedIDString}
+import chester.syntax.concrete.stmt.QualifiedID
+import chester.syntax.concrete.stmt.accociativity.Associativity
+import chester.syntax.{Id, QualifiedIDString, UnresolvedID}
 import chester.utils.{encodeString, reuse}
 
 enum CommentType {
@@ -431,17 +433,178 @@ case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltP
   override def toDoc(implicit options: PrettierOptions): Doc = name.toDoc
 }
 
-sealed trait BlockStmt extends DesaltExpr
 
-case class LetExpr(pattern: DesaltPattern, ty: Option[Expr], body: Option[Expr], meta: Option[ExprMeta]) extends BlockStmt {
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): LetExpr = copy(meta = updater(meta))
+// TODO: maybe merge with BlockStmt
+sealed trait Stmt extends DesaltExpr {
 
-  override def descent(operator: Expr => Expr): LetExpr = thisOr(LetExpr(pattern.descent(operator), ty.map(_.descentAndApply(operator)), body.map(_.descentAndApply(operator)), meta))
+  def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Stmt) = (Vector.empty, Vector.empty, this)
+
+  def reduce: (Vector[TyckWarning], Vector[TyckError], Stmt) = {
+    val (warnings, errors, stmt) = reduceOnce
+    if (stmt == this) (Vector.empty, Vector.empty, stmt)
+    else {
+      val (newWarnings, newErrors, newStmt) = stmt.reduce
+      (warnings ++ newWarnings, errors ++ newErrors, newStmt)
+    }
+  }
+
+  def getName: Option[Id]
+}
+
+private sealed trait NameUnknown extends Stmt {
+  def getName: Option[Id] = None
+}
+
+private sealed trait NameKnown extends Stmt {
+  def name: Id
+
+  def getName: Option[Id] = Some(name)
+}
+
+private sealed trait NameOption extends Stmt {
+  def name: Option[Id]
+
+  def getName: Option[Id] = name
+}
+
+case class DataStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("data") <+> rest.map(_.toDoc).reduce(_ <+> _))
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class TraitStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("trait") <+> rest.map(_.toDoc).reduce(_ <+> _))
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class ImplementStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("implement") <+> rest.map(_.toDoc).reduce(_ <+> _))
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class TypeDeclaration(name: Option[String], exprs: Vector[Expr], types: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
+    val exprsDoc = exprs.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    val typesDoc = types.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    nameDoc <+> exprsDoc <+> Doc.text(": ") <+> typesDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class Definition(name: Option[String], exprs: Vector[Expr], defns: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
+    val exprsDoc = exprs.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    val defnsDoc = defns.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    nameDoc <+> exprsDoc <+> Doc.text(" = ") <+> defnsDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class DeclarationAndDefinition(name: Option[String], declNameExprs: Vector[Expr], types: Vector[Expr], defns: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
+    val declNameExprsDoc = declNameExprs.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    val typesDoc = types.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    val defnsDoc = defns.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    nameDoc <+> declNameExprsDoc <+> Doc.text(": ") <+> typesDoc <+> Doc.text(" = ") <+> defnsDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
+  override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class GroupedStmt(name: Option[Id], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption {
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
+    val declDoc = declaration.toDoc
+    val defnsDoc = definitions.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    nameDoc <+> declDoc <+> defnsDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class ErrorStmt(name: Option[Id], message: String, meta: Option[ExprMeta] = None) extends NameOption {
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
+    nameDoc <+> Doc.text("error: ") <+> Doc.text(message)
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+sealed trait PrecedenceGroup
+
+case class PrecedenceGroupResolving(
+                                     name: Id,
+                                     higherThan: Vector[UnresolvedID] = Vector(),
+                                     lowerThan: Vector[UnresolvedID] = Vector(),
+                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
+                                   ) extends Stmt with PrecedenceGroup {
+  def getName: Option[Id] = Some(name)
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.toDoc
+    val higherThanDoc = if (higherThan.isEmpty) Doc.empty else Doc.text("higher than ") <> higherThan.map(_.toString).mkString
+    val lowerThanDoc = if (lowerThan.isEmpty) Doc.empty else Doc.text("lower than ") <> lowerThan.map(_.toString).mkString
+    val associativityDoc = associativity match {
+      case Associativity.None => Doc.empty
+      case Associativity.Left => Doc.text("associativity left")
+      case Associativity.Right => Doc.text("associativity right")
+    }
+    nameDoc <+> higherThanDoc <+> lowerThanDoc <+> associativityDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class PrecedenceGroupResolved(
+                                    name: QualifiedID,
+                                    higherThan: Vector[PrecedenceGroupResolved] = Vector(),
+                                    lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
+                                    associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
+                                  ) extends Stmt with PrecedenceGroup {
+  def getName: Option[Id] = Some(name.name)
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.toString
+    val higherThanDoc = if (higherThan.isEmpty) Doc.empty else Doc.text("higher than ") <> higherThan.map(_.toDoc).reduce(_ <+> _)
+    val lowerThanDoc = if (lowerThan.isEmpty) Doc.empty else Doc.text("lower than ") <> lowerThan.map(_.toDoc).reduce(_ <+> _)
+    val associativityDoc = associativity match {
+      case Associativity.None => Doc.empty
+      case Associativity.Left => Doc.text("associativity left")
+      case Associativity.Right => Doc.text("associativity right")
+    }
+    nameDoc <+> higherThanDoc <+> lowerThanDoc <+> associativityDoc
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+
+case class LetStmt(pattern: DesaltPattern, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
+  
+  override def getName = None
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val patternDoc = pattern.toDoc
     val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
-    val bodyDoc = body.map(b => Doc.text(" = ") <> b.toDoc).getOrElse(Doc.empty)
-    patternDoc <> tyDoc <> bodyDoc
+    val exprDoc = expr.toDoc
+    patternDoc <+> tyDoc <+> Doc.text(" = ") <+> exprDoc
   }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
+

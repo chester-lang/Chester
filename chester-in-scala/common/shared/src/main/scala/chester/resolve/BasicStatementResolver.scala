@@ -8,10 +8,10 @@ import chester.error._
 import scala.annotation.tailrec
 
 object BasicStatementResolver {
-  def resolveStatements(exprs: Vector[Expr]): (Vector[TyckWarning], Vector[TyckError], Vector[TopLevelStmt]) = {
+  def resolveStatements(exprs: Vector[Expr]): (Vector[TyckWarning], Vector[TyckError], Vector[Stmt]) = {
     var warnings = Vector.empty[TyckWarning]
     var errors = Vector.empty[TyckError]
-    var statements = Vector.empty[TopLevelStmt]
+    var statements = Vector.empty[Stmt]
 
     def processExpr(expr: Expr): Unit = {
       val (ws, es, stmtOpt) = resolveStatement(expr)
@@ -27,17 +27,17 @@ object BasicStatementResolver {
     (warnings, errors, groupedStatements)
   }
 
-  def resolveStatement(expr: Expr): (Vector[TyckWarning], Vector[TyckError], TopLevelStmt) = expr match {
+  def resolveStatement(expr: Expr): (Vector[TyckWarning], Vector[TyckError], Stmt) = expr match {
     case opSeq: OpSeq =>
       opSeq.seq match {
         case Vector(Identifier(Const.Data, _), xs@_*) =>
-          return (Vector.empty, Vector.empty, DataTopLevelStmt(xs.toVector, opSeq.meta))
+          return (Vector.empty, Vector.empty, DataStmt(xs.toVector, opSeq.meta))
 
         case Vector(Identifier(Const.Trait, _), xs@_*) =>
-          return (Vector.empty, Vector.empty, TraitTopLevelStmt(xs.toVector, opSeq.meta))
+          return (Vector.empty, Vector.empty, TraitStmt(xs.toVector, opSeq.meta))
 
         case Vector(Identifier(Const.Implement, _), xs@_*) =>
-          return (Vector.empty, Vector.empty, ImplementTopLevelStmt(xs.toVector, opSeq.meta))
+          return (Vector.empty, Vector.empty, ImplementStmt(xs.toVector, opSeq.meta))
 
         case _ =>
       }
@@ -49,13 +49,13 @@ object BasicStatementResolver {
       }) {
         resolveTypeOrDefinition(opSeq)
       } else {
-        (Vector.empty, Vector.empty, ExprTopLevelStmt(opSeq))
+        (Vector.empty, Vector.empty, ExprStmt(opSeq))
       }
 
-    case _ => (Vector.empty, Vector.empty, ExprTopLevelStmt(expr))
+    case _ => (Vector.empty, Vector.empty, ExprStmt(expr))
   }
 
-  private def resolveTypeOrDefinition(opSeq: OpSeq): (Vector[TyckWarning], Vector[TyckError], TopLevelStmt) = {
+  private def resolveTypeOrDefinition(opSeq: OpSeq): (Vector[TyckWarning], Vector[TyckError], Stmt) = {
     val colonIndex = opSeq.seq.indexWhere {
       case Identifier(":", _) => true
       case _ => false
@@ -101,7 +101,7 @@ object BasicStatementResolver {
         (Vector.empty, Vector.empty, Definition(None, beforeEqual, afterEqual, opSeq.meta))
 
       case _ =>
-        (Vector.empty, Vector(UnsupportedExpressionError(opSeq)), ErrorTopLevelStmt(None, "Unsupported expression"))
+        (Vector.empty, Vector(UnsupportedExpressionError(opSeq)), ErrorStmt(None, "Unsupported expression"))
     }
   }
 
@@ -112,8 +112,8 @@ object BasicStatementResolver {
     case _ => None
   }
 
-  private def groupDeclarationsAndDefinitions(statements: Vector[TopLevelStmt]): Vector[TopLevelStmt] = {
-    val grouped = statements.foldLeft(Vector.empty[TopLevelStmt]) {
+  private def groupDeclarationsAndDefinitions(statements: Vector[Stmt]): Vector[Stmt] = {
+    val grouped = statements.foldLeft(Vector.empty[Stmt]) {
       case (acc, stmt: TypeDeclaration) =>
         acc :+ stmt
 
