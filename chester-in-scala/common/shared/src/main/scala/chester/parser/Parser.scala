@@ -82,7 +82,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
   }
 
   extension [T <: Expr](inline parse0: P[T]) {
-    inline def relax(start: Boolean = true, onEnd: Boolean = false): P[T] = (start, onEnd) match {
+    inline def relax(inline start: Boolean = true, inline onEnd: Boolean = false): P[T] = (start, onEnd) match {
       case (true, true) => (maybeSpace1 ~ parse0 ~ maybeSpace1).map { case (b, x, e) =>
         x.updateMeta(MetaFactory.add(commentBefore = b, commentEndInThisLine = e)).asInstanceOf[T]
       }
@@ -94,6 +94,8 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
       }
       case (false, false) => parse0
     }
+    inline def relax0: P[T] = relax()
+    inline def relax2: P[T] = relax(true,true)
   }
 
   extension [T](inline parse0: P[T]) {
@@ -288,10 +290,10 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
 
-  def objectClause0: P[ObjectClause] = (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClause)
-  def objectClause1: P[ObjectClause] = (parse().relax() ~ "=>" ~ parse().relax()).map(ObjectExprClauseOnValue)
+  def objectClause0: P[ObjectClause] = (qualifiedName.relax2 ~ "=" ~ parse().relax2).map(ObjectExprClause)
+  def objectClause1: P[ObjectClause] = (parse(ctx = ParsingContext(dontallowOpSeq=true)).relax2 ~ "=>" ~ parse().relax0).map(ObjectExprClauseOnValue)
 
-  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
+  def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause1 | objectClause0).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
     ObjectExpr(fields.toVector, meta)
   }
 

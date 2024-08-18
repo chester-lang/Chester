@@ -71,7 +71,10 @@ case class AnyTerm(meta: Option[TermMeta] = None) extends TypeTerm {
 }
 
 case class ObjectClauseValueTerm(key: Term, value: Term, meta: Option[TermMeta] = None) {
-  def toDoc(implicit options: PrettierOptions): Doc = key <+> Doc.text("=") <+> value
+  def toDoc(implicit options: PrettierOptions): Doc = key match {
+    case SymbolTerm(key, _) => key <+> Doc.text("=") <+> value
+    case key => key <+> Doc.text("=>") <+> value
+  }
 }
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: Option[TermMeta] = None) extends Term {
