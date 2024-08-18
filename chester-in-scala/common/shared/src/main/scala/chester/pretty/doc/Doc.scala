@@ -39,7 +39,7 @@ object Doc {
 
   @deprecated("please use <> family combinators instead")
   def linebreak: Doc = line(text(""))
-  
+
   val newline: Doc = NewLine
 
   def group(doc: ToDoc): Doc = Group(doc.toDoc)
@@ -59,12 +59,18 @@ object Doc {
   }
 }
 
-trait PrettierOptionsKey[T]
+trait PrettierOptionsKey[T] {
+  def default: T
+
+  def get(implicit options: PrettierOptions): T = options.get(this)
+}
 
 implicit class PrettierOptions(options: scala.collection.Map[PrettierOptionsKey[?], Any]) {
-  def get[T](key: PrettierOptionsKey[T]): Option[T] = options.get(key).map(_.asInstanceOf[T])
+  def get[T](key: PrettierOptionsKey[T]): T = getOrElse(key, key.default)
 
-  def getOrElse[T](key: PrettierOptionsKey[T], default: T): T = get(key).getOrElse(default)
+  private[chester] def getOption[T](key: PrettierOptionsKey[T]): Option[T] = options.get(key).map(_.asInstanceOf[T])
+
+  private[chester] def getOrElse[T](key: PrettierOptionsKey[T], default: T): T = getOption(key).getOrElse(default)
 
   def updated[T](key: PrettierOptionsKey[T], value: T): PrettierOptions = options.updated(key, value)
 }

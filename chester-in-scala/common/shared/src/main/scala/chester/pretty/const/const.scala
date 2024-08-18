@@ -13,14 +13,13 @@ class ColorProfile {
   def typeColor: Color = Color.LightBlue
 }
 
-object ColorProfile {
-  val Default = new ColorProfile
 
-  def get(implicit options: PrettierOptions): ColorProfile = options.getOrElse(ColorProfileKey, Default)
+case object ColorProfile extends PrettierOptionsKey[ColorProfile] {
+  
+    val default = new ColorProfile
 
-  def literalColor(implicit options: PrettierOptions): Color = get.literalColor
+    def literalColor(implicit options: PrettierOptions): Color = get.literalColor
 
-  def typeColor(implicit options: PrettierOptions): Color = get.typeColor
+    def typeColor(implicit options: PrettierOptions): Color = get.typeColor
+  
 }
-
-case object ColorProfileKey extends PrettierOptionsKey[ColorProfile]
