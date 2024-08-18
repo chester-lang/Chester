@@ -104,10 +104,15 @@ private object ObjectDesalt {
       }
     }
 
-    val desugaredClauses = expr.clauses.map {
-      case ObjectExprClause(qname, expr) => (desugarQualifiedName(qname), expr)
+    var moreClauses: Vector[ObjectExprClauseOnValue] = Vector()
+    val desugaredClauses = expr.clauses.flatMap {
+      case ObjectExprClause(qname, expr) => Some(desugarQualifiedName(qname), expr)
+      case clause: ObjectExprClauseOnValue => {
+        moreClauses = moreClauses :+ clause
+        None
+      }
     }
-    insertNested(desugaredClauses, ObjectExpr(Vector.empty))
+    expr.copy(clauses = insertNested(desugaredClauses, ObjectExpr(Vector.empty)).clauses ++ moreClauses)
   }
 
   // TODO: use this
