@@ -73,6 +73,8 @@ case class Identifier(name: String, meta: Option[ExprMeta] = None) extends Parse
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Identifier = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name)
+  
+  def toSymbol: SymbolLiteral = SymbolLiteral(name, meta)
 }
 
 case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[ExprMeta] = None) extends Expr {
@@ -276,6 +278,8 @@ case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends L
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value)
+  
+  def toIdentifier: Identifier = Identifier(value, meta)
 }
 
 case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
