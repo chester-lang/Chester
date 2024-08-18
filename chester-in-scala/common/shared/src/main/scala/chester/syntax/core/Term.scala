@@ -161,7 +161,7 @@ object EffectList {
       case NoEffect(_) => false
       case _ => true
     }
-    val distinct = flattened.filterNot(_.isInstanceOf[NoEffect]).distinct
+    val distinct = flattened.distinct
     if (distinct.nonEmpty) new EffectList(distinct, meta) else NoEffect(meta)
   }
 }
