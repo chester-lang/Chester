@@ -1,14 +1,14 @@
 package chester.error
 
-import chester.doc._
-import chester.i18n.t
+import chester.doc.{PrettierOptions, *}
+import chester.i18n.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
 
 abstract class TyckErrorOrWarning extends Exception with ToDoc {
   def message: String = render(toDoc)
 
-  override def toDoc(implicit options: PrettierOptions = Map()): Doc = message
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message
 
   def cause: Term | Expr
 
@@ -16,7 +16,7 @@ abstract class TyckErrorOrWarning extends Exception with ToDoc {
 
   val stack: Array[StackTraceElement] = this.getStackTrace
 
-  def renderWithLocation(implicit options: PrettierOptions = Map()): Doc = {
+  def renderWithLocation(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
     val baseMessage = Doc.text(t"Error: ") <> Doc.text(message).colored(Attribute.BoldOn)
 
     val locationInfo = location match {
@@ -49,31 +49,31 @@ abstract class TyckWarning extends TyckErrorOrWarning {
 }
 
 case class EmptyResultsError() extends TyckError {
-  override def message: String = t"Empty Results"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Empty Results"
 
   override def cause: Expr = EmptyExpr
 }
 
 case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
-  override def message: String = t"Unification failed: $subType is not a subtype of $superType"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unification failed: $subType is not a subtype of $superType"
 
   override def cause: Term = subType
 }
 
 case class UnsupportedExpressionError(expr: Expr) extends TyckError {
-  override def message: String = t"Unsupported expression type: $expr"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported expression type: $expr"
 
   override def cause: Expr = expr
 }
 
 case class UnexpectedStmt(x: BlockStmt) extends TyckError {
-  override def message: String = t"Unexpected statement: $x"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =  t"Unexpected statement: $x"
 
   override def cause: Expr = x
 }
 
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName | String) extends TyckError {
-  override def message: String = t"Field type not found for $qualifiedName"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Field type not found for $qualifiedName"
 
   override def cause: Term | Expr = qualifiedName match {
     case x: Term => x
@@ -83,35 +83,35 @@ case class FieldTypeNotFoundError(qualifiedName: QualifiedName | String) extends
 }
 
 case class ExpectedObjectTypeError() extends TyckError {
-  override def message: String = t"Expected an ObjectType for inheritance"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected an ObjectType for inheritance"
 
   override def cause: Term | Expr = EmptyExpr
 }
 
 
 case class ExpectCase(cause: Expr) extends TyckError {
-  override def message: String = t"case clause must have a pattern and a return expression"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"case clause must have a pattern and a return expression"
 }
 
 case class ExpectFullCaseBlock(block: Expr) extends TyckError {
-  override def message: String = t"Expected a full case block, got $block"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a full case block, got $block"
 
   override def cause: Expr = block
 }
 
 
 case class ExpectSingleExpr(xs: Seq[Expr]) extends TyckError {
-  override def message: String = t"Expected a single expression, got $xs"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a single expression, got $xs"
 
   override def cause: Expr = xs.head
 }
 
 case class ExpectLambda(x: Expr) extends TyckError {
-  override def message: String = t"Expected a lambda expression, got $x"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a lambda expression, got $x"
 
   override def cause: Expr = x
 }
 
 case class ExpectPattern(cause: Expr) extends TyckError {
-  override def message: String = t"Expected a pattern, got $cause"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a pattern, got $cause"
 }

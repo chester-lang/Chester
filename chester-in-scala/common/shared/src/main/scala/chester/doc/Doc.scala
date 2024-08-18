@@ -80,6 +80,8 @@ implicit def tuple2PrettyKeyValue[T](tuple: (PrettierOptionsKey[T], T)): Prettie
 implicit def prettyKeyValue2Tuple[T](kv: PrettierKeyValue[T]): (PrettierOptionsKey[T], T) = (kv.key, kv.value)
 
 object PrettierOptions {
+  val Default: PrettierOptions = Map()
+
   def apply(options: PrettierKeyValue[?]*): PrettierOptions = options.map(prettyKeyValue2Tuple).toMap
 }
 

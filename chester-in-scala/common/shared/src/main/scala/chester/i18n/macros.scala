@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.quoted.*
 
 trait T {
-  def t(args: Any*)(implicit lang: Language = Language.from("en_US")): String
+  def t(args: Any*)(implicit lang: Language): String
 }
 
 private def tMacro(sc: Expr[StringContext])(using Quotes): Expr[T] = {
