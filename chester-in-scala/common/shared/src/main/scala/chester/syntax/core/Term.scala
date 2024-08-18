@@ -29,6 +29,7 @@ sealed trait Term extends WithPos with ToDoc {
   def meta: OptionTermMeta
 
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
+  override def toDoc(implicit options: PrettierOptions): Doc = toString
 }
 
 case class ListTerm(terms: Vector[Term], meta: OptionTermMeta = None) extends Term {
@@ -106,11 +107,34 @@ case class InvisibleTelescopeTerm(meta: OptionTermMeta = None) extends Telescope
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
 }
 
-case class FunctionType(telescope: TelescopeTerm, effect: Term, result: Term, meta: OptionTermMeta = None) extends TypeTerm {
+case class ScopeId(id: VarId)
+object ScopeId {
+  def generate: ScopeId = ScopeId(VarId.generate)
+}
+
+case class Function(scope: ScopeId, ty: FunctionType, body: Term, meta: OptionTermMeta = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val tyDoc = ty.toDoc
+    val bodyDoc = body.toDoc
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(tyDoc <+> bodyDoc)
+  }
+}
+
+case class MatchingClause() {
+
+}
+
+case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingClause], meta: OptionTermMeta = None) extends Term {
+  require(clauses.nonEmpty, "Matching should have at least one clause")
+  override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
+}
+
+// Note that effect and result can use variables from telescope
+case class FunctionType(restrictInScope: Vector[ScopeId], telescope: TelescopeTerm, effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.toDoc
     val effectDoc = effect.toDoc
-    val resultDoc = result.toDoc
+    val resultDoc = resultTy.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
   }
 }
