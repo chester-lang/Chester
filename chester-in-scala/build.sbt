@@ -75,6 +75,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "pprint" % "0.9.0"
     ),
@@ -86,6 +87,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "pprint" % "0.9.0"
     ),
@@ -96,6 +98,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.4.0",
       "org.typelevel" %%% "cats-core" % "2.11.0",
+      "org.typelevel" %%% "cats-free" % "2.11.0",
       "com.lihaoyi" %%% "fastparse" % "3.0.2",
       "com.lihaoyi" %%% "pprint" % "0.8.1"
     ),
