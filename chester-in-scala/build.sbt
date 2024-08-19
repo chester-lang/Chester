@@ -105,10 +105,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
   )
 
-
-// Blocking Scala Native 0.5:
-// https://github.com/bkirwi/decline/issues/551
-// https://github.com/edadma/readline/pull/1
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
