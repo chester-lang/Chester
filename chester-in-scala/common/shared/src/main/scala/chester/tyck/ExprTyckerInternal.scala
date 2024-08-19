@@ -3,7 +3,7 @@ package chester.tyck
 import cats.data.State
 import chester.error.*
 import chester.resolve.ExprResolver
-import chester.syntax.Id
+import chester.syntax._
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 
@@ -44,10 +44,6 @@ class VectorReporter[T] extends Reporter[T] {
 
   def getReports: Vector[T] = buffer.toVector
 }
-
-case class Judge(wellTyped: Term, ty: Term, effect: Term)
-
-case class JudgeNoEffect(wellTyped: Term, ty: Term)
 
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
 

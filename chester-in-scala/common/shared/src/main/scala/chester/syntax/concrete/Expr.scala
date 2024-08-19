@@ -6,7 +6,7 @@ import chester.error.{SourcePos, TyckError, TyckWarning, WithPos}
 import chester.doc.Doc.group
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
-import chester.syntax.{Id, QualifiedIDString, UnresolvedID}
+import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
 import chester.utils.{encodeString, reuse}
 
 enum CommentType {
@@ -448,23 +448,23 @@ sealed trait Stmt extends DesaltExpr {
     }
   }
 
-  def getName: Option[Id]
+  def getName: Option[Id] = None
 }
 
 private sealed trait NameUnknown extends Stmt {
-  def getName: Option[Id] = None
+  override def getName: Option[Id] = None
 }
 
 private sealed trait NameKnown extends Stmt {
   def name: Id
 
-  def getName: Option[Id] = Some(name)
+  override def getName: Option[Id] = Some(name)
 }
 
 private sealed trait NameOption extends Stmt {
   def name: Option[Id]
 
-  def getName: Option[Id] = name
+  override def getName: Option[Id] = name
 }
 
 case class DataStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
@@ -553,7 +553,7 @@ case class PrecedenceGroupResolving(
                                      lowerThan: Vector[UnresolvedID] = Vector(),
                                      associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                    ) extends Stmt with PrecedenceGroup {
-  def getName: Option[Id] = Some(name)
+  override def getName: Option[Id] = Some(name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toDoc
@@ -576,7 +576,7 @@ case class PrecedenceGroupResolved(
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                   ) extends Stmt with PrecedenceGroup {
-  def getName: Option[Id] = Some(name.name)
+  override def getName: Option[Id] = Some(name.name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toString
@@ -608,3 +608,15 @@ case class LetStmt(pattern: DesaltPattern, ty: Option[Expr], expr: Expr, meta: O
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("return ") <> expr.toDoc)
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None) extends Expr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): BuiltinExpr = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc
+}

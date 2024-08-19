@@ -5,7 +5,7 @@ import chester.doc.const.{ColorProfile, Docs}
 import chester.doc.*
 import chester.doc.Doc.group
 import chester.error.*
-import chester.syntax.{Id, QualifiedIDString}
+import chester.syntax.{Builtin, Id, QualifiedIDString}
 import chester.utils.encodeString
 
 import scala.language.implicitConversions
@@ -250,6 +250,10 @@ sealed trait StmtTerm {
 
 case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMeta = None) extends StmtTerm {
   
+}
+
+case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc
 }
 
 

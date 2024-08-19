@@ -4,7 +4,8 @@ import chester.doc.const.Colors
 import chester.doc._
 import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.syntax.concrete.Expr
-import chester.tyck.{ExprTycker, Judge, LocalCtx, TyckResult, TyckState}
+import chester.syntax.core._
+import chester.tyck._
 import fansi.*
 
 import scala.concurrent.{ExecutionContext, Future}

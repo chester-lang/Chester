@@ -2,8 +2,8 @@ package chester.syntax.core.stmt
 
 import chester.syntax.{Id, QualifiedIDString}
 import chester.syntax.concrete.FilePath
-import chester.syntax.core.{Term, TermMeta}
-import chester.tyck.{Judge, LocalCtx}
+import chester.syntax.core._
+import chester.tyck._
 
 import scala.collection.immutable.HashMap
 
