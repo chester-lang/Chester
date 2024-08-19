@@ -8,6 +8,7 @@ import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
 import chester.utils.{encodeString, reuse}
+import spire.math.Rational
 
 enum CommentType {
   case OneLine
@@ -260,17 +261,11 @@ case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
-case class RationalLiteral(value: BigDecimal /*Rational*/ , meta: Option[ExprMeta] = None) extends Literal {
+case class RationalLiteral(value: Rational , meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
-/*
-object FractionalLiteral {
-  def apply(value: BigDecimal): FractionalLiteral = new FractionalLiteral(value, None)
-  def apply(value: BigDecimal, meta: Option[ExprMeta]): FractionalLiteral = new FractionalLiteral(value, meta)
-  def apply(value: Rational, meta: Option[ExprMeta] = None): FractionalLiteral = new FractionalLiteral(value, meta)
-}*/
 
 case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def toString: String = meta.flatMap(_.sourcePos) match {
