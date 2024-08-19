@@ -9,8 +9,3 @@ addSbtPlugin("org.scalameta" % "sbt-native-image" % "0.3.4")
 addSbtPlugin("com.codecommit" % "sbt-github-packages" % "0.5.3")
 addSbtPlugin("com.eed3si9n.ifdef" % "sbt-ifdef" % "0.3.0")
 addSbtPlugin("ru.makkarpov" % "scalingua-sbt" % "1.2.0")
-
-//     spire
-val sbtTypelevelVersion = "0.4.21"
-addSbtPlugin("org.typelevel" % "sbt-typelevel" % sbtTypelevelVersion)
-addSbtPlugin("org.typelevel" % "sbt-typelevel-site" % sbtTypelevelVersion)
