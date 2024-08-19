@@ -58,6 +58,9 @@ val classVersion = java.lang.Float.parseFloat(System.getProperty("java.class.ver
 val jdk17ClassVersion = 61.0f
 val jdk17: Boolean = classVersion >= jdk17ClassVersion
 
+// spire
+lazy val genProductTypes = TaskKey[Seq[File]]("gen-product-types", "Generates several type classes for Tuple2-22.")
+
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
@@ -72,6 +75,18 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "algebra" % "2.12.0"
     ),
+    // spire
+    Compile / sourceGenerators += (Compile / genProductTypes).taskValue,
+    genProductTypes := {
+      val scalaSource = (Compile / sourceManaged).value
+      val s = streams.value
+      s.log.info("Generating spire/std/tuples.scala")
+      val algebraSource = ProductTypes.algebraProductTypes
+      val algebraFile = (scalaSource / "spire" / "std" / "tuples.scala").asFile
+      IO.write(algebraFile, algebraSource)
+
+      Seq[File](algebraFile)
+    },
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
