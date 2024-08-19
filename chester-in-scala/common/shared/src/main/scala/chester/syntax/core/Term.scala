@@ -42,7 +42,16 @@ case class Type(level: Term, meta: OptionTermMeta = None) extends Sort {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
 }
 
-val Type0 = Type(IntegerTerm(0))
+case class LevelType(meta: OptionTermMeta = None) extends Sort {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
+}
+
+case class Level(n: Term, meta: OptionTermMeta = None) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Level" + n)
+}
+val Level0 = Level(IntegerTerm(0))
+
+val Type0 = Type(Level0)
 
 // Referencing Setω in Agda
 case class Typeω(meta: OptionTermMeta = None) extends Sort {
@@ -57,6 +66,14 @@ sealed trait TypeTerm extends Term
 
 case class IntegerType(meta: OptionTermMeta = None) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
+}
+
+case class NaturalType(meta: OptionTermMeta = None) extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
+}
+
+case class FinType(n: Term, meta: OptionTermMeta = None) extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Fin" + n).colored(ColorProfile.typeColor)
 }
 
 case class DoubleTerm(value: BigDecimal, meta: OptionTermMeta = None) extends Term {
