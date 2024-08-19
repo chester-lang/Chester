@@ -227,7 +227,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
         val synthesizedKey = synthesize(keyExpr)
         val fieldType = fieldTypes.collectFirst {
-          case ObjectClauseValueTerm(k, _, _) if k == synthesizedKey.wellTyped => k
+          case ObjectClauseValueTerm(k, _) if k == synthesizedKey.wellTyped => k
         }
         fieldType match {
           case Some(_) =>
@@ -269,7 +269,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
     (resolve(expr), whnf(ty)) match {
-      case (objExpr: ObjectExpr, ObjectType(fieldTypes, _, _)) =>
+      case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
 

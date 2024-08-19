@@ -25,90 +25,90 @@ case class OptionTermMeta(meta: Option[TermMeta] = None) {
 implicit def toOptionTermMeta(meta: Option[TermMeta]): OptionTermMeta = new OptionTermMeta(meta)
 implicit def fromOptionTermMeta(meta: OptionTermMeta): Option[TermMeta] = meta.meta
 
-sealed trait Term extends WithPos with ToDoc {
+sealed trait TermWithMeta extends Term with WithPos {
   def meta: OptionTermMeta
 
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
+}
+
+sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 }
 
-sealed trait TermNoMeta extends Term {
-  override def meta: OptionTermMeta = None
-}
-
-case class ListTerm(terms: Vector[Term]) extends TermNoMeta {
+case class ListTerm(terms: Vector[Term]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
 }
 
 sealed trait Sort extends Term
 
-case class Type(level: Term) extends Sort with TermNoMeta {
+case class Type(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
 }
 
-case object LevelType extends TypeTerm with TermNoMeta {
+case object LevelType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
 }
 
-case class Level(n: Term) extends Term with TermNoMeta {
+case class Level(n: Term) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Level" + n)
 }
+
 val Level0 = Level(IntegerTerm(0))
 
 val Type0 = Type(Level0)
 
 // Referencing Setω in Agda
-case object Typeω extends Sort with TermNoMeta {
+case object Typeω extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω").colored(ColorProfile.typeColor)
 }
 
-case class IntegerTerm(value: BigInt) extends Term with TermNoMeta {
+case class IntegerTerm(value: BigInt) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
 sealed trait TypeTerm extends Term
 
-case object IntegerType extends TypeTerm with TermNoMeta {
+case object IntegerType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
 }
 
-case object NaturalType extends TypeTerm with TermNoMeta {
+case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
 
-case class FinType(n: Term) extends TypeTerm with TermNoMeta {
+case class FinType(n: Term) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Fin" + n).colored(ColorProfile.typeColor)
 }
 
-case class DoubleTerm(value: BigDecimal) extends TermNoMeta {
+case class DoubleTerm(value: BigDecimal) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class StringTerm(value: String) extends TermNoMeta {
+case class StringTerm(value: String) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
-case class SymbolTerm(value: String) extends TermNoMeta {
+case class SymbolTerm(value: String) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
 }
 
-case object DoubleType extends TypeTerm with TermNoMeta {
+case object DoubleType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Double")
 }
 
-case object StringType extends TypeTerm with TermNoMeta {
+case object StringType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String")
 }
 
-case object SymbolType extends TypeTerm with TermNoMeta {
+case object SymbolType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol")
 }
 
-case object AnyType extends TypeTerm with TermNoMeta {
+case object AnyType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
-case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boolean, meta: OptionTermMeta = None) extends Term {
+case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boolean) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val patternDoc = pattern.toDoc
     val tyDoc = ty.toDoc
@@ -120,20 +120,21 @@ case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boole
 
 sealed trait TelescopeTerm extends Term
 
-case class VisibleTelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm], meta: OptionTermMeta = None) extends TelescopeTerm {
+case class VisibleTelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm]) extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
 }
 
-case class InvisibleTelescopeTerm(meta: OptionTermMeta = None) extends TelescopeTerm {
+case class InvisibleTelescopeTerm() extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
 }
 
 case class ScopeId(id: VarId)
+
 object ScopeId {
   def generate: ScopeId = ScopeId(VarId.generate)
 }
 
-case class Function(scope: ScopeId, ty: FunctionType, body: Term, meta: OptionTermMeta = None) extends Term {
+case class Function(scope: ScopeId, ty: FunctionType, body: Term, meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val tyDoc = ty.toDoc
     val bodyDoc = body.toDoc
@@ -145,13 +146,14 @@ case class MatchingClause() {
 
 }
 
-case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingClause], meta: OptionTermMeta = None) extends Term {
+case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingClause], meta: OptionTermMeta = None) extends TermWithMeta {
   require(clauses.nonEmpty, "Matching should have at least one clause")
+
   override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(restrictInScope: Vector[ScopeId], telescope: TelescopeTerm, effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TypeTerm {
+case class FunctionType(restrictInScope: Vector[ScopeId], telescope: TelescopeTerm, effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.toDoc
     val effectDoc = effect.toDoc
@@ -160,29 +162,29 @@ case class FunctionType(restrictInScope: Vector[ScopeId], telescope: TelescopeTe
   }
 }
 
-case class ObjectClauseValueTerm(key: Term, value: Term, meta: OptionTermMeta = None) {
+case class ObjectClauseValueTerm(key: Term, value: Term) {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 }
 
-case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: OptionTermMeta = None) extends Term {
+case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc): _*)
 }
 
 
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
-case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: OptionTermMeta = None) extends Term {
+case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
-case class OrType(xs: Vector[Term], meta: OptionTermMeta = None) extends Term {
+case class OrType(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
 }
 
-case class AndType(xs: Vector[Term], meta: OptionTermMeta = None) extends Term {
+case class AndType(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
@@ -190,7 +192,7 @@ case class AndType(xs: Vector[Term], meta: OptionTermMeta = None) extends Term {
 
 sealed trait EffectTerm extends Term
 
-case class EffectList(xs: Vector[Term], meta: OptionTermMeta = None) extends EffectTerm {
+case class EffectList(xs: Vector[Term]) extends EffectTerm {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs: _*)
@@ -198,39 +200,39 @@ case class EffectList(xs: Vector[Term], meta: OptionTermMeta = None) extends Eff
 
 object EffectList {
   // do flatten
-  def apply(xs: Vector[Term], meta: OptionTermMeta = None): EffectTerm = {
+  def apply(xs: Vector[Term]): EffectTerm = {
     val flattened = xs.flatMap {
-      case EffectList(ys, _) => ys
+      case EffectList(ys) => ys
       case x => Vector(x)
     }.filter {
       case NoEffect => false
       case _ => true
     }
     val distinct = flattened.distinct
-    if (distinct.nonEmpty) new EffectList(distinct, meta) else NoEffect
+    if (distinct.nonEmpty) new EffectList(distinct) else NoEffect
   }
 }
 
-case object NoEffect extends EffectTerm with TermNoMeta {
+case object NoEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("NoEffect")
 }
 
 // may raise an exception
-case class ExceptionEffect(meta: OptionTermMeta = None) extends EffectTerm {
+case object ExceptionEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("PartialEffect")
 }
 
 // may not terminate
-case class DivergeEffect(meta: OptionTermMeta = None) extends EffectTerm {
+case object DivergeEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
 }
 
 // whatever IO: console, file, network, ...
-case class IOEffect(meta: OptionTermMeta = None) extends EffectTerm {
+case object IOEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("IOEffect")
 }
 
-case class STEffect(meta: OptionTermMeta = None) extends EffectTerm {
+case object STEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("STEffect")
 }
 
@@ -247,7 +249,7 @@ object VarId {
   }
 }
 
-case class LocalVar(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends Term {
+case class LocalVar(id: Id, ty: Term, varId: VarId) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
@@ -256,8 +258,6 @@ case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, varId:
 }
 
 case class ErrorTerm(val error: TyckError) extends Term {
-  override def meta: OptionTermMeta = None
-
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
 }
 
@@ -266,11 +266,11 @@ case class MetaTerm(id: VarId, meta: OptionTermMeta = None) extends Term {
 }
 
 sealed trait StmtTerm {
-  
+
 }
 
 case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMeta = None) extends StmtTerm {
-  
+
 }
 
 case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Term {

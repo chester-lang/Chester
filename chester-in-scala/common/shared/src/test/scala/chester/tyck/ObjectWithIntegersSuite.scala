@@ -24,16 +24,16 @@ class ObjectWithIntegersSuite extends FunSuite {
     // Validate the result
     assert(result.isRight)
     result match {
-      case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _, _), _)) =>
+      case Right(Judge(ObjectTerm(clauses), ObjectType(fieldTypes, _), _)) =>
         // Check each clause for the correct field name and value
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerTerm(42),_) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerTerm(24),_) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerTerm(100),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerTerm(42)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerTerm(24)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerTerm(100)) => true }.isDefined, true)
 
         // Check the field types
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType,_) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType,_) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType,_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType) => true }.isDefined, true)
 
       case _ => fail("Synthesis failed")
     }
@@ -58,15 +58,15 @@ class ObjectWithIntegersSuite extends FunSuite {
                   value = IntegerTerm(
                     value = 1
                   ),
-                  meta = None
+                  
                 )
               ),
-              meta = None
+              
             ),
-            meta = None
+            
           )
         ),
-        meta = None
+        
       ))
   }
 }

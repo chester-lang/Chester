@@ -12,7 +12,10 @@ abstract class TyckErrorOrWarning extends Exception with ToDoc {
 
   def cause: Term | Expr
 
-  def location: Option[SourcePos] = cause.sourcePos
+  def location: Option[SourcePos] = cause match {
+    case x: WithPos => x.sourcePos
+    case _ => None
+  }
 
   val stack: Array[StackTraceElement] = this.getStackTrace
 
