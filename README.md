@@ -1,4 +1,4 @@
-# Chester Language
+# Chester Language - Trying to make a practical possibly unsound object-oriented functional dependently typed language with algebraic effects
 
 It might look like?
 
