@@ -7,7 +7,7 @@ import scala.scalanative.unsafe._
 
 package object facade {
 
-  def readline(prompt: String): String = Zone {
+  def readline(prompt: String): String = Zone { implicit z =>
     val line = rl.readline(toCString(prompt))
     val res  = fromCString(line)
 
@@ -15,19 +15,19 @@ package object facade {
     res
   }
 
-  def read_history(filename: String): Int = Zone {
+  def read_history(filename: String): Int = Zone { implicit z =>
     rl.read_history(toCString(filename))
   }
 
-  def write_history(filename: String): Int = Zone {
+  def write_history(filename: String): Int = Zone { implicit z =>
     rl.write_history(toCString(filename))
   }
 
-  def append_history(nelements: Int, filename: String): Int = Zone {
+  def append_history(nelements: Int, filename: String): Int = Zone { implicit z =>
     rl.append_history(nelements, toCString(filename))
   }
 
-  def add_history(line: String): Unit = Zone {
+  def add_history(line: String): Unit = Zone { implicit z =>
     rl.add_history(toCString(line))
   }
 
