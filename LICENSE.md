@@ -217,5 +217,3 @@ https://github.com/msteveb/jimtcl/
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 ```
-
-## https://github.com/typelevel/spire/commit/52b3692bdfe01ef6c645380b02595a9c60a9725b
