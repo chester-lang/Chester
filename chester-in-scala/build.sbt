@@ -21,11 +21,6 @@ val nativeImageOption = Seq(
   "-O2",
 )
 
-
-val common0Settings = Seq(
-  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-)
-
 val commonSettings = Seq(
   scalaVersion := scala3Version,
   githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
