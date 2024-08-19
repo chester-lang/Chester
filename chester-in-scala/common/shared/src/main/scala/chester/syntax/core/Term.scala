@@ -7,6 +7,7 @@ import chester.doc.Doc.group
 import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
 import chester.utils.encodeString
+import spire.math.Rational
 
 import scala.language.implicitConversions
 
@@ -78,7 +79,7 @@ case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
 
-case class RationalTerm(value: BigDecimal) extends LiteralTerm {
+case class RationalTerm(value: Rational) extends LiteralTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
