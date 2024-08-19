@@ -209,6 +209,10 @@ case class IOEffect(meta: OptionTermMeta = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("IOEffect")
 }
 
+case class STEffect(meta: OptionTermMeta = None) extends EffectTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("STEffect")
+}
+
 private object ResolvedVarCounter {
   var varIdCounter = 0
 }
