@@ -80,8 +80,8 @@ object IntegrityCheck {
     val state = TyckState()
     val ctx = LocalCtx.Empty
 
-    val intType = IntegerType(None)
-    val anyType = AnyTerm(None)
+    val intType = IntegerType
+    val anyType = AnyType
 
     val result = ExprTycker.unifyV0(intType, anyType, state, ctx)
     assertEquals(result, Right(intType))

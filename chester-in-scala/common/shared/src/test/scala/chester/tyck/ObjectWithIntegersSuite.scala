@@ -26,14 +26,14 @@ class ObjectWithIntegersSuite extends FunSuite {
     result match {
       case Right(Judge(ObjectTerm(clauses, _), ObjectType(fieldTypes, _, _), _)) =>
         // Check each clause for the correct field name and value
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1",_), IntegerTerm(42, _),_) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2",_), IntegerTerm(24, _),_) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3",_), IntegerTerm(100, _),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerTerm(42),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerTerm(24),_) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerTerm(100),_) => true }.isDefined, true)
 
         // Check the field types
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1",_), IntegerType(_),_) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2",_), IntegerType(_),_) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3",_), IntegerType(_),_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType,_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType,_) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType,_) => true }.isDefined, true)
 
       case _ => fail("Synthesis failed")
     }
@@ -47,19 +47,16 @@ class ObjectWithIntegersSuite extends FunSuite {
         clauses = Vector(
           ObjectClauseValueTerm(
             key = SymbolTerm(
-              value = "x",
-              meta = None
+              value = "x"
             ),
             value = ObjectTerm(
               clauses = Vector(
                 ObjectClauseValueTerm(
                   key = SymbolTerm(
-                    value = "y",
-                    meta = None
+                    value = "y"
                   ),
                   value = IntegerTerm(
-                    value = 1,
-                    meta = None
+                    value = 1
                   ),
                   meta = None
                 )

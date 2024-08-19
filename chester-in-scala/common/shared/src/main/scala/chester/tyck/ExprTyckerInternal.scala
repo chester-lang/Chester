@@ -140,7 +140,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   def unify(subType: Term, superType: Term): Term = {
     if (subType == superType) subType
     else (subType, superType) match {
-      case (_, AnyTerm(_)) => subType
+      case (_, AnyType) => subType
       case _ =>
         S.errors.report(UnifyFailedError(subType, superType))
         new ErrorTerm(UnifyFailedError(subType, superType))
@@ -148,16 +148,16 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 
   def effectUnion(e1: Term, e2: Term): Term = (e1, e2) match {
-    case (NoEffect(_), _) => e2
-    case (_, NoEffect(_)) => e1
+    case (NoEffect, _) => e2
+    case (_, NoEffect) => e1
     case _ if e1 == e2 => e1
     case _ => EffectList(Vector(e1, e2))
   }
 
   def unifyEffect(subEffect: Term, superEffect: Term): Term = {
     (subEffect, superEffect) match {
-      case (_, NoEffect(_)) => subEffect
-      case (NoEffect(_), _) => superEffect
+      case (_, NoEffect) => subEffect
+      case (NoEffect, _) => superEffect
       case _ if subEffect == superEffect => subEffect
       case _ =>
         S.errors.report(UnifyFailedError(subEffect, superEffect))
@@ -176,7 +176,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       case _ => throw new IllegalArgumentException("Unexpected clause type, maybe no desalted")
     }
 
-    val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduceOption(effectUnion).getOrElse(NoEffect())
+    val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduceOption(effectUnion).getOrElse(NoEffect)
     val objectClauses = synthesizedClausesWithEffects.map(_.value)
 
     val objectTerm = ObjectTerm(objectClauses.map { case (key, value, _) => ObjectClauseValueTerm(key, value) })
@@ -191,20 +191,16 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   def synthesize(expr: Expr): Judge = resolve(expr) match {
     case IntegerLiteral(value, meta) =>
-      val termMeta = convertMeta(meta)
-      Judge(IntegerTerm(value, termMeta), IntegerType(termMeta), NoEffect(termMeta))
+      Judge(IntegerTerm(value), IntegerType, NoEffect)
 
     case DoubleLiteral(value, meta) =>
-      val termMeta = convertMeta(meta)
-      Judge(DoubleTerm(value, termMeta), DoubleType(termMeta), NoEffect(termMeta))
+      Judge(DoubleTerm(value), DoubleType, NoEffect)
 
     case StringLiteral(value, meta) =>
-      val termMeta = convertMeta(meta)
-      Judge(StringTerm(value, termMeta), StringType(termMeta), NoEffect(termMeta))
+      Judge(StringTerm(value), StringType, NoEffect)
 
     case SymbolLiteral(value, meta) =>
-      val termMeta = convertMeta(meta)
-      Judge(SymbolTerm(value, termMeta), SymbolType(termMeta), NoEffect(termMeta))
+      Judge(SymbolTerm(value), SymbolType, NoEffect)
 
     case objExpr: ObjectExpr =>
       synthesizeObjectExpr(objExpr)
@@ -212,12 +208,12 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     case expr: Stmt => {
       val err = UnexpectedStmt(expr)
       S.errors.report(err)
-      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect(None))
+      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
     }
 
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))
-      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect(None))
+      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
   }
 
   def synthesizeTerm(term: Term): JudgeNoEffect = term match {
@@ -275,7 +271,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     (resolve(expr), whnf(ty)) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
-        Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect(None))))
+        Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
 
       case _ =>
         val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
