@@ -32,7 +32,11 @@ sealed trait Term extends WithPos with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 }
 
-case class ListTerm(terms: Vector[Term], meta: OptionTermMeta = None) extends Term {
+sealed trait TermNoMeta extends Term {
+  override def meta: OptionTermMeta = None
+}
+
+case class ListTerm(terms: Vector[Term]) extends TermNoMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
 }
 
