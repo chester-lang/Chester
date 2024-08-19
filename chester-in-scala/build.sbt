@@ -68,6 +68,10 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     assembly / assemblyJarName := "common.jar",
     commonSettings,
+    // spire
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "algebra" % "2.12.0"
+    ),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
