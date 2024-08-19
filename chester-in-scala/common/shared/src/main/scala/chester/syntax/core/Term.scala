@@ -194,12 +194,19 @@ case class NoEffect(meta: OptionTermMeta = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("NoEffect")
 }
 
-case class PartialEffect(meta: OptionTermMeta = None) extends EffectTerm {
+// may raise an exception
+case class ExceptionEffect(meta: OptionTermMeta = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("PartialEffect")
 }
 
+// may not terminate
 case class DivergeEffect(meta: OptionTermMeta = None) extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
+}
+
+// whatever IO: console, file, network, ...
+case class IOEffect(meta: OptionTermMeta = None) extends EffectTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("IOEffect")
 }
 
 private object ResolvedVarCounter {
