@@ -260,11 +260,17 @@ case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
 
-case class DoubleLiteral(value: BigDecimal, meta: Option[ExprMeta] = None) extends Literal {
+case class RationalLiteral(value: BigDecimal /*Rational*/ , meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
+/*
+object FractionalLiteral {
+  def apply(value: BigDecimal): FractionalLiteral = new FractionalLiteral(value, None)
+  def apply(value: BigDecimal, meta: Option[ExprMeta]): FractionalLiteral = new FractionalLiteral(value, meta)
+  def apply(value: Rational, meta: Option[ExprMeta] = None): FractionalLiteral = new FractionalLiteral(value, meta)
+}*/
 
 case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def toString: String = meta.flatMap(_.sourcePos) match {

@@ -70,19 +70,19 @@ class ParserTest extends FunSuite {
   // Tests for DoubleLiteral
   test("parse valid double with exponent") {
     val input = "3.14e2"
-    val expected = DoubleLiteral(BigDecimal("3.14e2"))
+    val expected = RationalLiteral(BigDecimal("3.14e2"))
     parseAndCheck(input, expected)
   }
 
   if (false) test("parse signed double with exponent") { // we are see it as -(1.23e-4) now
     val input = "-1.23e-4"
-    val expected = DoubleLiteral(BigDecimal("-1.23e-4"))
+    val expected = RationalLiteral(BigDecimal("-1.23e-4"))
     parseAndCheck(input, expected)
   }
 
   test("parse double without exponent") {
     val input = "456.789"
-    val expected = DoubleLiteral(BigDecimal("456.789"))
+    val expected = RationalLiteral(BigDecimal("456.789"))
     parseAndCheck(input, expected)
   }
 
@@ -95,7 +95,7 @@ class ParserTest extends FunSuite {
 
   test("parse doubleLiteral") {
     val input = "1.23e4"
-    val expected = DoubleLiteral(BigDecimal("1.23e4"))
+    val expected = RationalLiteral(BigDecimal("1.23e4"))
     parseAndCheck(input, expected)
   }
 

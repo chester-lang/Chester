@@ -30,7 +30,7 @@ class ListParserTest extends FunSuite {
     val expected = ListExpr(Vector(
       IntegerLiteral(1),
       StringLiteral("string"),
-      DoubleLiteral(BigDecimal(3.14))
+      RationalLiteral(BigDecimal(3.14))
     ))
     parseAndCheck(input, expected)
   }

@@ -62,7 +62,9 @@ case object Typeω extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω").colored(ColorProfile.typeColor)
 }
 
-case class IntegerTerm(value: BigInt) extends Term {
+sealed trait LiteralTerm extends Term
+
+case class IntegerTerm(value: BigInt) extends LiteralTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
@@ -76,15 +78,11 @@ case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
 
-case class FinType(n: Term) extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Fin" + n).colored(ColorProfile.typeColor)
-}
-
-case class DoubleTerm(value: BigDecimal) extends Term {
+case class RationalTerm(value: BigDecimal) extends LiteralTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class StringTerm(value: String) extends Term {
+case class StringTerm(value: String) extends LiteralTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
@@ -92,8 +90,12 @@ case class SymbolTerm(value: String) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
 }
 
-case object DoubleType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Double")
+case object RationalType extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational")
+}
+
+case object Float64Type extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float64")
 }
 
 case object StringType extends TypeTerm {

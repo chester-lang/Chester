@@ -83,7 +83,7 @@ class TelescopeParserTest extends FunSuite {
     val expected = Tuple(Vector(
       OpSeq(Vector(Identifier("a"), Identifier(":"), Identifier("Integer"), Identifier("="), IntegerLiteral(1))),
       OpSeq(Vector(Identifier("b"), Identifier(":"), Identifier("String"), Identifier("="), StringLiteral("test"))),
-      OpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double"), Identifier("="), DoubleLiteral(BigDecimal(3.14))))
+      OpSeq(Vector(Identifier("c"), Identifier(":"), Identifier("Double"), Identifier("="), RationalLiteral(BigDecimal(3.14))))
     ))
     parseAndCheck(input, expected)
   }

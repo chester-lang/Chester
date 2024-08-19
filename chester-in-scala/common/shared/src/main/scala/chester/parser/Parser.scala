@@ -160,7 +160,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withMeta).map {
     case (sign, (value, meta)) =>
-      DoubleLiteral(BigDecimal(sign + value), meta)
+      RationalLiteral(BigDecimal(sign + value), meta)
   }
 
   def escapeSequence: P[String] = P("\\" ~ CharIn("rnt\\\"").!).map {

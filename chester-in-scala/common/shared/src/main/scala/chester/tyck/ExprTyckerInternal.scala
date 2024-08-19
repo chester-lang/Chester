@@ -193,8 +193,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     case IntegerLiteral(value, meta) =>
       Judge(IntegerTerm(value), IntegerType, NoEffect)
 
-    case DoubleLiteral(value, meta) =>
-      Judge(DoubleTerm(value), DoubleType, NoEffect)
+    case RationalLiteral(value, meta) =>
+      Judge(RationalTerm(value), RationalType, NoEffect)
 
     case StringLiteral(value, meta) =>
       Judge(StringTerm(value), StringType, NoEffect)
