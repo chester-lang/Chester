@@ -10,9 +10,12 @@ case class ResolvingBlock(statements: Vector[Stmt], expr: Option[Expr])
 
 case class ResolvingModuleFile(fileName: FilePath, content: ResolvingBlock)
 
-case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], tycked: Option[TyckedModule])
+case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], tycked: Option[TyckedModule]) {
+  def isTycked: Boolean = tycked.isDefined
+}
 
 case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) {
+  def getOption(id: QualifiedIDString): Option[ResolvingModule] = modules.get(id)
 }
 
 object ResolvingBlock {
@@ -44,6 +47,7 @@ object ResolvingModule {
 }
 
 object ResolvingModules {
+  val Empty: ResolvingModules = ResolvingModules(HashMap.empty)
   def fromParsed(parsedModules: ParsedModules): ResolvingModules = {
     ResolvingModules(
       modules = parsedModules.modules.map { case (id, parsedFiles) =>

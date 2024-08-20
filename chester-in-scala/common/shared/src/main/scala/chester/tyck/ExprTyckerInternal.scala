@@ -3,16 +3,15 @@ package chester.tyck
 import cats.data.State
 import chester.error.*
 import chester.resolve.ExprResolver
-import chester.syntax._
+import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
+import chester.utils.MutBox
 
 import scala.annotation.targetName
 import scala.language.implicitConversions
 import scala.language.implicitConversions
 
-
-case class MutBox[T](var value: T)
 
 case class TyckState()
 

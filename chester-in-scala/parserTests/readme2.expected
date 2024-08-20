@@ -1,0 +1,3557 @@
+Block(
+  heads = Vector(
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "module",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1,1,0),Pos(6,1,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "😿😿",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(8,1,7),Pos(9,1,8)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1,1,0),Pos(6,1,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "me",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(13,3,0),Pos(14,3,1)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(15,3,2),Pos(15,3,2)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "String",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(17,3,4),Pos(22,3,9)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(24,3,11),Pos(24,3,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        StringLiteral(
+          value = "インターネット・エンジェル",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(26,3,13),Pos(40,3,27)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(13,3,0),Pos(14,3,1)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "world",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(43,4,0),Pos(47,4,4)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(49,4,6),Pos(49,4,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "execute",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(55,5,2),Pos(61,5,8)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(63,5,10),Pos(63,5,10)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "me",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(65,5,12),Pos(66,5,13)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(67,5,14),Pos(67,5,14)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "String",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(69,5,16),Pos(74,5,21)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "->",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(76,5,23),Pos(77,5,24)))),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "me",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(79,5,26),Pos(80,5,27)))),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(55,5,2),Pos(61,5,8)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(51,4,8),Pos(83,6,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(43,4,0),Pos(47,4,4)))),
+          commentInfo = None
+        )
+      )
+    ),
+    DotCall(
+      expr = Identifier(
+        name = "world",
+        meta = Some(
+          value = ExprMeta(
+            sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(87,8,0),Pos(91,8,4)))),
+            commentInfo = None
+          )
+        )
+      ),
+      field = Identifier(
+        name = "execute",
+        meta = Some(
+          value = ExprMeta(
+            sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(93,8,6),Pos(99,8,12)))),
+            commentInfo = None
+          )
+        )
+      ),
+      telescope = Vector(
+        Tuple(
+          terms = Vector(
+            Identifier(
+              name = "me",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(101,8,14),Pos(102,8,15)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(100,8,13),Pos(103,8,16)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(87,8,0),Pos(91,8,4)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(315,10,0),Pos(318,10,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "abstract",
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(320,10,5),Pos(328,10,13)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "舞",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(330,10,15),Pos(330,10,15)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(332,10,17),Pos(333,10,18)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Show",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(335,10,20),Pos(338,10,23)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(315,10,0),Pos(318,10,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "@",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(342,12,0),Pos(342,12,0)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "derive",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(343,12,1),Pos(348,12,6)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Tuple(
+            terms = Vector(
+              Identifier(
+                name = "Show",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(350,12,8),Pos(353,12,11)))),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(349,12,7),Pos(354,12,12)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(343,12,1),Pos(348,12,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(356,13,0),Pos(359,13,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "超会議",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(361,13,5),Pos(363,13,7)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(365,13,9),Pos(366,13,10)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "舞",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(368,13,12),Pos(368,13,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "let",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(374,14,2),Pos(376,14,4)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "year",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(378,14,6),Pos(381,14,9)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(382,14,10),Pos(382,14,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "Nat",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(384,14,12),Pos(386,14,14)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(374,14,2),Pos(376,14,4)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(370,13,14),Pos(389,15,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(342,12,0),Pos(342,12,0)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "@",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(392,17,0),Pos(392,17,0)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "derive",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(393,17,1),Pos(398,17,6)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Tuple(
+            terms = Vector(
+              Identifier(
+                name = "Show",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(400,17,8),Pos(403,17,11)))),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(399,17,7),Pos(404,17,12)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(393,17,1),Pos(398,17,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(406,18,0),Pos(409,18,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(411,18,5),Pos(426,18,20)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(428,18,22),Pos(429,18,23)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "舞",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(431,18,25),Pos(431,18,25)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(392,17,0),Pos(392,17,0)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "it",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(435,20,0),Pos(436,20,1)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(437,20,2),Pos(437,20,2)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Type",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(439,20,4),Pos(442,20,7)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(444,20,9),Pos(444,20,9)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(446,20,11),Pos(461,20,26)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(435,20,0),Pos(436,20,1)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "i",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(464,21,0),Pos(464,21,0)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(465,21,1),Pos(465,21,1)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(467,21,3),Pos(482,21,18)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(484,21,20),Pos(484,21,20)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "new",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(486,21,22),Pos(488,21,24)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(490,21,26),Pos(505,21,41)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(464,21,0),Pos(464,21,0)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "i2",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(508,22,0),Pos(509,22,1)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(510,22,2),Pos(510,22,2)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(512,22,4),Pos(527,22,19)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(529,22,21),Pos(529,22,21)))),
+              commentInfo = None
+            )
+          )
+        ),
+        DotCall(
+          expr = Identifier(
+            name = "InternetOverdose",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(531,22,23),Pos(546,22,38)))),
+                commentInfo = None
+              )
+            )
+          ),
+          field = Identifier(
+            name = "new",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(548,22,40),Pos(550,22,42)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(531,22,23),Pos(546,22,38)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(508,22,0),Pos(509,22,1)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "ia",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(653,23,0),Pos(654,23,1)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(655,23,2),Pos(655,23,2)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Any",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(657,23,4),Pos(659,23,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(661,23,8),Pos(661,23,8)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "new",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(663,23,10),Pos(665,23,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "InternetOverdose",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(667,23,14),Pos(682,23,29)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(653,23,0),Pos(654,23,1)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "trait",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(686,25,0),Pos(690,25,4)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "sealed",
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(692,25,6),Pos(698,25,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(700,25,14),Pos(703,25,17)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "T",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(705,25,19),Pos(705,25,19)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = ":",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(706,25,20),Pos(706,25,20)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = "Type",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(708,25,22),Pos(711,25,25)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  )
+                ),
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(705,25,19),Pos(705,25,19)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(704,25,18),Pos(712,25,26)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(700,25,14),Pos(703,25,17)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(713,25,27),Pos(713,25,27)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Type",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(715,25,29),Pos(718,25,32)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "eval",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(724,26,2),Pos(727,26,5)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(728,26,6),Pos(728,26,6)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "T",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(730,26,8),Pos(730,26,8)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(724,26,2),Pos(727,26,5)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(720,25,34),Pos(733,27,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(686,25,0),Pos(690,25,4)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(736,29,0),Pos(739,29,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "IVal",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(741,29,5),Pos(744,29,8)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(746,29,10),Pos(747,29,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(749,29,13),Pos(752,29,16)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(754,29,18),Pos(760,29,24)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(753,29,17),Pos(761,29,25)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(749,29,13),Pos(752,29,16)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "let",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(767,30,2),Pos(769,30,4)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "val",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(771,30,6),Pos(773,30,8)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(774,30,9),Pos(774,30,9)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "Integer",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(776,30,11),Pos(782,30,17)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(767,30,2),Pos(769,30,4)))),
+                  commentInfo = None
+                )
+              )
+            ),
+            OpSeq(
+              seq = Vector(
+                Keyword(
+                  key = "override",
+                  telescope = Vector(),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(787,31,2),Pos(795,31,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "eval",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(797,31,12),Pos(800,31,15)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(802,31,17),Pos(802,31,17)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "val",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(804,31,19),Pos(806,31,21)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(787,31,2),Pos(795,31,10)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(763,29,27),Pos(809,32,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(736,29,0),Pos(739,29,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "ival0",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(812,34,0),Pos(816,34,4)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(817,34,5),Pos(817,34,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "IVal",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(819,34,7),Pos(822,34,10)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(824,34,12),Pos(824,34,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "new",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(826,34,14),Pos(828,34,16)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "IVal",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(830,34,18),Pos(833,34,21)))),
+              commentInfo = None
+            )
+          )
+        ),
+        ObjectExpr(
+          clauses = Vector(
+            ObjectExprClause(
+              key = Identifier(
+                name = "val",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(837,34,25),Pos(839,34,27)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              value = IntegerLiteral(
+                value = 0,
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(843,34,31),Pos(843,34,31)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(835,34,23),Pos(845,34,33)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(812,34,0),Pos(816,34,4)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "ival02",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(848,35,0),Pos(853,35,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(854,35,6),Pos(854,35,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "IVal",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(856,35,8),Pos(859,35,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(861,35,13),Pos(861,35,13)))),
+              commentInfo = None
+            )
+          )
+        ),
+        DotCall(
+          expr = Identifier(
+            name = "IVal",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(863,35,15),Pos(866,35,18)))),
+                commentInfo = None
+              )
+            )
+          ),
+          field = Identifier(
+            name = "new",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(868,35,20),Pos(870,35,22)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Vector(
+            Tuple(
+              terms = Vector(
+                OpSeq(
+                  seq = Vector(
+                    Identifier(
+                      name = "val",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(872,35,24),Pos(874,35,26)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    Identifier(
+                      name = "=",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(876,35,28),Pos(876,35,28)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    IntegerLiteral(
+                      value = 0,
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(878,35,30),Pos(878,35,30)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(872,35,24),Pos(874,35,26)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(871,35,23),Pos(879,35,31)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(863,35,15),Pos(866,35,18)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(848,35,0),Pos(853,35,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(883,37,0),Pos(886,37,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "BVal",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(888,37,5),Pos(891,37,8)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(893,37,10),Pos(894,37,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Expr",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(896,37,13),Pos(899,37,16)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Boolean",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(901,37,18),Pos(907,37,24)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(900,37,17),Pos(908,37,25)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(896,37,13),Pos(899,37,16)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "field",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(914,38,2),Pos(918,38,6)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "val",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(920,38,8),Pos(922,38,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(923,38,11),Pos(923,38,11)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "Boolean",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(925,38,13),Pos(931,38,19)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(914,38,2),Pos(918,38,6)))),
+                  commentInfo = None
+                )
+              )
+            ),
+            OpSeq(
+              seq = Vector(
+                Keyword(
+                  key = "override",
+                  telescope = Vector(),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(936,39,2),Pos(944,39,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "eval",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(946,39,12),Pos(949,39,15)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(951,39,17),Pos(951,39,17)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "val",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(953,39,19),Pos(955,39,21)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(936,39,2),Pos(944,39,10)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(910,37,27),Pos(958,40,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(883,37,0),Pos(886,37,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(961,42,0),Pos(964,42,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "sealed",
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(966,42,5),Pos(972,42,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "abstract",
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(974,42,13),Pos(982,42,21)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(984,42,23),Pos(989,42,28)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "n",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(991,42,30),Pos(991,42,30)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = ":",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(992,42,31),Pos(992,42,31)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = "Nat",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(994,42,33),Pos(996,42,35)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  )
+                ),
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(991,42,30),Pos(991,42,30)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              OpSeq(
+                seq = Vector(
+                  Identifier(
+                    name = "T",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(999,42,38),Pos(999,42,38)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = ":",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1000,42,39),Pos(1000,42,39)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  Identifier(
+                    name = "Type",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1002,42,41),Pos(1005,42,44)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  )
+                ),
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(999,42,38),Pos(999,42,38)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(990,42,29),Pos(1006,42,45)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(984,42,23),Pos(989,42,28)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(961,42,0),Pos(964,42,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1010,44,0),Pos(1013,44,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Nil",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1015,44,5),Pos(1017,44,7)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1019,44,9),Pos(1020,44,10)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1022,44,12),Pos(1027,44,17)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              IntegerLiteral(
+                value = 0,
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1029,44,19),Pos(1029,44,19)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              Identifier(
+                name = "T",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1032,44,22),Pos(1032,44,22)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1028,44,18),Pos(1033,44,23)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1022,44,12),Pos(1027,44,17)))),
+              commentInfo = None
+            )
+          )
+        ),
+        ObjectExpr(
+          clauses = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1035,44,25),Pos(1037,45,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1010,44,0),Pos(1013,44,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "data",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1040,47,0),Pos(1043,47,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Cons",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1045,47,5),Pos(1048,47,8)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "<:",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1050,47,10),Pos(1051,47,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Vector",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1053,47,13),Pos(1058,47,18)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              FunctionCall(
+                function = Identifier(
+                  name = "succ",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1060,47,20),Pos(1063,47,23)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                telescope = Tuple(
+                  terms = Vector(
+                    Identifier(
+                      name = "n",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1065,47,25),Pos(1065,47,25)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1064,47,24),Pos(1066,47,26)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1060,47,20),Pos(1063,47,23)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              Identifier(
+                name = "T",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1069,47,29),Pos(1069,47,29)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1059,47,19),Pos(1070,47,30)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1053,47,13),Pos(1058,47,18)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "let",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1076,48,2),Pos(1078,48,4)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "head",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1080,48,6),Pos(1083,48,9)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1084,48,10),Pos(1084,48,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "T",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1086,48,12),Pos(1086,48,12)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1076,48,2),Pos(1078,48,4)))),
+                  commentInfo = None
+                )
+              )
+            ),
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "let",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1091,49,2),Pos(1093,49,4)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "tail",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1095,49,6),Pos(1098,49,9)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1099,49,10),Pos(1099,49,10)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                FunctionCall(
+                  function = Identifier(
+                    name = "Vector",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1101,49,12),Pos(1106,49,17)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  telescope = ListExpr(
+                    terms = Vector(
+                      Identifier(
+                        name = "n",
+                        meta = Some(
+                          value = ExprMeta(
+                            sourcePos = Some(
+                              value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1108,49,19),Pos(1108,49,19)))
+                            ),
+                            commentInfo = None
+                          )
+                        )
+                      ),
+                      Identifier(
+                        name = "T",
+                        meta = Some(
+                          value = ExprMeta(
+                            sourcePos = Some(
+                              value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1111,49,22),Pos(1111,49,22)))
+                            ),
+                            commentInfo = None
+                          )
+                        )
+                      )
+                    ),
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1107,49,18),Pos(1112,49,23)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1101,49,12),Pos(1106,49,17)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1091,49,2),Pos(1093,49,4)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1072,47,32),Pos(1115,50,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1040,47,0),Pos(1043,47,3)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "proof1",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1118,52,0),Pos(1123,52,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1124,52,6),Pos(1124,52,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Nil",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1126,52,8),Pos(1128,52,10)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1130,52,12),Pos(1130,52,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Nil",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1132,52,14),Pos(1134,52,16)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1118,52,0),Pos(1123,52,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "proof1",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1137,53,0),Pos(1142,53,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1144,53,7),Pos(1144,53,7)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "?",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1146,53,9),Pos(1146,53,9)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "hole",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1147,53,10),Pos(1150,53,13)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1137,53,0),Pos(1142,53,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "tuple0",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1155,56,0),Pos(1160,56,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1161,56,6),Pos(1161,56,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "TupleN",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1163,56,8),Pos(1168,56,13)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1170,56,15),Pos(1176,56,21)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1169,56,14),Pos(1177,56,22)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1163,56,8),Pos(1168,56,13)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1155,56,0),Pos(1160,56,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "tuple0",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1180,57,0),Pos(1185,57,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1187,57,7),Pos(1187,57,7)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Tuple(
+          terms = Vector(
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1190,57,10),Pos(1190,57,10)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1193,57,13),Pos(1193,57,13)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1196,57,16),Pos(1196,57,16)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1189,57,9),Pos(1197,57,17)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1180,57,0),Pos(1185,57,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "tuple1",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1230,59,0),Pos(1235,59,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1236,59,6),Pos(1236,59,6)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "Tuple",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1238,59,8),Pos(1242,59,12)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1244,59,14),Pos(1250,59,20)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1253,59,23),Pos(1259,59,29)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              ),
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1262,59,32),Pos(1268,59,38)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1243,59,13),Pos(1269,59,39)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1238,59,8),Pos(1242,59,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1271,59,41),Pos(1271,59,41)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Tuple(
+          terms = Vector(
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1274,59,44),Pos(1274,59,44)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1276,59,46),Pos(1276,59,46)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1278,59,48),Pos(1278,59,48)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1273,59,43),Pos(1279,59,49)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1230,59,0),Pos(1235,59,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "tuple0ToLisst",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1282,60,0),Pos(1294,60,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1295,60,13),Pos(1295,60,13)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "List",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1297,60,15),Pos(1300,60,18)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1302,60,20),Pos(1308,60,26)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1301,60,19),Pos(1309,60,27)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1297,60,15),Pos(1300,60,18)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1311,60,29),Pos(1311,60,29)))),
+              commentInfo = None
+            )
+          )
+        ),
+        DotCall(
+          expr = Identifier(
+            name = "tuple0",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1313,60,31),Pos(1318,60,36)))),
+                commentInfo = None
+              )
+            )
+          ),
+          field = Identifier(
+            name = "toList",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1320,60,38),Pos(1325,60,43)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1313,60,31),Pos(1318,60,36)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1282,60,0),Pos(1294,60,12)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "list0",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1329,62,0),Pos(1333,62,4)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1334,62,5),Pos(1334,62,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "List",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1336,62,7),Pos(1339,62,10)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1341,62,12),Pos(1347,62,18)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1340,62,11),Pos(1348,62,19)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1336,62,7),Pos(1339,62,10)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1350,62,21),Pos(1350,62,21)))),
+              commentInfo = None
+            )
+          )
+        ),
+        ListExpr(
+          terms = Vector(
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1353,62,24),Pos(1353,62,24)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1355,62,26),Pos(1355,62,26)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            IntegerLiteral(
+              value = 1,
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1357,62,28),Pos(1357,62,28)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1352,62,23),Pos(1358,62,29)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1329,62,0),Pos(1333,62,4)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "list0ToTuple",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1361,63,0),Pos(1372,63,11)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1373,63,12),Pos(1373,63,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "TupleN",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1375,63,14),Pos(1380,63,19)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Integer",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1382,63,21),Pos(1388,63,27)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1381,63,20),Pos(1389,63,28)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1375,63,14),Pos(1380,63,19)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1391,63,30),Pos(1391,63,30)))),
+              commentInfo = None
+            )
+          )
+        ),
+        DotCall(
+          expr = Identifier(
+            name = "list0",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1393,63,32),Pos(1397,63,36)))),
+                commentInfo = None
+              )
+            )
+          ),
+          field = Identifier(
+            name = "toTuple",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1399,63,38),Pos(1405,63,44)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1393,63,32),Pos(1397,63,36)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1361,63,0),Pos(1372,63,11)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "extension",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1409,65,0),Pos(1417,65,8)))),
+              commentInfo = None
+            )
+          )
+        ),
+        ListExpr(
+          terms = Vector(
+            Identifier(
+              name = "T",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1420,65,11),Pos(1420,65,11)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1419,65,10),Pos(1421,65,12)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Tuple(
+          terms = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "list",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1423,65,14),Pos(1426,65,17)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1427,65,18),Pos(1427,65,18)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                FunctionCall(
+                  function = Identifier(
+                    name = "List",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1429,65,20),Pos(1432,65,23)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  telescope = ListExpr(
+                    terms = Vector(
+                      Identifier(
+                        name = "T",
+                        meta = Some(
+                          value = ExprMeta(
+                            sourcePos = Some(
+                              value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1434,65,25),Pos(1434,65,25)))
+                            ),
+                            commentInfo = None
+                          )
+                        )
+                      )
+                    ),
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1433,65,24),Pos(1435,65,26)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1429,65,20),Pos(1432,65,23)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1423,65,14),Pos(1426,65,17)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1422,65,13),Pos(1436,65,27)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                FunctionCall(
+                  function = FunctionCall(
+                    function = Identifier(
+                      name = "map1",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1442,66,2),Pos(1445,66,5)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    telescope = ListExpr(
+                      terms = Vector(
+                        OpSeq(
+                          seq = Vector(
+                            Identifier(
+                              name = "e",
+                              meta = Some(
+                                value = ExprMeta(
+                                  sourcePos = Some(
+                                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1447,66,7),Pos(1447,66,7)))
+                                  ),
+                                  commentInfo = None
+                                )
+                              )
+                            ),
+                            Identifier(
+                              name = ":",
+                              meta = Some(
+                                value = ExprMeta(
+                                  sourcePos = Some(
+                                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1448,66,8),Pos(1448,66,8)))
+                                  ),
+                                  commentInfo = None
+                                )
+                              )
+                            ),
+                            Identifier(
+                              name = "Effect",
+                              meta = Some(
+                                value = ExprMeta(
+                                  sourcePos = Some(
+                                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1450,66,10),Pos(1455,66,15)))
+                                  ),
+                                  commentInfo = None
+                                )
+                              )
+                            )
+                          ),
+                          meta = Some(
+                            value = ExprMeta(
+                              sourcePos = Some(
+                                value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1447,66,7),Pos(1447,66,7)))
+                              ),
+                              commentInfo = None
+                            )
+                          )
+                        ),
+                        Identifier(
+                          name = "U",
+                          meta = Some(
+                            value = ExprMeta(
+                              sourcePos = Some(
+                                value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1458,66,18),Pos(1458,66,18)))
+                              ),
+                              commentInfo = None
+                            )
+                          )
+                        )
+                      ),
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1446,66,6),Pos(1459,66,19)))
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1442,66,2),Pos(1445,66,5)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  telescope = Tuple(
+                    terms = Vector(
+                      OpSeq(
+                        seq = Vector(
+                          Identifier(
+                            name = "f",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1461,66,21),Pos(1461,66,21)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          ),
+                          Identifier(
+                            name = ":",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1462,66,22),Pos(1462,66,22)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          ),
+                          Identifier(
+                            name = "T",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1464,66,24),Pos(1464,66,24)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          ),
+                          Identifier(
+                            name = "->",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1466,66,26),Pos(1467,66,27)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          ),
+                          Identifier(
+                            name = "e",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1469,66,29),Pos(1469,66,29)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          ),
+                          Identifier(
+                            name = "U",
+                            meta = Some(
+                              value = ExprMeta(
+                                sourcePos = Some(
+                                  value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1471,66,31),Pos(1471,66,31)))
+                                ),
+                                commentInfo = None
+                              )
+                            )
+                          )
+                        ),
+                        meta = Some(
+                          value = ExprMeta(
+                            sourcePos = Some(
+                              value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1461,66,21),Pos(1461,66,21)))
+                            ),
+                            commentInfo = None
+                          )
+                        )
+                      )
+                    ),
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1460,66,20),Pos(1472,66,32)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1442,66,2),Pos(1445,66,5)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1473,66,33),Pos(1473,66,33)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "e",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1475,66,35),Pos(1475,66,35)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                FunctionCall(
+                  function = Identifier(
+                    name = "List",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1477,66,37),Pos(1480,66,40)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  telescope = ListExpr(
+                    terms = Vector(
+                      Identifier(
+                        name = "U",
+                        meta = Some(
+                          value = ExprMeta(
+                            sourcePos = Some(
+                              value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1482,66,42),Pos(1482,66,42)))
+                            ),
+                            commentInfo = None
+                          )
+                        )
+                      )
+                    ),
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1481,66,41),Pos(1483,66,43)))
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1477,66,37),Pos(1480,66,40)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1485,66,45),Pos(1485,66,45)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "?",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1487,66,47),Pos(1487,66,47)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "todo",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1488,66,48),Pos(1491,66,51)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1442,66,2),Pos(1445,66,5)))),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1438,65,29),Pos(1494,67,0)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1409,65,0),Pos(1417,65,8)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "pragma",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1498,70,0),Pos(1503,70,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "effect",
+          telescope = Vector(
+            Tuple(
+              terms = Vector(
+                Identifier(
+                  name = "IO",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1513,70,15),Pos(1514,70,16)))
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1512,70,14),Pos(1515,70,17)))
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1505,70,7),Pos(1515,70,17)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1498,70,0),Pos(1503,70,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        FunctionCall(
+          function = Identifier(
+            name = "functionCanEmitEffect",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1519,72,0),Pos(1539,72,20)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Tuple(
+            terms = Vector(),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1540,72,21),Pos(1541,72,22)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1519,72,0),Pos(1539,72,20)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = ":",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1542,72,23),Pos(1542,72,23)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Unit",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1544,72,25),Pos(1547,72,28)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1549,72,30),Pos(1549,72,30)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "println",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1551,72,32),Pos(1557,72,38)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = Tuple(
+            terms = Vector(
+              StringLiteral(
+                value = "はっぱ - もうすぐ楽になるからね",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1559,72,40),Pos(1577,72,58)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1558,72,39),Pos(1578,72,59)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1551,72,32),Pos(1557,72,38)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1519,72,0),Pos(1539,72,20)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "pragma",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1583,75,0),Pos(1588,75,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Keyword(
+          key = "UnsizedType",
+          telescope = Vector(),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1590,75,7),Pos(1601,75,18)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1583,75,0),Pos(1588,75,5)))),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "Expr",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1605,77,0),Pos(1608,77,3)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1610,77,5),Pos(1610,77,5)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Integer",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1612,77,7),Pos(1618,77,13)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "|",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1620,77,15),Pos(1620,77,15)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "String",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1622,77,17),Pos(1627,77,22)))),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "|",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1629,77,24),Pos(1629,77,24)))),
+              commentInfo = None
+            )
+          )
+        ),
+        FunctionCall(
+          function = Identifier(
+            name = "List",
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1631,77,26),Pos(1634,77,29)))),
+                commentInfo = None
+              )
+            )
+          ),
+          telescope = ListExpr(
+            terms = Vector(
+              Identifier(
+                name = "Expr",
+                meta = Some(
+                  value = ExprMeta(
+                    sourcePos = Some(
+                      value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1636,77,31),Pos(1639,77,34)))
+                    ),
+                    commentInfo = None
+                  )
+                )
+              )
+            ),
+            meta = Some(
+              value = ExprMeta(
+                sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1635,77,30),Pos(1640,77,35)))),
+                commentInfo = None
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1631,77,26),Pos(1634,77,29)))),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1605,77,0),Pos(1608,77,3)))),
+          commentInfo = None
+        )
+      )
+    )
+  ),
+  tail = None,
+  meta = Some(
+    value = ExprMeta(
+      sourcePos = Some(value = SourcePos("parserTests/readme2.chester",RangeInFile(Pos(1,1,0),Pos(1641,77,36)))),
+      commentInfo = None
+    )
+  )
+)
