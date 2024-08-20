@@ -15,3 +15,6 @@ node_modules
 
 # This file has permission errors on windows
 /config.sh
+
+.DS_Store
+
