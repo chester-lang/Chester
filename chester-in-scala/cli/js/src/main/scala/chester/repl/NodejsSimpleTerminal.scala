@@ -83,3 +83,18 @@ class NodejsSimpleTerminal extends Terminal {
 object NodejsSimpleTerminal extends TerminalFactory {
   def apply(): NodejsSimpleTerminal = new NodejsSimpleTerminal()
 }
+
+object NodejsCLIRunner extends CLIRunnerMonad[Future] {
+  def apply(init: TerminalInit): CLIHandler[Future] = {
+    val t = new NodejsSimpleTerminal()
+    new CLIHandler[Future] {
+      override def readline(info: TerminalInfo): Future[ReadLineResult] = t.readLine(info)
+      override def getHistory: Future[Seq[String]] = Future.successful(t.getHistory)
+      override def close: Future[Unit] = Future.successful(t.close())
+    }
+  }
+  def spawn[T](x: => Future[T]): Unit = {
+    x
+    ()
+  }
+}

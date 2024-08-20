@@ -7,12 +7,6 @@ import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, Future}
 
 @ifndef("readline")
-def startREPL(): Unit = {
-  val future = REPLEngine(SimpleTerminal).start()
-  Await.result(future, Inf)
-}
+def startREPL(): Unit = REPLEngine(SimpleCLIRunner).start()
 @ifdef("readline")
-def startREPL(): Unit = {
-  val future = REPLEngine(ReadlineTerminal).start()
-  Await.result(future, Inf)
-}
+def startREPL(): Unit = REPLEngine(ReadlineCLIRunner).start()

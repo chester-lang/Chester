@@ -8,7 +8,7 @@ import org.jline.reader.impl.history.DefaultHistory
 import org.jline.terminal.TerminalBuilder
 
 import scala.concurrent.Future
-class JLineTerminal extends Terminal {
+class JLineTerminal {
   private val terminal = org.jline.terminal.TerminalBuilder.terminal()
   private val history = new org.jline.reader.impl.history.DefaultHistory()
 
@@ -22,7 +22,7 @@ class JLineTerminal extends Terminal {
     }
   }
 
-  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
+  def readLine(info: TerminalInfo): ReadLineResult = {
     val parser = createParser(info)
     val reader: org.jline.reader.LineReader = org.jline.reader.LineReaderBuilder.builder()
       .terminal(terminal)
@@ -68,7 +68,7 @@ class JLineTerminal extends Terminal {
           continue = false
       }
     }
-    Future.successful(result)
+    result
   }
 
   def close(): Unit = terminal.close()
@@ -77,5 +77,23 @@ class JLineTerminal extends Terminal {
 }
 
 object JLineTerminal extends TerminalFactory {
-  def apply(): JLineTerminal = new JLineTerminal()
+  def apply(): Terminal = {
+    val t = new JLineTerminal()
+    new Terminal {
+      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
+      override def close(): Unit = t.close()
+      override def getHistory: Seq[String] = t.getHistory
+    }
+  }
+}
+
+object JLineCLIRunner extends CLIRunnerImpure {
+  def apply(init: TerminalInit): CLIHandlerImpure = {
+    val t = new JLineTerminal()
+    new CLIHandlerImpure {
+      override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
+      override def getHistory: Seq[String] = t.getHistory
+      override def close: Unit = t.close()
+    }
+  }
 }

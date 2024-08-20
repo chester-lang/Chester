@@ -12,6 +12,10 @@ enum CLIOp[A] {
 
 case class TerminalInit(historyFile: Option[String])
 
+object TerminalInit {
+  val Default: TerminalInit = TerminalInit(None)
+}
+
 type CLI[A] = Free[CLIOp, A]
 
 object CLI {
@@ -20,11 +24,13 @@ object CLI {
   def getHistory: CLI[Seq[String]] = liftF(CLIOp.GetHistory)
 
   def close: CLI[Unit] = liftF(CLIOp.Close)
+  
+  def pure[A](a: A): CLI[A] = Free.pure(a)
 }
 
 trait CLIRunner {
   // note that run must be effectively the last line of main()
-  def exec(init: TerminalInit, cli: CLI[?]): Unit
+  def exec(cli: CLI[?], init: TerminalInit = TerminalInit.Default): Unit
 }
 
 trait CLIHandlerBase[F[_]] {
@@ -33,8 +39,11 @@ trait CLIHandlerBase[F[_]] {
 
 trait CLIHandler[F[_]] extends CLIHandlerBase[F] {
   def readline(info: TerminalInfo): F[ReadLineResult]
+
   def getHistory: F[Seq[String]]
+
   def close: F[Unit]
+
   override def apply[T](x: CLIOp[T]): F[T] = x match {
     case CLIOp.ReadLine(info) => readline(info)
     case CLIOp.GetHistory => getHistory
@@ -49,9 +58,9 @@ trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
 
   def apply(init: TerminalInit): CLIHandlerBase[F]
 
-  def spawn[T](x: =>F[T]): Unit
+  def spawn[T](x: => F[T]): Unit
 
-  override def exec(init: TerminalInit, cli: CLI[?]): Unit = {
+  override final def exec(cli: CLI[?], init: TerminalInit): Unit = {
     val handler = apply(init)
 
     def impureCompiler: CLIOp ~> F = new(CLIOp ~> F) {
@@ -65,9 +74,8 @@ trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
 }
 
 trait CLIRunnerImpure extends CLIRunnerMonad[Id] {
-  override def spawn[T](x: =>Id[T]): Unit = {
+  override def spawn[T](x: => Id[T]): Unit = {
     x
     ()
   }
 }
- 

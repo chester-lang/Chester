@@ -5,7 +5,7 @@ import io.github.edadma.readline.facade.*
 
 import scala.concurrent.Future
 
-class ReadlineTerminal extends Terminal {
+class ReadlineTerminal  {
   private var history: Vector[String] = Vector()
   private val homeDir = System.getProperty("user.home")
   private val HISTORY_FILE = s"$homeDir/.my_readline_history"
@@ -32,7 +32,7 @@ class ReadlineTerminal extends Terminal {
     }
   }
 
-  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
+  def readLine(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
@@ -77,7 +77,7 @@ class ReadlineTerminal extends Terminal {
         }
       }
     }
-    Future.successful(result)
+    (result)
   }
 
   def close(): Unit = {
@@ -88,9 +88,26 @@ class ReadlineTerminal extends Terminal {
   def getHistory: Seq[String] = history
 }
 
+
 object ReadlineTerminal extends TerminalFactory {
-  def apply(): ReadlineTerminal = {
-    val terminal = new ReadlineTerminal()
-    terminal
+  def apply(): Terminal = {
+    val t = new ReadlineTerminal()
+    new Terminal {
+      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
+      override def close(): Unit = t.close()
+      override def getHistory: Seq[String] = t.getHistory
+    }
   }
 }
+
+object ReadlineCLIRunner extends CLIRunnerImpure {
+  def apply(init: TerminalInit): CLIHandlerImpure = {
+    val t = new ReadlineTerminal()
+    new CLIHandlerImpure {
+      override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
+      override def getHistory: Seq[String] = t.getHistory
+      override def close: Unit = t.close()
+    }
+  }
+}
+

@@ -3,4 +3,4 @@ package chester.repl
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-def startREPL(): Unit = REPLEngine(NodejsSimpleTerminal).start()
+def startREPL(): Unit = REPLEngine(NodejsCLIRunner).start()

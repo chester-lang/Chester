@@ -10,7 +10,7 @@ import fansi.*
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext) {
+class REPLEngine(terminalFactory: CLIRunner) {
 
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
@@ -23,55 +23,54 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
     override def continuationPrompt: String = continuationPrompt0.render
   }
 
-  def start(): Future[Unit] = {
-    val terminal: Terminal = terminalFactory()
+  def start(): Unit = {
     println("Welcome to the Chester REPL!")
     println("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
-    runREPL(terminal).map(_ => terminal.close())
+    terminalFactory.exec(runREPL.flatMap(_ => CLI.close))
   }
 
-  private def runREPL(terminal: Terminal): Future[Unit] = {
-    terminal.readLine(terminalInfo).flatMap {
+  private def runREPL: CLI[Unit] = {
+    CLI.readLine(terminalInfo).flatMap {
       case LineRead(line) =>
-        processLine(terminal, line).flatMap {
-          case true => runREPL(terminal)
-          case false => Future.successful(())
+        processLine(line).flatMap {
+          case true => runREPL
+          case false => CLI.pure(())
         }
       case UserInterrupted =>
         println("User interrupted the input. Continuing the REPL.")
-        runREPL(terminal)
+        runREPL
       case EndOfFile =>
         println("End of input detected. Exiting REPL.")
-        Future.successful(())
+        CLI.pure(())
       case chester.repl.StatusError(_) =>
         println("Error reading input. Continuing the REPL.")
-        runREPL(terminal)
+        runREPL
     }
   }
 
-  private def processLine(terminal: Terminal, line: String): Future[Boolean] = {
+  private def processLine(line: String): CLI[Boolean] = {
     line match {
       case "exit" | ":q" =>
         println("Exiting REPL.")
-        Future.successful(false)
+        CLI.pure(false)
       case ":?" =>
         println("Commands:")
         println(":t <expr> - Check the type of an expression")
         println(":q - Quit the REPL")
         println("You can also just type any expression to evaluate it.")
-        Future.successful(true)
+        CLI.pure(true)
       case _ =>
         if (line.startsWith(":t ")) {
           val exprStr = line.drop(3)
-          handleTypeCheck(terminal, exprStr).map(_ => true)
+          handleTypeCheck(exprStr).map(_ => true)
         } else {
-          handleExpression(terminal, line).map(_ => true)
+          handleExpression(line).map(_ => true)
         }
     }
   }
 
-  private def handleTypeCheck(terminal: Terminal, exprStr: String): Future[Unit] = {
-    ParserEngine.parseInput(terminal.getHistory, exprStr) match {
+  private def handleTypeCheck(exprStr: String): CLI[Unit] = CLI.getHistory.flatMap { history =>
+    ParserEngine.parseInput(history, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
           case TyckResult.Success(judge,_,_) => println(prettyPrintJudge(judge))
@@ -80,11 +79,11 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
     }
-    Future.successful(())
+    CLI.pure(())
   }
 
-  private def handleExpression(terminal: Terminal, line: String): Future[Unit] = {
-    ParserEngine.parseInput(terminal.getHistory, line) match {
+  private def handleExpression(line: String): CLI[Unit] = CLI.getHistory.flatMap { history =>
+    ParserEngine.parseInput(history, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
           case TyckResult.Success(judge,_,_) => println(prettyPrintJudgeWellTyped(judge))
@@ -93,7 +92,7 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
       case Left(error) =>
         println(s"Parse Error: ${error.message}")
     }
-    Future.successful(())
+    CLI.pure(())
   }
 
   private def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
@@ -132,5 +131,5 @@ class REPLEngine(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext
 }
 
 object REPLEngine {
-  def apply(terminalFactory: TerminalFactory)(implicit ec: ExecutionContext): REPLEngine = new REPLEngine(terminalFactory)
+  def apply(terminalFactory: CLIRunner): REPLEngine = new REPLEngine(terminalFactory)
 }
