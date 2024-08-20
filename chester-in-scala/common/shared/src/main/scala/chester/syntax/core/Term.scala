@@ -75,6 +75,16 @@ case object IntegerType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
 }
 
+// int of 64 bits or more
+case object IntType extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int").colored(ColorProfile.typeColor)
+}
+
+// unsigned int of 64 bits or more
+case object UIntType extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt").colored(ColorProfile.typeColor)
+}
+
 case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
@@ -95,8 +105,9 @@ case object RationalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational")
 }
 
-case object Float64Type extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float64")
+// float of 32 bits or more
+case object FloatType extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float")
 }
 
 case object StringType extends TypeTerm {
