@@ -16,21 +16,21 @@ data InternetOverdose <: 舞;
 a: 舞 = new 超会議(2017);
 i: InternetOverdose = new InternetOverdose;
 
-trait #sealed Expr[T: Type] {
+sealed trait Expr[T: Type] {
   def eval: T;
 }
 
 data IVal <: Expr[Int] {
   let val: Int;
-  def #override eval = val;
+  override def eval = val;
 }
 
 data BVal <: Expr[Int] {
   let val: Bool;
-  def #override eval = val;
+  override def eval = val;
 }
 
-trait #sealed Vect[n: Nat, T: Type] {
+sealed trait Vect[n: Nat, T: Type] {
   def apply(index: Fin n): T = ?todo;
 }
 
@@ -42,4 +42,19 @@ data Cons[n,T] <: Vect[n+1, T] {
 
 proof1[T]: Nil[T] = Nil[T];
 proof1[T] = ?hole;
+
+data MutableString {
+  var name: String;
+}
+
+data MutableStringExplicit[a: STScope] {
+  var[a] name: String;
+}
+
+// IO somehow gives an implicit STScope?
+entry: IO Unit = {
+  let a = new MutableString("");
+  a.name = "はっぱ - もうすぐ楽になるからね";
+  println(a.name);
+}
 ```
