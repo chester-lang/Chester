@@ -1,7 +1,8 @@
 package chester.repl
 
-import cats.free.Free
-import cats.free.Free.liftF
+import cats.free.*
+import cats.free.Free.*
+import cats._
 
 enum CLIOp[A] {
   case ReadLine(info: TerminalInfo) extends CLIOp[ReadLineResult]
@@ -26,17 +27,7 @@ trait CLIRunner {
   def exec(init: TerminalInit, cli: CLI[?]): Unit
 }
 
-trait CLIRunnerIO extends CLIRunner {
-  trait Handler {
-    def apply[T](x: CLIOp[T]): T
-  }
-
-  def apply(init: TerminalInit): Handler
-
-  override def exec(init: TerminalInit, cli: CLI[?]): Unit = ???
-}
-
-trait CLIRunnerMonad[F[_]] extends CLIRunner {
+trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
   trait Handler {
     def apply[T](x: CLIOp[T]): F[T]
   }
@@ -45,5 +36,17 @@ trait CLIRunnerMonad[F[_]] extends CLIRunner {
 
   def spawn[T](x: F[T]): Unit
 
-  override def exec(init: TerminalInit, cli: CLI[?]): Unit = ???
+  override def exec(init: TerminalInit, cli: CLI[?]): Unit = {
+    val handler = apply(init)
+
+    def impureCompiler: CLIOp ~> F = new(CLIOp ~> F) {
+      override def apply[A](fa: CLIOp[A]): F[A] = handler(fa)
+    }
+
+    spawn {
+      cli.foldMap(impureCompiler)
+    }
+  }
 }
+
+type CLIRunnerImpure = CLIRunnerMonad[Id]
