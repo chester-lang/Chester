@@ -27,14 +27,29 @@ trait CLIRunner {
   def exec(init: TerminalInit, cli: CLI[?]): Unit
 }
 
-trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
-  trait Handler {
-    def apply[T](x: CLIOp[T]): F[T]
+trait CLIHandlerBase[F[_]] {
+  def apply[T](x: CLIOp[T]): F[T]
+}
+
+trait CLIHandler[F[_]] extends CLIHandlerBase[F] {
+  def readline(info: TerminalInfo): F[ReadLineResult]
+  def getHistory: F[Seq[String]]
+  def close: F[Unit]
+  override def apply[T](x: CLIOp[T]): F[T] = x match {
+    case CLIOp.ReadLine(info) => readline(info)
+    case CLIOp.GetHistory => getHistory
+    case CLIOp.Close => close
   }
+}
 
-  def apply(init: TerminalInit): Handler
+type CLIHandlerImpure = CLIHandler[Id]
 
-  def spawn[T](x: F[T]): Unit
+
+trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
+
+  def apply(init: TerminalInit): CLIHandlerBase[F]
+
+  def spawn[T](x: =>F[T]): Unit
 
   override def exec(init: TerminalInit, cli: CLI[?]): Unit = {
     val handler = apply(init)
@@ -49,4 +64,10 @@ trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
   }
 }
 
-type CLIRunnerImpure = CLIRunnerMonad[Id]
+trait CLIRunnerImpure extends CLIRunnerMonad[Id] {
+  override def spawn[T](x: =>Id[T]): Unit = {
+    x
+    ()
+  }
+}
+ 

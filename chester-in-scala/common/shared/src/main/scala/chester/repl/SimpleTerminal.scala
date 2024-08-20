@@ -1,16 +1,17 @@
 package chester.repl
 
+import cats.Id
 import chester.parser.InputStatus.*
 import chester.parser.ParserEngine
 
 import scala.concurrent.Future
 import scala.io.StdIn
 
-class SimpleTerminal extends Terminal {
+class SimpleTerminal {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
-  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
+  def readLine(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
@@ -44,7 +45,7 @@ class SimpleTerminal extends Terminal {
         if (!continue) currentInputs = ""
       }
     }
-    Future.successful(result)
+    result
   }
 
   def close(): Unit = {}
@@ -53,5 +54,23 @@ class SimpleTerminal extends Terminal {
 }
 
 object SimpleTerminal extends TerminalFactory {
-  def apply(): SimpleTerminal = new SimpleTerminal()
+  def apply(): Terminal = {
+    val t = new SimpleTerminal()
+    new Terminal {
+      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
+      override def close(): Unit = t.close()
+      override def getHistory: Seq[String] = t.getHistory
+    }
+  }
+}
+
+object SimpleCLIRunner extends CLIRunnerImpure {
+  def apply(init: TerminalInit): CLIHandlerImpure = {
+    val t = new SimpleTerminal()
+    new CLIHandlerImpure {
+      override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
+      override def getHistory: Seq[String] = t.getHistory
+      override def close: Unit = t.close()
+    }
+  }
 }
