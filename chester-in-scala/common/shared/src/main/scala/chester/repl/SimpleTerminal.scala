@@ -53,17 +53,6 @@ class SimpleTerminal {
   def getHistory: Seq[String] = history
 }
 
-object SimpleTerminal extends TerminalFactory {
-  def apply(): Terminal = {
-    val t = new SimpleTerminal()
-    new Terminal {
-      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
-      override def close(): Unit = t.close()
-      override def getHistory: Seq[String] = t.getHistory
-    }
-  }
-}
-
 object SimpleCLIRunner extends CLIRunnerImpure {
   def apply(init: TerminalInit): CLIHandlerImpure = {
     val t = new SimpleTerminal()

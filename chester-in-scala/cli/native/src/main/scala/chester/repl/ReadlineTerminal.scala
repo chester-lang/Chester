@@ -88,18 +88,6 @@ class ReadlineTerminal  {
   def getHistory: Seq[String] = history
 }
 
-
-object ReadlineTerminal extends TerminalFactory {
-  def apply(): Terminal = {
-    val t = new ReadlineTerminal()
-    new Terminal {
-      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
-      override def close(): Unit = t.close()
-      override def getHistory: Seq[String] = t.getHistory
-    }
-  }
-}
-
 object ReadlineCLIRunner extends CLIRunnerImpure {
   def apply(init: TerminalInit): CLIHandlerImpure = {
     val t = new ReadlineTerminal()

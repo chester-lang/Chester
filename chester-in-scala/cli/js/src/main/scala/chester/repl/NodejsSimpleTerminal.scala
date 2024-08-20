@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import scala.scalajs.js.Thenable.Implicits.*
 import scala.concurrent.{Future, Promise}
 
-class NodejsSimpleTerminal extends Terminal {
+class NodejsSimpleTerminal {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
@@ -78,10 +78,6 @@ class NodejsSimpleTerminal extends Terminal {
   }
 
   def getHistory: Seq[String] = history
-}
-
-object NodejsSimpleTerminal extends TerminalFactory {
-  def apply(): NodejsSimpleTerminal = new NodejsSimpleTerminal()
 }
 
 object NodejsCLIRunner extends CLIRunnerMonad[Future] {

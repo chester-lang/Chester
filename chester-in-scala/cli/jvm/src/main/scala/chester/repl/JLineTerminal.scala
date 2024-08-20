@@ -76,17 +76,6 @@ class JLineTerminal {
   def getHistory: Seq[String] = (0 until history.size()).map(history.get(_).toString)
 }
 
-object JLineTerminal extends TerminalFactory {
-  def apply(): Terminal = {
-    val t = new JLineTerminal()
-    new Terminal {
-      override def readLine(info: TerminalInfo): Future[ReadLineResult] = Future.successful(t.readLine(info))
-      override def close(): Unit = t.close()
-      override def getHistory: Seq[String] = t.getHistory
-    }
-  }
-}
-
 object JLineCLIRunner extends CLIRunnerImpure {
   def apply(init: TerminalInit): CLIHandlerImpure = {
     val t = new JLineTerminal()
