@@ -57,9 +57,4 @@ entry: IO Unit = {
   a.name = "はっぱ - もうすぐ楽になるからね";
   println(a.name);
 }
-
-// ?
-xs = [1, 2, 3];
-a = xs.nth(1); // a = 1
-b = xs.offset(0); // b = 1
 ```
