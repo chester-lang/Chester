@@ -6,7 +6,7 @@ It might look like?
 trait 舞 <: Show;
 
 @derive(Show)
-class 超会議 <: 舞 {
+record 超会議 <: 舞 {
   let year: Nat;
 }
 
@@ -22,12 +22,12 @@ sealed trait Expr[T: Type] {
   def eval: T;
 }
 
-class IVal <: Expr[Int] {
+record IVal <: Expr[Int] {
   let val: Int;
   override def eval = val;
 }
 
-class BVal <: Expr[Int] {
+record BVal <: Expr[Int] {
   let val: Bool;
   override def eval = val;
 }
@@ -37,7 +37,7 @@ sealed trait Vect[n: Nat, T: Type] {
 }
 
 object Nil[T] <: Vect[0, T];
-class Cons[n,T] <: Vect[n+1, T] {
+record Cons[n,T] <: Vect[n+1, T] {
   let head: T;
   let tail: Vect[n, T];
 }
@@ -49,17 +49,17 @@ proof1[T] = ?hole;
 // alternative syntax for GADT
 data Vect2[n: Nat, T: Type] {
   object Nil[T] <: Vect[0, T];
-  class Cons[n,T] <: Vect[n+1, T] {
+  record Cons[n,T] <: Vect[n+1, T] {
     let head: T;
     let tail: Vect[n, T];
   }
 }
 
-class MutableString {
+record MutableString {
   var name: String;
 }
 
-class MutableStringExplicit[a: STScope] {
+record MutableStringExplicit[a: STScope] {
   var[a] name: String;
 }
 
@@ -68,5 +68,10 @@ entry: Unit / IO = {
   let a = MutableString("");
   a.name = "はっぱ - もうすぐ楽になるからね";
   println(a.name);
+}
+
+AnonymousRecordType: Type = {name: String};
+record1: AnonymousRecordType = {
+  name = "Ame-chan";
 }
 ```
