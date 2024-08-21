@@ -16,6 +16,7 @@ data InternetOverdose <: 舞;
 module 超会議 {
   let バタフライ_グラフィティ: 舞 = 超会議(2017);
 }
+// Implementation would need to know if it is a Type or a instance based on context
 i: InternetOverdose = InternetOverdose;
 
 sealed trait Expr[T: Type] {
