@@ -255,9 +255,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
   val normalizer = new Normalizer()
 
-  def whnf(term: Term): Term = {
+  def whnf(judge: Judge): Judge = {
     val state = S.state.value
-    val (newState, normalizedTerm) = normalizer.apply(term).run(state).value
+    val (newState, normalizedTerm) = normalizer.apply(judge).run(state).value
     S.state.value = newState // Update the state with the new state from the normalizer
     normalizedTerm
   }
@@ -267,7 +267,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    (resolve(expr), whnf(ty)) match {
+    (resolve(expr), whnf(Judge(ty,Typeω)).wellTyped) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))

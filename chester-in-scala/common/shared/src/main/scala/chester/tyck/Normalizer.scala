@@ -5,7 +5,7 @@ import chester.syntax.core.*
 
 
 case class Normalizer() {
-  def apply(term: Term): State[TyckState, Term] = term match {
+  def apply(term: Judge): State[TyckState, Judge] = term match {
 
     case _ => State.pure(term)
   }
