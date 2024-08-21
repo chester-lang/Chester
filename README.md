@@ -14,7 +14,7 @@ data 超会議 <: 舞 {
 data InternetOverdose <: 舞;
 
 module 超会議 {
-  let バタフライ・グラフィティ: 舞 = 超会議(2017);
+  let バタフライ_グラフィティ: 舞 = 超会議(2017);
 }
 i: InternetOverdose = InternetOverdose;
 
