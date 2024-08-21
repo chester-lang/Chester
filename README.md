@@ -48,11 +48,8 @@ proof1[T] = ?hole;
 
 // alternative syntax for GADT
 data Vect2[n: Nat, T: Type] {
-  object Nil[T] <: Vect[0, T];
-  record Cons[n,T] <: Vect[n+1, T] {
-    let head: T;
-    let tail: Vect[n, T];
-  }
+  case Nil[T] <: Vect[0, T];
+  case Cons[n,T](head: T, tail: Vect[n, T]) <: Vect[n+1, T];
 }
 
 record MutableString {
