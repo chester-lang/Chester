@@ -52,7 +52,7 @@ data MutableStringExplicit[a: STScope] {
 }
 
 // IO somehow gives an implicit STScope?
-entry: IO Unit = {
+entry: Unit / IO = {
   let a = new MutableString("");
   a.name = "はっぱ - もうすぐ楽になるからね";
   println(a.name);
