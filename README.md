@@ -84,4 +84,9 @@ AnonymousRecordType: Type = {name: String};
 record1: AnonymousRecordType = {
   name = "Ame-chan";
 }
+
+extension [T](xs: List[T]) {
+  // |-> denotes a second class function that won't leave the scope. Nonlocal returns and additional algebraic effects can be used in a second class function
+  def map[U](f: T |-> U): List[U] = ?todo;
+}
 ```
