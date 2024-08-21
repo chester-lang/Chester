@@ -56,7 +56,7 @@ record MutableString {
   var name: String;
 }
 
-record MutableStringExplicit[a: STScope] {
+record MutableStringExplicit[a: Region] {
   var[a] name: String;
 }
 
@@ -64,7 +64,7 @@ record Box[a] {
   var var: a;
 }
 
-record BoxExplicit[a][s: STScope] {
+record BoxExplicit[a][s: Region] {
   var[s] var: a;
 }
 
@@ -73,7 +73,7 @@ module MutModule / Global {
   let a = Box(0);
 }
 
-// IO somehow gives an implicit STScope?
+// IO somehow gives an implicit Region?
 entry: Unit / IO = {
   let a = MutableString("");
   a.name = "はっぱ - もうすぐ楽になるからね";
