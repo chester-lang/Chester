@@ -22,6 +22,11 @@ class REPLEngine(terminalFactory: CLIRunner) {
 
     override def continuationPrompt: String = continuationPrompt0.render
   }
+  var count = 0
+  // TODO: Add Out(n) to refer history evaluation
+  var inputs: Vector[Expr] = Vector()
+  var outputs: Vector[Judge] = Vector()
+  def Out: Judge = ??? // add to the environment of evaluation
 
   def start(): Unit = {
     println("Welcome to the Chester REPL!")
