@@ -146,6 +146,23 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     ),
     scalacOptions ++= (if (unix && permitGPLcontamination) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
+
+lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Full)
+  .in(file("js"))
+  .jsEnablePlugins(ScalablyTypedConverterPlugin)
+  .dependsOn(common)
+  .settings(
+    name := "chester-js",
+    commonSettings
+  )
+  .jsSettings(
+    jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
+    Compile / npmDependencies ++= Seq(
+      "@xterm/xterm" -> "5.5.0"
+    ),
+  )
+
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("lsp"))
@@ -167,7 +184,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm)
+  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version
