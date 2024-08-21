@@ -60,6 +60,19 @@ record MutableStringExplicit[a: STScope] {
   var[a] name: String;
 }
 
+record Box[a] {
+  var var: a;
+}
+
+record BoxExplicit[a][s: STScope] {
+  var[s] var: a;
+}
+
+// an effect for global variables?
+module MutModule / Global {
+  let a = Box(0);
+}
+
 // IO somehow gives an implicit STScope?
 entry: Unit / IO = {
   let a = MutableString("");
