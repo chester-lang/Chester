@@ -13,8 +13,10 @@ data 超会議 <: 舞 {
 @derive(Show)
 data InternetOverdose <: 舞;
 
-a: 舞 = new 超会議(2017);
-i: InternetOverdose = new InternetOverdose;
+module 超会議 {
+  let バタフライ・グラフィティ: 舞 = 超会議(2017);
+}
+i: InternetOverdose = InternetOverdose;
 
 sealed trait Expr[T: Type] {
   def eval: T;
@@ -53,7 +55,7 @@ data MutableStringExplicit[a: STScope] {
 
 // IO somehow gives an implicit STScope?
 entry: Unit / IO = {
-  let a = new MutableString("");
+  let a = MutableString("");
   a.name = "はっぱ - もうすぐ楽になるからね";
   println(a.name);
 }
