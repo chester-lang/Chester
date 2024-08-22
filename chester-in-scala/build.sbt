@@ -26,6 +26,11 @@ val commonSettings = Seq(
   githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
   resolvers += Resolver.githubPackages("edadma", "readline"),
 )
+val graalvmSettings = Seq(
+  nativeImageVersion := graalVersion,
+  nativeImageOptions := nativeImageOption,
+  nativeImageJvm := graalVm,
+)
 
 commonSettings
 
@@ -122,9 +127,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .jvmSettings(
     nativeImageOutput := file("target") / "chester",
-    nativeImageVersion := graalVersion,
-    nativeImageOptions := nativeImageOption,
-    nativeImageJvm := graalVm,
+    graalvmSettings,
     libraryDependencies ++= Seq(
       // https://github.com/jline/jline3/issues/954
       "org.jline" % "jline" % (if(graalvm17) "3.24.1" else "3.26.2"),
@@ -145,6 +148,26 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
       //"io.github.edadma" %%% "readline" % "0.1.3"
     ),
     scalacOptions ++= (if (unix && permitGPLcontamination) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
+  )
+
+lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("up"))
+  .jvmEnablePlugins(NativeImagePlugin)
+  .jsEnablePlugins(ScalablyTypedConverterPlugin)
+  .dependsOn(common)
+  .settings(
+    name := "chesterup",
+    Compile / mainClass := Some("chester.up.Main"),
+    assembly / assemblyJarName := "chesterup.jar",
+    libraryDependencies ++= Seq(
+      "com.github.scopt" %%% "scopt" % "4.1.0"
+    ),
+    commonSettings
+  )
+  .jvmSettings(
+    nativeImageOutput := file("target") / "chesterup",
+    graalvmSettings,
   )
 
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
@@ -177,9 +200,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     commonSettings
   )
   .jvmSettings(
-    nativeImageVersion := graalVersion,
-    nativeImageOptions := nativeImageOption,
-    nativeImageJvm := graalVm,
+    graalvmSettings,
   )
 
 lazy val root = project
