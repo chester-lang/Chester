@@ -2,10 +2,6 @@ package chester.utils.io
 
 import effekt.*
 
-import cats.free.*
-import cats.free.Free.*
-import cats._
-
 import scala.language.implicitConversions
 
 trait PathOps[T] {
@@ -28,7 +24,7 @@ implicit val PathOpsString: PathOps[String] = new PathOps[String] {
   def asString(p: String): String = p
 }
 
-implicit def summonPathOps[F <: FileOps](using fileOps: F): PathOps[fileOps.P] = fileOps.pathOps
+implicit def summonPathOps[F <: FileOps](using fileOps: F) : PathOps[fileOps.P] = fileOps.pathOps
 
 object Path {
   def of[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
@@ -36,47 +32,16 @@ object Path {
 
 trait FileOps {
   type P
-  type M[_]
 
   def pathOps: PathOps[P]
 
-  def read(path: P): M[String]
+  def read(path: P): Control[String]
 
-  def write(path: P, content: String): M[Unit]
+  def write(path: P, content: String): Control[Unit]
 
-  def append(path: P, content: String): M[Unit]
+  def append(path: P, content: String): Control[Unit]
 
-  def remove(path: P): M[Unit]
+  def remove(path: P): Control[Unit]
 
-  def getHomeDir: M[P]
-}
-
-trait FileOpsEff extends FileOps {
-  type M[x] = Control[x]
-}
-
-trait FileOpsFree extends FileOps {
-  sealed trait Op[A]
-
-  type M[x] = Op[x]
-
-  case class Read(path: P) extends Op[String]
-
-  case class Write(path: P, content: String) extends Op[Unit]
-
-  case class Append(path: P, content: String) extends Op[Unit]
-
-  case class Remove(path: P) extends Op[Unit]
-
-  case object GetHomeDir extends Op[P]
-
-  def read(path: P): M[String] = Read(path)
-
-  def write(path: P, content: String): M[Unit] = Write(path, content)
-
-  def append(path: P, content: String): M[Unit] = Append(path, content)
-
-  def remove(path: P): M[Unit] = Remove(path)
-
-  def getHomeDir: M[P] = GetHomeDir
+  def getHomeDir: Control[P]
 }
