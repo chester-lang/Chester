@@ -66,6 +66,7 @@ val jdk17: Boolean = classVersion >= jdk17ClassVersion
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
+  .jsEnablePlugins(ScalablyTypedConverterPlugin)
   .settings(
     name := "chester",
     libraryDependencies ++= Seq(
@@ -95,6 +96,9 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "pprint" % "0.9.0"
+    ),
+    Compile / npmDependencies ++= Seq(
+      "@types/node" -> "22.3.0"
     ),
     //scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
@@ -141,7 +145,6 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     Compile / npmDependencies ++= Seq(
       "@types/node" -> "22.3.0"
     ),
-    stIgnore += "globals"
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
