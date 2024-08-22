@@ -149,7 +149,7 @@ object Block {
 }
 
 // maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr], exprOrDefault: Option[Expr], vararg: Boolean = false) {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) {
   require(name.isDefined || exprOrDefault.isDefined)
 
   def descentAndApply(operator: Expr => Expr): Arg = {

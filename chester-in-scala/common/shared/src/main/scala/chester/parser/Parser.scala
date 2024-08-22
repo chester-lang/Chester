@@ -51,7 +51,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
   def maybeSpace1: P[Vector[Comment]] = P(delimiter1.?.map(_.toVector.flatten))
 
-  def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierRest).rep).!)
+  def simpleId: P[String] = P((CharacterPred(identifierFirst).rep(1) ~ CharacterPred(identifierMiddle).rep.? ~ CharacterPred(identifierEnd).?).!)
 
   def id: P[String] = operatorId | simpleId
 

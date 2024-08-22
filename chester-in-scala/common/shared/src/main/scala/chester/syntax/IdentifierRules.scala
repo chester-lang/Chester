@@ -25,7 +25,9 @@ object IdentifierRules {
 
   def identifierFirst(x: Character) = isWording(x) || isWordingSymbol(x)
 
-  def identifierRest(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
+  def identifierMiddle(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
+
+  def identifierEnd(x: Character) = identifierFirst(x) || isDigit(x)
 
   def operatorIdentifierFirst(x: Character) = isOperatorSymbol(x)
 

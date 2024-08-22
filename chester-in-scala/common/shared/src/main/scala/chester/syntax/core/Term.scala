@@ -167,9 +167,9 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingCl
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(restrictInScope: Vector[ScopeId], telescope: TelescopeTerm, effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TermWithMeta {
+case class FunctionType(restrictInScope: Vector[ScopeId], telescope: Vector[TelescopeTerm], effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val telescopeDoc = telescope.toDoc
+    val telescopeDoc = telescope.map(_.toDoc).reduce(_ <+> _)
     val effectDoc = effect.toDoc
     val resultDoc = resultTy.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
