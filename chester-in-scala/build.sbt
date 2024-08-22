@@ -1,7 +1,7 @@
 import java.nio.file.{Files, Paths}
 import scala.scalanative.build.*
 
-val scala3Version = "3.5.0-RC7"
+val scala3Version = "3.5.1-RC2"
 
 val path2022 = Paths.get("C:\\Program Files\\Microsoft Visual Studio\\2022")
 val path2019 = Paths.get("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019")
