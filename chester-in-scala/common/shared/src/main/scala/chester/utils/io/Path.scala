@@ -2,6 +2,8 @@ package chester.utils.io
 
 import effekt.*
 
+import scala.language.implicitConversions
+
 trait PathOps[T] {
   def of(path: String): T
 
@@ -20,6 +22,12 @@ implicit val PathOpsString: PathOps[String] = new PathOps[String] {
   def join(p1: String, p2: String): String = p1 + "/" + p2
 
   def asString(p: String): String = p
+}
+
+implicit def summonPathOps[F <: FileOps](using fileOps: F) : PathOps[fileOps.P] = fileOps.pathOps
+
+object Path {
+  def of[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
 }
 
 trait FileOps {
