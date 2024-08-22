@@ -14,8 +14,12 @@ object OS {
   }
 
   case object Mac extends UNIX
+  
+  sealed trait Linux extends UNIX
 
-  case object GNULinux extends UNIX
+  case object GNULinux extends Linux
+  
+  case object AndroidOrTermux extends Linux
 
   case object Windows extends OS {
     def useCRLF: Boolean = true

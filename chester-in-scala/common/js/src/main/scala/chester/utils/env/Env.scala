@@ -9,6 +9,7 @@ object Env {
     if (os == Platform.win32) OS.Windows
     else if (os == Platform.darwin) OS.Mac
     else if (os == Platform.linux) OS.GNULinux
+    else if (os == Platform.android) OS.AndroidOrTermux
     else throw new Exception(s"Unknown OS: $os")
   }
   lazy val getArch: Architecture = {
