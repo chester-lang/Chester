@@ -56,18 +56,20 @@ private object SingleExpr {
 
 private object DesaltSimpleFunction {
   def predicate(x: Expr): Boolean = x match {
-    case Identifier(Const.Arrow, _) => true
+    case Identifier(Const.Arrow2, _) => true
     case _ => false
   }
 
   @throws[TyckError]
-  def unapply(x: Expr) = x match {
+  def unapply(x: Expr): Option[Expr] = x match {
     case OpSeq(xs, meta) if xs.exists(predicate) => {
       val index = xs.indexWhere(predicate)
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => FunctionExpr(telescope = telescope.toVector, body = body, meta = meta)
+        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => {
+          Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
+        }
         case _ => throw ExpectLambda(x)
       }
     }
@@ -138,6 +140,7 @@ case object SimpleDesalt {
       val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
       DesaltMatching(heads1, meta)
     }
+    case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case default => default
   }
