@@ -3,7 +3,6 @@ package chester.utils.env
 import typings.node.osMod
 import typings.node.processMod.global.NodeJS.Platform
 
-object Env {
   lazy val getOS: OS = {
     val os = osMod.platform()
     if (os == Platform.win32) OS.Windows
@@ -21,4 +20,4 @@ object Env {
       case _ => throw new Exception(s"Unknown architecture: ${System.getProperty("os.arch")}")
     }
   }
-}
+  lazy val getRunningOn: RunningOn = RunningOn.Nodejs("")

@@ -1,5 +1,5 @@
 package chester.utils
 
-import chester.utils.env.Env
+import chester.utils.env
 
-def platformUseCRLF: Boolean = Env.getOS.useCRLF
+def platformUseCRLF: Boolean = env.getOS.useCRLF

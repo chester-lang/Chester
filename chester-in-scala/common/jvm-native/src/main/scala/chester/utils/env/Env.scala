@@ -1,6 +1,5 @@
 package chester.utils.env
 
-object Env {
   lazy val getOS: OS = {
     val os = System.getProperty("os.name").toLowerCase
     if (os.contains("win")) OS.Windows
@@ -17,4 +16,3 @@ object Env {
       case _ => throw new Exception(s"Unknown architecture: ${System.getProperty("os.arch")}")
     }
   }
-}
