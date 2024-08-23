@@ -26,13 +26,21 @@ case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
     k(())
   }
 
-  def remove(path: P) = use { k =>
-    fsMod.unlinkSync(path)
-    k(())
+  def removeWhenExists(path: P) = use { k =>
+    if (fsMod.existsSync(path)) {
+      fsMod.unlinkSync(path)
+      k(true)
+    } else {
+      k(false)
+    }
   }
 
   def getHomeDir = use { k =>
     k(osMod.homedir())
+  }
+
+  def exists(path: P) = use { k =>
+    k(fsMod.existsSync(path))
   }
 }
 

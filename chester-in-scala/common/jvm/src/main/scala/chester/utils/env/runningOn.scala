@@ -1,3 +1,5 @@
 package chester.utils.env
 
-lazy val getRunningOn: RunningOn = RunningOn.JVM("")
+import org.graalvm.nativeimage.ImageInfo
+
+lazy val getRunningOn: RunningOn = if(ImageInfo.inImageCode) RunningOn.NativeImage("") else RunningOn.JVM("")

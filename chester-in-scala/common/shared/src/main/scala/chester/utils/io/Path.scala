@@ -46,9 +46,11 @@ trait FileOps {
 
   def append(path: P, content: String): M[Unit]
 
-  def remove(path: P): M[Unit]
+  def removeWhenExists(path: P): M[Boolean]
 
   def getHomeDir: M[P]
+
+  def exists(path: P): M[Boolean]
 }
 
 trait FileOpsEff extends FileOps {
@@ -66,9 +68,11 @@ trait FileOpsFree extends FileOps {
 
   case class Append(path: P, content: String) extends Op[Unit]
 
-  case class Remove(path: P) extends Op[Unit]
+  case class RemoveWhenExists(path: P) extends Op[Boolean]
 
   case object GetHomeDir extends Op[P]
+
+  case class Exists(path: P) extends Op[Boolean]
 
   def read(path: P): M[String] = Read(path)
 
@@ -76,7 +80,9 @@ trait FileOpsFree extends FileOps {
 
   def append(path: P, content: String): M[Unit] = Append(path, content)
 
-  def remove(path: P): M[Unit] = Remove(path)
+  def removeWhenExists(path: P): M[Boolean] = RemoveWhenExists(path)
 
   def getHomeDir: M[P] = GetHomeDir
+
+  def exists(path: P): M[Boolean] = Exists(path)
 }
