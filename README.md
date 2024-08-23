@@ -88,6 +88,7 @@ record1: AnonymousRecordType = {
 extension [T](xs: List[T]) {
   // & denotes a second class type that won't leave the scope. Nonlocal returns and additional algebraic effects can be used in a second class function. original idea: Brachthäuser and Schuster (2017)
   def map[U](f: & T -> U): List[U] = ?todo;
+  // def map[U,e](f: T -> U / e): List[U] / e = ?todo;
 }
 ```
 
