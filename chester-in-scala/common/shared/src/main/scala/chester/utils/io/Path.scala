@@ -20,7 +20,7 @@ extension [T](p: T)(using ops: PathOps[T]) {
   def /(p2: T): T = ops.join(p, p2)
 }
 
-implicit val PathOpsString: PathOps[String] = new PathOps[String] {
+implicit object PathOpsString extends PathOps[String] {
   def of(path: String): String = path
 
   def join(p1: String, p2: String): String = p1 + "/" + p2
