@@ -90,7 +90,10 @@ object NodejsCLIRunner extends CLIRunnerMonad[Future] {
     }
   }
   def spawn[T](x: => Future[T]): Unit = {
-    x
+    x.recover{e =>
+      e.printStackTrace()
+      processMod.^.exit(1)
+    }
     ()
   }
 }

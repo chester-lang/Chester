@@ -13,7 +13,7 @@ import typings.node.processMod.global.NodeJS.Platform
   }
   lazy val getArch: Architecture = {
     osMod.arch().toLowerCase match {
-      case "x86_64" | "amd64" => Architecture.Amd64
+      case "x86_64" | "amd64" | "x64" => Architecture.Amd64
       case "x86" | "i386" => Architecture.X86
       case "arm" => Architecture.Arm
       case "aarch64" | "arm64" => Architecture.Arm64
