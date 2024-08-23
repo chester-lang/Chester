@@ -3,13 +3,15 @@ package chester.utils.io
 import effekt.effects.Exc
 import effekt.{Control, Handler}
 
-import java.io.IOException
+import java.io.{IOException, BufferedReader, BufferedWriter, FileReader, FileWriter}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths, StandardOpenOption}
 
 trait NioOps extends FileOpsEff {
   type P = java.nio.file.Path
 
   def pathOps: PathOps[P] = new PathOps[P] {
-    def of(path: String): P = java.nio.file.Paths.get(path)
+    def of(path: String): P = Paths.get(path)
 
     def join(p1: P, p2: P): P = p1.resolve(p2)
 
@@ -19,23 +21,33 @@ trait NioOps extends FileOpsEff {
 
 case class NioHandler[R]() extends Handler[R] with NioOps {
   def read(path: P) = use { k =>
-    val content = java.nio.file.Files.readString(path)
+    val content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8)
     k(content)
   }
 
   def write(path: P, content: String) = use { k =>
-    java.nio.file.Files.writeString(path, content, java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.TRUNCATE_EXISTING)
+    val writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+    try {
+      writer.write(content)
+    } finally {
+      writer.close()
+    }
     k(())
   }
 
   def append(path: P, content: String) = use { k =>
-    java.nio.file.Files.writeString(path, content, java.nio.file.StandardOpenOption.APPEND)
+    val writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND)
+    try {
+      writer.write(content)
+    } finally {
+      writer.close()
+    }
     k(())
   }
 
   def removeWhenExists(path: P) = use { k =>
     val result = try {
-      java.nio.file.Files.delete(path)
+      Files.delete(path)
       true
     } catch {
       case _: java.nio.file.NoSuchFileException => false
@@ -44,13 +56,13 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
   }
 
   def getHomeDir = use { k =>
-    k(java.nio.file.Paths.get(System.getProperty("user.home")))
+    k(Paths.get(System.getProperty("user.home")))
   }
-  
+
   def exists(path: P) = use { k =>
-    k(java.nio.file.Files.exists(path))
+    k(Files.exists(path))
   }
 
 }
 
-inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x)) 
+inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x))
