@@ -1,7 +1,7 @@
 package chester.utils.env
 
 enum Architecture {
-  case Arm, Arm64, X86, Amd64
+  case Arm, Arm64, X86, Amd64, Other
 }
 
 sealed trait OS {
@@ -28,6 +28,7 @@ object OS {
   case object Windows extends OS {
     def useCRLF: Boolean = true
   }
+  case object Other extends OS
 }
 
 sealed trait RunningOn
