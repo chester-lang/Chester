@@ -12,6 +12,7 @@ import scala.scalajs.js.typedarray.{Int8Array, Uint8Array}
 
 case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
   type P = String
+
   def errorFilter(e: Throwable) = e.isInstanceOf[JavaScriptException]
 
   def pathOps = PathOpsString
@@ -22,11 +23,20 @@ case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
   }
 
   def write(path: P, content: Array[Byte], append: Boolean) = use { k =>
-    val result = Uint8Array.from(js.Array(content.map(x=>x.toShort)*))
-    if(append) {
+    val result = Uint8Array.from(js.Array(content.map(x => x.toShort) *))
+    if (append) {
       fsMod.appendFileSync(path, result)
     } else {
       fsMod.writeFileSync(path, result)
+    }
+    k(())
+  }
+
+  override def writeString(path: P, content: String, append: Boolean) = use { k =>
+    if (append) {
+      fsMod.appendFileSync(path, content)
+    } else {
+      fsMod.writeFileSync(path, content)
     }
     k(())
   }
@@ -47,12 +57,15 @@ case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
   def exists(path: P) = use { k =>
     k(fsMod.existsSync(path))
   }
+
   def createDirIfNotExists(path: P) = use { k =>
     if (!fsMod.existsSync(path)) {
       fsMod.mkdirSync(path)
     }
     k(())
   }
+
+  def downloadToFile(url: String, path: P) = ???
 }
 
 inline def nodeHandlerSync[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NodeHandlerSync[R]().handle(x => prog(using x))

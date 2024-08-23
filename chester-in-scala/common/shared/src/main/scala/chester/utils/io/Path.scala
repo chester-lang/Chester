@@ -60,6 +60,8 @@ trait FileOps {
   def exists(path: P): M[Boolean]
 
   def createDirIfNotExists(path: P): M[Unit]
+  
+  def downloadToFile(url: String, path: P): M[Unit]
 }
 
 object Files
@@ -109,6 +111,8 @@ trait FileOpsFree extends FileOps {
 
   case class Read(path: P) extends Op[String]
 
+  case class WriteString(path: P, content: String, append: Boolean) extends Op[Unit]
+
   case class Write(path: P, content: Array[Byte], append: Boolean) extends Op[Unit]
 
   case class RemoveWhenExists(path: P) extends Op[Boolean]
@@ -120,6 +124,8 @@ trait FileOpsFree extends FileOps {
   case class CreateDirIfNotExists(path: P) extends Op[Unit]
 
   def read(path: P): M[String] = liftF(Read(path))
+  
+  override def writeString(path: P, content: String, append: Boolean): M[Unit] = liftF(WriteString(path, content, append))
 
   def write(path: P, content: Array[Byte], append: Boolean): M[Unit] = liftF(Write(path, content, append))
 

@@ -6,6 +6,42 @@ import effekt.{Control, Handler}
 import java.io.{BufferedReader, BufferedWriter, FileReader, FileWriter, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.net.URL
+import java.nio.file.{Files, Path, StandardCopyOption}
+import java.io.IOException
+
+private object FileDownloader {
+
+  @throws[IOException]
+  def downloadFile(urlString: String, targetPath: Path): Unit = {
+    val tempFile = Files.createTempFile(targetPath.getParent, "temp-", ".tmp")
+
+    try {
+      val url = new URL(urlString)
+      val inputStream = url.openStream()
+
+      try {
+        // Download the file to a temporary location
+        Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
+
+        // Move the temporary file to the target location
+        Files.move(tempFile, targetPath, StandardCopyOption.REPLACE_EXISTING)
+      } finally {
+        inputStream.close()
+      }
+
+    } catch {
+      case e: IOException =>
+        // Clean up in case of failure
+        try {
+          Files.deleteIfExists(tempFile)
+        } catch {
+          case _: IOException =>
+        }
+        throw e // Rethrow the exception to indicate failure
+    }
+  }
+}
 
 trait NioOps extends FileOpsEff {
   type P = java.nio.file.Path
@@ -67,6 +103,10 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
     k(())
   }
 
+  def downloadToFile(url: String, path: P) = use { k =>
+    FileDownloader.downloadFile(url, path)
+    k(())
+  }
 }
 
 inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x))
