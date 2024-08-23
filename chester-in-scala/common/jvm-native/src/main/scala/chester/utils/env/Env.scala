@@ -18,7 +18,7 @@ val getOS: OS = {
   if (os.contains("win")) OS.Windows
   else if (os.contains("mac")) OS.Mac
   else if (os.contains("linux")) (if (isTermux) OS.Termux else OS.GNULinux)
-  else throw new Exception(s"Unknown OS: $os")
+  else OS.Other
 }
 val getArch: Architecture = {
   System.getProperty("os.arch").toLowerCase match {
@@ -26,6 +26,6 @@ val getArch: Architecture = {
     case "x86" | "i386" => Architecture.X86
     case "arm" => Architecture.Arm
     case "aarch64" => Architecture.Arm64
-    case _ => throw new Exception(s"Unknown architecture: ${System.getProperty("os.arch")}")
+    case _ => Architecture.Other
   }
 }
