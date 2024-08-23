@@ -61,9 +61,9 @@ jobs:
           ~/.sbt
           ~/.coursier
           ~/.cache/coursier
-        key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
+        key: ${{ matrix.os }}-sbt-${{ hashFiles('**/*.sbt') }}
         restore-keys: |
-          ${{ runner.os }}-sbt-
+          ${{ matrix.os }}-sbt-
 
     - name: Cache SBT for Windows
       if: runner.os == 'Windows'

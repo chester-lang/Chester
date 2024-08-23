@@ -70,9 +70,9 @@ jobs:
           ~/.sbt
           ~/.coursier
           ~/.cache/coursier
-        key: sbt-${{ runner.os }}-${{ matrix.jdk_distribution }}-${{ matrix.jdk_version }}-${{ hashFiles('**/*.sbt') }}
+        key: sbt-${{ matrix.os }}-${{ env.JDK_DISTRIBUTION }}-${{ env.JDK_VERSION }}-${{ hashFiles('**/*.sbt') }}
         restore-keys: |
-          sbt-${{ runner.os }}-${{ matrix.jdk_distribution }}-${{ matrix.jdk_version }}-
+          sbt-${{ matrix.os }}-${{ env.JDK_DISTRIBUTION }}-${{ env.JDK_VERSION }}-
 
     - name: SBT Clean
       working-directory: chester-in-scala
