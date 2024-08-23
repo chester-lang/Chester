@@ -86,7 +86,13 @@ record1: AnonymousRecordType = {
 }
 
 extension [T](xs: List[T]) {
-  // & denotes a second class function that won't leave the scope. Nonlocal returns and additional algebraic effects can be used in a second class function
+  // & denotes a second class type that won't leave the scope. Nonlocal returns and additional algebraic effects can be used in a second class function. original idea: Brachthäuser and Schuster (2017)
   def map[U](f: & T -> U): List[U] = ?todo;
 }
+```
+
+## Reference
+
+```
+Brachthäuser, J. I., & Schuster, P. (2017). Effekt: Extensible algebraic effects in Scala (short paper). Proceedings of the 8th ACM SIGPLAN International Symposium on Scala (SCALA 2017), 67–72. https://doi.org/10.1145/3136000.3136007
 ```
