@@ -131,7 +131,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     graalvmSettings,
     libraryDependencies ++= Seq(
       // https://github.com/jline/jline3/issues/954
-      "org.jline" % "jline" % (if(graalvm17) "3.24.1" else "3.26.2"),
+      "org.jline" % "jline" % "3.26.2",
     )
   )
   .jsSettings(
