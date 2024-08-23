@@ -29,6 +29,7 @@ implicit object PathOpsString extends PathOps[String] {
 }
 
 implicit def summonPathOps[F <: FileOps](using fileOps: F): PathOps[fileOps.P] = fileOps.pathOps
+implicit def summonMonad[F <: FileOps](using fileOps: F): Monad[fileOps.M] = fileOps.m
 
 object Path {
   def of[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
@@ -37,6 +38,8 @@ object Path {
 trait FileOps {
   type P
   type M[_]
+
+  def m: Monad[M]
 
   def pathOps: PathOps[P]
 
@@ -53,14 +56,29 @@ trait FileOps {
   def exists(path: P): M[Boolean]
 }
 
+implicit object MonadControl extends Monad[Control] {
+  override def pure[A](a: A): Control[A] = effekt.pure(a)
+
+  override def flatMap[A, B](fa: Control[A])(f: A => Control[B]): Control[B] = fa.flatMap(f)
+
+  override def tailRecM[A, B](a: A)(f: A => Control[Either[A, B]]): Control[B] = f(a).flatMap {
+    case Left(a) => tailRecM(a)(f)
+    case Right(b) => pure(b)
+  }
+}
+
 trait FileOpsEff extends FileOps {
   type M[x] = Control[x]
+
+  def m = MonadControl
 }
 
 trait FileOpsFree extends FileOps {
   sealed trait Op[A]
 
-  type M[x] = Op[x]
+  type M[x] = Free[Op, x]
+
+  def m = implicitly
 
   case class Read(path: P) extends Op[String]
 
@@ -74,15 +92,15 @@ trait FileOpsFree extends FileOps {
 
   case class Exists(path: P) extends Op[Boolean]
 
-  def read(path: P): M[String] = Read(path)
+  def read(path: P): M[String] = liftF(Read(path))
 
-  def write(path: P, content: String): M[Unit] = Write(path, content)
+  def write(path: P, content: String): M[Unit] = liftF(Write(path, content))
 
-  def append(path: P, content: String): M[Unit] = Append(path, content)
+  def append(path: P, content: String): M[Unit] = liftF(Append(path, content))
 
-  def removeWhenExists(path: P): M[Boolean] = RemoveWhenExists(path)
+  def removeWhenExists(path: P): M[Boolean] = liftF(RemoveWhenExists(path))
 
-  def getHomeDir: M[P] = GetHomeDir
+  def getHomeDir: M[P] = liftF(GetHomeDir)
 
-  def exists(path: P): M[Boolean] = Exists(path)
+  def exists(path: P): M[Boolean] = liftF(Exists(path))
 }
