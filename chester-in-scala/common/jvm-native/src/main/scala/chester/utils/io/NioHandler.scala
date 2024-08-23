@@ -3,7 +3,7 @@ package chester.utils.io
 import effekt.effects.Exc
 import effekt.{Control, Handler}
 
-import java.io.{IOException, BufferedReader, BufferedWriter, FileReader, FileWriter}
+import java.io.{BufferedReader, BufferedWriter, FileReader, FileWriter, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}
 
@@ -20,6 +20,8 @@ trait NioOps extends FileOpsEff {
 }
 
 case class NioHandler[R]() extends Handler[R] with NioOps {
+  def errorFilter(e: Throwable) = e.isInstanceOf[IOException]
+
   def read(path: P) = use { k =>
     val content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8)
     k(content)
@@ -61,6 +63,13 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
 
   def exists(path: P) = use { k =>
     k(Files.exists(path))
+  }
+
+  def createDirIfNotExists(path: P) = use { k =>
+    if (!Files.exists(path)) {
+      Files.createDirectories(path)
+    }
+    k(())
   }
 
 }

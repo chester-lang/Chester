@@ -6,8 +6,11 @@ import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod
 import typings.node.osMod
 
+import scala.scalajs.js.JavaScriptException
+
 case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
   type P = String
+  def errorFilter(e: Throwable) = e.isInstanceOf[JavaScriptException]
 
   def pathOps = PathOpsString
 
@@ -41,6 +44,12 @@ case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
 
   def exists(path: P) = use { k =>
     k(fsMod.existsSync(path))
+  }
+  def createDirIfNotExists(path: P) = use { k =>
+    if (!fsMod.existsSync(path)) {
+      fsMod.mkdirSync(path)
+    }
+    k(())
   }
 }
 

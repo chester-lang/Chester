@@ -6,6 +6,10 @@ enum Architecture {
 
 sealed trait OS {
   def useCRLF: Boolean
+  def isUNIX: Boolean = this match {
+    case _: OS.UNIX => true
+    case _          => false
+  }
 }
 
 object OS {

@@ -20,6 +20,8 @@ extension [T](p: T)(using ops: PathOps[T]) {
   def /(p2: T): T = ops.join(p, p2)
 }
 
+implicit def stringToPath[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
+
 implicit object PathOpsString extends PathOps[String] {
   def of(path: String): String = path
 
@@ -41,6 +43,8 @@ trait FileOps {
 
   def m: Monad[M]
 
+  def catchErrors[A](eff: => M[A]): M[Either[Throwable, A]]
+
   def pathOps: PathOps[P]
 
   def read(path: P): M[String]
@@ -54,6 +58,20 @@ trait FileOps {
   def getHomeDir: M[P]
 
   def exists(path: P): M[Boolean]
+
+  def createDirIfNotExists(path: P): M[Unit]
+}
+
+object Files
+
+extension (_files: Files.type)(using fileOps: FileOps) {
+  def read(path: fileOps.P): fileOps.M[String] = fileOps.read(path)
+  def write(path: fileOps.P, content: String): fileOps.M[Unit] = fileOps.write(path, content)
+  def append(path: fileOps.P, content: String): fileOps.M[Unit] = fileOps.append(path, content)
+  def removeWhenExists(path: fileOps.P): fileOps.M[Boolean] = fileOps.removeWhenExists(path)
+  def getHomeDir: fileOps.M[fileOps.P] = fileOps.getHomeDir
+  def exists(path: fileOps.P): fileOps.M[Boolean] = fileOps.exists(path)
+  def createDirIfNotExists(path: fileOps.P): fileOps.M[Unit] = fileOps.createDirIfNotExists(path)
 }
 
 implicit object MonadControl extends Monad[Control] {
@@ -71,6 +89,15 @@ trait FileOpsEff extends FileOps {
   type M[x] = Control[x]
 
   def m = MonadControl
+
+  def errorFilter(e: Throwable): Boolean
+  def catchErrors[A](eff: => M[A]): M[Either[Throwable, A]] = eff map { a => Right(a) } _catch {
+    case e if errorFilter(e) => effekt.pure(Left(e))
+  }
+}
+
+extension [A, M[_]](x: M[A])(using fileOps: FileOps, ev: M[A] =:= fileOps.M[A]) {
+  def catchErrors: fileOps.M[Either[Throwable, A]] = fileOps.catchErrors(x)
 }
 
 trait FileOpsFree extends FileOps {
@@ -92,6 +119,8 @@ trait FileOpsFree extends FileOps {
 
   case class Exists(path: P) extends Op[Boolean]
 
+  case class CreateDirIfNotExists(path: P) extends Op[Unit]
+
   def read(path: P): M[String] = liftF(Read(path))
 
   def write(path: P, content: String): M[Unit] = liftF(Write(path, content))
@@ -103,4 +132,6 @@ trait FileOpsFree extends FileOps {
   def getHomeDir: M[P] = liftF(GetHomeDir)
 
   def exists(path: P): M[Boolean] = liftF(Exists(path))
+
+  def createDirIfNotExists(path: P): M[Unit] = liftF(CreateDirIfNotExists(path))
 }
