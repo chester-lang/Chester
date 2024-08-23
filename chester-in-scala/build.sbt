@@ -3,13 +3,8 @@ import scala.scalanative.build.*
 
 val scala3Version = "3.5.0"
 
-val path2022 = Paths.get("C:\\Program Files\\Microsoft Visual Studio\\2022")
-val path2019 = Paths.get("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019")
-val path2022Exists = Files.exists(path2022)
-val path2019Exists = Files.exists(path2019)
-val graalvm17 = false // path2019Exists && !path2022Exists
-val graalVm = if(graalvm17) "graalvm-java17" else "graalvm-java22"
-val graalVersion = if(graalvm17) "17.0.9" else "22.0.2"
+val graalVm = "graalvm-java22"
+val graalVersion = "22.0.2"
 
 val nativeImageOption = Seq(
   "-H:-CheckToolchain",
