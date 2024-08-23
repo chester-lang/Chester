@@ -20,7 +20,7 @@ jobs:
             release_name: snapshot-windows
           - os: macos-14
             release_name: snapshot-macos
-          - os: macos-12
+          - os: macos-13
             release_name: snapshot-macos-intel
 
     env:
