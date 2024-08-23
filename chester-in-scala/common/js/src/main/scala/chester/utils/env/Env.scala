@@ -1,9 +1,10 @@
 package chester.utils.env
 
 import typings.node.osMod
+import typings.node.processMod
 import typings.node.processMod.global.NodeJS.Platform
 
-  lazy val getOS: OS = {
+  val getOS: OS = {
     val os = osMod.platform()
     if (os == Platform.win32) OS.Windows
     else if (os == Platform.darwin) OS.Mac
@@ -11,7 +12,7 @@ import typings.node.processMod.global.NodeJS.Platform
     else if (os == Platform.android) OS.Termux
     else throw new Exception(s"Unknown OS: $os")
   }
-  lazy val getArch: Architecture = {
+  val getArch: Architecture = {
     osMod.arch().toLowerCase match {
       case "x86_64" | "amd64" | "x64" => Architecture.Amd64
       case "x86" | "i386" => Architecture.X86
@@ -20,4 +21,4 @@ import typings.node.processMod.global.NodeJS.Platform
       case _ => throw new Exception(s"Unknown architecture: ${osMod.arch()}")
     }
   }
-  lazy val getRunningOn: RunningOn = RunningOn.Nodejs("")
+  val getRunningOn: RunningOn = RunningOn.Nodejs(processMod.^.version)
