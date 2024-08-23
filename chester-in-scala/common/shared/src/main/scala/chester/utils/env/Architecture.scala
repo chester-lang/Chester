@@ -28,7 +28,9 @@ object OS {
   case object Windows extends OS {
     def useCRLF: Boolean = true
   }
-  case object Other extends OS
+  case object Other extends OS {
+    def useCRLF: Boolean = false
+  }
 }
 
 sealed trait RunningOn
