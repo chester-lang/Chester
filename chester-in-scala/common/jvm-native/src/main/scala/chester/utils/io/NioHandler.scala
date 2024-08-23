@@ -43,7 +43,7 @@ private object FileDownloader {
   }
 }
 
-trait NioOps extends FileOpsEff {
+trait NioOps extends FileOpsEff1 {
   type P = java.nio.file.Path
 
   def pathOps: PathOps[P] = new PathOps[P] {

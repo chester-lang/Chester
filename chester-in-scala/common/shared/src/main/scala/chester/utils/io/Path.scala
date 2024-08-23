@@ -60,7 +60,7 @@ trait FileOps {
   def exists(path: P): M[Boolean]
 
   def createDirIfNotExists(path: P): M[Unit]
-  
+
   def downloadToFile(url: String, path: P): M[Unit]
 }
 
@@ -92,7 +92,11 @@ trait FileOpsEff extends FileOps {
 
   def m = MonadControl
 
+}
+
+trait FileOpsEff1 extends FileOpsEff {
   def errorFilter(e: Throwable): Boolean
+
   def catchErrors[A](eff: => M[A]): M[Either[Throwable, A]] = eff map { a => Right(a) } _catch {
     case e if errorFilter(e) => effekt.pure(Left(e))
   }
@@ -109,6 +113,8 @@ trait FileOpsFree extends FileOps {
 
   def m = implicitly
 
+  case class CatchErrors[A](body: M[A]) extends Op[Either[Throwable, A]]
+
   case class Read(path: P) extends Op[String]
 
   case class WriteString(path: P, content: String, append: Boolean) extends Op[Unit]
@@ -122,9 +128,13 @@ trait FileOpsFree extends FileOps {
   case class Exists(path: P) extends Op[Boolean]
 
   case class CreateDirIfNotExists(path: P) extends Op[Unit]
+  
+  case class DownloadToFile(url: String, path: P) extends Op[Unit]
+  
+  override def catchErrors[A](body: =>M[A]): M[Either[Throwable, A]] = liftF(CatchErrors(body))
 
   def read(path: P): M[String] = liftF(Read(path))
-  
+
   override def writeString(path: P, content: String, append: Boolean): M[Unit] = liftF(WriteString(path, content, append))
 
   def write(path: P, content: Array[Byte], append: Boolean): M[Unit] = liftF(Write(path, content, append))
@@ -136,4 +146,6 @@ trait FileOpsFree extends FileOps {
   def exists(path: P): M[Boolean] = liftF(Exists(path))
 
   def createDirIfNotExists(path: P): M[Unit] = liftF(CreateDirIfNotExists(path))
+  
+  def downloadToFile(url: String, path: P): M[Unit] = liftF(DownloadToFile(url, path))
 }
