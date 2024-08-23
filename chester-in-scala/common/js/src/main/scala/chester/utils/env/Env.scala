@@ -16,8 +16,8 @@ import typings.node.processMod.global.NodeJS.Platform
       case "x86_64" | "amd64" => Architecture.Amd64
       case "x86" | "i386" => Architecture.X86
       case "arm" => Architecture.Arm
-      case "aarch64" => Architecture.Arm64
-      case _ => throw new Exception(s"Unknown architecture: ${System.getProperty("os.arch")}")
+      case "aarch64" | "arm64" => Architecture.Arm64
+      case _ => throw new Exception(s"Unknown architecture: ${osMod.arch()}")
     }
   }
   lazy val getRunningOn: RunningOn = RunningOn.Nodejs("")
