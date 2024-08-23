@@ -7,6 +7,7 @@ import chester.syntax.concrete.Expr
 import chester.syntax.core._
 import chester.tyck._
 import fansi.*
+import chester.utils.env
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,6 +32,7 @@ class REPLEngine(terminalFactory: CLIRunner) {
   def start(): Unit = {
     println("Welcome to the Chester REPL!")
     println("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
+    println(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
     terminalFactory.exec(runREPL.flatMap(_ => CLI.close))
   }
 
