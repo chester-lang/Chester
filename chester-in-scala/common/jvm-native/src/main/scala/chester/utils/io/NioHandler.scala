@@ -27,22 +27,17 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
     k(content)
   }
 
-  def write(path: P, content: String) = use { k =>
-    val writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-    try {
-      writer.write(content)
-    } finally {
-      writer.close()
+  def write(path: P, content: Array[Byte], append: Boolean) = use { k =>
+    val options = if (append) {
+      Array(StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+    } else {
+      Array(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
     }
-    k(())
-  }
-
-  def append(path: P, content: String) = use { k =>
-    val writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND)
+    val outputStream = Files.newOutputStream(path, options: _*)
     try {
-      writer.write(content)
+      outputStream.write(content)
     } finally {
-      writer.close()
+      outputStream.close()
     }
     k(())
   }

@@ -6,7 +6,9 @@ import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod
 import typings.node.osMod
 
+import scala.scalajs.js
 import scala.scalajs.js.JavaScriptException
+import scala.scalajs.js.typedarray.{Int8Array, Uint8Array}
 
 case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
   type P = String
@@ -19,13 +21,13 @@ case class NodeHandlerSync[R]() extends Handler[R] with FileOpsEff {
     k(content)
   }
 
-  def write(path: P, content: String) = use { k =>
-    fsMod.writeFileSync(path, content)
-    k(())
-  }
-
-  def append(path: P, content: String) = use { k =>
-    fsMod.appendFileSync(path, content)
+  def write(path: P, content: Array[Byte], append: Boolean) = use { k =>
+    val result = Uint8Array.from(js.Array(content.map(x=>x.toShort)*))
+    if(append) {
+      fsMod.appendFileSync(path, result)
+    } else {
+      fsMod.writeFileSync(path, result)
+    }
     k(())
   }
 

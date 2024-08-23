@@ -49,9 +49,9 @@ trait FileOps {
 
   def read(path: P): M[String]
 
-  def write(path: P, content: String): M[Unit]
+  def writeString(path: P, content: String, append: Boolean = false): M[Unit] = write(path, content.getBytes, append)
 
-  def append(path: P, content: String): M[Unit]
+  def write(path: P, content: Array[Byte], append: Boolean = false): M[Unit]
 
   def removeWhenExists(path: P): M[Boolean]
 
@@ -66,8 +66,8 @@ object Files
 
 extension (_files: Files.type)(using fileOps: FileOps) {
   def read(path: fileOps.P): fileOps.M[String] = fileOps.read(path)
-  def write(path: fileOps.P, content: String): fileOps.M[Unit] = fileOps.write(path, content)
-  def append(path: fileOps.P, content: String): fileOps.M[Unit] = fileOps.append(path, content)
+  def write(path: fileOps.P, content: Array[Byte], append: Boolean = false): fileOps.M[Unit] = fileOps.write(path, content, append)
+  def writeString(path: fileOps.P, content: String, append: Boolean = false): fileOps.M[Unit] = fileOps.writeString(path, content, append)
   def removeWhenExists(path: fileOps.P): fileOps.M[Boolean] = fileOps.removeWhenExists(path)
   def getHomeDir: fileOps.M[fileOps.P] = fileOps.getHomeDir
   def exists(path: fileOps.P): fileOps.M[Boolean] = fileOps.exists(path)
@@ -109,9 +109,7 @@ trait FileOpsFree extends FileOps {
 
   case class Read(path: P) extends Op[String]
 
-  case class Write(path: P, content: String) extends Op[Unit]
-
-  case class Append(path: P, content: String) extends Op[Unit]
+  case class Write(path: P, content: Array[Byte], append: Boolean) extends Op[Unit]
 
   case class RemoveWhenExists(path: P) extends Op[Boolean]
 
@@ -123,9 +121,7 @@ trait FileOpsFree extends FileOps {
 
   def read(path: P): M[String] = liftF(Read(path))
 
-  def write(path: P, content: String): M[Unit] = liftF(Write(path, content))
-
-  def append(path: P, content: String): M[Unit] = liftF(Append(path, content))
+  def write(path: P, content: Array[Byte], append: Boolean): M[Unit] = liftF(Write(path, content, append))
 
   def removeWhenExists(path: P): M[Boolean] = liftF(RemoveWhenExists(path))
 
