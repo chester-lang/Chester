@@ -12,6 +12,8 @@ sealed trait OS {
   }
 }
 
+val isUNIX = getOS.isUNIX
+
 object OS {
   sealed trait UNIX extends OS {
     def useCRLF: Boolean = false

@@ -107,6 +107,19 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
     FileDownloader.downloadFile(url, path)
     k(())
   }
+  
+  def chmodExecutable(path: P) = use { k =>
+    val perms = Files.getPosixFilePermissions(path)
+    perms.add(java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)
+    perms.add(java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE)
+    perms.add(java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE)
+    Files.setPosixFilePermissions(path, perms)
+    k(())
+  }
+  
+  def getAbsolutePath(path: P) = use { k =>
+    k(path.toAbsolutePath)
+  }
 }
 
 inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x))

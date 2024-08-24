@@ -62,6 +62,9 @@ trait FileOps {
   def createDirIfNotExists(path: P): M[Unit]
 
   def downloadToFile(url: String, path: P): M[Unit]
+  
+  def chmodExecutable(path: P): M[Unit]
+  def getAbsolutePath(path: P): M[P]
 }
 
 object Files
@@ -74,6 +77,9 @@ extension (_files: Files.type)(using fileOps: FileOps) {
   def getHomeDir: fileOps.M[fileOps.P] = fileOps.getHomeDir
   def exists(path: fileOps.P): fileOps.M[Boolean] = fileOps.exists(path)
   def createDirIfNotExists(path: fileOps.P): fileOps.M[Unit] = fileOps.createDirIfNotExists(path)
+  def downloadToFile(url: String, path: fileOps.P):fileOps.M[Unit] = fileOps.downloadToFile(url,path)
+  def chmodExecutable(path: fileOps.P): fileOps.M[Unit] = fileOps.chmodExecutable(path)
+  def getAbsolutePath(path: fileOps.P): fileOps.M[fileOps.P] = fileOps.getAbsolutePath(path)
 }
 
 implicit object MonadControl extends Monad[Control] {
@@ -131,6 +137,9 @@ trait FileOpsFree extends FileOps {
   
   case class DownloadToFile(url: String, path: P) extends Op[Unit]
   
+  case class ChmodExecutable(path: P) extends Op[Unit]
+  case class GetAbsolutePath(path: P) extends Op[P]
+  
   override def catchErrors[A](body: =>M[A]): M[Either[Throwable, A]] = liftF(CatchErrors(body))
 
   def read(path: P): M[String] = liftF(Read(path))
@@ -148,4 +157,7 @@ trait FileOpsFree extends FileOps {
   def createDirIfNotExists(path: P): M[Unit] = liftF(CreateDirIfNotExists(path))
   
   def downloadToFile(url: String, path: P): M[Unit] = liftF(DownloadToFile(url, path))
+  
+  def chmodExecutable(path: P): M[Unit] = liftF(ChmodExecutable(path))
+  def getAbsolutePath(path: P): M[P] = liftF(GetAbsolutePath(path))
 }
