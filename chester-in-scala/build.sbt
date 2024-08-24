@@ -139,9 +139,6 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
     libraryDependencies ++= Seq(
     ),
-    Compile / npmDependencies ++= Seq(
-      "@types/node" -> "22.3.0"
-    ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -168,6 +165,8 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   .jvmSettings(
     nativeImageOutput := file("target") / "chesterup",
     graalvmSettings,
+  ).jsSettings(
+    scalaJSUseMainModuleInitializer := true
   )
 
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)

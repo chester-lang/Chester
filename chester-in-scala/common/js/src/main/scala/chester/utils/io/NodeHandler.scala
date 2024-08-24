@@ -2,10 +2,8 @@ package chester.utils.io
 
 import cats.*
 import cats.free.*
-import cats.free.Free.*
 import cats.instances.future.*
 import effekt.{Control, Handler}
-import typings.node.anon.EncodingFlag
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
 import typings.node.{fsMod, fsPromisesMod, osMod}
@@ -14,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.scalajs.js.JavaScriptException
 import scala.scalajs.js.Thenable.Implicits.*
-import scala.scalajs.js.typedarray.{Int8Array, Uint8Array}
+import scala.scalajs.js.typedarray.Uint8Array
 
 object NodeFileOpsFree extends FileOpsFree {
   type P = String
@@ -97,9 +95,13 @@ def nodeCompile0[R](prog: FileOpsEff ?=> Control[R])(implicit ec: ExecutionConte
     k => effekt.pure(NodeFileOpsFree.downloadToFile(url, path).flatMap(x => k(x).run()))
   }
 
-  def chmodExecutable(path: P) = ???
+  def chmodExecutable(path: P) = use {
+    k => effekt.pure(NodeFileOpsFree.chmodExecutable(path).flatMap(x => k(x).run()))
+  }
 
-  def getAbsolutePath(path: P) = ???
+  def getAbsolutePath(path: P) = use {
+    k => effekt.pure(NodeFileOpsFree.getAbsolutePath(path).flatMap(x => k(x).run()))
+  }
 }.handle((a: FileOpsEff) => prog(using a).map(x => Free.pure(x))).run()
 
 
