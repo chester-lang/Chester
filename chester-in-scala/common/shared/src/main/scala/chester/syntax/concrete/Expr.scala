@@ -43,6 +43,7 @@ sealed trait Expr extends WithPos with ToDoc {
   // Shouldn't use this.type
   protected final inline def thisOr(inline x: Expr): this.type = reuse(this, x.asInstanceOf[this.type])
 
+  /** Every Expr has meta to trace compile time errors type checking errors */
   def meta: Option[ExprMeta]
 
   def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr

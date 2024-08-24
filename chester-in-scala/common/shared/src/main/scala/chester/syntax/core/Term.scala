@@ -32,6 +32,9 @@ sealed trait TermWithMeta extends Term with WithPos {
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 }
 
+/** CallTerm has meta to trace runtime errors and debug */
+sealed trait CallTerm extends TermWithMeta
+
 sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 }
@@ -267,7 +270,7 @@ case class LocalVar(id: Id, ty: Term, varId: VarId) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
-case class ResolvedIdenifier(module: QualifiedIDString, Id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends Term {
+case class ResolvedIdenifierCall(module: QualifiedIDString, Id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends CallTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
 }
 
