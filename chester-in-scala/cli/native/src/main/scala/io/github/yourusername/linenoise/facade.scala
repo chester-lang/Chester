@@ -9,7 +9,7 @@ object facade {
   private var completionCallback: Option[(String, List[String]) => Unit] = None
   private var hintsCallback: Option[String => Option[(String, Int, Boolean)]] = None
 
-  def linenoise(prompt: String): Option[String] = Zone { implicit z =>
+  def linenoise(prompt: String): Option[String] = Zone {
     val cPrompt = toCString(prompt)
     val result = Linenoise.linenoise(cPrompt)
     if (result != null) {
@@ -21,17 +21,17 @@ object facade {
     }
   }
 
-  def linenoiseHistoryAdd(line: String): Int = Zone { implicit z =>
+  def linenoiseHistoryAdd(line: String): Int = Zone {
     Linenoise.linenoiseHistoryAdd(toCString(line))
   }
 
   def linenoiseHistorySetMaxLen(len: Int): Int = Linenoise.linenoiseHistorySetMaxLen(len)
 
-  def linenoiseHistorySave(filename: String): Int = Zone { implicit z =>
+  def linenoiseHistorySave(filename: String): Int = Zone {
     Linenoise.linenoiseHistorySave(toCString(filename))
   }
 
-  def linenoiseHistoryLoad(filename: String): Int = Zone { implicit z =>
+  def linenoiseHistoryLoad(filename: String): Int = Zone {
     Linenoise.linenoiseHistoryLoad(toCString(filename))
   }
 
@@ -42,7 +42,7 @@ object facade {
   def linenoiseSetCompletionCallback(callback: (String, List[String]) => Unit): Unit = {
     completionCallback = Some(callback)
     val cb: CFuncPtr2[CString, Ptr[Linenoise.linenoiseCompletions], Unit] =
-      (buf: CString, lc: Ptr[Linenoise.linenoiseCompletions]) => Zone { implicit z =>
+      (buf: CString, lc: Ptr[Linenoise.linenoiseCompletions]) => Zone {
         completionCallback.foreach { cb =>
           val bufStr = fromCString(buf)
           val completions = scala.collection.mutable.ListBuffer[String]()
@@ -58,7 +58,7 @@ object facade {
   def linenoiseSetHintsCallback(callback: String => Option[(String, Int, Boolean)]): Unit = {
     hintsCallback = Some(callback)
     val cb: CFuncPtr3[CString, Ptr[CInt], Ptr[CInt], CString] =
-      (buf: CString, colorPtr: Ptr[CInt], boldPtr: Ptr[CInt]) => Zone { implicit z =>
+      (buf: CString, colorPtr: Ptr[CInt], boldPtr: Ptr[CInt]) => Zone {
         hintsCallback.flatMap(cb => cb(fromCString(buf))) match {
           case Some((hintStr, hintColor, hintBold)) =>
             !colorPtr = hintColor

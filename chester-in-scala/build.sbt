@@ -18,8 +18,9 @@ val nativeImageOption = Seq(
 
 val commonSettings = Seq(
   scalaVersion := scala3Version,
-  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-  resolvers += Resolver.githubPackages("edadma", "readline"),
+  //githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+  //resolvers += Resolver.githubPackages("edadma", "readline"),
+  resolvers += "jitpack" at "https://jitpack.io"
 )
 val graalvmSettings = Seq(
   nativeImageVersion := graalVersion,
@@ -70,45 +71,44 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     assembly / assemblyJarName := "common.jar",
     commonSettings,
-    // spire: Blocking Scala Native 0.5
   )
   .jvmSettings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire" % "0.18.0",
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-free" % "2.12.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0"
-    ),
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % "24.0.2",
-    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq())
-  )
-  .jsSettings(
+    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0"
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
     ),
+  )
+  .jsSettings(
     Compile / npmDependencies ++= Seq(
       "@types/node" -> "22.3.0"
     ),
     //scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
-  )
-  .nativeSettings(
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "spire" % "0.18.0",
-      "com.lihaoyi" %%% "fansi" % "0.4.0",
-      "org.typelevel" %%% "cats-core" % "2.11.0",
-      "org.typelevel" %%% "cats-free" % "2.11.0",
-      "com.lihaoyi" %%% "fastparse" % "3.0.2",
-      "com.lihaoyi" %%% "pprint" % "0.8.1"
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-free" % "2.12.0",
+      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
     ),
+  )
+  .nativeSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
+    libraryDependencies ++= Seq(
+      "com.github.mio-19.spire"/*"org.typelevel"*/ %%% "spire" % "ab33cdcc16" cross(CrossVersion.for3Use2_13),
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
+      "org.typelevel" %%% "cats-core" % "2.12.0" cross(CrossVersion.for3Use2_13),
+      "org.typelevel" %%% "cats-free" % "2.12.0" cross(CrossVersion.for3Use2_13),
+      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
+    ),
   )
 
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
