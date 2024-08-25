@@ -6,7 +6,7 @@ import cats.instances.future.*
 import effekt.{Control, Handler}
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
-import typings.node.{fsMod, fsPromisesMod, osMod, pathMod}
+import typings.node.{fsMod, fsPromisesMod, osMod, pathMod, processMod}
 import typings.std.global.fetch
 
 import java.io.IOException
@@ -117,4 +117,20 @@ def nodeCompile0[R](prog: FileOpsEff ?=> Control[R])(implicit ec: ExecutionConte
 
 
 def nodeCompile[A](prog: NodeFileOpsFree.M[A])(implicit ec: ExecutionContext): Future[A] = prog.foldMap(nodeCompiler)
-def nodeCompile[A](prog: FileOpsEff ?=> Control[A])(implicit ec: ExecutionContext): Future[A] = nodeCompile(nodeCompile0(prog))
+def nodeCompileE[A](prog: FileOpsEff ?=> Control[A])(implicit ec: ExecutionContext): Future[A] = nodeCompile(nodeCompile0(prog))
+
+def nodeExecuteE[A](prog: FileOpsEff ?=> Control[A])(implicit ec: ExecutionContext): Unit = {
+  val future = nodeCompileE({e ?=> prog(using e)}).recover{e =>
+    e.printStackTrace()
+    processMod.^.exit(1)
+  }
+  ()
+}
+
+def nodeExecute[A](prog: NodeFileOpsFree.M[A])(implicit ec: ExecutionContext): Unit = {
+  val future = nodeCompile(prog).recover{e =>
+    e.printStackTrace()
+    processMod.^.exit(1)
+  }
+  ()
+}

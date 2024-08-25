@@ -1,18 +1,19 @@
 package chester.up
 
-import chester.utils.io._
+import cats.implicits.*
 import chester.utils.env
-import effekt.Control
-import cats.implicits._
+import chester.utils.io.*
 
 def update(using fileOps: FileOps): fileOps.M[Unit] = for {
   result <- uninstallAll.catchErrors
-  _ = if(result.isLeft) println(s"Failed to uninstall chester ${result.left.get}")
+  _ = if (result.isLeft) println(s"Failed to uninstall chester ${result.left.get}")
+  result <- installRecommended.catchErrors
+  _ = if (result.isLeft) println(s"Failed to install chester ${result.left.get}")
 } yield ()
 
 def getBaseDir(using fileOps: FileOps): fileOps.M[fileOps.P] = for {
   home <- Files.getHomeDir
-  binPath = if(env.isUNIX) home / ".local" / "bin" else home / ".local" / "bin"
+  binPath = if (env.isWindows) home / ".chester" / "bin" else home / ".local" / "bin"
   _ <- Files.createDirIfNotExists(binPath)
 } yield binPath
 def uninstallAll(using fileOps: FileOps): fileOps.M[Unit] = for {
@@ -25,29 +26,41 @@ def uninstallAll(using fileOps: FileOps): fileOps.M[Unit] = for {
 } yield ()
 
 def writeWrapper(unixSh: String, windowsBat: String)(using fileOps: FileOps): fileOps.M[Unit] =
-  if(env.isUNIX){
+  if (env.isUNIX) {
     for {
       binPath <- getBaseDir
-      _ <-Files.writeString(binPath / "chester", unixSh)
+      _ <- Files.writeString(binPath / "chester", unixSh)
       _ <- Files.chmodExecutable(binPath / "chester")
     } yield ()
-  } else {
+  } else if (env.isWindows) {
     for {
       binPath <- getBaseDir
       _ <- Files.writeString(binPath / "chester.bat", windowsBat)
     } yield ()
+  } else {
+    throw new IllegalStateException(s"Unsupported platform ${env.getOS}")
   }
 
 def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRecommended match {
   case Version.NodeJS => for {
     binPath <- getBaseDir
     js <- Files.getAbsolutePath(binPath / "chester.js")
-    _ <- Files.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.js",js)
+    _ <- Files.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.js", js)
     _ <- writeWrapper(
       s"""#!/bin/sh
-        |exec node ${js} "$$@""".stripMargin,
-    s"""@echo off
-        |node ${js} %*""".stripMargin)
+         |exec node ${js} "$$@""".stripMargin,
+      s"""@echo off
+         |node ${js} %*""".stripMargin)
+  } yield ()
+  case Version.Jar => for {
+    binPath <- getBaseDir
+    jar <- Files.getAbsolutePath(binPath / "chester.jar")
+    _ <- Files.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.jar", jar)
+    _ <- writeWrapper(
+      s"""#!/bin/sh
+         |exec java -jar ${jar} "$$@""".stripMargin,
+      s"""@echo off
+         |java -jar ${jar} %*""".stripMargin)
   } yield ()
   case _ => ???
 }

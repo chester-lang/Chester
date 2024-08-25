@@ -38,5 +38,6 @@ object Main {
 
   def runUpdate(): Unit = {
     println("Updating Chester...")
+    spawnUpdate()
   }
 }

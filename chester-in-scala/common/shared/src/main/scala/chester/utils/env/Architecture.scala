@@ -13,6 +13,7 @@ sealed trait OS {
 }
 
 val isUNIX = getOS.isUNIX
+val isWindows = getOS == OS.Windows
 
 object OS {
   sealed trait UNIX extends OS {

@@ -123,3 +123,5 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
 }
 
 inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x))
+
+inline def nioExecute[R](inline prog: FileOpsEff ?=> Control[R]): R = nioHandler[R](prog).run()
