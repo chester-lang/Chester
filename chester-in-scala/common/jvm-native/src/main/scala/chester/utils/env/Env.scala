@@ -18,6 +18,9 @@ val getOS: OS = {
   if (os.contains("win")) OS.Windows
   else if (os.contains("mac")) OS.Mac
   else if (os.contains("linux")) (if (isTermux) OS.Termux else OS.GNULinux)
+  else if (os.contains("freebsd")) OS.FreeBSD
+  else if (os.contains("openbsd")) OS.OpenBSD
+  else if (os.contains("netbsd")) OS.NetBSD
   else throw new Exception(s"Unknown OS: $os")
 }
 val getArch: Architecture = {

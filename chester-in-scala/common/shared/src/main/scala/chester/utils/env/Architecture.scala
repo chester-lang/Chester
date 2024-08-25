@@ -23,6 +23,10 @@ object OS {
   case object Mac extends UNIX
 
   sealed trait Linux extends UNIX
+  sealed trait BSD extends UNIX
+  case object FreeBSD extends BSD
+  case object OpenBSD extends BSD
+  case object NetBSD extends BSD
 
   case object GNULinux extends Linux
 
