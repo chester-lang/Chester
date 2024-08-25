@@ -8,9 +8,11 @@ implicit object DefaultTerminal extends Terminal[Id] {
     val terminal = new JLineTerminal
     try {
       block(using new InTerminal[Id] {
-        def readline(info: TerminalInfo): ReadLineResult = terminal.readLine(info)
+        @inline
+        inline def readline(info: TerminalInfo): ReadLineResult = terminal.readLine(info)
 
-        def getHistory: Seq[String] = terminal.getHistory
+        @inline
+        inline def getHistory: Seq[String] = terminal.getHistory
       })
     } finally {
       terminal.close()
