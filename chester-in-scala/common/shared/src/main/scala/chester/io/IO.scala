@@ -22,15 +22,17 @@ object IO {
   inline def println[F[_]](inline x: String)(using inline io: IO[F]): F[Unit] = io.println(x)
 }
 
-trait TerminalBlock[Effect[_[_]]] {
-  def apply[F[_]](using terminal: Terminal[F], eff: Effect[F]): F[Unit]
-}
-
-trait TerminalFactory[F[_], Effect[_[_]]] {
-  def runTerminal(init: TerminalInit, block: TerminalBlock[Effect])(using eff: Effect[F]): F[Unit]
-}
-
 trait Terminal[F[_]] {
+  def runTerminal[T](init: TerminalInit, block: InTerminal[F] ?=> F[T]): F[T]
+}
+
+object Terminal {
+  inline def runTerminal[F[_], T](inline init: TerminalInit)(inline block: InTerminal[F] ?=> F[T])(using inline terminal: Terminal[F]): F[T] =
+    terminal.runTerminal(init, block)
+}
+
+
+trait InTerminal[F[_]] {
   def readline(info: TerminalInfo): F[ReadLineResult]
 
   def getHistory: F[Seq[String]]

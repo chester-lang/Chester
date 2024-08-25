@@ -1,13 +1,9 @@
 package chester.repl
 
 import chester.parser.InputStatus.*
-import chester.parser.ParserEngine
 import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
-import org.jline.terminal.TerminalBuilder
-
-import scala.concurrent.Future
 class JLineTerminal {
   private val terminal = org.jline.terminal.TerminalBuilder.terminal()
   private val history = new org.jline.reader.impl.history.DefaultHistory()
