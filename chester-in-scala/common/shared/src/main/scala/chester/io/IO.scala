@@ -9,15 +9,16 @@ trait Spawn[F[_]] {
   def spawn(x: => F[Unit]): Unit
 }
 
-trait IO[F[_]] {
+trait Tryable[F[_]] {
   def doTry[T](IO: F[T]): F[Try[T]]
+}
 
+trait IO[F[_]] {
   def println(x: String): F[Unit]
-
 }
 
 object IO {
-  inline def doTry[F[_], T](inline IO: F[T])(using inline io: IO[F]): F[Try[T]] = io.doTry(IO)
+  inline def doTry[F[_], T](inline IO: F[T])(using inline tryable: Tryable[F]): F[Try[T]] = tryable.doTry(IO)
 
   inline def println[F[_]](inline x: String)(using inline io: IO[F]): F[Unit] = io.println(x)
 }

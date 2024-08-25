@@ -28,10 +28,12 @@ implicit object DefaultSpawn extends Spawn[Id] {
   override inline def spawn(x: => Unit): Unit = x
 }
 
-implicit object DefaultIO extends IO[Id] {
+implicit object DefaultTryable extends Tryable[Id] {
   @inline
-  override inline def doTry[T](IO: T): Try[T] = Try(IO)
+  override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
+}
 
+implicit object DefaultIO extends IO[Id] {
   @inline
   override inline def println(x: String): Unit = Predef.println(x)
 }
