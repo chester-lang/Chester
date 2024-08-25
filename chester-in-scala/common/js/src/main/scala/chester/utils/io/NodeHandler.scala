@@ -6,8 +6,10 @@ import cats.instances.future.*
 import effekt.{Control, Handler}
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
-import typings.node.{fsMod, fsPromisesMod, osMod}
+import typings.node.{fsMod, fsPromisesMod, osMod, pathMod}
+import typings.std.global.fetch
 
+import java.io.IOException
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.scalajs.js.JavaScriptException
@@ -47,7 +49,16 @@ def nodeCompiler(implicit
     case NodeFileOpsFree.GetHomeDir => Future.successful(osMod.homedir())
     case NodeFileOpsFree.Exists(path) => Future.successful(fsMod.existsSync(path))
     case NodeFileOpsFree.CreateDirIfNotExists(path) => fsPromisesMod.mkdir(path, MakeDirectoryOptions().setRecursive(true)).map(_ => ())
-    case NodeFileOpsFree.DownloadToFile(url, path) => ???
+    case NodeFileOpsFree.DownloadToFile(url, path) => for {
+      fetched <- fetch(url).toFuture
+      read <- if fetched.ok then
+        fetched.arrayBuffer().toFuture
+      else
+        Future.failed(new IOException(s"Failed to fetch $url"))
+      _ <- fsPromisesMod.writeFile(path, new Uint8Array(read))
+    } yield ()
+    case NodeFileOpsFree.ChmodExecutable(path) => fsPromisesMod.chmod(path, "755")
+    case NodeFileOpsFree.GetAbsolutePath(path) => Future.successful(pathMod.resolve(path))
   }
 }
 
