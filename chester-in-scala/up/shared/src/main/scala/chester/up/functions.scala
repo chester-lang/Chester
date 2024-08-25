@@ -81,6 +81,7 @@ def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRec
       binPath <- getBaseDir
       exe <- Files.getAbsolutePath(binPath / path)
       _ <- Files.downloadToFile(url, exe)
+      _ <- Files.chmodExecutable(exe)
     } yield ()
   }
 }
