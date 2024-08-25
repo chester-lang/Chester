@@ -41,6 +41,13 @@ def writeWrapper(unixSh: String, windowsBat: String)(using fileOps: FileOps): fi
     throw new IllegalStateException(s"Unsupported platform ${env.getOS}")
   }
 
+object URLs {
+  val windows = "https://github.com/chester-lang/chester/releases/download/snapshot-windows/chester.exe"
+  val macX64 = "https://github.com/chester-lang/chester/releases/download/snapshot-macos-intel/chester"
+  val macArm64 = "https://github.com/chester-lang/chester/releases/download/snapshot-macos/chester"
+  val linuxX64 = "https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester"
+}
+
 def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRecommended match {
   case Version.NodeJS => for {
     binPath <- getBaseDir
@@ -62,5 +69,18 @@ def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRec
       s"""@echo off
          |java -jar ${jar} %*""".stripMargin)
   } yield ()
-  case _ => ???
+  case version: Version.NativeImage => {
+    val path = if (version == Version.NativeImage.WindowsAmd64) "chester.exe" else "chester"
+    val url = version match {
+      case Version.NativeImage.WindowsAmd64 => URLs.windows
+      case Version.NativeImage.MacAmd64 => URLs.macX64
+      case Version.NativeImage.LinuxAmd64 => URLs.linuxX64
+      case Version.NativeImage.MacArm64 => URLs.macArm64
+    }
+    for {
+      binPath <- getBaseDir
+      exe <- Files.getAbsolutePath(binPath / path)
+      _ <- Files.downloadToFile(url, exe)
+    } yield ()
+  }
 }
