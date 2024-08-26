@@ -48,7 +48,7 @@ object URLs {
   val linuxX64 = "https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester"
 }
 
-def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRecommended match {
+def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRecommended(describe=true) match {
   case Version.NodeJS => for {
     binPath <- getBaseDir
     js <- Files.getAbsolutePath(binPath / "chester.js")
