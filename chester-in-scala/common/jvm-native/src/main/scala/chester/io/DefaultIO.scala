@@ -27,16 +27,18 @@ implicit object DefaultRunner extends Runner[Id] {
   override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
 }
 
+object DefaultPathOps extends PathOps[java.nio.file.Path] {
+  override inline def of(path: String): java.nio.file.Path = Paths.get(path)
+
+  override inline def join(p1: java.nio.file.Path, p2: java.nio.file.Path): java.nio.file.Path = p1.resolve(p2)
+
+  override inline def asString(p: java.nio.file.Path): String = p.toString
+}
+
 implicit object DefaultIO extends IO[Id] {
   type Path = java.nio.file.Path
 
-  override inline def pathOps = new PathOps[Path] {
-    def of(path: String): Path = Paths.get(path)
-
-    def join(p1: Path, p2: Path): Path = p1.resolve(p2)
-
-    def asString(p: Path): String = p.toString
-  }
+  override inline def pathOps = DefaultPathOps
 
   override inline def println(x: String): Unit = Predef.println(x)
 

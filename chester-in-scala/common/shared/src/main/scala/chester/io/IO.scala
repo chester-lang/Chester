@@ -12,6 +12,11 @@ trait Runner[F[_]] extends Monad[F] {
   def doTry[T](IO: F[T]): F[Try[T]]
 }
 
+extension [F[_], A](m: F[A])(using runner: Runner[F]) {
+  inline def flatMap[B](inline f: A => F[B]): F[B] = runner.flatMap(m)(f)
+  inline def map[B](inline f: A => B): F[B] = runner.map(m)(f)
+}
+
 implicit inline def summonPathOpsFromIO[F[_]](using io: IO[F]): PathOps[io.Path] = io.pathOps
 
 trait IO[F[_]] {
