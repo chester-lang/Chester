@@ -60,7 +60,7 @@ class NodejsSimpleTerminal(init: TerminalInit) {
               currentInputs = ""
               Future.successful(result)
             case Incomplete =>
-              loop(info.continuationPrompt) // continue with continuation prompt
+              loop(info.continuationPrompt.render) // continue with continuation prompt
             case Error(message) =>
               currentInputs = ""
               Future.successful(StatusError(message))
@@ -69,7 +69,7 @@ class NodejsSimpleTerminal(init: TerminalInit) {
       }
     }
 
-    loop(info.defaultPrompt)
+    loop(info.defaultPrompt.render)
   }
 
   def close(): Unit = {

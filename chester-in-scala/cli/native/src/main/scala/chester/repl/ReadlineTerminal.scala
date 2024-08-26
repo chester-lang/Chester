@@ -39,7 +39,7 @@ class ReadlineTerminal  {
     var currentInputs: String = ""
 
     while (continue) {
-      val line = readline(prompt)
+      val line = readline(prompt.render)
 
       if (line == null) {
         continue = false

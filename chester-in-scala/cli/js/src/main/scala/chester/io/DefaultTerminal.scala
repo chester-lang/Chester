@@ -10,13 +10,13 @@ implicit object DefaultTerminal extends Terminal[Future] {
     val terminal = new NodejsSimpleTerminal(init)
     val future =
       block(using new InTerminal[Future] {
-        @inline
+        inline override def writeln(line: fansi.Str): Future[Unit] = Future.successful(println(line.render))
+
         inline override def readline(info: TerminalInfo): Future[ReadLineResult] = terminal.readLine(info)
 
-        @inline
         inline override def getHistory: Future[Seq[String]] = Future.successful(terminal.getHistory)
       })
-    future.transform {result =>
+    future.transform { result =>
       terminal.close()
       result
     }

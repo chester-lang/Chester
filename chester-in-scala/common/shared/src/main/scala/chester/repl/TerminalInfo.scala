@@ -6,7 +6,7 @@ import scala.concurrent.Future
 trait TerminalInfo {
   def checkInputStatus(input: String): InputStatus
 
-  def defaultPrompt: String
+  def defaultPrompt: fansi.Str
 
-  def continuationPrompt: String
+  def continuationPrompt: fansi.Str
 }

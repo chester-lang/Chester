@@ -32,10 +32,10 @@ class JLineTerminal(init: TerminalInit) {
 
     while (continue) {
       try {
-        var line = reader.readLine(prompt)
+        var line = reader.readLine(prompt.render)
         history.add(line)
         while (line.forall(_.isWhitespace)) {
-          line = reader.readLine(prompt)
+          line = reader.readLine(prompt.render)
           history.add(line)
         }
 

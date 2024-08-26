@@ -22,9 +22,9 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
   val terminalInfo = new TerminalInfo {
     override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
 
-    override def defaultPrompt: String = mainPrompt.render
+    override def defaultPrompt: fansi.Str = mainPrompt
 
-    override def continuationPrompt: String = continuationPrompt0.render
+    override def continuationPrompt: fansi.Str = continuationPrompt0
   }
   var count = 0
   // TODO: Add Out(n) to refer history evaluation
@@ -33,10 +33,10 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
   def Out: Judge = ??? // add to the environment of evaluation
 
   def startF: F[Unit] = {
-    println("Welcome to the Chester REPL!")
-    println("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
-    println(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
     Terminal.runTerminal(TerminalInit.Default) {
+      InTerminal.writeln("Welcome to the Chester REPL!")
+      InTerminal.writeln("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
+      InTerminal.writeln(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
       runREPL
     }
   }
@@ -49,13 +49,13 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
           case false => Runner.pure(())
         }
       case UserInterrupted =>
-        println("User interrupted the input. Continuing the REPL.")
+        InTerminal.writeln("User interrupted the input. Continuing the REPL.")
         runREPL
       case EndOfFile =>
-        println("End of input detected. Exiting REPL.")
+        InTerminal.writeln("End of input detected. Exiting REPL.")
         Runner.pure(())
       case chester.repl.StatusError(_) =>
-        println("Error reading input. Continuing the REPL.")
+        InTerminal.writeln("Error reading input. Continuing the REPL.")
         runREPL
     }
   }
@@ -63,13 +63,13 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
   private def processLine(line: String)(using interminal: InTerminal[F]): F[Boolean] = {
     line match {
       case "exit" | ":q" =>
-        println("Exiting REPL.")
+        InTerminal.writeln("Exiting REPL.")
         Runner.pure(false)
       case ":?" =>
-        println("Commands:")
-        println(":t <expr> - Check the type of an expression")
-        println(":q - Quit the REPL")
-        println("You can also just type any expression to evaluate it.")
+        InTerminal.writeln("Commands:")
+        InTerminal.writeln(":t <expr> - Check the type of an expression")
+        InTerminal.writeln(":q - Quit the REPL")
+        InTerminal.writeln("You can also just type any expression to evaluate it.")
         Runner.pure(true)
       case _ =>
         if (line.startsWith(":t ")) {
@@ -85,11 +85,11 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
     ParserEngine.parseInput(history, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
-          case TyckResult.Success(judge,_,_) => println(prettyPrintJudge(judge))
+          case TyckResult.Success(judge,_,_) => InTerminal.writeln(prettyPrintJudge(judge))
           case TyckResult.Failure(errors,_,_,_) => printErrors(errors)
         }
       case Left(error) =>
-        println(s"Parse Error: ${error.message}")
+        InTerminal.writeln(s"Parse Error: ${error.message}")
     }
     Runner.pure(())
   }
@@ -98,11 +98,11 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
     ParserEngine.parseInput(history, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
-          case TyckResult.Success(judge,_,_) => println(prettyPrintJudgeWellTyped(judge))
+          case TyckResult.Success(judge,_,_) => InTerminal.writeln(prettyPrintJudgeWellTyped(judge))
           case TyckResult.Failure(errors,_,_,_) => printErrors(errors)
         }
       case Left(error) =>
-        println(s"Parse Error: ${error.message}")
+        InTerminal.writeln(s"Parse Error: ${error.message}")
     }
     Runner.pure(())
   }
@@ -113,12 +113,12 @@ class REPLEngine[F[_]](using runner: Runner[F],terminal: Terminal[F]) {
     ExprTycker.synthesize(expr, initialState, initialCtx)
   }
 
-  private def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): Unit = {
+  private def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector())(using interminal: InTerminal[F]): Unit = {
     er.foreach(x => {
-      println(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false).render)
+      InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
     })
     wr.foreach(x => {
-      println(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false).render)
+      InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
     })
   }
 

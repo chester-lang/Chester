@@ -8,10 +8,10 @@ implicit object DefaultTerminal extends Terminal[Id] {
     val terminal = new SimpleTerminal(init)
     try {
       block(using new InTerminal[Id] {
-        @inline
+        inline def writeln(line: fansi.Str): Unit = println(line.render)
+
         inline def readline(info: TerminalInfo): ReadLineResult = terminal.readLine(info)
 
-        @inline
         inline def getHistory: Seq[String] = terminal.getHistory
       })
     } finally {
