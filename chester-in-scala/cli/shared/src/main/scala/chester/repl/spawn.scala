@@ -8,6 +8,6 @@ inline private def spawnREPLEngine0[F[_]]()(using inline runner: Runner[F], inli
   }
 }
 
-inline def spawnREPLEngine(): Unit = {
+def spawnREPLEngine(): Unit = {
   spawnREPLEngine0()
 }
