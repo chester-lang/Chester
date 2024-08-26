@@ -87,15 +87,3 @@ class ReadlineTerminal  {
 
   def getHistory: Seq[String] = history
 }
-
-object ReadlineCLIRunner extends CLIRunnerImpure {
-  def apply(init: TerminalInit): CLIHandlerImpure = {
-    val t = new ReadlineTerminal()
-    new CLIHandlerImpure {
-      override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
-      override def getHistory: Seq[String] = t.getHistory
-      override def close: Unit = t.close()
-    }
-  }
-}
-
