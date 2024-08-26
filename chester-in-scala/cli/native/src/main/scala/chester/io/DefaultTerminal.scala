@@ -1,11 +1,11 @@
 package chester.io
 
 import cats.Id
-import chester.repl.{JLineTerminal, ReadLineResult, TerminalInfo, TerminalInit}
+import chester.repl.{ReadLineResult, SimpleTerminal, TerminalInfo, TerminalInit}
 
 implicit object DefaultTerminal extends Terminal[Id] {
   def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
-    val terminal = new JLineTerminal(init)
+    val terminal = new SimpleTerminal(init)
     try {
       block(using new InTerminal[Id] {
         @inline

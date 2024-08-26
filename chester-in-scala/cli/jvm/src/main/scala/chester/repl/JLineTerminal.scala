@@ -4,7 +4,7 @@ import chester.parser.InputStatus.*
 import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
-class JLineTerminal {
+class JLineTerminal(init: TerminalInit) {
   private val terminal = org.jline.terminal.TerminalBuilder.terminal()
   private val history = new org.jline.reader.impl.history.DefaultHistory()
 
@@ -74,7 +74,7 @@ class JLineTerminal {
 
 object JLineCLIRunner extends CLIRunnerImpure {
   def apply(init: TerminalInit): CLIHandlerImpure = {
-    val t = new JLineTerminal()
+    val t = new JLineTerminal(init)
     new CLIHandlerImpure {
       override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
       override def getHistory: Seq[String] = t.getHistory

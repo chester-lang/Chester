@@ -7,7 +7,7 @@ import chester.parser.ParserEngine
 import scala.concurrent.Future
 import scala.io.StdIn
 
-class SimpleTerminal {
+class SimpleTerminal(init: TerminalInit) {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
@@ -55,7 +55,7 @@ class SimpleTerminal {
 
 object SimpleCLIRunner extends CLIRunnerImpure {
   def apply(init: TerminalInit): CLIHandlerImpure = {
-    val t = new SimpleTerminal()
+    val t = new SimpleTerminal(init)
     new CLIHandlerImpure {
       override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
       override def getHistory: Seq[String] = t.getHistory

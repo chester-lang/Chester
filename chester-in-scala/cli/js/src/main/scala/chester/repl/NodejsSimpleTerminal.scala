@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import scala.scalajs.js.Thenable.Implicits.*
 import scala.concurrent.{Future, Promise}
 
-class NodejsSimpleTerminal {
+class NodejsSimpleTerminal(init: TerminalInit) {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
 
@@ -82,7 +82,7 @@ class NodejsSimpleTerminal {
 
 object NodejsCLIRunner extends CLIRunnerMonad[Future] {
   def apply(init: TerminalInit): CLIHandler[Future] = {
-    val t = new NodejsSimpleTerminal()
+    val t = new NodejsSimpleTerminal(init)
     new CLIHandler[Future] {
       override def readline(info: TerminalInfo): Future[ReadLineResult] = t.readLine(info)
       override def getHistory: Future[Seq[String]] = Future.successful(t.getHistory)
