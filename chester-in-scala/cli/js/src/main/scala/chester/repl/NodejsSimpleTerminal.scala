@@ -1,18 +1,12 @@
 package chester.repl
 
-import chester.parser.InputStatus.*
-import chester.parser.ParserEngine
-import typings.node.{processMod, readlineMod, readlinePromisesMod}
+import chester.io.{AbstractInTerminal, Runner}
+import fansi.Str
+import typings.node.{processMod, readlineMod}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.scalajs.js.Thenable.Implicits.*
 import scala.concurrent.{Future, Promise}
 
-class NodejsSimpleTerminal(init: TerminalInit) {
-  private var history: Vector[String] = Vector()
-  private var currentInputs: String = ""
-
+class NodejsSimpleTerminal(init: TerminalInit)(using runner: Runner[Future]) extends AbstractInTerminal[Future] {
   private val rl = readlineMod.createInterface(processMod.^.stdin.asInstanceOf, processMod.^.stdout.asInstanceOf)
 
   private var live: Boolean = true
@@ -29,14 +23,14 @@ class NodejsSimpleTerminal(init: TerminalInit) {
     }
   }
 
-  rl.on("close", x=>closeCallback())
+  rl.on("close", x => closeCallback())
 
-  private def nodeReadLine(prompt: String): Future[String] = {
+  override def readALine(prompt: fansi.Str): Future[String] = {
     assert(reading == null)
     assert(live)
     val p = Promise[String]()
     reading = p
-    rl.question(prompt, { result =>
+    rl.question(prompt.render, { result =>
       assert(reading == p)
       reading = null
       p.success(result)
@@ -44,56 +38,12 @@ class NodejsSimpleTerminal(init: TerminalInit) {
     p.future
   }
 
-  def readLine(info: TerminalInfo): Future[ReadLineResult] = {
-    def loop(prompt: String): Future[ReadLineResult] = {
-      nodeReadLine(prompt).flatMap { line =>
-        if (line == null) {
-          Future.successful(EndOfFile)
-        } else if (line.forall(_.isWhitespace)) {
-          loop(prompt) // continue reading
-        } else {
-          currentInputs = if (currentInputs.isEmpty) line else s"$currentInputs\n$line"
-          ParserEngine.checkInputStatus(currentInputs) match {
-            case Complete =>
-              history = history :+ currentInputs
-              val result = LineRead(currentInputs)
-              currentInputs = ""
-              Future.successful(result)
-            case Incomplete =>
-              loop(info.continuationPrompt.render) // continue with continuation prompt
-            case Error(message) =>
-              currentInputs = ""
-              Future.successful(StatusError(message))
-          }
-        }
-      }
-    }
-
-    loop(info.defaultPrompt.render)
-  }
+  def initHistory: Future[Seq[String]] = Future.successful(initHistoryFromInit(init))
 
   def close(): Unit = {
     live = false
     rl.close()
   }
 
-  def getHistory: Seq[String] = history
-}
-
-object NodejsCLIRunner extends CLIRunnerMonad[Future] {
-  def apply(init: TerminalInit): CLIHandler[Future] = {
-    val t = new NodejsSimpleTerminal(init)
-    new CLIHandler[Future] {
-      override def readline(info: TerminalInfo): Future[ReadLineResult] = t.readLine(info)
-      override def getHistory: Future[Seq[String]] = Future.successful(t.getHistory)
-      override def close: Future[Unit] = Future.successful(t.close())
-    }
-  }
-  def spawn[T](x: => Future[T]): Unit = {
-    x.recover{e =>
-      e.printStackTrace()
-      processMod.^.exit(1)
-    }
-    ()
-  }
+  override def writeln(line: Str): Future[Unit] = Future.successful(println(line.render))
 }

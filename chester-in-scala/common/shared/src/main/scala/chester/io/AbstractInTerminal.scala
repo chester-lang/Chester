@@ -2,11 +2,15 @@ package chester.io
 
 import chester.parser.InputStatus.{Complete, Error, Incomplete}
 import chester.parser.ParserEngine
-import chester.repl.{EndOfFile, LineRead, ReadLineResult, StatusError, TerminalInfo}
+import chester.repl.*
 
-abstract class AbstractInTerminal[F[_]](initHistory: Seq[String])(using runner: Runner[F]) extends InTerminal[F] {
-  private var history: Vector[String] = initHistory.toVector
+abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTerminal[F] {
+  private var history: Vector[String] = Vector() // TODO: implement
   private var currentInputs: String = ""
+
+  def initHistoryFromInit(init: TerminalInit): Seq[String] = Nil // TODO: implement
+
+  def initHistory: F[Seq[String]]
 
   def readALine(prompt: fansi.Str): F[String]
 
