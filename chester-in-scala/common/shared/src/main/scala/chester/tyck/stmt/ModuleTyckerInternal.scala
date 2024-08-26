@@ -4,7 +4,7 @@ import chester.resolve.MacroExpander
 import chester.syntax.concrete.{ResolvingModule, ResolvingModules}
 import chester.error.*
 import chester.syntax.QualifiedIDString
-import chester.tyck.{Get, Getting, TyckState}
+import chester.tyck.{Get, TyckState}
 
 import scala.concurrent.Promise
 

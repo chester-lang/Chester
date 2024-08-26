@@ -71,6 +71,9 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     assembly / assemblyJarName := "common.jar",
     commonSettings,
+    libraryDependencies += "com.github.rssh" %% "dotty-cps-async" % "0.9.21",
+    autoCompilerPlugins := true,
+    addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21")
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -102,7 +105,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .nativeSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     libraryDependencies ++= Seq(
-      "com.github.mio-19.spire"/*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
+      "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
