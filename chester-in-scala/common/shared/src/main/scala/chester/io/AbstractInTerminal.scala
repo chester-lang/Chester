@@ -8,10 +8,9 @@ abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTermi
   private var history: Vector[String] = Vector() // TODO: implement
   private var currentInputs: String = ""
 
-  def initHistoryFromInit(init: TerminalInit): Seq[String] = Nil // TODO: implement
-
   def initHistory: F[Seq[String]]
 
+  /** String could be null means EOF */
   def readALine(prompt: fansi.Str): F[String]
 
   override def readline(info: TerminalInfo): F[ReadLineResult] = {

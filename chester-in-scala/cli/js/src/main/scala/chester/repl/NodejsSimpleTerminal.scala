@@ -1,12 +1,12 @@
 package chester.repl
 
-import chester.io.{AbstractInTerminal, Runner}
+import chester.io._
 import fansi.Str
 import typings.node.{processMod, readlineMod}
 
 import scala.concurrent.{Future, Promise}
 
-class NodejsSimpleTerminal(init: TerminalInit)(using runner: Runner[Future]) extends AbstractInTerminal[Future] {
+class NodejsSimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Future] {
   private val rl = readlineMod.createInterface(processMod.^.stdin.asInstanceOf, processMod.^.stdout.asInstanceOf)
 
   private var live: Boolean = true
@@ -38,7 +38,7 @@ class NodejsSimpleTerminal(init: TerminalInit)(using runner: Runner[Future]) ext
     p.future
   }
 
-  def initHistory: Future[Seq[String]] = Future.successful(initHistoryFromInit(init))
+  def initHistory: Future[Seq[String]] = Future.successful(Vector())
 
   def close(): Unit = {
     live = false

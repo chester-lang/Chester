@@ -1,65 +1,16 @@
 package chester.repl
 
 import cats.Id
-import chester.parser.InputStatus.*
-import chester.parser.ParserEngine
+import chester.io.*
+import fansi.Str
 
-import scala.concurrent.Future
-import scala.io.StdIn
+class SimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Id] {
+  override inline def initHistory = Vector()
 
-class SimpleTerminal(init: TerminalInit) {
-  private var history: Vector[String] = Vector()
-  private var currentInputs: String = ""
-
-  def readLine(info: TerminalInfo): ReadLineResult = {
-    var prompt = info.defaultPrompt
-    var continue = true
-    var result: ReadLineResult = EndOfFile
-
-    while (continue) {
-      print(prompt)
-      val line = scala.io.StdIn.readLine()
-      if (line == null) {
-        continue = false
-        result = EndOfFile
-      } else if (line.forall(_.isWhitespace)) {
-      } else {
-        if (currentInputs.isEmpty) {
-          currentInputs = line
-        } else {
-          currentInputs += "\n" + line
-        }
-        val status = chester.parser.ParserEngine.checkInputStatus(currentInputs)
-
-        status match {
-          case Complete =>
-            history = history :+ currentInputs
-            result = LineRead(currentInputs)
-            continue = false
-          case Incomplete =>
-            prompt = info.continuationPrompt
-          case Error(message) =>
-            result = StatusError(message)
-            continue = false
-        }
-        if (!continue) currentInputs = ""
-      }
-    }
-    result
+  override inline def readALine(prompt: Str): String = {
+    print(prompt.render)
+    scala.io.StdIn.readLine()
   }
 
-  def close(): Unit = {}
-
-  def getHistory: Seq[String] = history
-}
-
-object SimpleCLIRunner extends CLIRunnerImpure {
-  def apply(init: TerminalInit): CLIHandlerImpure = {
-    val t = new SimpleTerminal(init)
-    new CLIHandlerImpure {
-      override def readline(info: TerminalInfo): ReadLineResult = t.readLine(info)
-      override def getHistory: Seq[String] = t.getHistory
-      override def close: Unit = t.close()
-    }
-  }
+  override inline def writeln(line: Str): Unit = println(line.render)
 }
