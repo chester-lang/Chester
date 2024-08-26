@@ -276,7 +276,7 @@ case class LocalVarCall(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = N
 }
 
 case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends VarCall {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 }
 
 case class ErrorTerm(val error: TyckError) extends Term {
