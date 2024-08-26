@@ -1,9 +1,10 @@
 package chester.cli
 
 import chester.integrity.IntegrityCheck
-import chester.repl.startREPL
 import chester.utils.fileExists
+import chester.repl.spawnREPLEngine
 import scopt.OParser
+import chester.io._
 
 object Main {
 
@@ -61,14 +62,14 @@ object Main {
         config.command match {
           case "run" =>
             config.input match {
-              case None => startREPL()
-              case Some("-") => startREPL()
+              case None => spawnREPLEngine()
+              case Some("-") => spawnREPLEngine()
               case Some(fileOrDir) => runFileOrDirectory(fileOrDir)
             }
           case "integrity" =>
             runIntegrityCheck()
           case _ =>
-            startREPL() // Default action if no valid command is provided
+            spawnREPLEngine() // Default action if no valid command is provided
         }
       case _ =>
       // Arguments are bad, error message will have been displayed

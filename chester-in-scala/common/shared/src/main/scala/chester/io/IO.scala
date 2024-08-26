@@ -39,6 +39,8 @@ trait IO[F[_]] {
 }
 
 object Runner {
+  inline def pure[F[_], A](inline x: A)(using inline runner: Runner[F]): F[A] = runner.pure(x)
+  
   inline def doTry[F[_], T](inline IO: F[T])(using inline runner: Runner[F]): F[Try[T]] = runner.doTry(IO)
 
   inline def spawn[F[_]](inline x: => F[Unit])(using inline runner: Runner[F]): Unit = runner.spawn(x)
@@ -74,4 +76,9 @@ trait InTerminal[F[_]] {
   def readline(info: TerminalInfo): F[ReadLineResult]
 
   def getHistory: F[Seq[String]]
+}
+
+object InTerminal {
+  inline def readline[F[_]](inline info: TerminalInfo)(using inline terminal: InTerminal[F]): F[ReadLineResult] = terminal.readline(info)
+  inline def getHistory[F[_]](using inline terminal: InTerminal[F]): F[Seq[String]] = terminal.getHistory
 }
