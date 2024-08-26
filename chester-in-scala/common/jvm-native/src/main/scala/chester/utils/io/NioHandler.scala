@@ -10,7 +10,7 @@ import java.net.URL
 import java.nio.file.{Files, Path, StandardCopyOption}
 import java.io.IOException
 
-private object FileDownloader {
+private[chester] object FileDownloader {
 
   @throws[IOException]
   def downloadFile(urlString: String, targetPath: Path): Unit = {
