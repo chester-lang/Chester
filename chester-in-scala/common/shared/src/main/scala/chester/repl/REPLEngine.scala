@@ -11,7 +11,7 @@ import chester.tyck.*
 import chester.utils.env
 import fansi.*
 
-inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Terminal[F]): F[Unit] = {
+inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F]): F[Unit] = {
 
   val maxWidth = 80
 
@@ -34,17 +34,15 @@ inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Ter
   def Out: Judge = ??? // add to the environment of evaluation
 
   def startF: F[Unit] = {
-    Terminal.runTerminal(TerminalInit.Default) {
-      for {
-        _ <- InTerminal.writeln("Welcome to the Chester REPL!")
-        _ <- InTerminal.writeln("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
-        _ <- InTerminal.writeln(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
-        _ <- runREPL
-      } yield ()
-    }
+    for {
+      _ <- InTerminal.writeln("Welcome to the Chester REPL!")
+      _ <- InTerminal.writeln("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
+      _ <- InTerminal.writeln(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
+      _ <- runREPL
+    } yield ()
   }
 
-  def runREPL(using interminal: InTerminal[F]): F[Unit] = {
+  def runREPL: F[Unit] = {
     InTerminal.readline(terminalInfo).flatMap {
       case LineRead(line) =>
         processLine(line).flatMap {
@@ -64,7 +62,7 @@ inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Ter
     }
   }
 
-  def processLine(line: String)(using interminal: InTerminal[F]): F[Boolean] = {
+  def processLine(line: String): F[Boolean] = {
     line match {
       case "exit" | ":q" => for {
         _ <-
@@ -87,7 +85,7 @@ inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Ter
     }
   }
 
-  def handleTypeCheck(exprStr: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
+  def handleTypeCheck(exprStr: String): F[Unit] = InTerminal.getHistory.flatMap { history =>
     ParserEngine.parseInput(history, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -99,7 +97,7 @@ inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Ter
     }
   }
 
-  def handleExpression(line: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
+  def handleExpression(line: String): F[Unit] = InTerminal.getHistory.flatMap { history =>
     ParserEngine.parseInput(history, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -117,7 +115,7 @@ inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Ter
     ExprTycker.synthesize(expr, initialState, initialCtx)
   }
 
-  def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector())(using interminal: InTerminal[F]): F[Unit] = {
+  def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {
     for {
       _ <- er.traverse(x => {
         InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
