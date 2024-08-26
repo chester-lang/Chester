@@ -5,6 +5,7 @@ val scala3Version = "3.5.0"
 
 val graalVm = "graalvm-java22"
 val graalVersion = "22.0.2"
+val graalvmVersion = "24.0.2"
 
 val nativeImageOption = Seq(
   "-H:-CheckToolchain",
@@ -203,6 +204,43 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   )
   .jvmSettings(
     graalvmSettings,
+  )
+
+lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("truffle"))
+  .dependsOn(common)
+  .settings(commonSettings)
+  // https://github.com/b-studios/scala-graal-truffle-example/blob/c2747a6eece156f878c5b934116aaa00a2cd6311/build.sbt
+  .settings(
+    name := "chester-truffle",
+    assembly / assemblyJarName := "chester-truffle.jar",
+    assembly / test := {},
+    assembly / assemblyExcludedJars := {
+      val cp = (assembly / fullClasspath).value
+      // https://stackoverflow.com/questions/41894055/how-to-exclude-jar-in-final-sbt-assembly-plugin
+      cp filter { f =>
+        val path = f.data.toString
+        (path contains "com.oracle.truffle") ||
+          (path contains "org.graalvm")
+      }
+    },
+    // we fork the JVM to pass the Java Options
+    Compile / run / fork := true,
+    javaOptions ++= Seq(
+      "-Dgraal.Dump=Truffle:1",
+      "-Dgraal.TruffleBackgroundCompilation=false",
+      "-Dgraal.TraceTruffleCompilation=true",
+      "-Dgraal.TraceTruffleCompilationDetails=true",
+      "-XX:-UseJVMCIClassLoader"
+    ),
+
+    libraryDependencies ++= Seq(
+      "org.graalvm.truffle" % "truffle-api" % graalvmVersion,
+      "org.graalvm.truffle" % "truffle-dsl-processor" % graalvmVersion,
+      "org.graalvm.truffle" % "truffle-tck" % graalvmVersion,
+      "org.graalvm.sdk" % "graal-sdk" % graalvmVersion
+    )
   )
 
 lazy val root = project
