@@ -4,10 +4,15 @@ import chester.syntax.{Id, QualifiedIDString}
 
 case class CtxItem(name: VarCall, judge: JudgeNoEffect)
 
-type Context = Map[Id, CtxItem]
+class Context(map: Map[Id, CtxItem]) {
+  private val varMap: Map[VarId, Id] = map.map { case (id, CtxItem(name, _)) => name.varId -> id }
+  def get(id: Id): Option[CtxItem] = map.get(id)
+  def getByVarId(varId: VarId): Option[CtxItem] = varMap.get(varId).flatMap(get)
+}
 
 object Context {
-  def builtin: Context = BuiltinCtx.builtinCtx
+  def apply(map: Map[Id, CtxItem]): Context = new Context(map)
+  def builtin: Context = Context(BuiltinCtx.builtinCtx)
 }
 
 object BuiltinCtx {

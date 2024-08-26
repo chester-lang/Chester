@@ -69,6 +69,10 @@ case class UnsupportedExpressionError(expr: Expr) extends TyckError {
   override def cause: Expr = expr
 }
 
+case class IdentifierNotFoundError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Identifier not found: $cause"
+}
+
 case class UnexpectedStmt(x: Stmt) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =  t"Unexpected statement: $x"
 

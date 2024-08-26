@@ -17,6 +17,8 @@ case class TyckState()
 
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
+
+  def resolve(id: VarId): Option[CtxItem] = ctx.getByVarId(id)
 }
 
 object LocalCtx {
@@ -203,6 +205,17 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
     }
 
+    case Identifier(id, meta) => {
+      val resolved = localCtx.resolve(id)
+      resolved match {
+        case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
+          Judge(name, ty, NoEffect)
+        case None =>
+          S.errors.report(IdentifierNotFoundError(expr))
+          Judge(new ErrorTerm(IdentifierNotFoundError(expr)), new ErrorTerm(IdentifierNotFoundError(expr)), NoEffect)
+      }
+    }
+
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
@@ -260,7 +273,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    (resolve(expr), whnf(Judge(ty,Typeω)).wellTyped) match {
+    (resolve(expr), whnf(Judge(ty, Typeω)).wellTyped) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
