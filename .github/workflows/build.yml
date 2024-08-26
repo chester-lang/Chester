@@ -121,7 +121,7 @@ jobs:
         fi
       shell: bash
 
-    - name: Generate JS Artifacts
+    - name: Generate JS Artifacts for CLI
       working-directory: chester-in-scala
       run: |
         sbt cliJS/fullLinkJS
@@ -142,6 +142,11 @@ jobs:
         echo "GRAALVM_INSTALLED=true" >> $GITHUB_ENV
       shell: bash
 
+    - name: Build Native Image for LSP
+      working-directory: chester-in-scala
+      run: sbt lsp/nativeImage
+      shell: bash
+
     - name: Build Native Image for CLI
       working-directory: chester-in-scala
       run: sbt cli/nativeImage
@@ -150,11 +155,6 @@ jobs:
     - name: Test Native Image for CLI integrity
       working-directory: chester-in-scala
       run: ./target/chester integrity
-      shell: bash
-
-    - name: Build Native Image for LSP
-      working-directory: chester-in-scala
-      run: sbt lsp/nativeImage
       shell: bash
 
     - name: List files for debugging
