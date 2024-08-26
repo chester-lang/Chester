@@ -266,11 +266,16 @@ object VarId {
   }
 }
 
-case class LocalVar(id: Id, ty: Term, varId: VarId) extends Term {
+sealed trait VarCall extends CallTerm {
+  def varId: VarId
+  def id: Id
+}
+
+case class LocalVarCall(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends VarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
-case class ResolvedIdenifierCall(module: QualifiedIDString, Id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends CallTerm {
+case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends VarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + Id)
 }
 

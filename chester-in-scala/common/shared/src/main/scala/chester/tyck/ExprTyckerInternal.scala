@@ -15,15 +15,8 @@ import scala.language.implicitConversions
 
 case class TyckState()
 
-object BuiltinCtx {
-  val builtinSyntax = Vector("data", "module")
-  val builtinCtx: Map[LocalVar, JudgeNoEffect] = Map(
-
-  )
-}
-
-case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map()) {
-  def getLocal(name: LocalVar): Option[JudgeNoEffect] = map.get(name)
+case class LocalCtx(ctx: Context = Context.builtin) {
+  def resolve(id: Id): Option[CtxItem] = ctx.get(id)
 }
 
 object LocalCtx {
