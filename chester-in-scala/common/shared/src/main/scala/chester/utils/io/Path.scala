@@ -17,17 +17,17 @@ trait PathOps[T] {
 }
 
 extension [T](p: T)(using ops: PathOps[T]) {
-  def /(p2: T): T = ops.join(p, p2)
+  inline def /(inline p2: T): T = ops.join(p, p2)
 }
 
 implicit def stringToPath[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
 
 implicit object PathOpsString extends PathOps[String] {
-  def of(path: String): String = path
+  inline def of(path: String): String = path
 
-  def join(p1: String, p2: String): String = p1 + "/" + p2
+  inline def join(p1: String, p2: String): String = p1 + "/" + p2
 
-  def asString(p: String): String = p
+  inline def asString(p: String): String = p
 }
 
 implicit def summonPathOps[F <: FileOps](using fileOps: F): PathOps[fileOps.P] = fileOps.pathOps
@@ -37,6 +37,7 @@ object Path {
   def of[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
 }
 
+@deprecated
 trait FileOps {
   type P
   type M[_]
@@ -67,6 +68,7 @@ trait FileOps {
   def getAbsolutePath(path: P): M[P]
 }
 
+@deprecated
 object Files
 
 extension (_files: Files.type)(using fileOps: FileOps) {
@@ -82,6 +84,7 @@ extension (_files: Files.type)(using fileOps: FileOps) {
   def getAbsolutePath(path: fileOps.P): fileOps.M[fileOps.P] = fileOps.getAbsolutePath(path)
 }
 
+@deprecated
 implicit object MonadControl extends Monad[Control] {
   override def pure[A](a: A): Control[A] = effekt.pure(a)
 
@@ -93,6 +96,7 @@ implicit object MonadControl extends Monad[Control] {
   }
 }
 
+@deprecated
 trait FileOpsEff extends FileOps {
   type M[x] = Control[x]
 
@@ -100,6 +104,7 @@ trait FileOpsEff extends FileOps {
 
 }
 
+@deprecated
 trait FileOpsEff1 extends FileOpsEff {
   def errorFilter(e: Throwable): Boolean
 
@@ -112,6 +117,7 @@ extension [A, M[_]](x: M[A])(using fileOps: FileOps, ev: M[A] =:= fileOps.M[A]) 
   def catchErrors: fileOps.M[Either[Throwable, A]] = fileOps.catchErrors(x)
 }
 
+@deprecated
 trait FileOpsFree extends FileOps {
   sealed trait Op[A]
 

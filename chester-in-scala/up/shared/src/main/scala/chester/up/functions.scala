@@ -1,41 +1,42 @@
 package chester.up
 
 import cats.implicits.*
+import chester.io._
 import chester.utils.env
 import chester.utils.io.*
 
-def update(using fileOps: FileOps): fileOps.M[Unit] = for {
-  result <- uninstallAll.catchErrors
-  _ = if (result.isLeft) println(s"Failed to uninstall chester ${result.left.get}")
-  result <- installRecommended.catchErrors
-  _ = if (result.isLeft) println(s"Failed to install chester ${result.left.get}")
+def update[F[_]](using io: IO[F], runner: Runner[F]): F[Unit] = for {
+  result <- Runner.doTry(uninstallAll)
+  _ = if (result.isFailure) println(s"Failed to uninstall chester ${result.failed.get}")
+  result <- Runner.doTry(installRecommended)
+  _ = if (result.isFailure) println(s"Failed to install chester ${result.failed.get}")
 } yield ()
 
-def getBaseDir(using fileOps: FileOps): fileOps.M[fileOps.P] = for {
-  home <- Files.getHomeDir
+def getBaseDir[F[_]](using io: IO[F], runner: Runner[F]): F[io.Path] = for {
+  home <- IO.getHomeDir
   binPath = if (env.isWindows) home / ".chester" / "bin" else home / ".local" / "bin"
-  _ <- Files.createDirIfNotExists(binPath)
+  _ <- IO.createDirRecursiveIfNotExists(binPath)
 } yield binPath
-def uninstallAll(using fileOps: FileOps): fileOps.M[Unit] = for {
+def uninstallAll[F[_]](using io: IO[F], runner: Runner[F]): F[Unit] = for {
   binPath <- getBaseDir
-  _ <- Files.removeWhenExists(binPath / "chester")
-  _ <- Files.removeWhenExists(binPath / "chester.exe")
-  _ <- Files.removeWhenExists(binPath / "chester.jar")
-  _ <- Files.removeWhenExists(binPath / "chester.js")
-  _ <- Files.removeWhenExists(binPath / "chester.bat")
+  _ <- IO.removeWhenExists(binPath / "chester")
+  _ <- IO.removeWhenExists(binPath / "chester.exe")
+  _ <- IO.removeWhenExists(binPath / "chester.jar")
+  _ <- IO.removeWhenExists(binPath / "chester.js")
+  _ <- IO.removeWhenExists(binPath / "chester.bat")
 } yield ()
 
-def writeWrapper(unixSh: String, windowsBat: String)(using fileOps: FileOps): fileOps.M[Unit] =
+def writeWrapper[F[_]](unixSh: String, windowsBat: String)(using io: IO[F], runner: Runner[F]): F[Unit] =
   if (env.isUNIX) {
     for {
       binPath <- getBaseDir
-      _ <- Files.writeString(binPath / "chester", unixSh)
-      _ <- Files.chmodExecutable(binPath / "chester")
+      _ <- IO.writeString(binPath / "chester", unixSh)
+      _ <- IO.chmodExecutable(binPath / "chester")
     } yield ()
   } else if (env.isWindows) {
     for {
       binPath <- getBaseDir
-      _ <- Files.writeString(binPath / "chester.bat", windowsBat)
+      _ <- IO.writeString(binPath / "chester.bat", windowsBat)
     } yield ()
   } else {
     throw new IllegalStateException(s"Unsupported platform ${env.getOS}")
@@ -48,11 +49,11 @@ object URLs {
   val linuxX64 = "https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester"
 }
 
-def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRecommended(describe=true) match {
+def installRecommended[F[_]](using io: IO[F], runner: Runner[F]): F[Unit] = Version.getRecommended(describe = true) match {
   case Version.NodeJS => for {
     binPath <- getBaseDir
-    js <- Files.getAbsolutePath(binPath / "chester.js")
-    _ <- Files.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.js", js)
+    js <- IO.getAbsolutePath(binPath / "chester.js")
+    _ <- IO.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.js", js)
     _ <- writeWrapper(
       s"""#!/bin/sh
          |exec node ${js} "$$@""".stripMargin,
@@ -61,8 +62,8 @@ def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRec
   } yield ()
   case Version.Jar => for {
     binPath <- getBaseDir
-    jar <- Files.getAbsolutePath(binPath / "chester.jar")
-    _ <- Files.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.jar", jar)
+    jar <- IO.getAbsolutePath(binPath / "chester.jar")
+    _ <- IO.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.jar", jar)
     _ <- writeWrapper(
       s"""#!/bin/sh
          |exec java -jar ${jar} "$$@""".stripMargin,
@@ -79,9 +80,9 @@ def installRecommended(using fileOps: FileOps): fileOps.M[Unit] = Version.getRec
     }
     for {
       binPath <- getBaseDir
-      exe <- Files.getAbsolutePath(binPath / path)
-      _ <- Files.downloadToFile(url, exe)
-      _ <- Files.chmodExecutable(exe)
+      exe <- IO.getAbsolutePath(binPath / path)
+      _ <- IO.downloadToFile(url, exe)
+      _ <- IO.chmodExecutable(exe)
     } yield ()
   }
 }

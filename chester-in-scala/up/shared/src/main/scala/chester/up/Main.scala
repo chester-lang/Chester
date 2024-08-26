@@ -1,4 +1,5 @@
 package chester.up
+import chester.io._
 import scopt.OParser
 
 object Main {
@@ -38,6 +39,12 @@ object Main {
 
   def runUpdate(): Unit = {
     println("Updating Chester...")
-    spawnUpdate()
+    spawnUpdate
+  }
+  
+  def spawnUpdate[F[_]](using io: IO[F], runner: Runner[F]): Unit = {
+    Runner.spawn {
+      update
+    }
   }
 }
