@@ -43,6 +43,7 @@ private[chester] object FileDownloader {
   }
 }
 
+@deprecated
 trait NioOps extends FileOpsEff1 {
   type P = java.nio.file.Path
 
@@ -55,6 +56,7 @@ trait NioOps extends FileOpsEff1 {
   }
 }
 
+@deprecated
 case class NioHandler[R]() extends Handler[R] with NioOps {
   def errorFilter(e: Throwable) = e.isInstanceOf[IOException]
 
@@ -122,6 +124,8 @@ case class NioHandler[R]() extends Handler[R] with NioOps {
   }
 }
 
+@deprecated
 inline def nioHandler[R](inline prog: FileOpsEff ?=> Control[R]): Control[R] = NioHandler[R]().handle(x => prog(using x))
 
+@deprecated
 inline def nioExecute[R](inline prog: FileOpsEff ?=> Control[R]): R = nioHandler[R](prog).run()

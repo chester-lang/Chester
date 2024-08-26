@@ -4,6 +4,7 @@ import cats.free.*
 import cats.free.Free.*
 import cats._
 
+@deprecated
 enum CLIOp[A] {
   case ReadLine(info: TerminalInfo) extends CLIOp[ReadLineResult]
   case GetHistory extends CLIOp[Seq[String]]
@@ -16,8 +17,10 @@ object TerminalInit {
   val Default: TerminalInit = TerminalInit(None)
 }
 
+@deprecated
 type CLI[A] = Free[CLIOp, A]
 
+@deprecated
 object CLI {
   def readLine(info: TerminalInfo): CLI[ReadLineResult] = liftF(CLIOp.ReadLine(info))
 
@@ -28,15 +31,18 @@ object CLI {
   def pure[A](a: A): CLI[A] = Free.pure(a)
 }
 
+@deprecated
 trait CLIRunner {
   // note that run must be effectively the last line of main()
   def exec(cli: CLI[?], init: TerminalInit = TerminalInit.Default): Unit
 }
 
+@deprecated
 trait CLIHandlerBase[F[_]] {
   def apply[T](x: CLIOp[T]): F[T]
 }
 
+@deprecated
 trait CLIHandler[F[_]] extends CLIHandlerBase[F] {
   def readline(info: TerminalInfo): F[ReadLineResult]
 
@@ -51,9 +57,11 @@ trait CLIHandler[F[_]] extends CLIHandlerBase[F] {
   }
 }
 
+@deprecated
 type CLIHandlerImpure = CLIHandler[Id]
 
 
+@deprecated
 trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
 
   def apply(init: TerminalInit): CLIHandlerBase[F]
@@ -73,6 +81,7 @@ trait CLIRunnerMonad[F[_]](implicit evidence: Monad[F]) extends CLIRunner {
   }
 }
 
+@deprecated
 trait CLIRunnerImpure extends CLIRunnerMonad[Id] {
   override def spawn[T](x: => Id[T]): Unit = {
     x
