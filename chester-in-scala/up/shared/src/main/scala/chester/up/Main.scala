@@ -42,7 +42,7 @@ object Main {
     spawnUpdate
   }
 
-  inline def spawnUpdate[F[_]](using io: IO[F], inline runner: Runner[F]): Unit = {
+  def spawnUpdate[F[_]](using io: IO[F], runner: Runner[F]): Unit = {
     Runner.spawn {
       update
     }

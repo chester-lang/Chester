@@ -2,7 +2,6 @@ package chester.io
 
 import cats.Monad
 import chester.repl.{ReadLineResult, TerminalInfo, TerminalInit}
-import chester.utils.io.PathOps
 
 import scala.util.Try
 

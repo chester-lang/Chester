@@ -3,7 +3,6 @@ package chester.up
 import cats.implicits.*
 import chester.io._
 import chester.utils.env
-import chester.utils.io.*
 
 inline def update[F[_]](using inline io: IO[F], inline runner: Runner[F]): F[Unit] = for {
   result <- Runner.doTry(uninstallAll)

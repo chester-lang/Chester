@@ -1,34 +1,12 @@
 package chester.utils.io
 
 import effekt.*
-
 import cats.free.*
 import cats.free.Free.*
-import cats._
+import cats.*
+import chester.io.PathOps
 
 import scala.language.implicitConversions
-
-trait PathOps[T] {
-  def of(path: String): T
-
-  def join(p1: T, p2: T): T
-
-  def asString(p: T): String
-}
-
-extension [T](p: T)(using ops: PathOps[T]) {
-  inline def /(inline p2: T): T = ops.join(p, p2)
-}
-
-implicit def stringToPath[T](path: String)(using ops: PathOps[T]): T = ops.of(path)
-
-implicit object PathOpsString extends PathOps[String] {
-  inline def of(path: String): String = path
-
-  inline def join(p1: String, p2: String): String = p1 + "/" + p2
-
-  inline def asString(p: String): String = p
-}
 
 implicit def summonPathOps[F <: FileOps](using fileOps: F): PathOps[fileOps.P] = fileOps.pathOps
 implicit def summonMonad[F <: FileOps](using fileOps: F): Monad[fileOps.M] = fileOps.m

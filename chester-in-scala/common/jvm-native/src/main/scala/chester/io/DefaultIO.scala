@@ -2,7 +2,6 @@ package chester.io
 
 import cats.{Id, Monad}
 import chester.repl.TerminalInit
-import chester.utils.io.{FileDownloader, PathOps}
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}
