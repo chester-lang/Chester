@@ -15,15 +15,10 @@ import scala.language.implicitConversions
 
 case class TyckState()
 
-object BuiltinCtx {
-  val builtinSyntax = Vector("data", "module")
-  val builtinCtx: Map[LocalVar, JudgeNoEffect] = Map(
+case class LocalCtx(ctx: Context = Context.builtin) {
+  def resolve(id: Id): Option[CtxItem] = ctx.get(id)
 
-  )
-}
-
-case class LocalCtx(map: Map[LocalVar, JudgeNoEffect] = Map()) {
-  def getLocal(name: LocalVar): Option[JudgeNoEffect] = map.get(name)
+  def resolve(id: VarId): Option[CtxItem] = ctx.getByVarId(id)
 }
 
 object LocalCtx {
@@ -47,92 +42,6 @@ class VectorReporter[T] extends Reporter[T] {
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
 
 type Tyck = Get[TyckWarning, TyckError, TyckState]
-
-@deprecated
-case class Getting[W, E, S, T](run: S => LazyList[(Vector[W], Vector[E], Option[(S, T)])]) {
-
-  def map[U](f: T => U): Getting[W, E, S, U] = Getting { state =>
-    run(state).map {
-      case (warnings, errors, Some((nextState, value))) => (warnings, errors, Some((nextState, f(value))))
-      case (warnings, errors, None) => (warnings, errors, None)
-    }
-  }
-
-  def flatMap[U](f: T => Getting[W, E, S, U]): Getting[W, E, S, U] = Getting { state =>
-    run(state).flatMap {
-      case (warnings, errors, Some((nextState, value))) => f(value).run(nextState).map {
-        case (w2, e2, res2) => (warnings ++ w2, errors ++ e2, res2)
-      }
-      case (warnings, errors, None) => LazyList((warnings, errors, None))
-    }
-  }
-
-  @deprecated("some error information might be lost")
-  def getOne(state: S): Either[Vector[E], (S, T)] = {
-    val xs = run(state)
-    // Try to collect the first non-error result
-    xs.collectFirst {
-      case (_, errors, Some(result)) if errors.isEmpty => Right(result)
-    }.orElse(
-      // Try to collect the first item regardless of errors
-      xs.collectFirst {
-        case (_, _, Some(result)) => Right(result)
-      }
-    ).getOrElse(
-      // Fallback to an empty results error
-      xs.collectFirst {
-        case (_, errors, None) if errors.nonEmpty => Left(errors)
-      }.getOrElse(Left(Vector(EmptyResultsError().asInstanceOf[E])))
-    )
-  }
-
-  def getSome(state: S): (Vector[W], Vector[E], Option[(S, T)]) = {
-    val xs = run(state)
-
-    // 1. Try to find the first result with no errors and a defined state and value
-    xs.collectFirst {
-      case (warnings, errors, Some(result)) if errors.isEmpty => (warnings, errors, Some(result))
-    }.orElse(
-      // 2. If not found, try to find the first result with a defined state and value, regardless of errors
-      xs.collectFirst {
-        case (warnings, errors, Some(result)) => (warnings, errors, Some(result))
-      }
-    ).orElse(
-      // 3. If not found, return the first result in xs
-      xs.headOption
-    ).getOrElse(
-      // 4. If still not found, fallback to returning an EmptyResultsError
-      (Vector.empty, Vector(EmptyResultsError().asInstanceOf[E]), None)
-    )
-  }
-
-  def explainError(explain: E => E): Getting[W, E, S, T] = Getting { state =>
-    run(state).map {
-      case (warnings, errors, result) => (warnings, errors.map(explain), result)
-    }
-  }
-
-  def ||(other: => Getting[W, E, S, T]): Getting[W, E, S, T] = Getting { state =>
-    run(state) #::: other.run(state)
-  }
-}
-
-@deprecated
-object Getting {
-  def pure[W, E, S, T](x: T): Getting[W, E, S, T] = Getting(state => LazyList((Vector.empty, Vector.empty, Some((state, x)))))
-
-  def error[W, E, S, T](err: E): Getting[W, E, S, T] = Getting(_ => LazyList((Vector.empty, Vector(err), None)))
-
-  def errors[W, E, S, T](errs: Vector[E]): Getting[W, E, S, T] = Getting(_ => LazyList((Vector.empty, errs, None)))
-
-  def read[W, E, S]: Getting[W, E, S, S] = Getting(state => LazyList((Vector.empty, Vector.empty, Some((state, state)))))
-
-  def write[W, E, S](newState: S): Getting[W, E, S, Unit] = Getting(_ => LazyList((Vector.empty, Vector.empty, Some((newState, ())))))
-}
-
-implicit def stateToGetting[W, E, T, U](state: State[T, U]): Getting[W, E, T, U] = Getting { s =>
-  LazyList((Vector.empty, Vector.empty, Some(state.run(s).value)))
-}
 
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: Tyck) {
 
@@ -210,6 +119,17 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
     }
 
+    case Identifier(id, meta) => {
+      val resolved = localCtx.resolve(id)
+      resolved match {
+        case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
+          Judge(name, ty, NoEffect)
+        case None =>
+          S.errors.report(IdentifierNotFoundError(expr))
+          Judge(new ErrorTerm(IdentifierNotFoundError(expr)), new ErrorTerm(IdentifierNotFoundError(expr)), NoEffect)
+      }
+    }
+
     case _ =>
       S.errors.report(UnsupportedExpressionError(expr))
       Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
@@ -267,7 +187,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    (resolve(expr), whnf(Judge(ty,Typeω)).wellTyped) match {
+    (resolve(expr), whnf(Judge(ty, Typeω)).wellTyped) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
@@ -301,26 +221,30 @@ object TyckResult {
 }
 
 object ExprTycker {
+  private def convertToEither[T](result: TyckResult[TyckState, T]): Either[Vector[TyckError], T] = {
+    if (result.errors.nonEmpty) {
+      Left(result.errors)
+    } else {
+      Right(result.result)
+    }
+  }
 
   @deprecated("error information are lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().unify(subType, superType)
-    }.getOne(state).map(_._2)
+    val result = unify(subType, superType, state, ctx)
+    convertToEither(result)
   }
 
   @deprecated("error information are lost")
   def inheritV0(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().inherit(expr, ty, effect)
-    }.getOne(state).map(_._2)
+    val result = inherit(expr, ty, effect, state, ctx)
+    convertToEither(result)
   }
 
   @deprecated("error information are lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().synthesize(expr)
-    }.getOne(state).map(_._2)
+    val result = synthesize(expr, state, ctx)
+    convertToEither(result)
   }
 
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
@@ -367,14 +291,4 @@ object ExprTycker {
     TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
-  private def convertToGetting[T](ctx: LocalCtx)(f: Tyck => T): Getting[TyckWarning, TyckError, TyckState, T] = {
-    Getting { state =>
-      val reporterW = new VectorReporter[TyckWarning]()
-      val reporterE = new VectorReporter[TyckError]()
-      val mutBox = MutBox(state)
-      implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-      val result = f(tyck)
-      LazyList((reporterW.getReports, reporterE.getReports, Some((mutBox.value, result))))
-    }
-  }
 }
