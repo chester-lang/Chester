@@ -307,26 +307,30 @@ object TyckResult {
 }
 
 object ExprTycker {
+  private def convertToEither[T](result: TyckResult[TyckState, T]): Either[Vector[TyckError], T] = {
+    if (result.errors.nonEmpty) {
+      Left(result.errors)
+    } else {
+      Right(result.result)
+    }
+  }
 
   @deprecated("error information are lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().unify(subType, superType)
-    }.getOne(state).map(_._2)
+    val result = unify(subType, superType, state, ctx)
+    convertToEither(result)
   }
 
   @deprecated("error information are lost")
   def inheritV0(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().inherit(expr, ty, effect)
-    }.getOne(state).map(_._2)
+    val result = inherit(expr, ty, effect, state, ctx)
+    convertToEither(result)
   }
 
   @deprecated("error information are lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    convertToGetting(ctx) { implicit tyck =>
-      ExprTyckerInternal().synthesize(expr)
-    }.getOne(state).map(_._2)
+    val result = synthesize(expr, state, ctx)
+    convertToEither(result)
   }
 
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
@@ -373,14 +377,4 @@ object ExprTycker {
     TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
   }
 
-  private def convertToGetting[T](ctx: LocalCtx)(f: Tyck => T): Getting[TyckWarning, TyckError, TyckState, T] = {
-    Getting { state =>
-      val reporterW = new VectorReporter[TyckWarning]()
-      val reporterE = new VectorReporter[TyckError]()
-      val mutBox = MutBox(state)
-      implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-      val result = f(tyck)
-      LazyList((reporterW.getReports, reporterE.getReports, Some((mutBox.value, result))))
-    }
-  }
 }
