@@ -1,7 +1,9 @@
 package chester.io
 
 import cats.Monad
-import chester.repl.{ReadLineResult, TerminalInfo, TerminalInit}
+import chester.parser.InputStatus.{Complete, Error, Incomplete}
+import chester.parser.ParserEngine
+import chester.repl.*
 
 import scala.util.Try
 
@@ -88,6 +90,7 @@ trait InTerminal[F[_]] {
 
 object InTerminal {
   inline def writeln[F[_]](inline line: fansi.Str)(using inline terminal: InTerminal[F]): F[Unit] = terminal.writeln(line)
+
   inline def readline[F[_]](inline info: TerminalInfo)(using inline terminal: InTerminal[F]): F[ReadLineResult] = terminal.readline(info)
 
   inline def getHistory[F[_]](using inline terminal: InTerminal[F]): F[Seq[String]] = terminal.getHistory
