@@ -190,7 +190,7 @@ lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   )
 
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
+  .crossType(CrossType.Pure)
   .in(file("lsp"))
   .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common)
