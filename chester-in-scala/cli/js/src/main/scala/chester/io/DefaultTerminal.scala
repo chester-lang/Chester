@@ -16,9 +16,9 @@ implicit object DefaultTerminal extends Terminal[Future] {
         @inline
         inline override def getHistory: Future[Seq[String]] = Future.successful(terminal.getHistory)
       })
-    future.flatMap { result =>
+    future.transform {result =>
       terminal.close()
-      Future.successful(result)
+      result
     }
   }
 
