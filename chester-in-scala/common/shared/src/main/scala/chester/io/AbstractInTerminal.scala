@@ -5,14 +5,27 @@ import chester.parser.ParserEngine
 import chester.repl.*
 
 abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTerminal[F] {
-  private var history: Vector[String] = Vector() // TODO: implement
+  private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
+  
+  private var inited: Boolean = false
+
+  private def checkInit: F[Unit] = {
+    if (!inited) {
+      inited = true
+      initHistory.map { h =>
+        history = h.toVector
+      }
+    } else {
+      Runner.pure(())
+    }
+  }
 
   def initHistory: F[Seq[String]]
 
   /** String could be null means EOF */
   def readALine(prompt: fansi.Str): F[String]
-  
+
   /** When an implementation can only handle one line at a time in history */
   def saveALine(line: String): F[Unit] = Runner.pure(())
 
@@ -45,8 +58,13 @@ abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTermi
       }
     }
 
-    loop(info.defaultPrompt.render)
+    for {
+      _ <- checkInit
+      result <- loop(info.defaultPrompt)
+    } yield result
   }
 
-  override def getHistory: F[Seq[String]] = Runner.pure(history)
+  override def getHistory: F[Seq[String]] = for {
+    _ <- checkInit
+  } yield history
 }

@@ -6,7 +6,11 @@ import typings.xtermXterm.mod
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
-private class InXterm(terminal: mod.Terminal, init: TerminalInit) extends InTerminal[Future] {
+final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends AbstractInTerminal[Future] {
+
+
+  def initHistory: Future[Seq[String]] = Future.successful(Vector())
+
   inline override def writeln(line: fansi.Str): Future[Unit] = {
     val promise = Promise[Unit]()
     terminal.writeln(line.render, () => {
@@ -47,28 +51,21 @@ private class InXterm(terminal: mod.Terminal, init: TerminalInit) extends InTerm
     }
   }
 
-  private inline def readALine: Future[String] = {
+  private inline def readOneLine: Future[String] = {
     assert(reading == null)
     val p = Promise[String]()
     reading = p
     p.future
   }
 
-  private inline def prompt(prompt: fansi.Str): Future[String] = {
+  override inline def readALine(prompt: fansi.Str): Future[String] = {
     val p = Promise[Unit]()
     terminal.write(prompt.render, () => {
       p.success(())
       ()
     })
-    p.future.flatMap(_ => readALine)
+    p.future.flatMap(_ => readOneLine)
   }
-
-  inline override def readline(info: TerminalInfo): Future[ReadLineResult] = {
-    ???
-  }
-
-  inline override def getHistory: Future[Seq[String]] = ???
-
 }
 
 case class XtermTerminal(terminal: mod.Terminal) extends Terminal[Future] {
