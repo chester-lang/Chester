@@ -1,11 +1,13 @@
 package chester.repl
 
-import chester.io._
-import chester.repl.REPLEngine
+import chester.io.*
 
-def spawnREPLEngine[F[_]]()(using runner: Runner[F],terminal: Terminal[F]): Unit = {
+inline private def spawnREPLEngine0[F[_]]()(using inline runner: Runner[F], inline terminal: Terminal[F]): Unit = {
   Runner.spawn {
-    val repl = new REPLEngine[F]
-    repl.startF
+    REPLEngine[F]
   }
+}
+
+inline def spawnREPLEngine(): Unit = {
+  spawnREPLEngine0()
 }

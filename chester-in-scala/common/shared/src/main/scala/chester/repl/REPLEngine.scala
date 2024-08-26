@@ -11,7 +11,9 @@ import chester.tyck.*
 import chester.utils.env
 import fansi.*
 
-class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
+inline def REPLEngine[F[_]](using inline runner: Runner[F], inline terminal: Terminal[F]): F[Unit] = {
+
+  val maxWidth = 80
 
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
@@ -42,7 +44,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     }
   }
 
-  private def runREPL(using interminal: InTerminal[F]): F[Unit] = {
+  def runREPL(using interminal: InTerminal[F]): F[Unit] = {
     InTerminal.readline(terminalInfo).flatMap {
       case LineRead(line) =>
         processLine(line).flatMap {
@@ -62,7 +64,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     }
   }
 
-  private def processLine(line: String)(using interminal: InTerminal[F]): F[Boolean] = {
+  def processLine(line: String)(using interminal: InTerminal[F]): F[Boolean] = {
     line match {
       case "exit" | ":q" => for {
         _ <-
@@ -85,7 +87,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     }
   }
 
-  private def handleTypeCheck(exprStr: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
+  def handleTypeCheck(exprStr: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
     ParserEngine.parseInput(history, exprStr) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -97,7 +99,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     }
   }
 
-  private def handleExpression(line: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
+  def handleExpression(line: String)(using interminal: InTerminal[F]): F[Unit] = InTerminal.getHistory.flatMap { history =>
     ParserEngine.parseInput(history, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
@@ -109,13 +111,13 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     }
   }
 
-  private def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
+  def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
     ExprTycker.synthesize(expr, initialState, initialCtx)
   }
 
-  private def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector())(using interminal: InTerminal[F]): F[Unit] = {
+  def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector())(using interminal: InTerminal[F]): F[Unit] = {
     for {
       _ <- er.traverse(x => {
         InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
@@ -126,9 +128,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     } yield ()
   }
 
-  val maxWidth = 80
-
-  private def prettyPrintJudge(judge: Judge): String = {
+  def prettyPrintJudge(judge: Judge): String = {
     val termDoc = judge.wellTyped
     val typeDoc = judge.ty
     val effectDoc = judge.effect
@@ -140,8 +140,10 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
     FansiRenderer.render(doc, maxWidth, useCRLF = false).render
   }
 
-  private def prettyPrintJudgeWellTyped(judge: Judge): String = {
+  def prettyPrintJudgeWellTyped(judge: Judge): String = {
     val termDoc = judge.wellTyped
     FansiRenderer.render(termDoc, maxWidth, useCRLF = false).render
   }
+
+  startF
 }
