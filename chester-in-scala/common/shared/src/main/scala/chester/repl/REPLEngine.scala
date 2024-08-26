@@ -15,6 +15,7 @@ class REPLEngine[F[_]](using runner: Runner[F], terminal: Terminal[F]) {
 
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
   val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
+  assert(mainPrompt.length == continuationPrompt0.length)
 
   val terminalInfo = new TerminalInfo {
     override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
