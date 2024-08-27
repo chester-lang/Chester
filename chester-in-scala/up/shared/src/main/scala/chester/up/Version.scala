@@ -5,7 +5,6 @@ import chester.utils.env.{Architecture, OS, RunningOn}
 
 import scala.sys.process.*
 import scala.util.Try
-import scala.util.matching.Regex
 
 def checkCommand(command: String): Option[String] = {
   // Capture both stdout and stderr output explicitly
@@ -53,33 +52,24 @@ def checkJavaVersion(describe: Boolean = false): Boolean = {
     val javaVersionOutput = checkCommand("java -version")
     javaVersionOutput match {
       case Some(version) =>
-        // Regular expression to extract the Java version from the output
-        val versionRegex: Regex = "\"(\\d+)(\\.\\d+)?(\\.\\d+)?(_\\d+)?\"".r
-
-        // Extract the version number using the regex
-        val versionMatch = versionRegex.findFirstMatchIn(version)
-
-        versionMatch match {
-          case Some(m) =>
-            val major = m.group(1).toInt
-            val minor = Try(m.group(2).drop(1).toInt).getOrElse(0)
-
-            val result = if (major == 1) minor >= 8 else major >= 8
-            if (!result && describe) println(s"Java version ${m.matched} is not supported, please upgrade to Java 8 or above")
-            result
-          case None =>
-            if (describe) println("Could not determine Java version from output.")
-            false
+        // Java version output usually includes lines, we need to extract the first line
+        val firstLine = version.split("\n").head
+        // Extract the Java version number from the first line
+        val javaVersion = firstLine.split("\"")(1).split("\\.").toSeq.flatMap(s => Try(s.toInt).toOption)
+        val result = javaVersion match {
+          case Seq(1, minor, _*) => minor >= 8 // For Java 1.x (legacy versions)
+          case Seq(major, _*) => major >= 8 // For Java 9 and above
+          case _ => false
         }
-
-      case None =>
-        if (describe) println("Java is not found")
+        if (!result && describe) println(s"Java version $javaVersion is not supported, please upgrade to Java 8 or above")
+        result
+      case None => {
+        if(describe) println("Java is not found")
         false
+      }
     }
   } catch {
-    case e: ArrayIndexOutOfBoundsException =>
-      if (describe) println(s"An error occurred on JVM check: ${e.getMessage}")
-      false
+    case e: ArrayIndexOutOfBoundsException => false
   }
 }
 
