@@ -187,24 +187,6 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
 
 }
 
-case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning], errors: Vector[TyckError])
-
-object TyckResult {
-  object Success {
-    def unapply[S, T](x: TyckResult[S, T]): Option[(T, S, Vector[TyckWarning])] = {
-      if (x.errors.isEmpty) Some((x.result, x.state, x.warnings))
-      else None
-    }
-  }
-
-  object Failure {
-    def unapply[S, T](x: TyckResult[S, T]): Option[(Vector[TyckError], Vector[TyckWarning], S, T)] = {
-      if (x.errors.nonEmpty) Some((x.errors, x.warnings, x.state, x.result))
-      else None
-    }
-  }
-}
-
 object ExprTycker {
   private def convertToEither[T](result: TyckResult[TyckState, T]): Either[Vector[TyckError], T] = {
     if (result.errors.nonEmpty) {
