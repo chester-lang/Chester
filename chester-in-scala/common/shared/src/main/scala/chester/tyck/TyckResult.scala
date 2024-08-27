@@ -2,7 +2,7 @@ package chester.tyck
 
 import chester.error.{TyckError, TyckWarning}
 
-case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning]=Vector(), errors: Vector[TyckError]=Vector()) {
+case class TyckResult[S, T](state: S, result: T, warnings: Vector[TyckWarning] = Vector(), errors: Vector[TyckError] = Vector()) {
   def errorsEmpty: Boolean = errors.isEmpty
 }
 
