@@ -7,9 +7,10 @@ import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.MutBox
+import cps.monads.{*, given}
+import cps.*
 
 import scala.annotation.targetName
-import scala.language.implicitConversions
 import scala.language.implicitConversions
 
 
@@ -26,22 +27,6 @@ object LocalCtx {
 
   def fromParent(parent: LocalCtx): LocalCtx = parent
 }
-
-trait Reporter[T] {
-  def report(value: T): Unit
-}
-
-class VectorReporter[T] extends Reporter[T] {
-  private val buffer = scala.collection.mutable.ArrayBuffer[T]()
-
-  def report(value: T): Unit = buffer += value
-
-  def getReports: Vector[T] = buffer.toVector
-}
-
-case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
-
-type Tyck = Get[TyckWarning, TyckError, TyckState]
 
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: Tyck) {
 
