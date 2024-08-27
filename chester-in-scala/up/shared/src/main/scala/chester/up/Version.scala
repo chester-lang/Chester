@@ -38,7 +38,7 @@ def checkNodeVersion(describe: Boolean = false): Boolean = {
         if (!result && describe) println(s"NodeJS version $version is not supported, please upgrade to NodeJS 18 or above")
         result
       case None => {
-        if(describe) println("NodeJS is not found")
+        if (describe) println("NodeJS is not found")
         false
       }
     }
@@ -48,6 +48,18 @@ def checkNodeVersion(describe: Boolean = false): Boolean = {
 }
 
 def checkJavaVersion(describe: Boolean = false): Boolean = {
+  val javaVersionOutput = checkCommand("java -version")
+  javaVersionOutput match {
+    case Some(version) =>
+      true
+    case None => {
+      if (describe) println("Java is not found")
+      false
+    }
+  }
+}
+
+def checkJavaVersion_ToFix(describe: Boolean = false): Boolean = {
   try {
     val javaVersionOutput = checkCommand("java -version")
     javaVersionOutput match {
@@ -64,7 +76,7 @@ def checkJavaVersion(describe: Boolean = false): Boolean = {
         if (!result && describe) println(s"Java version $javaVersion is not supported, please upgrade to Java 8 or above")
         result
       case None => {
-        if(describe) println("Java is not found")
+        if (describe) println("Java is not found")
         false
       }
     }
@@ -103,20 +115,20 @@ object Version {
       }
     }
     if (checkJavaVersion(describe = describe)) {
-      if(describe) println("Java version is supported, falling back to JAR")
+      if (describe) println("Java version is supported, falling back to JAR")
       return Jar
     }
     if (checkNodeVersion(describe = describe)) {
-      if(describe) println("NodeJS version is supported, falling back to NodeJS")
+      if (describe) println("NodeJS version is supported, falling back to NodeJS")
       return NodeJS
     }
     env.getRunningOn match {
       case _: RunningOn.Nodejs => {
-        if(describe) println("Running on NodeJS, falling back to NodeJS")
+        if (describe) println("Running on NodeJS, falling back to NodeJS")
         return NodeJS
       }
       case _: RunningOn.JVM => {
-        if(describe) println("Running on JVM, falling back to JAR")
+        if (describe) println("Running on JVM, falling back to JAR")
         return Jar
       }
       case _ => {}
