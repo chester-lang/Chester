@@ -48,6 +48,9 @@ object Trying {
   inline def error[State](inline error: TyckError): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = Vector(error)))
   }
+  inline def errors[State](inline errors: Vector[TyckError]): Trying[State, Unit] = { (state: State) =>
+    Vector(TyckResult(state = state, result = (), errors = errors))
+  }
 
   inline def warning[State](inline warning: TyckWarning): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), warnings = Vector(warning)))
@@ -58,7 +61,8 @@ object Trying {
   }
 }
 
-implicit def cpsMonadTrying[State]: CpsMonad[[X] =>> Trying[State, X]] = new CpsMonadTrying[State]
+val cpsMonadTryingInstance: CpsMonadTrying[?] = new CpsMonadTrying
+implicit inline def cpsMonadTrying[State]: CpsMonadTrying[State] = cpsMonadTryingInstance.asInstanceOf
 
 final class CpsMonadTrying[State] extends CpsMonad[[X] =>> Trying[State, X]] with CpsMonadContext[[X] =>> Trying[State, X]] {
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)

@@ -1,16 +1,13 @@
 package chester.tyck
 
-import cats.data.State
 import chester.error.*
 import chester.resolve.ExprResolver
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.utils.MutBox
-import cps.monads.{*, given}
 import cps.*
+import cps.monads.given
 
-import scala.annotation.targetName
 import scala.language.implicitConversions
 
 
@@ -28,41 +25,47 @@ object LocalCtx {
   def fromParent(parent: LocalCtx): LocalCtx = parent
 }
 
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: Tyck) {
+type F = [X] =>> Trying[TyckState, X]
+implicit def convertF[T](x: Trying[TyckState, T]): F[T] = x
+implicit def unconvertF[T](x: F[T]): Trying[TyckState, T] = x
 
-  def unify(subType: Term, superType: Term): Term = {
+case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
+
+  def unify(subType: Term, superType: Term): F[Term] = async[F] {
     if (subType == superType) subType
     else (subType, superType) match {
       case (_, AnyType) => subType
       case _ =>
-        S.errors.report(UnifyFailedError(subType, superType))
+        await(Trying.error(UnifyFailedError(subType, superType)))
         new ErrorTerm(UnifyFailedError(subType, superType))
     }
   }
 
-  def effectUnion(e1: Term, e2: Term): Term = (e1, e2) match {
-    case (NoEffect, _) => e2
-    case (_, NoEffect) => e1
-    case _ if e1 == e2 => e1
-    case _ => EffectList(Vector(e1, e2))
+  def effectUnion(e1: Term, e2: Term): Term = {
+    (e1, e2) match {
+      case (NoEffect, _) => e2
+      case (_, NoEffect) => e1
+      case _ if e1 == e2 => e1
+      case _ => EffectList(Vector(e1, e2))
+    }
   }
 
-  def unifyEffect(subEffect: Term, superEffect: Term): Term = {
+  def unifyEffect(subEffect: Term, superEffect: Term): F[Term] = async[F] {
     (subEffect, superEffect) match {
       case (_, NoEffect) => subEffect
       case (NoEffect, _) => superEffect
       case _ if subEffect == superEffect => subEffect
       case _ =>
-        S.errors.report(UnifyFailedError(subEffect, superEffect))
+        await(Trying.error(UnifyFailedError(subEffect, superEffect)))
         new ErrorTerm(UnifyFailedError(subEffect, superEffect))
     }
   }
 
-  def synthesizeObjectExpr(x: ObjectExpr): Judge = {
+  def synthesizeObjectExpr(x: ObjectExpr): F[Judge] = async[F] {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
       case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
-        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr)
-        val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr)
+        val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(valueExpr))
+        val Judge(keyWellTyped, _, keyEffect) = await(synthesize(keyExpr))
         val combinedEffect = effectUnion(exprEffect, keyEffect)
         EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
       }
@@ -78,109 +81,90 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty)(implicit S: T
     Judge(objectTerm, objectType, combinedEffect)
   }
 
-  def synthesizeBlock(block: Block): Judge = {
+  def synthesizeBlock(block: Block): F[Judge] = async[F] {
     ???
   }
 
-  def synthesize(expr: Expr): Judge = resolve(expr) match {
-    case IntegerLiteral(value, meta) =>
-      Judge(IntegerTerm(value), IntegerType, NoEffect)
+  def synthesize(expr: Expr): F[Judge] = async[F] {
+    await(resolve(expr)) match {
+      case IntegerLiteral(value, meta) =>
+        Judge(IntegerTerm(value), IntegerType, NoEffect)
 
-    case RationalLiteral(value, meta) =>
-      Judge(RationalTerm(value), RationalType, NoEffect)
+      case RationalLiteral(value, meta) =>
+        Judge(RationalTerm(value), RationalType, NoEffect)
 
-    case StringLiteral(value, meta) =>
-      Judge(StringTerm(value), StringType, NoEffect)
+      case StringLiteral(value, meta) =>
+        Judge(StringTerm(value), StringType, NoEffect)
 
-    case SymbolLiteral(value, meta) =>
-      Judge(SymbolTerm(value), SymbolType, NoEffect)
+      case SymbolLiteral(value, meta) =>
+        Judge(SymbolTerm(value), SymbolType, NoEffect)
 
-    case objExpr: ObjectExpr =>
-      synthesizeObjectExpr(objExpr)
-    case block: Block => synthesizeBlock(block)
-    case expr: Stmt => {
-      val err = UnexpectedStmt(expr)
-      S.errors.report(err)
-      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
-    }
-
-    case Identifier(id, meta) => {
-      val resolved = localCtx.resolve(id)
-      resolved match {
-        case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
-          Judge(name, ty, NoEffect)
-        case None =>
-          S.errors.report(IdentifierNotFoundError(expr))
-          Judge(new ErrorTerm(IdentifierNotFoundError(expr)), new ErrorTerm(IdentifierNotFoundError(expr)), NoEffect)
+      case objExpr: ObjectExpr =>
+        await(synthesizeObjectExpr(objExpr))
+      case block: Block => await(synthesizeBlock(block))
+      case expr: Stmt => {
+        val err = UnexpectedStmt(expr)
+        await(Trying.error(err))
+        Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
       }
-    }
 
-    case _ =>
-      S.errors.report(UnsupportedExpressionError(expr))
-      Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
+      case Identifier(id, meta) => {
+        val resolved = localCtx.resolve(id)
+        resolved match {
+          case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
+            Judge(name, ty, NoEffect)
+          case None =>
+            await(Trying.error(IdentifierNotFoundError(expr)))
+            Judge(new ErrorTerm(IdentifierNotFoundError(expr)), new ErrorTerm(IdentifierNotFoundError(expr)), NoEffect)
+        }
+      }
+
+      case _ =>
+        await(Trying.error(UnsupportedExpressionError(expr)))
+        Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
+    }
   }
 
-  def synthesizeTerm(term: Term): JudgeNoEffect = term match {
-    case _ => ???
+  def synthesizeTerm(term: Term): F[JudgeNoEffect] = async[F] {
+    term match {
+      case _ => ???
+    }
   }
 
   case class EffectWith[T](effect: Term, value: T)
 
-  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] = {
-    val inheritedFieldsWithEffects = clauses.flatMap {
-      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
-        val synthesizedKey = synthesize(keyExpr)
-        val fieldType = fieldTypes.collectFirst {
-          case ObjectClauseValueTerm(k, _) if k == synthesizedKey.wellTyped => k
-        }
-        fieldType match {
-          case Some(_) =>
-            inherit(valueExpr, fieldType.get, effect) match {
-              case Judge(wellTyped, _, fieldEffect) =>
-                Some(EffectWith(fieldEffect, ObjectClauseValueTerm(synthesizedKey.wellTyped, wellTyped)))
-              case _ => None
-            }
-          case None =>
-            S.errors.report(FieldTypeNotFoundError(synthesizedKey.wellTyped match {
-              case k: SymbolTerm =>
-                k.value
-              case _ => synthesizedKey.wellTyped.toString
-            }))
-            None
-        }
-
-      case _ => throw new IllegalArgumentException("Unexpected clause type")
-    }
-
-    val combinedEffect = inheritedFieldsWithEffects.map(_.effect).reduce(effectUnion)
-    val inheritedFields = inheritedFieldsWithEffects.map(_.value)
-
-    EffectWith(combinedEffect, inheritedFields)
+  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): F[EffectWith[Vector[ObjectClauseValueTerm]]] = async[F] {
+    ??? // TODO
   }
 
   val normalizer = new Normalizer()
 
-  def whnf(judge: Judge): Judge = {
-    val state = S.state.value
+  def whnf(judge: Judge): F[Judge] = async[F] {
+    val state = await(Trying.state)
     val (newState, normalizedTerm) = normalizer.apply(judge).run(state).value
-    S.state.value = newState // Update the state with the new state from the normalizer
+    await(Trying.state = newState)
     normalizedTerm
   }
 
-  def resolve(expr: Expr): Expr = {
-    ExprResolver.resolve(localCtx, expr, S.errors)
+  def resolve(expr: Expr): F[Expr] = async[F] {
+    val (errors, result) = ExprResolver.resolveFunctional(localCtx, expr)
+    await(Trying.errors(errors))
+    result
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
-    (resolve(expr), whnf(Judge(ty, Typeω)).wellTyped) match {
+  def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
+    val expr1: Expr = await(resolve(expr))
+    val jdg1: Judge = await(whnf(Judge(ty, Typeω)))
+    val ty1: Term = jdg1.wellTyped
+    (expr1, ty1) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
-        val EffectWith(inheritedEffect, inheritedFields) = inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect)
+        val EffectWith(inheritedEffect, inheritedFields) = await(inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
         Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
 
       case _ =>
-        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
-        val ty1 = unify(exprType, ty)
-        val effect1 = effect.map(eff => effectUnion(exprEffect, eff)).getOrElse(exprEffect)
+        val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(expr))
+        val ty1 = await(unify(exprType, ty))
+        val effect1 = effect.map(eff => (effectUnion(exprEffect, eff))).getOrElse(exprEffect)
         Judge(wellTypedExpr, ty1, effect1)
     }
   }
@@ -215,47 +199,18 @@ object ExprTycker {
   }
 
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    val reporterW = new VectorReporter[TyckWarning]()
-    val reporterE = new VectorReporter[TyckError]()
-    val mutBox = MutBox(state)
-    implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-
-    val result = ExprTyckerInternal(ctx).unify(subType, superType)
-
-    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
-  }
-
-  def unifyEffect(subEffect: EffectTerm, superEffect: EffectTerm, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    val reporterW = new VectorReporter[TyckWarning]()
-    val reporterE = new VectorReporter[TyckError]()
-    val mutBox = MutBox(state)
-    implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-
-    val result = ExprTyckerInternal(ctx).unifyEffect(subEffect, superEffect)
-
-    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
+    val results = ExprTyckerInternal(ctx).unify(subType, superType).run(state)
+    results.head
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    val reporterW = new VectorReporter[TyckWarning]()
-    val reporterE = new VectorReporter[TyckError]()
-    val mutBox = MutBox(state)
-    implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-
-    val result = ExprTyckerInternal(ctx).inherit(expr, ty, effect)
-
-    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
+    val results = ExprTyckerInternal(ctx).inherit(expr, ty, effect).run(state)
+    results.head
   }
 
   def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    val reporterW = new VectorReporter[TyckWarning]()
-    val reporterE = new VectorReporter[TyckError]()
-    val mutBox = MutBox(state)
-    implicit val tyck: Tyck = Get(reporterW, reporterE, mutBox)
-
-    val result = ExprTyckerInternal(ctx).synthesize(expr)
-
-    TyckResult(mutBox.value, result, reporterW.getReports, reporterE.getReports)
+    val results = ExprTyckerInternal(ctx).synthesize(expr).run(state)
+    results.head
   }
 
 }
