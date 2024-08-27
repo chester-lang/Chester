@@ -1,9 +1,6 @@
 package chester.io
 
 import cats.Monad
-import chester.parser.InputStatus.{Complete, Error, Incomplete}
-import chester.parser.ParserEngine
-import chester.repl.*
 
 import scala.util.Try
 
@@ -44,7 +41,11 @@ trait IO[F[_]] {
   def chmodExecutable(path: Path): F[Unit]
 
   def getAbsolutePath(path: Path): F[Path]
+
+  def execCommand(command: String, captureStdout: Boolean = true, captureStderr: Boolean = true): F[CommandOutput] = ???
 }
+
+case class CommandOutput(stdout: String, stderr: String, exitCode: Int)
 
 object Runner {
   inline def pure[F[_], A](inline x: A)(using inline runner: Runner[F]): F[A] = runner.pure(x)
@@ -68,4 +69,5 @@ extension [F[_]](_io: IO.type)(using io: IO[F]) {
   inline def downloadToFile(inline url: String, inline path: io.Path): F[Unit] = io.downloadToFile(url, path)
   inline def chmodExecutable(inline path: io.Path): F[Unit] = io.chmodExecutable(path)
   inline def getAbsolutePath(inline path: io.Path): F[io.Path] = io.getAbsolutePath(path)
+  inline def execCommand(inline command: String, inline captureStdout: Boolean = true, inline captureStderr: Boolean = true): F[CommandOutput] = io.execCommand(command, captureStdout, captureStderr)
 }
