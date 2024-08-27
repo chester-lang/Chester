@@ -6,8 +6,8 @@ import cps.{CpsMonad, CpsMonadContext}
 case class TyringResult[+Warning, +Error, +State, +Value](warnings: Vector[Warning], errors: Vector[Error], state: State, value: Value) {
 }
 
-trait Trying[Warning, Error, State, Result] extends Function[State, Seq[TyringResult[Warning, Error, State, Result]]] {
-  //override def apply(state: State): LazyList[TyringResult[Warning, Error, State, Result]]
+trait Trying[Warning, Error, State, Result] {
+  def apply(state: State): Seq[TyringResult[Warning, Error, State, Result]]
 
   private final def processSeq(seq: Seq[TyringResult[Warning, Error, State, Result]]): Seq[TyringResult[Warning, Error, State, Result]] = {
     val filtered = seq.filter(_.errors.isEmpty)
