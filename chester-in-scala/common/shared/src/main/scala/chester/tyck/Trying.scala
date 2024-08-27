@@ -1,6 +1,7 @@
 package chester.tyck
 
 import cats.Monad
+import chester.error.{TyckError, TyckWarning}
 import cps.{CpsMonad, CpsMonadContext}
 
 trait Trying[State, Result] {
@@ -36,6 +37,22 @@ extension [State, Result](self: Trying[State, Result]) {
 }
 
 object Trying {
+  inline def state[State]: Trying[State, State] = { (state: State) =>
+    Vector(TyckResult(state = state, result = state))
+  }
+
+  inline def state_=[State](inline state: State): Trying[State, Unit] = { _ =>
+    Vector(TyckResult(state = state, result = ()))
+  }
+
+  inline def error[State](inline error: TyckError): Trying[State, Unit] = { (state: State) =>
+    Vector(TyckResult(state = state, result = (), errors = Vector(error)))
+  }
+
+  inline def warning[State](inline warning: TyckWarning): Trying[State, Unit] = { (state: State) =>
+    Vector(TyckResult(state = state, result = (), warnings = Vector(warning)))
+  }
+
   inline def pure[State, Value](inline value: Value): Trying[State, Value] = { (state: State) =>
     Vector(TyckResult(state = state, result = value))
   }
