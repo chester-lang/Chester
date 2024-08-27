@@ -8,29 +8,31 @@ case class TyringResult[+Warning, +Error, +State, +Value](warnings: Vector[Warni
 
 trait Trying[Warning, Error, State, Result] {
   def apply(state: State): Seq[TyringResult[Warning, Error, State, Result]]
+}
 
-  private final def processSeq(seq: Seq[TyringResult[Warning, Error, State, Result]]): Seq[TyringResult[Warning, Error, State, Result]] = {
-    val filtered = seq.filter(_.errors.isEmpty)
-    if (filtered.isEmpty) {
-      seq
-    } else {
-      filtered
-    }
+private def processSeq[Warning, Error, State, Result](seq: Seq[TyringResult[Warning, Error, State, Result]]): Seq[TyringResult[Warning, Error, State, Result]] = {
+  val filtered = seq.filter(_.errors.isEmpty)
+  if (filtered.isEmpty) {
+    seq
+  } else {
+    filtered
   }
+}
 
-  inline final def run(inline state: State): Seq[TyringResult[Warning, Error, State, Result]] = {
-    val seq = this.apply(state)
+extension [Warning, Error, State, Result](self: Trying[Warning, Error, State, Result]) {
+  inline def run(inline state: State): Seq[TyringResult[Warning, Error, State, Result]] = {
+    val seq = self.apply(state)
     processSeq(seq)
   }
 
-  inline final def map[U](inline f: Result => U): Trying[Warning, Error, State, U] = { (state: State) =>
-    Trying.this.run(state).map { case TyringResult(warnings, errors, state, result) =>
+  inline def map[U](inline f: Result => U): Trying[Warning, Error, State, U] = { (state: State) =>
+    self.run(state).map { case TyringResult(warnings, errors, state, result) =>
       TyringResult(warnings, errors, state, f(result))
     }
   }
 
-  inline final def flatMap[U](inline f: Result => Trying[Warning, Error, State, U]): Trying[Warning, Error, State, U] = { (state: State) =>
-    Trying.this.run(state).flatMap { case TyringResult(warnings, errors, state, result) =>
+  inline def flatMap[U](inline f: Result => Trying[Warning, Error, State, U]): Trying[Warning, Error, State, U] = { (state: State) =>
+    self.run(state).flatMap { case TyringResult(warnings, errors, state, result) =>
       f(result).run(state).map { case TyringResult(warnings2, errors2, state2, result2) =>
         TyringResult(warnings ++ warnings2, errors ++ errors2, state2, result2)
       }
@@ -45,6 +47,7 @@ object Trying {
 }
 
 implicit def cpsMonadTrying[Warning, Error, State]: CpsMonad[[X] =>> Trying[Warning, Error, State, X]] = new CpsMonadTrying[Warning, Error, State]
+
 final class CpsMonadTrying[Warning, Error, State] extends CpsMonad[[X] =>> Trying[Warning, Error, State, X]] with CpsMonadContext[[X] =>> Trying[Warning, Error, State, X]] {
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)
 
@@ -60,6 +63,7 @@ final class CpsMonadTrying[Warning, Error, State] extends CpsMonad[[X] =>> Tryin
 }
 
 implicit def monadTrying[Warning, Error, State]: Monad[[X] =>> Trying[Warning, Error, State, X]] = new MonadTrying[Warning, Error, State]
+
 final class MonadTrying[Warning, Error, State] extends Monad[[X] =>> Trying[Warning, Error, State, X]] {
   type WF[A] = Trying[Warning, Error, State, A]
 
