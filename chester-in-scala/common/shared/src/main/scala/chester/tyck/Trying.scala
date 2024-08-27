@@ -3,14 +3,14 @@ package chester.tyck
 import cats.Monad
 import cps.{CpsMonad, CpsMonadContext}
 
-case class TyringResult[+Warning, +Error, +State, +Value](warnings: Vector[Warning], errors: Vector[Error], state: State, value: Value) {
+case class TyringResult[+Warning, +Error, +State, +Value](warnings: Vector[Warning], errors: Vector[Error], state: State, result: Value) {
 }
 
 trait Trying[Warning, Error, State, Result] {
-  def apply(state: State): Seq[TyringResult[Warning, Error, State, Result]]
+  def apply(state: State): Vector[TyringResult[Warning, Error, State, Result]]
 }
 
-private def processSeq[Warning, Error, State, Result](seq: Seq[TyringResult[Warning, Error, State, Result]]): Seq[TyringResult[Warning, Error, State, Result]] = {
+private def processSeq[Warning, Error, State, Result](seq: Vector[TyringResult[Warning, Error, State, Result]]): Vector[TyringResult[Warning, Error, State, Result]] = {
   val filtered = seq.filter(_.errors.isEmpty)
   if (filtered.isEmpty) {
     seq
@@ -20,21 +20,19 @@ private def processSeq[Warning, Error, State, Result](seq: Seq[TyringResult[Warn
 }
 
 extension [Warning, Error, State, Result](self: Trying[Warning, Error, State, Result]) {
-  inline def run(inline state: State): Seq[TyringResult[Warning, Error, State, Result]] = {
+  inline def run(inline state: State): Vector[TyringResult[Warning, Error, State, Result]] = {
     val seq = self.apply(state)
     processSeq(seq)
   }
 
   inline def map[U](inline f: Result => U): Trying[Warning, Error, State, U] = { (state: State) =>
-    self.run(state).map { case TyringResult(warnings, errors, state, result) =>
-      TyringResult(warnings, errors, state, f(result))
-    }
+    self.run(state).map { x => x.copy(result = f(x.result)) }
   }
 
-  inline def flatMap[U](inline f: Result => Trying[Warning, Error, State, U]): Trying[Warning, Error, State, U] = { (state: State) =>
-    self.run(state).flatMap { case TyringResult(warnings, errors, state, result) =>
-      f(result).run(state).map { case TyringResult(warnings2, errors2, state2, result2) =>
-        TyringResult(warnings ++ warnings2, errors ++ errors2, state2, result2)
+  inline def flatMap[U](inline f: Result => Trying[Warning, Error, State, U]): Trying[Warning, Error, State, U] = { (state0: State) =>
+    self.run(state0).flatMap { x =>
+      f(x.result).run(x.state).map { y =>
+        TyringResult(x.warnings ++ y.warnings, x.errors ++ y.errors, y.state, y.result)
       }
     }
   }
@@ -74,10 +72,10 @@ final class MonadTrying[Warning, Error, State] extends Monad[[X] =>> Trying[Warn
   override inline def flatMap[A, B](fa: WF[A])(f: A => WF[B]): WF[B] = fa.flatMap(f)
 
   override def tailRecM[A, B](a: A)(f: A => WF[Either[A, B]]): WF[B] = { (state: State) =>
-    f(a).apply(state).flatMap { case TyringResult(warnings, errors, state, result) =>
-      result match {
-        case Left(a) => tailRecM(a)(f).apply(state)
-        case Right(b) => Vector(TyringResult(warnings, errors, state, b))
+    f(a).run(state).flatMap { (x: TyringResult[Warning, Error, State, Either[A, B]]) =>
+      x.result match {
+        case Left(a) => tailRecM(a)(f).run(state)
+        case Right(b) => Vector(x.copy(result = b))
       }
     }
   }
