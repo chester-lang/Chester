@@ -48,6 +48,9 @@ object Trying {
   inline def error[State](inline error: TyckError): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = Vector(error)))
   }
+  inline def errors[State](inline errors: Vector[TyckError]): Trying[State, Unit] = { (state: State) =>
+    Vector(TyckResult(state = state, result = (), errors = errors))
+  }
 
   inline def warning[State](inline warning: TyckWarning): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), warnings = Vector(warning)))
