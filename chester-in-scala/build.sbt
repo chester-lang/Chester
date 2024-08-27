@@ -13,7 +13,7 @@ val nativeImageOption = Seq(
   "--no-fallback",
   "-enablesystemassertions",
   // runtime: org.jline
-  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
+  "--initialize-at-build-time=algebra,cps,com.oracle,spire,org.graalvm,scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
   "-O2",
 )
 
