@@ -61,7 +61,8 @@ object Trying {
   }
 }
 
-implicit def cpsMonadTrying[State]: CpsMonad[[X] =>> Trying[State, X]] = new CpsMonadTrying[State]
+val cpsMonadTryingInstance: CpsMonadTrying[?] = new CpsMonadTrying
+implicit inline def cpsMonadTrying[State]: CpsMonadTrying[State] = cpsMonadTryingInstance.asInstanceOf
 
 final class CpsMonadTrying[State] extends CpsMonad[[X] =>> Trying[State, X]] with CpsMonadContext[[X] =>> Trying[State, X]] {
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)
