@@ -4,17 +4,13 @@ import cats.Monad
 import chester.error.{TyckError, TyckWarning}
 import cps.{CpsMonad, CpsMonadContext}
 
-trait Trying[State, Result] {
+trait Trying[State, +Result] {
   def apply(state: State): Vector[TyckResult[State, Result]]
 }
 
 private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): Vector[TyckResult[State, Result]] = {
   val filtered = seq.filter(_.errorsEmpty)
-  if (filtered.isEmpty) {
-    seq
-  } else {
-    filtered
-  }
+  if (filtered.length < seq.length) filtered else seq
 }
 
 extension [State, Result](self: Trying[State, Result]) {
@@ -30,9 +26,15 @@ extension [State, Result](self: Trying[State, Result]) {
   inline def flatMap[U](inline f: Result => Trying[State, U]): Trying[State, U] = { (state0: State) =>
     self.run(state0).flatMap { x =>
       f(x.result).run(x.state).map { y =>
-        TyckResult(warnings = x.warnings ++ y.warnings, errors = x.errors ++ y.errors, state = y.state, result = y.result)
+        x >> y
       }
     }
+  }
+
+  inline def ||[U >: Result](inline other: Trying[State, U]): Trying[State, U] = { (state: State) =>
+    val seq1 = self.run(state)
+    val seq2 = other.run(state)
+    seq1 ++ seq2
   }
 }
 
@@ -48,6 +50,7 @@ object Trying {
   inline def error[State](inline error: TyckError): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = Vector(error)))
   }
+
   inline def errors[State](inline errors: Vector[TyckError]): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = errors))
   }
@@ -61,7 +64,8 @@ object Trying {
   }
 }
 
-implicit def cpsMonadTrying[State]: CpsMonad[[X] =>> Trying[State, X]] = new CpsMonadTrying[State]
+val cpsMonadTryingInstance: CpsMonadTrying[?] = new CpsMonadTrying
+implicit inline def cpsMonadTrying[State]: CpsMonadTrying[State] = cpsMonadTryingInstance.asInstanceOf
 
 final class CpsMonadTrying[State] extends CpsMonad[[X] =>> Trying[State, X]] with CpsMonadContext[[X] =>> Trying[State, X]] {
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)

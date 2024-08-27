@@ -195,6 +195,10 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
+case class ListType(ty: Term) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("List" <> Docs.`[`, Docs.`]`, ",")(ty)
+}
+
 case class OrType(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
@@ -283,8 +287,13 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
 }
 
-case class MetaTerm(id: VarId, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(id: VarId, ty: Option[Term], meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
+}
+
+object MetaTerm {
+  def generate(ty: Term): MetaTerm = MetaTerm(VarId.generate, Some(ty))
+  def generate(): MetaTerm = MetaTerm(VarId.generate, None)
 }
 
 sealed trait StmtTerm {

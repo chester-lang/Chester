@@ -13,7 +13,7 @@ val nativeImageOption = Seq(
   "--no-fallback",
   "-enablesystemassertions",
   // runtime: org.jline
-  "--initialize-at-build-time=scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
+  "--initialize-at-build-time=algebra,cps,com.oracle,spire,org.graalvm,scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
   "-O2",
 )
 
@@ -72,7 +72,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     assembly / assemblyJarName := "common.jar",
     commonSettings,
-    libraryDependencies += "com.github.rssh" %% "dotty-cps-async" % "0.9.21",
     autoCompilerPlugins := true,
     addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21")
   )
@@ -81,6 +80,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
     libraryDependencies ++= Seq(
+      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
@@ -95,6 +95,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     //scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
     libraryDependencies ++= Seq(
+      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
@@ -106,6 +107,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .nativeSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     libraryDependencies ++= Seq(
+      "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8",
       "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
