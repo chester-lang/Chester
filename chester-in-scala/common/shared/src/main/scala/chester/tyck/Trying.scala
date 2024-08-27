@@ -30,7 +30,7 @@ extension [State, Result](self: Trying[State, Result]) {
   inline def flatMap[U](inline f: Result => Trying[State, U]): Trying[State, U] = { (state0: State) =>
     self.run(state0).flatMap { x =>
       f(x.result).run(x.state).map { y =>
-        TyckResult(warnings = x.warnings ++ y.warnings, errors = x.errors ++ y.errors, state = y.state, result = y.result)
+        x >> y
       }
     }
   }

@@ -2,8 +2,18 @@ package chester.tyck
 
 import chester.error.{TyckError, TyckWarning}
 
+// maybe add marks about what item is used when there is a multiple choice. Maybe report some warning when two or more candidates are equally good
 case class TyckResult[+S, +T](state: S, result: T, warnings: Vector[TyckWarning] = Vector(), errors: Vector[TyckError] = Vector()) {
   def errorsEmpty: Boolean = errors.isEmpty
+
+  def >>[S, T](next: TyckResult[S, T]): TyckResult[S, T] = {
+    TyckResult(
+      state = next.state,
+      result = next.result,
+      warnings = warnings ++ next.warnings,
+      errors = errors ++ next.errors
+    )
+  }
 }
 
 object TyckResult {
