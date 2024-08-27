@@ -128,16 +128,15 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     await(resolve(expr)) match {
       case IntegerLiteral(value, meta) =>
         Judge(IntegerTerm(value), IntegerType, NoEffect)
-
       case RationalLiteral(value, meta) =>
         Judge(RationalTerm(value), RationalType, NoEffect)
-
       case StringLiteral(value, meta) =>
         Judge(StringTerm(value), StringType, NoEffect)
-
       case SymbolLiteral(value, meta) =>
         Judge(SymbolTerm(value), SymbolType, NoEffect)
-
+      case ListExpr(terms, meta) if terms.isEmpty =>
+        val a = MetaTerm.generate(Typeω)
+        Judge(ListTerm(Vector()), ListType(a), NoEffect)
       case ListExpr(terms, meta) =>
         val judges: Vector[Judge] = terms.map { term =>
           await(synthesize(term))
@@ -145,7 +144,6 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         val ty = await(tyFold(judges.map(_.ty)))
         val effect = await(effectFold(judges.map(_.effect)))
         Judge(ListTerm(judges.map(_.wellTyped)), ListType(ty), effect)
-
       case objExpr: ObjectExpr =>
         await(synthesizeObjectExpr(objExpr))
       case block: Block => await(synthesizeBlock(block))
@@ -154,7 +152,6 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         await(Trying.error(err))
         Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
       }
-
       case Identifier(id, meta) => {
         val resolved = localCtx.resolve(id)
         resolved match {
