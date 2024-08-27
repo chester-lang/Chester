@@ -53,12 +53,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case (_, AnyType) => AnyType
       case (AnyType, _) => AnyType
       case _ =>
-        // TODO
-        await(Trying.error(UnifyFailedError(ty1, ty2)))
-        new ErrorTerm(UnifyFailedError(ty1, ty2))
+        OrType(Vector(ty1, ty2))
     }
-  } || async[F] {
-    AnyType
   }
 
   def effectUnion_impl(e1: Term, e2: Term): Term = {
