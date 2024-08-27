@@ -72,7 +72,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
     assembly / assemblyJarName := "common.jar",
     commonSettings,
-    libraryDependencies += "com.github.rssh" %% "dotty-cps-async" % "0.9.21",
+    libraryDependencies += "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
     autoCompilerPlugins := true,
     addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21")
   )
