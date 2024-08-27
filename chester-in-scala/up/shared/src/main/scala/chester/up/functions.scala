@@ -55,7 +55,7 @@ inline def installRecommended[F[_]](using io: IO[F], inline runner: Runner[F]): 
     _ <- IO.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.js", js)
     _ <- writeWrapper(
       s"""#!/bin/sh
-         |exec node ${js} "$$@""".stripMargin,
+         |exec node ${js} "$$@"""".stripMargin,
       s"""@echo off
          |node ${js} %*""".stripMargin)
   } yield ()
@@ -65,7 +65,7 @@ inline def installRecommended[F[_]](using io: IO[F], inline runner: Runner[F]): 
     _ <- IO.downloadToFile("https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester.jar", jar)
     _ <- writeWrapper(
       s"""#!/bin/sh
-         |exec java -jar ${jar} "$$@""".stripMargin,
+         |exec java -jar ${jar} "$$@"""".stripMargin,
       s"""@echo off
          |java -jar ${jar} %*""".stripMargin)
   } yield ()
