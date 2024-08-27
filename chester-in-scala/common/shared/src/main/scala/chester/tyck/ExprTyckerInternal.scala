@@ -10,8 +10,12 @@ import cps.monads.given
 
 import scala.language.implicitConversions
 
+type Substitution = Map[VarId, JudgeNoEffect]
+object Substitution{
+  val Empty: Substitution = Map.empty[VarId, JudgeNoEffect]
+}
 
-case class TyckState()
+case class TyckState(subst: Substitution = Substitution.Empty)
 
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
