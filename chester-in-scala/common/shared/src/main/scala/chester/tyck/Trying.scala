@@ -4,7 +4,7 @@ import cats.Monad
 import chester.error.{TyckError, TyckWarning}
 import cps.{CpsMonad, CpsMonadContext}
 
-trait Trying[State, Result] {
+trait Trying[State, +Result] {
   def apply(state: State): Vector[TyckResult[State, Result]]
 }
 
@@ -33,6 +33,12 @@ extension [State, Result](self: Trying[State, Result]) {
         TyckResult(warnings = x.warnings ++ y.warnings, errors = x.errors ++ y.errors, state = y.state, result = y.result)
       }
     }
+  }
+
+  inline def ||[U >: Result](inline other: Trying[State, U]): Trying[State, U] = { (state: State) =>
+    val seq1 = self.run(state)
+    val seq2 = other.run(state)
+    seq1 ++ seq2
   }
 }
 

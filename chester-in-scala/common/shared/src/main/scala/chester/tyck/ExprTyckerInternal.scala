@@ -31,6 +31,7 @@ implicit def unconvertF[T](x: F[T]): Trying[TyckState, T] = x
 
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
+  /** assume a subtype relationship and get a subtype back */
   def unify(subType: Term, superType: Term): F[Term] = async[F] {
     if (subType == superType) subType
     else (subType, superType) match {
@@ -41,16 +42,19 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
+  /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): F[Term] = async[F] {
     if (ty1 == ty2) ty1
     else (ty1, ty2) match {
-      case (_, AnyType) => ty1
-      case (AnyType, _) => ty2
+      case (_, AnyType) => AnyType
+      case (AnyType, _) => AnyType
       case _ =>
         // TODO
         await(Trying.error(UnifyFailedError(ty1, ty2)))
         new ErrorTerm(UnifyFailedError(ty1, ty2))
     }
+  } || async[F] {
+    AnyType
   }
 
   def effectUnion_impl(e1: Term, e2: Term): Term = {
