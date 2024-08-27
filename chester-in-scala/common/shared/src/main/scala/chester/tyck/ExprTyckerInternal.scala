@@ -41,13 +41,48 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     }
   }
 
-  def effectUnion(e1: Term, e2: Term): Term = {
+  def common(ty1: Term, ty2: Term): F[Term] = async[F] {
+    if (ty1 == ty2) ty1
+    else (ty1, ty2) match {
+      case (_, AnyType) => ty1
+      case (AnyType, _) => ty2
+      case _ =>
+        // TODO
+        await(Trying.error(UnifyFailedError(ty1, ty2)))
+        new ErrorTerm(UnifyFailedError(ty1, ty2))
+    }
+  }
+
+  def effectUnion_impl(e1: Term, e2: Term): Term = {
     (e1, e2) match {
       case (NoEffect, _) => e2
       case (_, NoEffect) => e1
       case _ if e1 == e2 => e1
       case _ => EffectList(Vector(e1, e2))
     }
+  }
+
+  def effectUnion(e1: Term, e2: Term): F[Term] = async[F] {
+    effectUnion_impl(e1, e2)
+  }
+
+  def effectFold(es: Seq[Term]): F[Term] = async[F] {
+    es.reduceOption(effectUnion_impl).getOrElse(NoEffect)
+  }
+
+  extension [A](xs: Seq[A]) {
+    def foldLeftM[B](z: B)(f: (B, A) => F[B]): F[B] = async[F] {
+      var acc = z
+      for (elem <- xs) {
+        acc = await(f(acc, elem))
+      }
+      acc
+    }
+    def reduceM(f: (A, A) => F[A]): F[A] = xs.tail.foldLeftM(xs.head)(f)
+  }
+
+  def tyFold(types: Vector[Term]): F[Term] = {
+    types.reduceM((ty1, ty2) => common(ty1, ty2))
   }
 
   def unifyEffect(subEffect: Term, superEffect: Term): F[Term] = async[F] {
@@ -66,13 +101,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
         val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(valueExpr))
         val Judge(keyWellTyped, _, keyEffect) = await(synthesize(keyExpr))
-        val combinedEffect = effectUnion(exprEffect, keyEffect)
+        val combinedEffect = await(effectUnion(exprEffect, keyEffect))
         EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
       }
       case _ => throw new IllegalArgumentException("Unexpected clause type, maybe no desalted")
     }
 
-    val combinedEffect = synthesizedClausesWithEffects.map(_.effect).reduceOption(effectUnion).getOrElse(NoEffect)
+    val combinedEffect = await(effectFold(synthesizedClausesWithEffects.map(_.effect)))
     val objectClauses = synthesizedClausesWithEffects.map(_.value)
 
     val objectTerm = ObjectTerm(objectClauses.map { case (key, value, _) => ObjectClauseValueTerm(key, value) })
@@ -98,6 +133,14 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
       case SymbolLiteral(value, meta) =>
         Judge(SymbolTerm(value), SymbolType, NoEffect)
+
+      case ListExpr(terms, meta) =>
+        val judges: Vector[Judge] = terms.map { term =>
+          await(synthesize(term))
+        }
+        val ty = await(tyFold(judges.map(_.ty)))
+        val effect = await(effectFold(judges.map(_.effect)))
+        Judge(ListTerm(judges.map(_.wellTyped)), ListType(ty), effect)
 
       case objExpr: ObjectExpr =>
         await(synthesizeObjectExpr(objExpr))
@@ -152,6 +195,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     result
   }
 
+  // TODO
+  def inheritEffect(target: Option[Term] = None, eff: Term): F[Term] = async[F] {
+    eff
+  }
+
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
     val expr1: Expr = await(resolve(expr))
     val jdg1: Judge = await(whnf(Judge(ty, Typeω)))
@@ -159,12 +207,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     (expr1, ty1) match {
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = await(inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
-        Judge(ObjectTerm(inheritedFields), ty, effectUnion(inheritedEffect, effect.getOrElse(NoEffect)))
-
+        Judge(ObjectTerm(inheritedFields), ty, await(inheritEffect(effect, inheritedEffect)))
+      case (ListExpr(terms, meta), lstTy@ListType(ty)) =>
+        val checkedTerms: Vector[EffectWith[Term]] = terms.map { term =>
+          val Judge(wellTypedTerm, termType, termEffect) = await(inherit(term, ty))
+          EffectWith(termEffect, wellTypedTerm)
+        }
+        val effect1 = await(inheritEffect(effect, await(effectFold(checkedTerms.map(_.effect)))))
+        Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case _ =>
         val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(expr))
         val ty1 = await(unify(exprType, ty))
-        val effect1 = effect.map(eff => (effectUnion(exprEffect, eff))).getOrElse(exprEffect)
+        val effect1 = await(inheritEffect(effect, exprEffect))
         Judge(wellTypedExpr, ty1, effect1)
     }
   }

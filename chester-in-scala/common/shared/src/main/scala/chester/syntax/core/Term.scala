@@ -195,6 +195,10 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
+case class ListType(ty: Term) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("List" <> Docs.`[`, Docs.`]`, ",")(ty)
+}
+
 case class OrType(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
