@@ -10,11 +10,7 @@ trait Trying[State, +Result] {
 
 private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): Vector[TyckResult[State, Result]] = {
   val filtered = seq.filter(_.errorsEmpty)
-  if (filtered.isEmpty) {
-    seq
-  } else {
-    filtered
-  }
+  if (filtered.length < seq.length) filtered else seq
 }
 
 extension [State, Result](self: Trying[State, Result]) {
@@ -54,6 +50,7 @@ object Trying {
   inline def error[State](inline error: TyckError): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = Vector(error)))
   }
+
   inline def errors[State](inline errors: Vector[TyckError]): Trying[State, Unit] = { (state: State) =>
     Vector(TyckResult(state = state, result = (), errors = errors))
   }
