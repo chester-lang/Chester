@@ -306,6 +306,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def inheritEffect(target: Option[Term] = None, eff: Term): F[Term] = async[F] {
     eff
   }
+  
+  def conversion(judge: Judge, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
+    val Judge(wellTypedExpr, exprType, exprEffect) = judge
+    val ty1 = await(unifyTy(exprType, ty))
+    val effect1 = await(inheritEffect(effect, exprEffect))
+    Judge(wellTypedExpr, ty1, effect1)
+  }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
     val expr1: Expr = await(resolve(expr))
@@ -324,10 +331,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         val effect1 = await(inheritEffect(effect, await(effectFold(checkedTerms.map(_.effect)))))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
-        val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(expr))
-        val ty1 = await(unifyTy(exprType, ty))
-        val effect1 = await(inheritEffect(effect, exprEffect))
-        Judge(wellTypedExpr, ty1, effect1)
+        conversion(synthesize(expr).!, ty, effect).!
     }
   }
 
