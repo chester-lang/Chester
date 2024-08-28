@@ -12,8 +12,8 @@ trait Trying[State, +Result] {
 //type Trying[State, +Result] = State => Vector[TyckResult[State, Result]]
 
 private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): Vector[TyckResult[State, Result]] = {
-  val filtered = seq.filter(_.errorsEmpty)
-  if (filtered.length < seq.length) filtered else seq
+  val (filtered, errors) = seq.partition(_.errorsEmpty)
+  if (filtered.length < seq.length) filtered :+ errors.head else seq
 }
 
 extension [State, Result](self: Trying[State, Result]) {
