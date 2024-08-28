@@ -23,7 +23,7 @@ private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): V
   if (filtered.length < seq.length) filtered :+ errors.head else seq
 }
 
-extension [State, Result](self: Trying[State, Result]) {
+extension [State, Result](self: Trying[State, Result] | ([X] =>> Trying[State, X])[Result]) {
   inline def run(inline state: State): Vector[TyckResult[State, Result]] = {
     val seq = self.apply(state)
     processSeq(seq)
