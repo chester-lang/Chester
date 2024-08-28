@@ -9,6 +9,7 @@ import scala.annotation.targetName
 trait Trying[State, +Result] {
   def apply(state: State): Vector[TyckResult[State, Result]]
 }
+//type Trying[State, +Result] = State => Vector[TyckResult[State, Result]]
 
 private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): Vector[TyckResult[State, Result]] = {
   val filtered = seq.filter(_.errorsEmpty)
