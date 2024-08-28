@@ -1,5 +1,7 @@
 # Chester Language - Trying to make a practical possibly unsound object-oriented functional dependently typed language with algebraic effects
 
+Please do formal verification and serious dependently type works on other languages. Type system of this language will be likely to have bad properties as compromises for other features.
+
 It might look like?
 
 ```chester
