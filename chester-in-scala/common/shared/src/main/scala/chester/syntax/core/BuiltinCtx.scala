@@ -2,7 +2,7 @@ package chester.syntax.core
 
 import chester.syntax.{Id, QualifiedIDString}
 
-case class CtxItem(name: VarCall, judge: JudgeNoEffect)
+case class CtxItem(name: MaybeVarCall, judge: JudgeNoEffect)
 
 class Context(map: Map[Id, CtxItem]) {
   private val varMap: Map[VarId, Id] = map.map { case (id, CtxItem(name, _)) => name.varId -> id }
@@ -30,5 +30,6 @@ object BuiltinCtx {
     builtinItem("Rational", RationalType, Type0),
     builtinItem("String", StringType, Type0),
     builtinItem("Symbol", SymbolType, Type0),
+    builtinItem("List", ListF, TyToty),
   )
 }

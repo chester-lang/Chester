@@ -1,9 +1,9 @@
 // TODO: More correctly implement toDoc
 package chester.syntax.core
 
-import chester.doc.const.{ColorProfile, Docs}
 import chester.doc.*
 import chester.doc.Doc.group
+import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
 import chester.utils.encodeString
@@ -33,7 +33,33 @@ sealed trait TermWithMeta extends Term with WithPos {
 }
 
 /** CallTerm has meta to trace runtime errors and debug */
-sealed trait CallTerm extends TermWithMeta
+sealed trait MaybeCallTerm extends TermWithMeta
+
+case class Calling(args: Vector[Term], implicitly: Boolean = false) extends ToDoc {
+  def toDoc(implicit options: PrettierOptions): Doc = {
+    val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
+    if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
+  }
+}
+
+case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None) extends MaybeCallTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val fDoc = f.toDoc
+    val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
+    group(fDoc <+> argsDoc)
+  }
+}
+
+object FCallTerm {
+  object call {
+    def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector)))
+
+    def unapplySeq(f: Term): Option[Seq[Term]] = f match {
+      case FCallTerm(f, Seq(Calling(args, false)), _) => Some(f +: args)
+      case _ => None
+    }
+  }
+}
 
 sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
@@ -125,7 +151,7 @@ case object AnyType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
-case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boolean) extends Term {
+case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val patternDoc = pattern.toDoc
     val tyDoc = ty.toDoc
@@ -135,9 +161,13 @@ case class ArgTerm(pattern: Term, ty: Term, default: Option[Term], vararg: Boole
   }
 }
 
+object TelescopeTerm {
+  def from(x: ArgTerm*): VisibleTelescopeTerm = VisibleTelescopeTerm(x.toVector)
+}
+
 sealed trait TelescopeTerm extends Term
 
-case class VisibleTelescopeTerm(implicitly: Boolean, args: Vector[ArgTerm]) extends TelescopeTerm {
+case class VisibleTelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
 }
 
@@ -151,7 +181,7 @@ object ScopeId {
   def generate: ScopeId = ScopeId(VarId.generate)
 }
 
-case class Function(scope: ScopeId, ty: FunctionType, body: Term, meta: OptionTermMeta = None) extends TermWithMeta {
+case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None, meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val tyDoc = ty.toDoc
     val bodyDoc = body.toDoc
@@ -170,7 +200,7 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingCl
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(restrictInScope: Vector[ScopeId], telescope: Vector[TelescopeTerm], effect: Term, resultTy: Term, meta: OptionTermMeta = None) extends TermWithMeta {
+case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Term = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduce(_ <+> _)
     val effectDoc = effect.toDoc
@@ -178,6 +208,23 @@ case class FunctionType(restrictInScope: Vector[ScopeId], telescope: Vector[Tele
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
   }
 }
+
+
+object FunctionType {
+  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Term = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
+    new FunctionType(telescope, resultTy, effect, restrictInScope, meta)
+  }
+
+  def apply(telescope: TelescopeTerm, resultTy: Term): FunctionType = {
+    new FunctionType(Vector(telescope), resultTy)
+  }
+}
+
+def TyToty: FunctionType = {
+  val ty = LocalVar.generate("x", Type0)
+  FunctionType(TelescopeTerm.from(ArgTerm(ty, Type0)), ty)
+}
+
 
 case class ObjectClauseValueTerm(key: Term, value: Term) {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
@@ -195,8 +242,17 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
-case class ListType(ty: Term) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("List" <> Docs.`[`, Docs.`]`, ",")(ty)
+case object ListF extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = "List"
+}
+
+object ListType {
+  def apply(ty: Term): Term = FCallTerm.call(ListF, ty)
+
+  def unapply(ty: Term): Option[Term] = ty match {
+    case FCallTerm.call(ListF, x) => Some(x)
+    case _ => None
+  }
 }
 
 case class OrType(xs: Vector[Term]) extends Term {
@@ -270,16 +326,21 @@ object VarId {
   }
 }
 
-sealed trait VarCall extends CallTerm {
+sealed trait MaybeVarCall extends MaybeCallTerm {
   def varId: VarId
+
   def id: Id
 }
 
-case class LocalVarCall(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends VarCall {
+case class LocalVar(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
-case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends VarCall {
+object LocalVar {
+  def generate(id: Id, ty: Term): LocalVar = LocalVar(id, ty, VarId.generate)
+}
+
+case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 }
 
