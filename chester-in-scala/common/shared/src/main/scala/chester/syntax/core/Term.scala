@@ -140,20 +140,20 @@ case class SymbolTerm(value: String) extends Term {
 }
 
 case object RationalType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational").colored(ColorProfile.typeColor)
 }
 
 // float of 32 bits or more
 case object FloatType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float").colored(ColorProfile.typeColor)
 }
 
 case object StringType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String").colored(ColorProfile.typeColor)
 }
 
 case object SymbolType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol")
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").colored(ColorProfile.typeColor)
 }
 
 case class AnyType(level: Term) extends TypeTerm {
@@ -161,6 +161,10 @@ case class AnyType(level: Term) extends TypeTerm {
 }
 
 val AnyType0 = AnyType(Level0)
+
+case object NothingType extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
+}
 
 case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
