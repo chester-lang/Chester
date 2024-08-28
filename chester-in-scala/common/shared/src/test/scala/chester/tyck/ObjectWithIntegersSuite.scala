@@ -26,14 +26,14 @@ class ObjectWithIntegersSuite extends FunSuite {
     result match {
       case Right(Judge(ObjectTerm(clauses), ObjectType(fieldTypes, _), _)) =>
         // Check each clause for the correct field name and value
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerTerm(42)) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerTerm(24)) => true }.isDefined, true)
-        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerTerm(100)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntTerm(42)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntTerm(24)) => true }.isDefined, true)
+        assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntTerm(100)) => true }.isDefined, true)
 
         // Check the field types
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntType) => true }.isDefined, true)
 
       case _ => fail("Synthesis failed")
     }
@@ -55,7 +55,7 @@ class ObjectWithIntegersSuite extends FunSuite {
                   key = SymbolTerm(
                     value = "y"
                   ),
-                  value = IntegerTerm(
+                  value = IntTerm(
                     value = 1
                   ),
                   

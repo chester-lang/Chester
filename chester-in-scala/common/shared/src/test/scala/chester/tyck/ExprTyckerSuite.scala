@@ -30,7 +30,7 @@ class ExprTyckerSuite extends FunSuite {
     val result = ExprTycker.inheritV0(intExpr, anyType, state = state, ctx = ctx)
 
     assert(result.isRight)
-    assertEquals(result.map(_.wellTyped), Right(IntegerTerm(42)))
-    assertEquals(result.map(_.ty), Right(IntegerType))
+    assertEquals(result.map(_.wellTyped), Right(IntTerm(42)))
+    assertEquals(result.map(_.ty), Right(IntType))
   }
 }
