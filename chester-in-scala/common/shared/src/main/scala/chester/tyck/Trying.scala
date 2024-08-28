@@ -6,10 +6,17 @@ import cps.{CpsMonad, CpsMonadContext}
 
 import scala.annotation.targetName
 
+/*
 trait Trying[State, +Result] {
   def apply(state: State): Vector[TyckResult[State, Result]]
 }
-//type Trying[State, +Result] = State => Vector[TyckResult[State, Result]]
+*/
+opaque type Trying[State, +Result] = State => Vector[TyckResult[State, Result]]
+
+//implicit inline def trying0[T, U](inline f: T => Vector[TyckResult[T, U]]): Trying[T, U] = f
+implicit inline def hackfailed0[T, U](inline x: ([X] =>> Trying[T, X])[U]): Trying[T, U] = x
+implicit inline def hackfailed1[A, T, U](inline x: A => ([X] =>> Trying[T, X])[U]): A => Trying[T, U] = x
+implicit inline def hackfailed2[T, U](inline x: Unit => ([X] =>> Trying[T, X])[U]): Unit => Trying[T, U] = x
 
 private def processSeq[State, Result](seq: Vector[TyckResult[State, Result]]): Vector[TyckResult[State, Result]] = {
   val (filtered, errors) = seq.partition(_.errorsEmpty)
@@ -90,6 +97,8 @@ val cpsMonadTryingInstance: CpsMonadTrying[?] = new CpsMonadTrying
 implicit inline def cpsMonadTrying[State]: CpsMonadTrying[State] = cpsMonadTryingInstance.asInstanceOf
 
 final class CpsMonadTrying[State] extends CpsMonad[[X] =>> Trying[State, X]] with CpsMonadContext[[X] =>> Trying[State, X]] {
+  private implicit inline def hack1[X](inline f: WF[X]): Trying[State, X] = f
+  private implicit inline def hack2[A,B](inline f: A => WF[B]): A => Trying[State, B] = f
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)
 
   override inline def map[A, B](fa: WF[A])(f: A => B): WF[B] = fa.map(f)
@@ -107,6 +116,10 @@ implicit def monadTrying[State]: Monad[[X] =>> Trying[State, X]] = new MonadTryi
 
 final class MonadTrying[State] extends Monad[[X] =>> Trying[State, X]] {
   type WF[A] = Trying[State, A]
+
+  private implicit inline def hack1[X](inline f: WF[X]): Trying[State, X] = f
+
+  private implicit inline def hack2[A, B](inline f: A => WF[B]): A => Trying[State, B] = f
 
   override inline def pure[A](a: A): WF[A] = Trying.pure(a)
 
