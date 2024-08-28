@@ -47,6 +47,10 @@ type F = [X] =>> Trying[TyckState, X]
 implicit def convertF[T](x: Trying[TyckState, T]): F[T] = x
 implicit def unconvertF[T](x: F[T]): Trying[TyckState, T] = x
 
+extension [F[_], T, G[_]](f: F[T]) {
+  transparent inline def !(using inline ctx: _root_.cps.CpsMonadContext[G], inline conversion: _root_.cps.CpsMonadConversion[F, G]): T = await(f)
+}
+
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   /** assume a subtype relationship and get a subtype back */
@@ -104,7 +108,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     def foldLeftM[B](z: B)(f: (B, A) => F[B]): F[B] = async[F] {
       var acc = z
       for (elem <- xs) {
-        acc = await(f(acc, elem))
+        acc = f(acc, elem).!
       }
       acc
     }
@@ -121,7 +125,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case (NoEffect, _) => superEffect
       case _ if subEffect == superEffect => subEffect
       case _ =>
-        await(Trying.error(UnifyFailedError(subEffect, superEffect)))
+        Trying.error(UnifyFailedError(subEffect, superEffect)).!
         new ErrorTerm(UnifyFailedError(subEffect, superEffect))
     }
   }
@@ -129,15 +133,15 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def synthesizeObjectExpr(x: ObjectExpr): F[Judge] = async[F] {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
       case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
-        val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(valueExpr))
-        val Judge(keyWellTyped, _, keyEffect) = await(synthesize(keyExpr))
-        val combinedEffect = await(effectUnion(exprEffect, keyEffect))
+        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr).!
+        val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr).!
+        val combinedEffect = effectUnion(exprEffect, keyEffect).!
         EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
       }
       case _ => throw new IllegalArgumentException("Unexpected clause type, maybe no desalted")
     }
 
-    val combinedEffect = await(effectFold(synthesizedClausesWithEffects.map(_.effect)))
+    val combinedEffect = effectFold(synthesizedClausesWithEffects.map(_.effect)).!
     val objectClauses = synthesizedClausesWithEffects.map(_.value)
 
     val objectTerm = ObjectTerm(objectClauses.map { case (key, value, _) => ObjectClauseValueTerm(key, value) })
@@ -151,7 +155,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   }
 
   def synthesize(expr: Expr): F[Judge] = async[F] {
-    await(resolve(expr)) match {
+    resolve(expr).! match {
       case IntegerLiteral(value, meta) =>
         Judge(IntegerTerm(value), IntegerType, NoEffect)
       case RationalLiteral(value, meta) =>
@@ -165,13 +169,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         Judge(ListTerm(Vector()), ListType(a), NoEffect)
       case ListExpr(terms, meta) =>
         val judges: Vector[Judge] = terms.map { term =>
-          await(synthesize(term))
+          synthesize(term).!
         }
-        val ty = await(tyFold(judges.map(_.ty)))
-        val effect = await(effectFold(judges.map(_.effect)))
+        val ty = tyFold(judges.map(_.ty)).!
+        val effect = effectFold(judges.map(_.effect)).!
         Judge(ListTerm(judges.map(_.wellTyped)), ListType(ty), effect)
       case objExpr: ObjectExpr =>
-        await(synthesizeObjectExpr(objExpr))
+        synthesizeObjectExpr(objExpr).!
       case block: Block => await(synthesizeBlock(block))
       case expr: Stmt => {
         val err = UnexpectedStmt(expr)
