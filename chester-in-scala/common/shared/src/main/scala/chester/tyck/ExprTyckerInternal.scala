@@ -11,13 +11,13 @@ import cps.monads.given
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-type Substitution = Map[VarId, JudgeMaybeEffect]
+type Solutions = Map[VarId, JudgeMaybeEffect]
 
-object Substitution {
-  val Empty: Substitution = Map.empty
+object Solutions {
+  val Empty: Solutions = Map.empty
 }
 
-extension (subst: Substitution) {
+extension (subst: Solutions) {
   @tailrec
   def walk(term: MetaTerm): JudgeMaybeEffect = subst.get(term.id) match {
     case Some(clause) => clause.wellTyped match {
@@ -28,7 +28,7 @@ extension (subst: Substitution) {
   }
 }
 
-case class TyckState(subst: Substitution = Substitution.Empty)
+case class TyckState(subst: Solutions = Solutions.Empty)
 
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
