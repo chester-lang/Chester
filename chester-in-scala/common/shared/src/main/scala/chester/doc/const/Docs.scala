@@ -12,4 +12,5 @@ object Docs {
   def `)`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("endTuple") else Doc.text(")")
   def `->`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("to") else Doc.text("->")
   def `:`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("is") else Doc.text(":")
+  def `...`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("ellipsis") else Doc.text("...")
 }

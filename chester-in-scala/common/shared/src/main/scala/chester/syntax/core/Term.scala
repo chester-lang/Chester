@@ -37,7 +37,18 @@ sealed trait MaybeCallTerm extends TermWithMeta {
   override def whnf: Boolean = false
 }
 
-case class Calling(args: Vector[Term], implicitly: Boolean = false) extends ToDoc {
+case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc {
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    if (name.isEmpty && !vararg) return value.toDoc
+    if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
+    val nameDoc = name.get
+    val valueDoc = value.toDoc
+    val varargDoc = if (vararg) Docs.`...` else Doc.empty
+    group(nameDoc <+> valueDoc <+> varargDoc)
+  }
+}
+
+case class Calling(args: Vector[CallingArg], implicitly: Boolean = false) extends ToDoc {
   def toDoc(implicit options: PrettierOptions): Doc = {
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
@@ -59,10 +70,15 @@ case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None
 
 object FCallTerm {
   object call {
-    def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector)))
+    def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector.map(CallingArg(_)))))
 
     def unapplySeq(f: Term): Option[Seq[Term]] = f match {
-      case FCallTerm(f, Seq(Calling(args, false)), _) => Some(f +: args)
+      case FCallTerm(f, Seq(Calling(args, false)), _) if args.forall {
+        case CallingArg(_, None, false) => true
+        case _ => false
+      } => Some(f +: args.map {
+        case CallingArg(value, _, _) => value
+      })
       case _ => None
     }
   }
