@@ -4,6 +4,8 @@ import cats.Monad
 import chester.error.{TyckError, TyckWarning}
 import cps.{CpsMonad, CpsMonadContext}
 
+import scala.annotation.targetName
+
 trait Trying[State, +Result] {
   def apply(state: State): Vector[TyckResult[State, Result]]
 }
@@ -39,6 +41,25 @@ extension [State, Result](self: Trying[State, Result]) {
 }
 
 object Trying {
+  private def flatten[T](xs: Seq[Seq[T]]): Vector[T] = {
+    var result = Vector.empty[T]
+    var iter = xs.toVector.filter(_.nonEmpty)
+    while (iter.nonEmpty) {
+      val head = iter.map(_.head)
+      val tail = iter.map(_.tail)
+      result ++= head
+      iter = tail.filter(_.nonEmpty)
+    }
+    result
+  }
+
+  def or[State, T](xs: Seq[Trying[State, T]]): Trying[State, T] = { (state: State) =>
+    flatten(xs.map(_.run(state)))
+  }
+
+  @targetName("or1")
+  def or[State, T](xs: Trying[State, T]*): Trying[State, T] = or(xs)
+
   inline def state[State]: Trying[State, State] = { (state: State) =>
     Vector(TyckResult(state = state, result = state))
   }

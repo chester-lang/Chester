@@ -7,8 +7,6 @@ import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.reuse
 import cps.*
-import cps.monads.given
-import cps.runtime.util.control.NonLocalReturnsAsyncShift.{returning, throwReturn}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -58,8 +56,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): F[Term] = async[F] {
     if (subType == superType) subType
     else (subType, superType) match {
-      case (_, AnyType(level)) => subType // TODO: level
-      case _ =>
+      case (subType, AnyType(level)) => subType // TODO: level
+      case (OrType(subTypes),OrType(superTypes)) => ???
+      case (subType, OrType(superTypes)) => Trying.or(superTypes.map(unify(subType, _))).!
+      case (subType, AndType(superTypes)) => {
+        val results = superTypes.mapM(unify(subType, _)).!
+        AndType(results)
+      }
+      case(OrType(subTypes), superType) => {
+        val results = subTypes.mapM(unify(_, superType)).!
+        OrType(results)
+      }
+      case (subType, superType) =>
         await(Trying.error(UnifyFailedError(subType, superType)))
         new ErrorTerm(UnifyFailedError(subType, superType))
     }
@@ -89,6 +97,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case _ =>
         OrType(Vector(ty1, ty2))
     }
+  }
+  def common(seq: Seq[Term]): F[Term] = async[F] {
+    seq.reduceM(common).!
   }
 
   def effectUnion_impl(e1: Term, e2: Term): Term = {

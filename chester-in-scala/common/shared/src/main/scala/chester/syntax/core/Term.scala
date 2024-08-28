@@ -272,10 +272,26 @@ case class OrType(xs: Vector[Term]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
 }
 
+
+private inline def flatList[T <: Term](inline constructor: Vector[Term] => T, inline unapply: Term => Option[Vector[Term]], inline post: Vector[Term] => Vector[Term] = x => x)(inline xs: Vector[Term]) = {
+  val flattened = post(xs.flatMap { item =>
+    unapply(item).getOrElse(Vector(item))
+  })
+  constructor(flattened)
+}
+
+object OrType {
+  def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None })(xs)
+}
+
 case class AndType(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
+}
+
+object AndType {
+  def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
 }
 
 sealed trait EffectTerm extends Term
