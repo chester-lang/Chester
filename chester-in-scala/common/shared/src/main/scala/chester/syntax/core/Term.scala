@@ -103,6 +103,10 @@ case object Typeω extends Sort with Term {
 
 sealed trait LiteralTerm extends Term
 
+case class IntTerm(value: Int) extends LiteralTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
+}
+
 case class IntegerTerm(value: BigInt) extends LiteralTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }

@@ -57,13 +57,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     if (subType == superType) subType
     else (subType, superType) match {
       case (subType, AnyType(level)) => subType // TODO: level
-      case (OrType(subTypes),OrType(superTypes)) => ???
+      case (OrType(subTypes), OrType(superTypes)) => ???
       case (subType, OrType(superTypes)) => Trying.or(superTypes.map(unifyTy(subType, _))).!
       case (subType, AndType(superTypes)) => {
         val results = superTypes.mapM(unifyTy(subType, _)).!
         AndType(results)
       }
-      case(OrType(subTypes), superType) => {
+      case (OrType(subTypes), superType) => {
         val results = subTypes.mapM(unifyTy(_, superType)).!
         OrType(results)
       }
@@ -98,6 +98,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         OrType(Vector(ty1, ty2))
     }
   }
+
   def common(seq: Seq[Term]): F[Term] = async[F] {
     seq.reduceM(common).!
   }
@@ -183,7 +184,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def synthesize(expr: Expr): F[Judge] = async[F] {
     resolve(expr).! match {
       case IntegerLiteral(value, meta) =>
-        Judge(IntegerTerm(value), IntegerType, NoEffect)
+        if (value.isValidInt)
+          Judge(IntTerm(value.toInt), IntType, NoEffect)
+        else
+          Judge(IntegerTerm(value), IntegerType, NoEffect)
       case RationalLiteral(value, meta) =>
         Judge(RationalTerm(value), RationalType, NoEffect)
       case StringLiteral(value, meta) =>
