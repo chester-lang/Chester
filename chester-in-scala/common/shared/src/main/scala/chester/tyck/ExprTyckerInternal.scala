@@ -53,18 +53,18 @@ extension [F[_], T, G[_]](f: F[T]) {
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   /** assume a subtype relationship and get a subtype back */
-  def unify(subType: Term, superType: Term): F[Term] = async[F] {
+  def unifyTy(subType: Term, superType: Term): F[Term] = async[F] {
     if (subType == superType) subType
     else (subType, superType) match {
       case (subType, AnyType(level)) => subType // TODO: level
       case (OrType(subTypes),OrType(superTypes)) => ???
-      case (subType, OrType(superTypes)) => Trying.or(superTypes.map(unify(subType, _))).!
+      case (subType, OrType(superTypes)) => Trying.or(superTypes.map(unifyTy(subType, _))).!
       case (subType, AndType(superTypes)) => {
-        val results = superTypes.mapM(unify(subType, _)).!
+        val results = superTypes.mapM(unifyTy(subType, _)).!
         AndType(results)
       }
       case(OrType(subTypes), superType) => {
-        val results = subTypes.mapM(unify(_, superType)).!
+        val results = subTypes.mapM(unifyTy(_, superType)).!
         OrType(results)
       }
       case (subType, superType) =>
@@ -254,7 +254,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     wellTyped match {
       case OrType(xs) if xs.exists(_.isInstanceOf[AnyType]) =>
         val level = collectLevel(xs).!
-        Judge(AnyType(level), unify(Type(level), ty).!, effect)
+        Judge(AnyType(level), unifyTy(Type(level), ty).!, effect)
       case wellTyped => reuse(judge, Judge(wellTyped, ty, effect))
     }
   }
@@ -270,7 +270,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     result.wellTyped match
       case term: MetaTerm => {
         val walked = walk(term).!
-        whnf(Judge(walked.wellTyped, unify(walked.ty, result.ty).!, unifyEff(walked.effect, result.effect).!)).!
+        whnf(Judge(walked.wellTyped, unifyTy(walked.ty, result.ty).!, unifyEff(walked.effect, result.effect).!)).!
       }
       case _ => result
   }
@@ -305,7 +305,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
         val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(expr))
-        val ty1 = await(unify(exprType, ty))
+        val ty1 = await(unifyTy(exprType, ty))
         val effect1 = await(inheritEffect(effect, exprEffect))
         Judge(wellTypedExpr, ty1, effect1)
     }
@@ -341,7 +341,7 @@ object ExprTycker {
   }
 
   def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    val results = ExprTyckerInternal(ctx).unify(subType, superType).run(state)
+    val results = ExprTyckerInternal(ctx).unifyTy(subType, superType).run(state)
     results.head
   }
 
