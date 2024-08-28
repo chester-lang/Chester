@@ -12,7 +12,7 @@ class ExprTyckerSuite extends FunSuite {
     val ctx = LocalCtx.Empty
 
     val intType = IntegerType
-    val anyType = AnyType
+    val anyType = AnyType0
 
     val result = ExprTycker.unifyV0(intType, anyType, state, ctx)
     assertEquals(result, Right(intType))
@@ -24,7 +24,7 @@ class ExprTyckerSuite extends FunSuite {
     val ctx = LocalCtx.Empty
 
     val intType = IntegerType
-    val anyType = AnyType
+    val anyType = AnyType0
     val intExpr = IntegerLiteral(42, None)
 
     val result = ExprTycker.inheritV0(intExpr, anyType, state = state, ctx = ctx)

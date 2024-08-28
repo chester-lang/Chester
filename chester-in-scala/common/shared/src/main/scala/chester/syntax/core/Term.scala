@@ -33,7 +33,9 @@ sealed trait TermWithMeta extends Term with WithPos {
 }
 
 /** CallTerm has meta to trace runtime errors and debug */
-sealed trait MaybeCallTerm extends TermWithMeta
+sealed trait MaybeCallTerm extends TermWithMeta {
+  override def whnf: Boolean = false
+}
 
 case class Calling(args: Vector[Term], implicitly: Boolean = false) extends ToDoc {
   def toDoc(implicit options: PrettierOptions): Doc = {
@@ -47,6 +49,11 @@ case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None
     val fDoc = f.toDoc
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     group(fDoc <+> argsDoc)
+  }
+
+  override def whnf: Boolean = f match {
+    case ListF => true
+    case _ => false
   }
 }
 
@@ -63,6 +70,8 @@ object FCallTerm {
 
 sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
+
+  def whnf: Boolean = true
 }
 
 case class ListTerm(terms: Vector[Term]) extends Term {
@@ -147,9 +156,11 @@ case object SymbolType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol")
 }
 
-case object AnyType extends TypeTerm {
+case class AnyType(level: Term) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
+
+val AnyType0 = AnyType(Level0)
 
 case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {

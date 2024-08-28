@@ -81,7 +81,7 @@ object IntegrityCheck {
     val ctx = LocalCtx.Empty
 
     val intType = IntegerType
-    val anyType = AnyType
+    val anyType = AnyType0
 
     val result = ExprTycker.unifyV0(intType, anyType, state, ctx)
     assertEquals(result, Right(intType))

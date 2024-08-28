@@ -5,6 +5,7 @@ import chester.resolve.ExprResolver
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
+import chester.utils.reuse
 import cps.*
 import cps.monads.given
 import cps.runtime.util.control.NonLocalReturnsAsyncShift.{returning, throwReturn}
@@ -57,7 +58,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unify(subType: Term, superType: Term): F[Term] = async[F] {
     if (subType == superType) subType
     else (subType, superType) match {
-      case (_, AnyType) => subType
+      case (_, AnyType(level)) => subType // TODO: level
       case _ =>
         await(Trying.error(UnifyFailedError(subType, superType)))
         new ErrorTerm(UnifyFailedError(subType, superType))
@@ -67,21 +68,24 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def unifyEff(subEff: Option[Term], superEff: Option[Term]): F[Option[Term]] = async[F] {
     if (subEff == superEff) subEff
     else if (superEff.isEmpty) subEff
-    else if(subEff.isEmpty) superEff // TODO: what does this mean?
+    else if (subEff.isEmpty) superEff // TODO: what does this mean?
     else {
       subEff // TODO: correct logic
     }
   }
+
   def unifyEff(subEff: Term, superEff: Term): F[Term] = unifyEff(Some(subEff), Some(superEff)).map(_.get)
+
   def unifyEff(subEff: Option[Term], superEff: Term): F[Term] = unifyEff(subEff, Some(superEff)).map(_.get)
+
   def unifyEff(subEff: Term, superEff: Option[Term]): F[Term] = unifyEff(Some(subEff), superEff).map(_.get)
 
   /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): F[Term] = async[F] {
     if (ty1 == ty2) ty1
     else (ty1, ty2) match {
-      case (_, AnyType) => AnyType
-      case (AnyType, _) => AnyType
+      case (_, AnyType(level)) => AnyType0 // TODO: level
+      case (AnyType(level), _) => AnyType0 // TODO: level
       case _ =>
         OrType(Vector(ty1, ty2))
     }
@@ -104,6 +108,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     es.reduceOption(effectUnion_impl).getOrElse(NoEffect)
   }
 
+  def collectLevel(xs: Seq[Term]): F[Term] = async[F] {
+    Level0 // TODO
+  }
+
   extension [A](xs: Seq[A]) {
     def foldLeftM[B](z: B)(f: (B, A) => F[B]): F[B] = async[F] {
       var acc = z
@@ -113,6 +121,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       acc
     }
     def reduceM(f: (A, A) => F[A]): F[A] = xs.tail.foldLeftM(xs.head)(f)
+    def mapM[B](f: A => F[B]): F[Vector[B]] = async[F] {
+      var acc = Vector.empty[B]
+      for (elem <- xs) {
+        acc = acc :+ f(elem).!
+      }
+      acc
+    }
   }
 
   def tyFold(types: Vector[Term]): F[Term] = {
@@ -211,27 +226,40 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     ??? // TODO
   }
 
-  val normalizer = new Normalizer()
-
+  /** part of whnf */
   def normalize(judge: Judge): F[Judge] = async[F] {
-    val state = await(Trying.state)
-    val (newState, normalizedTerm) = normalizer.apply(judge).run(state).value
-    await(Trying.state = newState)
-    normalizedTerm
+    val ty0 = judge.ty
+    val ty = if (ty0.whnf) ty0 else whnf(Judge(ty0, Typeω)).!.wellTyped
+    val effect = judge.effect
+    val wellTyped = judge.wellTyped match {
+      case OrType(xs) => {
+        if (ty.whnf) assert(ty.isInstanceOf[Sort])
+        assert(effect.isInstanceOf[NoEffect.type])
+        val xs1 = xs.mapM(x => whnf(Judge(x, ty))).!.map(_.wellTyped)
+        OrType(xs1)
+      }
+      case wellTyped => wellTyped
+    }
+    wellTyped match {
+      case OrType(xs) if xs.exists(_.isInstanceOf[AnyType]) =>
+        val level = collectLevel(xs).!
+        Judge(AnyType(level), unify(Type(level), ty).!, effect)
+      case wellTyped => reuse(judge, Judge(wellTyped, ty, effect))
+    }
   }
 
   def walk(term: MetaTerm): F[JudgeMaybeEffect] = async[F] {
-    val state = await(Trying.state)
+    val state = Trying.state.!
     val result = state.subst.walk(term)
     result
   }
 
   def whnf(judge: Judge): F[Judge] = async[F] {
-    val result = await(normalize(judge))
+    val result = normalize(judge).!
     result.wellTyped match
       case term: MetaTerm => {
-        val walked = await(walk(term))
-        Judge(walked.wellTyped, await(unify(walked.ty,result.ty)), await(unifyEff(walked.effect, result.effect)))
+        val walked = walk(term).!
+        whnf(Judge(walked.wellTyped, unify(walked.ty, result.ty).!, unifyEff(walked.effect, result.effect).!)).!
       }
       case _ => result
   }
