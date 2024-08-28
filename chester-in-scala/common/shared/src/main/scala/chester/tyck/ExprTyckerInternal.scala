@@ -291,6 +291,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     val jdg1: Judge = await(whnf(Judge(ty, Typeω)))
     val ty1: Term = jdg1.wellTyped
     (expr1, ty1) match {
+      case (expr, OrType(xs)) => Trying.or(xs.map(inherit(expr, _, effect))).!
+      case (expr, AndType(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = await(inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
         Judge(ObjectTerm(inheritedFields), ty, await(inheritEffect(effect, inheritedEffect)))
@@ -301,7 +303,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         }
         val effect1 = await(inheritEffect(effect, await(effectFold(checkedTerms.map(_.effect)))))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
-      case _ =>
+      case (expr, ty) =>
         val Judge(wellTypedExpr, exprType, exprEffect) = await(synthesize(expr))
         val ty1 = await(unify(exprType, ty))
         val effect1 = await(inheritEffect(effect, exprEffect))
