@@ -7,6 +7,7 @@ import chester.syntax.concrete.*
 import chester.syntax.core.*
 import cps.*
 import cps.monads.given
+import cps.runtime.util.control.NonLocalReturnsAsyncShift.{returning, throwReturn}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -58,6 +59,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
         new ErrorTerm(UnifyFailedError(subType, superType))
     }
   }
+
+  def unifyEff(subEff: Option[Term], superEff: Option[Term]): F[Option[Term]] = async[F] {
+    if (subEff == superEff) subEff
+    else if (superEff.isEmpty) subEff
+    else if(subEff.isEmpty) superEff // TODO: what does this mean?
+    else {
+      subEff // TODO: correct logic
+    }
+  }
+  def unifyEff(subEff: Term, superEff: Term): F[Term] = unifyEff(Some(subEff), Some(superEff)).map(_.get)
+  def unifyEff(subEff: Option[Term], superEff: Term): F[Term] = unifyEff(subEff, Some(superEff)).map(_.get)
+  def unifyEff(subEff: Term, superEff: Option[Term]): F[Term] = unifyEff(Some(subEff), superEff).map(_.get)
 
   /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): F[Term] = async[F] {
@@ -196,11 +209,27 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   val normalizer = new Normalizer()
 
-  def whnf(judge: Judge): F[Judge] = async[F] {
+  def normalize(judge: Judge): F[Judge] = async[F] {
     val state = await(Trying.state)
     val (newState, normalizedTerm) = normalizer.apply(judge).run(state).value
     await(Trying.state = newState)
     normalizedTerm
+  }
+
+  def walk(term: MetaTerm): F[JudgeMaybeEffect] = async[F] {
+    val state = await(Trying.state)
+    val result = state.subst.walk(term)
+    result
+  }
+
+  def whnf(judge: Judge): F[Judge] = async[F] {
+    val result = await(normalize(judge))
+    result.wellTyped match
+      case term: MetaTerm => {
+        val walked = await(walk(term))
+        Judge(walked.wellTyped, await(unify(walked.ty,result.ty)), await(unifyEff(walked.effect, result.effect)))
+      }
+      case _ => result
   }
 
   def resolve(expr: Expr): F[Expr] = async[F] {
