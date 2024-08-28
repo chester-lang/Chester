@@ -306,7 +306,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   def inheritEffect(target: Option[Term] = None, eff: Term): F[Term] = async[F] {
     eff
   }
-  
+
+  /** possibly apply an implicit conversion */
   def conversion(judge: Judge, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
     val ty1 = await(unifyTy(exprType, ty))
