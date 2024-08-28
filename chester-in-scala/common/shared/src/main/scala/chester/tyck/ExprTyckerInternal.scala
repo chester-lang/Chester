@@ -8,11 +8,24 @@ import chester.syntax.core.*
 import cps.*
 import cps.monads.given
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-type Substitution = Map[VarId, JudgeNoEffect]
-object Substitution{
-  val Empty: Substitution = Map.empty[VarId, JudgeNoEffect]
+type Substitution = Map[VarId, JudgeMaybeEffect]
+
+object Substitution {
+  val Empty: Substitution = Map.empty
+}
+
+extension (subst: Substitution) {
+  @tailrec
+  def walk(term: MetaTerm): JudgeMaybeEffect = subst.get(term.id) match {
+    case Some(clause) => clause.wellTyped match {
+      case term: MetaTerm => subst.walk(term)
+      case _ => JudgeMaybeEffect(clause.wellTyped, clause.ty, clause.effect)
+    }
+    case None => JudgeMaybeEffect(term, term.ty, term.effect)
+  }
 }
 
 case class TyckState(subst: Substitution = Substitution.Empty)
