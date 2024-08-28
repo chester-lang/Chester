@@ -54,24 +54,31 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(subType: Term, superType: Term): F[Term] = async[F] {
-    if (subType == superType) subType
-    else (subType, superType) match {
+    val subType1 = whnfTy(subType).!
+    val superType1 = whnfTy(superType).!
+    if (subType1 == superType1) subType1
+    else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
-      case (OrType(subTypes), OrType(superTypes)) => ???
-      case (subType, OrType(superTypes)) => Trying.or(superTypes.map(unifyTy(subType, _))).!
+      case (subType, OrType(superTypes)) => OrType(superTypes.mapM(unifyTyOrNothingType(subType, _)).!)
+      case (OrType(subTypes), superType) => {
+        val results = subTypes.mapM(unifyTy(_, superType)).!
+        OrType(results)
+      }
       case (subType, AndType(superTypes)) => {
         val results = superTypes.mapM(unifyTy(subType, _)).!
         AndType(results)
       }
-      case (OrType(subTypes), superType) => {
-        val results = subTypes.mapM(unifyTy(_, superType)).!
-        OrType(results)
+      case (AndType(subTypes),superTypes) => {
+        val results = subTypes.mapM(unifyTy(_, superTypes)).!
+        AndType(results)
       }
       case (subType, superType) =>
         await(Trying.error(UnifyFailedError(subType, superType)))
         new ErrorTerm(UnifyFailedError(subType, superType))
     }
   }
+
+  def unifyTyOrNothingType(ty1: Term, ty2: Term): F[Term] = unifyTy(ty1, ty2) || async[F] {NothingType}
 
   def unifyEff(subEff: Option[Term], superEff: Option[Term]): F[Option[Term]] = async[F] {
     if (subEff == superEff) subEff
@@ -94,7 +101,12 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     else (ty1, ty2) match {
       case (_, AnyType(level)) => AnyType0 // TODO: level
       case (AnyType(level), _) => AnyType0 // TODO: level
-      case _ =>
+      case (NothingType, ty) => ty
+      case (ty, NothingType) => ty
+      case (ListType(ty1), ListType(ty2)) => ListType(common(ty1, ty2).!)
+      case (OrType(ts1), ty2) => OrType(ts1.map(common(_, ty2).!))
+      case (ty1, OrType(ts2)) => OrType(ts2.map(common(ty1, _).!))
+      case (ty1, ty2) =>
         OrType(Vector(ty1, ty2))
     }
   }
@@ -244,7 +256,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
   /** part of whnf */
   def normalize(judge: Judge): F[Judge] = async[F] {
     val ty0 = judge.ty
-    val ty = if (ty0.whnf) ty0 else whnf(Judge(ty0, Typeω)).!.wellTyped
+    val ty = if (ty0.whnf) ty0 else whnfTy(ty0).!
     val effect = judge.effect
     val wellTyped = judge.wellTyped match {
       case OrType(xs) => {
@@ -279,6 +291,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case _ => result
   }
 
+  def whnfTy(term: Term): F[Term] = async[F] {
+    val result = whnf(Judge(term, Typeω)).!
+    result.wellTyped
+  }
+
   def resolve(expr: Expr): F[Expr] = async[F] {
     val (errors, result) = ExprResolver.resolveFunctional(localCtx, expr)
     await(Trying.errors(errors))
@@ -292,8 +309,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): F[Judge] = async[F] {
     val expr1: Expr = await(resolve(expr))
-    val jdg1: Judge = await(whnf(Judge(ty, Typeω)))
-    val ty1: Term = jdg1.wellTyped
+    val ty1: Term = whnfTy(ty).!
     (expr1, ty1) match {
       case (expr, OrType(xs)) => Trying.or(xs.map(inherit(expr, _, effect))).!
       case (expr, AndType(xs)) => ??? // TODO

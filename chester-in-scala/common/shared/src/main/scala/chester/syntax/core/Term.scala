@@ -309,7 +309,15 @@ private inline def flatList[T <: Term](inline constructor: Vector[Term] => T, in
 }
 
 object OrType {
-  def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None })(xs)
+  //def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None }, _.distinct)(xs)
+  def apply(xs: Vector[Term]): Term = {
+    val flattened = xs.flatMap {
+      case OrType(ys) => ys
+      case x => Vector(x)
+    }.distinct.filter(_ != NothingType)
+    if(flattened.size == 1) return flattened.head
+    if (flattened.nonEmpty) new OrType(flattened) else NothingType
+  }
 }
 
 case class AndType(xs: Vector[Term]) extends Term {
@@ -319,7 +327,15 @@ case class AndType(xs: Vector[Term]) extends Term {
 }
 
 object AndType {
-  def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
+  //def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
+  def apply(xs: Vector[Term]): Term = {
+    val flattened = xs.flatMap {
+      case AndType(ys) => ys
+      case x => Vector(x)
+    }.distinct
+    if(flattened.size == 1) return flattened.head
+    new AndType(flattened)
+  }
 }
 
 sealed trait EffectTerm extends Term
