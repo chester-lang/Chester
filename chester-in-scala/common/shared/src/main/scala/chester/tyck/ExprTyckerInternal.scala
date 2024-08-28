@@ -50,6 +50,7 @@ extension [F[_], T, G[_]](f: F[T]) {
   transparent inline def !(using inline ctx: _root_.cps.CpsMonadContext[G], inline conversion: _root_.cps.CpsMonadConversion[F, G]): T = await(f)
 }
 
+// TODO: change to deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
 
   /** assume a subtype relationship and get a subtype back */
