@@ -294,7 +294,7 @@ object ListType {
   }
 }
 
-case class OrType(xs: Vector[Term]) extends Term {
+case class Union(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
@@ -308,56 +308,56 @@ private inline def flatList[T <: Term](inline constructor: Vector[Term] => T, in
   constructor(flattened)
 }
 
-object OrType {
+object Union {
   //def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None }, _.distinct)(xs)
   def apply(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
-      case OrType(ys) => ys
+      case Union(ys) => ys
       case x => Vector(x)
     }.distinct.filter(_ != NothingType)
     if(flattened.size == 1) return flattened.head
-    if (flattened.nonEmpty) new OrType(flattened) else NothingType
+    if (flattened.nonEmpty) new Union(flattened) else NothingType
   }
 }
 
-case class AndType(xs: Vector[Term]) extends Term {
+case class Intersection(xs: Vector[Term]) extends Term {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
 }
 
-object AndType {
+object Intersection {
   //def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
   def apply(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
-      case AndType(ys) => ys
+      case Intersection(ys) => ys
       case x => Vector(x)
     }.distinct
     if(flattened.size == 1) return flattened.head
-    new AndType(flattened)
+    new Intersection(flattened)
   }
 }
 
 sealed trait EffectTerm extends Term
 
-case class EffectList(xs: Vector[Term]) extends EffectTerm {
+case class EffectUnion(xs: Vector[Term]) extends EffectTerm {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs: _*)
 }
 
-object EffectList {
+object EffectUnion {
   // do flatten
   def apply(xs: Vector[Term]): EffectTerm = {
     val flattened = xs.flatMap {
-      case EffectList(ys) => ys
+      case EffectUnion(ys) => ys
       case x => Vector(x)
     }.filter {
       case NoEffect => false
       case _ => true
     }
     val distinct = flattened.distinct
-    if (distinct.nonEmpty) new EffectList(distinct) else NoEffect
+    if (distinct.nonEmpty) new EffectUnion(distinct) else NoEffect
   }
 }
 

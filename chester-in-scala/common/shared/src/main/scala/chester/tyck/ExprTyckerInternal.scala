@@ -59,18 +59,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     if (subType1 == superType1) subType1
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
-      case (subType, OrType(superTypes)) => OrType(superTypes.mapM(unifyTyOrNothingType(subType, _)).!)
-      case (OrType(subTypes), superType) => {
+      case (subType, Union(superTypes)) => Union(superTypes.mapM(unifyTyOrNothingType(subType, _)).!)
+      case (Union(subTypes), superType) => {
         val results = subTypes.mapM(unifyTy(_, superType)).!
-        OrType(results)
+        Union(results)
       }
-      case (subType, AndType(superTypes)) => {
+      case (subType, Intersection(superTypes)) => {
         val results = superTypes.mapM(unifyTy(subType, _)).!
-        AndType(results)
+        Intersection(results)
       }
-      case (AndType(subTypes),superTypes) => {
+      case (Intersection(subTypes),superTypes) => {
         val results = subTypes.mapM(unifyTy(_, superTypes)).!
-        AndType(results)
+        Intersection(results)
       }
       case (subType, superType) =>
         await(Trying.error(UnifyFailedError(subType, superType)))
@@ -104,10 +104,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case (NothingType, ty) => ty
       case (ty, NothingType) => ty
       case (ListType(ty1), ListType(ty2)) => ListType(common(ty1, ty2).!)
-      case (OrType(ts1), ty2) => OrType(ts1.map(common(_, ty2).!))
-      case (ty1, OrType(ts2)) => OrType(ts2.map(common(ty1, _).!))
+      case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2).!))
+      case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _).!))
       case (ty1, ty2) =>
-        OrType(Vector(ty1, ty2))
+        Union(Vector(ty1, ty2))
     }
   }
 
@@ -120,7 +120,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
       case (NoEffect, _) => e2
       case (_, NoEffect) => e1
       case _ if e1 == e2 => e1
-      case _ => EffectList(Vector(e1, e2))
+      case _ => EffectUnion(Vector(e1, e2))
     }
   }
 
@@ -259,16 +259,16 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     val ty = if (ty0.whnf) ty0 else whnfTy(ty0).!
     val effect = judge.effect
     val wellTyped = judge.wellTyped match {
-      case OrType(xs) => {
+      case Union(xs) => {
         if (ty.whnf) assert(ty.isInstanceOf[Sort])
         assert(effect.isInstanceOf[NoEffect.type])
         val xs1 = xs.mapM(x => whnf(Judge(x, ty))).!.map(_.wellTyped)
-        OrType(xs1)
+        Union(xs1)
       }
       case wellTyped => wellTyped
     }
     wellTyped match {
-      case OrType(xs) if xs.exists(_.isInstanceOf[AnyType]) =>
+      case Union(xs) if xs.exists(_.isInstanceOf[AnyType]) =>
         val level = collectLevel(xs).!
         Judge(AnyType(level), unifyTy(Type(level), ty).!, effect)
       case wellTyped => reuse(judge, Judge(wellTyped, ty, effect))
@@ -319,8 +319,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty) {
     val expr1: Expr = await(resolve(expr))
     val ty1: Term = whnfTy(ty).!
     (expr1, ty1) match {
-      case (expr, OrType(xs)) => Trying.or(xs.map(inherit(expr, _, effect))).!
-      case (expr, AndType(xs)) => ??? // TODO
+      case (expr, Union(xs)) => Trying.or(xs.map(inherit(expr, _, effect))).!
+      case (expr, Intersection(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = await(inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
         Judge(ObjectTerm(inheritedFields), ty, await(inheritEffect(effect, inheritedEffect)))
