@@ -287,12 +287,12 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
 }
 
-case class MetaTerm(id: VarId, ty: Term, effect: Option[Term] = None, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[Term] = None, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 
 object MetaTerm {
-  def generate(ty: Term): MetaTerm = MetaTerm(VarId.generate, ty)
+  def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, VarId.generate, ty)
 }
 
 sealed trait StmtTerm {
