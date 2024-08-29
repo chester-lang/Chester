@@ -15,6 +15,23 @@ class VectorReporter[T] extends Reporter[T] {
   def getReports: Vector[T] = buffer.toVector
 }
 
-case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S])
+case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S]) {
+  def getState: S = state.get
+}
+
+object Get {
+  def run[W, E, S, A](program: Get[W, E, S] => A)(state: S): TyckResult0[W, E, S, A] = {
+    val warnings = new VectorReporter[W]
+    val errors = new VectorReporter[E]
+    val stateBox = MutBox(state)
+    val get = Get(warnings, errors, stateBox)
+    val result = program(get)
+    TyckResult0(stateBox.get, result, warnings.getReports, errors.getReports)
+  }
+}
 
 type Tyck = Get[TyckWarning, TyckError, TyckState]
+
+object Tyck {
+  inline def run[A](inline program: Tyck => A)(inline state: TyckState): TyckResult[TyckState, A] = Get.run(program)(state)
+}
