@@ -19,3 +19,4 @@ def getInputFiles(testDir: String): (Path, Seq[Path] ) = {
 
   (path, inputFiles)
 }
+
