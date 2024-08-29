@@ -78,6 +78,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
+    - name: Install scala native
+      working-directory: chester-in-scala/scala-native
+      run: sbt "publish-local-dev ${{ env.SCALA_VERSION }}"
+      shell: bash
+
     - name: SBT Clean
       working-directory: chester-in-scala
       run: sbt clean
