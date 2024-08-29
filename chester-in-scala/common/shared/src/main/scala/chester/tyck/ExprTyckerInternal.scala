@@ -181,8 +181,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case SymbolLiteral(value, meta) =>
         Judge(SymbolTerm(value), SymbolType, NoEffect)
       case ListExpr(terms, meta) if terms.isEmpty =>
-        val a = MetaTerm.generate("listElement", Typeω)
-        Judge(ListTerm(Vector()), ListType(a), NoEffect)
+        Judge(ListTerm(Vector()), ListType(NothingType), NoEffect)
       case ListExpr(terms, meta) =>
         val judges: Vector[Judge] = terms.map { term =>
           synthesize(term)
