@@ -106,13 +106,9 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   )
   .nativeSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0",
-    // temporary posixlib patch
     libraryDependencies ++= Seq(
-      "com.github.mio-19" % "scala-native" % "acc07af027",
-    ),
-    libraryDependencies ++= Seq(
-      "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8", // Scala Native 0.5 patch
-      "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61", // Scala Native 0.5 patch
+      "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8",
+      "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
