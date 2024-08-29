@@ -4,19 +4,10 @@ import chester.parser.*
 import chester.syntax.concrete.*
 import munit.FunSuite
 
-import java.nio.file.{Files, Paths}
-import scala.jdk.CollectionConverters.*
-import scala.util.Try
+import java.nio.file.Files
 
 class FileParserTest extends FunSuite {
-
-  val testDir = "parserTests"
-
-  val inputFiles = Files.list(Paths.get(testDir))
-    .iterator()
-    .asScala
-    .filter(_.toString.endsWith(".chester"))
-    .toSeq
+  val (testDir, inputFiles) = getInputFiles("parserTests")
 
   inputFiles.foreach { inputFile =>
     val baseName = inputFile.getFileName.toString.stripSuffix(".chester")
@@ -24,7 +15,7 @@ class FileParserTest extends FunSuite {
       // Check if the operating system is Windows
       assume(!System.getProperty("os.name").toLowerCase.contains("win"), "Skipping test on Windows")
 
-      val expectedFile = Paths.get(testDir, s"$baseName.expected")
+      val expectedFile = testDir.resolve(s"$baseName.expected")
 
       val input = new String(Files.readAllBytes(inputFile))
       val expectedExists = Files.exists(expectedFile)
