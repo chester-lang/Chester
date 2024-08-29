@@ -1,3 +1,0 @@
-[submodule "chester-in-scala/scala-native"]
-	path = chester-in-scala/scala-native
-	url = https://github.com/scala-native/scala-native.git
