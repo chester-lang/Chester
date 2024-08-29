@@ -6,6 +6,8 @@ import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.reuse
+import spire.math.Trilean
+import spire.math.Trilean.{True, Unknown}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -43,6 +45,16 @@ object LocalCtx {
 
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
+
+  def checkSubtype(subType: Term, superType: Term): Trilean = {
+    val subType1 = whnfTy(subType)
+    val superType1 = whnfTy(superType)
+    if (subType1 == superType1) True
+    else (subType1, superType1) match {
+      case (subType, AnyType(level)) => True // TODO: level
+      case _ => Unknown
+    }
+  }
 
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(subType: Term, superType: Term): Term = {

@@ -5,8 +5,9 @@ import chester.doc.*
 import chester.doc.Doc.group
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
+import chester.syntax.concrete.Expr
 import chester.syntax.{Builtin, Id, QualifiedIDString}
-import chester.utils.encodeString
+import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 
 import scala.language.implicitConversions
@@ -88,24 +89,35 @@ sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
   def whnf: Boolean = true
+
+  protected final inline def thisOr(inline x: Term): this.type = reuse(this, x.asInstanceOf[this.type])
+
+  // not exactly describe by this type
+  def descent(f: Term => Term): Term = ???
+
+  def descentAndApply(f: Term => Term): Term = thisOr(f(descent(f)))
 }
 
 case class ListTerm(terms: Vector[Term]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
+  override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(_.descentAndApply(f))))
 }
 
 sealed trait Sort extends Term
 
 case class Type(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
+  override def descent(f: Term => Term): Term = thisOr(Type(level.descentAndApply(f)))
 }
 
 case object LevelType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
+  override def descent(f: Term => Term): Term = this
 }
 
 case class Level(n: Term) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Level" + n)
+  override def descent(f: Term => Term): Term = thisOr(Level(n.descentAndApply(f)))
 }
 
 val Level0 = Level(IntegerTerm(0))
