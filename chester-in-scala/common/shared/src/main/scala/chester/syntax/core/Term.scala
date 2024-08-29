@@ -190,6 +190,10 @@ case object NothingType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
 }
 
+case class LiteralType(literal: BigInt | String | Rational) extends TypeTerm {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
+}
+
 case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val patternDoc = pattern.toDoc
