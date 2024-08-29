@@ -5,7 +5,6 @@ import chester.doc.*
 import chester.doc.Doc.group
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
-import chester.syntax.concrete.Expr
 import chester.syntax.{Builtin, Id, QualifiedIDString}
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -85,6 +84,12 @@ object FCallTerm {
   }
 }
 
+sealed trait Pat extends ToDoc {
+  override def toDoc(implicit options: PrettierOptions): Doc = toString
+
+  def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = this
+}
+
 sealed trait Term extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
@@ -92,32 +97,40 @@ sealed trait Term extends ToDoc {
 
   protected final inline def thisOr(inline x: Term): this.type = reuse(this, x.asInstanceOf[this.type])
 
-  // not exactly describe by this type
-  def descent(f: Term => Term): Term = ???
+  def descent(f: Term => Term): Term = this
 
-  def descentAndApply(f: Term => Term): Term = thisOr(f(descent(f)))
+  def doElevate(level: IntegerTerm): Term = descent(_.doElevate(level))
+
+  final def elevate(level: IntegerTerm): Term = {
+    require(level.value >= 0)
+    if (level.value == 0) this else doElevate(level)
+  }
 }
 
 case class ListTerm(terms: Vector[Term]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
-  override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(_.descentAndApply(f))))
+
+  override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
 }
 
 sealed trait Sort extends Term
 
 case class Type(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
-  override def descent(f: Term => Term): Term = thisOr(Type(level.descentAndApply(f)))
+
+  override def descent(f: Term => Term): Term = thisOr(Type(f(level)))
 }
 
 case object LevelType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
+
   override def descent(f: Term => Term): Term = this
 }
 
 case class Level(n: Term) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Level" + n)
-  override def descent(f: Term => Term): Term = thisOr(Level(n.descentAndApply(f)))
+
+  override def descent(f: Term => Term): Term = thisOr(Level(f(n)))
 }
 
 val Level0 = Level(IntegerTerm(0))
@@ -331,7 +344,7 @@ object Union {
       case Union(ys) => ys
       case x => Vector(x)
     }.distinct.filter(_ != NothingType)
-    if(flattened.size == 1) return flattened.head
+    if (flattened.size == 1) return flattened.head
     if (flattened.nonEmpty) new Union(flattened) else NothingType
   }
 }
@@ -349,7 +362,7 @@ object Intersection {
       case Intersection(ys) => ys
       case x => Vector(x)
     }.distinct
-    if(flattened.size == 1) return flattened.head
+    if (flattened.size == 1) return flattened.head
     new Intersection(flattened)
   }
 }

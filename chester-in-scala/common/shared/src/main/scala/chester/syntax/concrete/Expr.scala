@@ -36,8 +36,10 @@ object MetaFactory {
 }
 
 sealed trait Expr extends WithPos with ToDoc {
+  @deprecated("this api is broken. Redesign or remove")
   def descent(operator: Expr => Expr): Expr = this
 
+  @deprecated("this api is broken. Redesign or remove")
   final def descentAndApply(operator: Expr => Expr): Expr = thisOr(operator(this.descent(operator)))
 
   // Shouldn't use this.type
