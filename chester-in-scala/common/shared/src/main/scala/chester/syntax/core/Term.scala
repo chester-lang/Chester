@@ -190,7 +190,7 @@ case object NothingType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
 }
 
-case class LiteralType(literal: BigInt | String | Rational) extends TypeTerm {
+case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
 }
 
