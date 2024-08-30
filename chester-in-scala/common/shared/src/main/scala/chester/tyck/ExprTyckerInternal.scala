@@ -287,16 +287,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     result
   }
 
-  // TODO
-  def inheritEffect(target: Option[Term] = None, eff: Term): Term =  {
-    eff
-  }
-
   /** possibly apply an implicit conversion */
   def conversion(judge: Judge, ty: Term, effect: Option[Term] = None): Judge =  {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
     val ty1 = (unifyTy(exprType, ty))
-    val effect1 = (inheritEffect(effect, exprEffect))
+    val effect1 = (unifyEff(exprEffect, effect))
     Judge(wellTypedExpr, ty1, effect1)
   }
 
@@ -308,13 +303,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (expr, Intersection(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
-        Judge(ObjectTerm(inheritedFields), ty, (inheritEffect(effect, inheritedEffect)))
+        Judge(ObjectTerm(inheritedFields), ty, (unifyEff(inheritedEffect, effect)))
       case (ListExpr(terms, meta), lstTy@ListType(ty)) =>
         val checkedTerms: Vector[EffectWith[Term]] = terms.map { term =>
           val Judge(wellTypedTerm, termType, termEffect) = (inherit(term, ty))
           EffectWith(termEffect, wellTypedTerm)
         }
-        val effect1 = (inheritEffect(effect, (effectFold(checkedTerms.map(_.effect)))))
+        val effect1 = (unifyEff((effectFold(checkedTerms.map(_.effect))), effect))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
         conversion(synthesize(expr), ty, effect)
