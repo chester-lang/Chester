@@ -88,6 +88,12 @@ sealed trait Pat extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
   def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = this
+
+  def thisOr(x: Pat): this.type = reuse(this, x.asInstanceOf[this.type])
+}
+
+case class Bind(bind: LocalVar, ty: Term) extends Pat {
+  override def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = thisOr(copy(ty=termOp(ty)))
 }
 
 sealed trait Term extends ToDoc {
