@@ -13,6 +13,7 @@ import scala.language.implicitConversions
 
 case class TermMeta(sourcePos: Option[SourcePos])
 
+/*
 // so that it is not used in compare
 case class OptionTermMeta(meta: Option[TermMeta] = None) {
   override def equals(obj: Any): Boolean = {
@@ -22,9 +23,10 @@ case class OptionTermMeta(meta: Option[TermMeta] = None) {
     }
   }
 }
-
 implicit def toOptionTermMeta(meta: Option[TermMeta]): OptionTermMeta = new OptionTermMeta(meta)
 implicit def fromOptionTermMeta(meta: OptionTermMeta): Option[TermMeta] = meta.meta
+*/
+type OptionTermMeta = Option[TermMeta]
 
 sealed trait TermWithMeta extends Term with WithPos {
   def meta: OptionTermMeta
