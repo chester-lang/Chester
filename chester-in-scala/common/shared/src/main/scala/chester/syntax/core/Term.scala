@@ -95,7 +95,11 @@ sealed trait Pat extends ToDoc {
 }
 
 case class Bind(bind: LocalVar, ty: Term) extends Pat {
-  override def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = thisOr(copy(ty=termOp(ty)))
+  override def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = thisOr(copy(ty = termOp(ty)))
+}
+
+object Bind {
+  def from(bind: LocalVar): Bind = Bind(bind, bind.ty)
 }
 
 sealed trait Term extends ToDoc {
@@ -227,7 +231,7 @@ case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | Rational
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
 }
 
-case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
+case class ArgTerm(pattern: Pat, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val patternDoc = pattern.toDoc
     val tyDoc = ty.toDoc
@@ -235,6 +239,15 @@ case class ArgTerm(pattern: Term, ty: Term, default: Option[Term] = None, vararg
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
   }
+
+  def name: Option[Id] = pattern match {
+    case Bind(LocalVar(id, _, _, _), _) => Some(id)
+    case _ => None
+  }
+}
+
+object ArgTerm {
+  def from(bind: LocalVar): ArgTerm = ArgTerm(Bind.from(bind), bind.ty)
 }
 
 object TelescopeTerm {
@@ -298,7 +311,7 @@ object FunctionType {
 
 def TyToty: FunctionType = {
   val ty = LocalVar.generate("x", Type0)
-  FunctionType(TelescopeTerm.from(ArgTerm(ty, Type0)), ty)
+  FunctionType(TelescopeTerm.from(ArgTerm.from(ty)), ty)
 }
 
 
