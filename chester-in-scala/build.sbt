@@ -2,6 +2,7 @@ import org.scalajs.linker.interface.OutputPatterns
 
 import java.nio.file.{Files, Paths}
 import scala.scalanative.build.*
+import scala.sys.process.Process
 
 val scala3Version = "3.5.0"
 
@@ -66,7 +67,8 @@ val jdk17: Boolean = classVersion >= jdk17ClassVersion
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
+  // scalajs-bundler doesn't like ECMA module output
+  .jsEnablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
     name := "chester",
     libraryDependencies ++= Seq(
@@ -93,11 +95,25 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
   )
   .jsSettings(
+    externalNpm := {
+      Process(Seq("npm", "install"), baseDirectory.value).!
+      println(baseDirectory.value)
+      println(baseDirectory.value)
+      println(baseDirectory.value)
+      println(baseDirectory.value)
+      println(baseDirectory.value)
+      baseDirectory.value
+    },
+    /*
     Compile / npmDependencies ++= Seq(
       "@types/node" -> "22.3.0"
     ),
+    */
     scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.CommonJSModule)
+      // Enable ECMAScript module output.
+      _.withModuleKind(ModuleKind.ESModule)
+        // Use .mjs extension.
+        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
     },
     libraryDependencies ++= Seq(
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
