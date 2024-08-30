@@ -1,3 +1,5 @@
+import org.scalajs.linker.interface.OutputPatterns
+
 import java.nio.file.{Files, Paths}
 import scala.scalanative.build.*
 
@@ -86,14 +88,17 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     ),
   )
   .jsSettings(
     Compile / npmDependencies ++= Seq(
       "@types/node" -> "22.3.0"
     ),
-    //scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.CommonJSModule)
+    },
     libraryDependencies ++= Seq(
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
@@ -101,7 +106,8 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     ),
   )
   .nativeSettings(
@@ -113,7 +119,8 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
+      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     ),
   )
 
