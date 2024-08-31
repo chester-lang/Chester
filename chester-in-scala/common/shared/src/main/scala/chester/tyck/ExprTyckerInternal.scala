@@ -45,6 +45,12 @@ object LocalCtx {
 
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
+  def superTypes(ty: Term): Option[Vector[Term]] = {
+    ty match {
+      case Intersection(ts) => Some(ts)
+      case _ => None
+    }
+  }
 
   def checkSubtype(subType: Term, superType: Term): Trilean = {
     val subType1 = whnfTy(subType)
