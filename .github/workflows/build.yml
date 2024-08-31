@@ -82,7 +82,7 @@ jobs:
       run: |
         git clone https://github.com/mio-19/scala-graph
         cd scala-graph
-        git checkout 6b2b16f14dc3b1483562aeee76deee4e828443d2
+        git checkout 6381eb20c8595f5507410f4e2bfa9e27b8d88a30
         sbt publishM2
       shell: bash
 
