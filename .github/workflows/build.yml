@@ -78,6 +78,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
+    - name: Clone scala-graph and publishM2
+      run: |
+        git clone https://github.com/mio-19/scala-graph
+        cd scala-graph
+        git checkout 461f50d6577e3eeff195a3ac9f51d930fab3ccc1
+        sbt publishM2
+      shell: bash
+
     - name: SBT Clean
       working-directory: chester-in-scala
       run: sbt clean
