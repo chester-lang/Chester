@@ -9,11 +9,12 @@ import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 import chester.tyck.*
 import chester.utils.env
+import chester.utils.env.WindowsNarratorChecker
 import fansi.*
 
 inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F]): F[Unit] = {
-  
-  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, true)
+
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, WindowsNarratorChecker())
 
   val maxWidth = 80
 

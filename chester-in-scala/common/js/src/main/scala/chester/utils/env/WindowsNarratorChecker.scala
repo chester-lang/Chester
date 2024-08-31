@@ -4,7 +4,7 @@ import scala.sys.process.*
 import scala.util.Try
 
 object WindowsNarratorChecker {
-  def isNarratorRunning: Boolean = {
+  def apply(): Boolean = {
     return false
   }
 }

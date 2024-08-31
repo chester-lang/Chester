@@ -294,9 +294,9 @@ abstract class Renderer[T]:
 
   def charCounter: CharCounter = DefaultCharCounter
 
-  def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = false): T =
+  def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = false)(implicit options: PrettierOptions = PrettierOptions.Default): T =
     val tokens = chester.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
-def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit renderer: Renderer[T]): T =
+def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit options: PrettierOptions = PrettierOptions.Default, renderer: Renderer[T]): T =
   renderer.render(doc.toDoc, maxWidth, useCRLF)
