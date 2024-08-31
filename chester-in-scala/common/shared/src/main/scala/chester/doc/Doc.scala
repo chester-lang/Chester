@@ -64,12 +64,18 @@ trait PrettierOptionsKey[T] {
   def get(implicit options: PrettierOptions): T = options.get(this)
 }
 
-implicit class PrettierOptions(options: scala.collection.Map[PrettierOptionsKey[?], Any]) {
-  def get[T](key: PrettierOptionsKey[T]): T = getOrElse(key, key.default)
+opaque type PrettierOptions = Map[PrettierOptionsKey[?], Any]
 
-  private[chester] def getOption[T](key: PrettierOptionsKey[T]): Option[T] = options.get(key).map(_.asInstanceOf[T])
+extension (x: PrettierOptions) {
+  private inline def options: Map[PrettierOptionsKey[?], Any] = x
+  def get[T](key: PrettierOptionsKey[T]): T = {
+    val default: T = key.default
+    getOrElse__[T](key, default)
+  }
 
-  private[chester] def getOrElse[T](key: PrettierOptionsKey[T], default: T): T = getOption(key).getOrElse(default)
+  private def getOption[T](key: PrettierOptionsKey[T]): Option[T] = options.get(key).map(_.asInstanceOf[T])
+
+  private def getOrElse__[T](key: PrettierOptionsKey[T], default: T): T = getOption(key).getOrElse(default)
 
   def updated[T](key: PrettierOptionsKey[T], value: T): PrettierOptions = options.updated(key, value)
 }
@@ -86,10 +92,10 @@ object PrettierOptions {
 }
 
 trait ToDoc {
-  def toDoc(implicit options: PrettierOptions = Map()): Doc
+  def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc
 }
 
-import Doc.*
+import chester.doc.Doc.*
 
 extension (d: ToDoc) {
   def <>(other: ToDoc): Doc = concat(d, other.toDoc)

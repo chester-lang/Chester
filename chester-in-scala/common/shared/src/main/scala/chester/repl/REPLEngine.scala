@@ -2,7 +2,7 @@ package chester.repl
 
 import cats.implicits.*
 import chester.doc.*
-import chester.doc.const.Colors
+import chester.doc.const.{Colors, ReplaceBracketsWithWord}
 import chester.io.*
 import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.syntax.concrete.Expr
@@ -12,6 +12,8 @@ import chester.utils.env
 import fansi.*
 
 inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F]): F[Unit] = {
+  
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, true)
 
   val maxWidth = 80
 
