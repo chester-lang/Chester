@@ -78,11 +78,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
-    - name: Clone scala-graph and publishM2
+    - name: Clone scala-graph and publishM2 (for Java8 and Scala Native)
       run: |
         git clone https://github.com/mio-19/scala-graph
         cd scala-graph
-        git checkout 892c96e76c9a7457dd11a9b22382cba28e65255b
+        git checkout 6b2b16f14dc3b1483562aeee76deee4e828443d2
         sbt publishM2
       shell: bash
 
