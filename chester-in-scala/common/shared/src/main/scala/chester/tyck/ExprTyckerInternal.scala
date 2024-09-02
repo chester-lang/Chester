@@ -52,9 +52,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def checkSubtype(subType: Term, superType: Term): Trilean = {
-    val subType1 = whnfTy(subType)
-    val superType1 = whnfTy(superType)
+  def checkSubtype(rhs: Term, lhs: Term): Trilean = {
+    val subType1 = whnfTy(rhs)
+    val superType1 = whnfTy(lhs)
     if (subType1 == superType1) True
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => True // TODO: level
@@ -62,33 +62,34 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
   
-  def unifyLevel(subLevel: Term, superLevel: Term): Term = {
-    subLevel // TODO
+  def unifyLevel(rhs: Term, lhs: Term): Term = {
+    rhs // TODO
   }
 
   /** assume a subtype relationship and get a subtype back */
-  def unifyTy(subType: Term, superType: Term): Term = {
-    val subType1 = whnfTy(subType)
-    val superType1 = whnfTy(superType)
+  def unifyTy(rhs: Term, lhs: Term): Term = {
+    val subType1 = whnfTy(rhs)
+    val superType1 = whnfTy(lhs)
     if (subType1 == superType1) subType1
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
       case (subType, Union(superTypes)) => Union(superTypes.map(unifyTyOrNothingType(subType, _)))
       case (Union(subTypes), superType) => {
-        val results = subTypes.map(unifyTy(_, superType))
+        val results = subTypes.map(unifyTy(rhs=_, lhs=superType))
         Union(results)
       }
       case (subType, Intersection(superTypes)) => {
-        val results = superTypes.map(unifyTy(subType, _))
+        val results = superTypes.map(unifyTy(rhs=subType, lhs=_))
         Intersection(results)
       }
       case (Intersection(subTypes),superTypes) => {
-        val results = subTypes.map(unifyTy(_, superTypes))
+        val results = subTypes.map(unifyTy(rhs=_, lhs=superTypes))
         Intersection(results)
       }
       case (subType, superType) =>
-        (Trying.error(UnifyFailedError(subType, superType)))
-        new ErrorTerm(UnifyFailedError(subType, superType))
+        val err = UnifyFailedError(rhs=subType, lhs=superType)
+        tyck.error(err)
+        new ErrorTerm(err)
     }
   }
 
@@ -160,8 +161,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (NoEffect, _) => superEffect
       case _ if subEffect == superEffect => subEffect
       case _ =>
-        Trying.error(UnifyFailedError(subEffect, superEffect))
-        new ErrorTerm(UnifyFailedError(subEffect, superEffect))
+        val err = UnifyFailedError(subEffect, superEffect)
+        tyck.error(err)
+        new ErrorTerm(err)
     }
   }
 
@@ -216,8 +218,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case block: Block => (synthesizeBlock(block))
       case expr: Stmt => {
         val err = UnexpectedStmt(expr)
-        (Trying.error(err))
-        Judge(new ErrorTerm(UnsupportedExpressionError(expr)), UnitType, NoEffect)
+        tyck.error(err)
+        Judge(new ErrorTerm(err), UnitType, NoEffect)
       }
       case Identifier(id, meta) => {
         val resolved = localCtx.resolve(id)
@@ -225,14 +227,16 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
           case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
             Judge(name, ty, NoEffect)
           case None =>
-            (Trying.error(IdentifierNotFoundError(expr)))
-            Judge(new ErrorTerm(IdentifierNotFoundError(expr)), new ErrorTerm(IdentifierNotFoundError(expr)), NoEffect)
+            val err = IdentifierNotFoundError(expr)
+            tyck.error(err)
+            Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
 
       case _ =>
-        (Trying.error(UnsupportedExpressionError(expr)))
-        Judge(new ErrorTerm(UnsupportedExpressionError(expr)), new ErrorTerm(UnsupportedExpressionError(expr)), NoEffect)
+        val err = UnsupportedExpressionError(expr)
+        tyck.error(err)
+        Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
     }
   }
 

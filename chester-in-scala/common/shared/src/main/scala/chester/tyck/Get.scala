@@ -17,6 +17,8 @@ class VectorReporter[T] extends Reporter[T] {
 
 case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S]) {
   def getState: S = state.get
+  def error(error: E): Unit = errors.report(error)
+  def warning(warning: W): Unit = warnings.report(warning)
 }
 
 object Get {

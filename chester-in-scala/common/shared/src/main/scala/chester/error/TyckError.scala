@@ -57,10 +57,10 @@ case class EmptyResultsError() extends TyckError {
   override def cause: Expr = EmptyExpr
 }
 
-case class UnifyFailedError(subType: Term, superType: Term) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unification failed: $subType is not a subtype of $superType"
+case class UnifyFailedError(rhs: Term, lhs: Term) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unification failed: $rhs is not a subtype of $lhs"
 
-  override def cause: Term = subType
+  override def cause: Term = rhs
 }
 
 case class UnsupportedExpressionError(expr: Expr) extends TyckError {
