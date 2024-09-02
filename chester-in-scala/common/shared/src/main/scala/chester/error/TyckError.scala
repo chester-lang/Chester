@@ -5,7 +5,7 @@ import chester.i18n.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
 
-abstract class TyckErrorOrWarning extends Exception with ToDoc {
+sealed abstract class TyckErrorOrWarning extends Exception with ToDoc {
   def message: String = render(toDoc)
 
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message

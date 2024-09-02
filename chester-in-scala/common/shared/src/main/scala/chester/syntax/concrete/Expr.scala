@@ -3,7 +3,7 @@ package chester.syntax.concrete
 
 import chester.doc.*
 import chester.doc.Doc.group
-import chester.error.{SourcePos, TyckError, TyckWarning, WithPos}
+import chester.error.{SourcePos, TyckError, TyckErrorOrWarning, TyckWarning, WithPos}
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
@@ -415,7 +415,7 @@ case object EmptyExpr extends ErrorExpr {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("EmptyExpr")
 }
 
-case class DesaltFailed(origin: Expr, error: TyckError, meta: Option[ExprMeta] = None) extends ErrorExpr {
+case class DesaltFailed(origin: Expr, error: TyckErrorOrWarning, meta: Option[ExprMeta] = None) extends ErrorExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltFailed = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")"))

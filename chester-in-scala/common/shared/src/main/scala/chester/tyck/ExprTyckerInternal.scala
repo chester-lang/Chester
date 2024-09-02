@@ -270,9 +270,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   def resolve(expr: Expr): Expr =  {
-    val (errors, result) = ExprResolver.resolveFunctional(localCtx, expr)
-    tyck.errors(errors)
-    result
+    ExprResolver.resolve(localCtx, expr, tyck.warningsReporter, tyck.errorsReporter)
   }
 
   /** possibly apply an implicit conversion */

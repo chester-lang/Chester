@@ -3,23 +3,23 @@ package chester.tyck
 import chester.error.{TyckError, TyckWarning}
 import chester.utils.MutBox
 
-trait Reporter[T] {
-  def report(value: T): Unit
+trait Reporter[-T] {
+  def apply(value: T): Unit
 }
 
 class VectorReporter[T] extends Reporter[T] {
   private val buffer = scala.collection.mutable.ArrayBuffer[T]()
 
-  def report(value: T): Unit = buffer += value
+  def apply(value: T): Unit = buffer += value
 
   def getReports: Vector[T] = buffer.toVector
 }
 
 case class Get[W, E, S](warningsReporter: Reporter[W], errorsReporter: Reporter[E], state: MutBox[S]) {
   def getState: S = state.get
-  def error(error: E): Unit = errorsReporter.report(error)
+  def error(error: E): Unit = errorsReporter.apply(error)
   def errors(errors: Seq[E]): Unit = errors.foreach(error)
-  def warning(warning: W): Unit = warningsReporter.report(warning)
+  def warning(warning: W): Unit = warningsReporter.apply(warning)
 }
 
 object Get {

@@ -4,19 +4,20 @@ import cats.implicits.*
 import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
+import chester.tyck.Reporter
 
 case class DesugarInfo()
 
 private object ExpectDesaltPattern {
   @throws[TyckError]
-  def unapply(x: Expr): Some[DesaltPattern] = x match {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Some[DesaltPattern] = x match {
     case _ => throw ExpectPattern(x)
   }
 }
 
 private object DesaltCaseClauseMatch {
   @throws[TyckError]
-  def unapply(x: Expr): Option[DesaltCaseClause] = x match {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[DesaltCaseClause] = x match {
     case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) => Some(DesaltCaseClause(pattern, returning, meta))
     case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => throw ExpectCase(x)
     case _ => None
@@ -25,7 +26,7 @@ private object DesaltCaseClauseMatch {
 
 private object MatchDeclarationTelescope {
   @throws[TyckError]
-  def unapply(x: Expr): Option[Telescope] = x match {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = x match {
     case id: Identifier => Some(Telescope(Vector(Arg(name=Some(id)))))
     case _ => ???
   }
@@ -33,11 +34,11 @@ private object MatchDeclarationTelescope {
 
 private object MatchApplyingTelescope {
   @throws[TyckError]
-  def unapply(x: Expr): Option[Telescope] = ???
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = ???
 }
 
 private object SingleExpr {
-  def unapply(xs: Seq[Expr]): Option[Expr] = {
+  def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckErrorOrWarning]): Option[Expr] = {
     if (xs.isEmpty) return None
     if (xs.tail.isEmpty) return Some(xs.head)
     val xs0 = xs.tail.traverse(MatchApplyingTelescope.unapply)
@@ -47,7 +48,7 @@ private object SingleExpr {
 
   object Expect {
     @throws[TyckError]
-    def unapply(xs: Seq[Expr]): Some[Expr] = SingleExpr.unapply(xs) match {
+    def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckErrorOrWarning]): Some[Expr] = SingleExpr.unapply(xs) match {
       case Some(x) => Some(x)
       case None => throw ExpectSingleExpr(xs)
     }
@@ -61,7 +62,7 @@ private object DesaltSimpleFunction {
   }
 
   @throws[TyckError]
-  def unapply(x: Expr): Option[Expr] = x match {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Expr] = x match {
     case OpSeq(xs, meta) if xs.exists(predicate) => {
       val index = xs.indexWhere(predicate)
       val before = xs.take(index)
@@ -131,13 +132,18 @@ private object ObjectDesalt {
 }
 
 case object StmtDesalt {
+  @throws[TyckWarning]
   @throws[TyckError]
-  def desugar(expr: Expr): Expr = ???
+  def desugar(expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = {
+    val result = BasicStatementResolver.resolveStatement(expr)
+    ???
+  }
 }
 
 case object SimpleDesalt {
+  @throws[TyckWarning]
   @throws[TyckError]
-  def desugar(expr: Expr): Expr = expr.descentRecursive {
+  def desugar(expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = expr.descentRecursive {
     case DesaltCaseClauseMatch(x) => x
     case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
       val seq: Vector[Expr] = heads ++ tail.toVector
@@ -151,12 +157,6 @@ case object SimpleDesalt {
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case default => default
-  }
-
-  def desugarEither(expr: Expr): Either[TyckError, Expr] = try {
-    Right(desugar(expr))
-  } catch {
-    case e: TyckError => Left(e)
   }
 }
 
