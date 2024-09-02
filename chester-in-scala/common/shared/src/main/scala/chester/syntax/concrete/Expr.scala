@@ -2,8 +2,8 @@
 package chester.syntax.concrete
 
 import chester.doc.*
-import chester.error.{SourcePos, TyckError, TyckWarning, WithPos}
 import chester.doc.Doc.group
+import chester.error.{SourcePos, TyckError, TyckWarning, WithPos}
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
@@ -36,11 +36,11 @@ object MetaFactory {
 }
 
 sealed trait Expr extends WithPos with ToDoc {
-  @deprecated("this api is broken. Redesign or remove")
   def descent(operator: Expr => Expr): Expr = this
 
-  @deprecated("this api is broken. Redesign or remove")
-  final def descentAndApply(operator: Expr => Expr): Expr = thisOr(operator(this.descent(operator)))
+  final def descentRecursive(operator: Expr => Expr): Expr = {
+    operator(this.descent(_.descentRecursive(operator)))
+  }
 
   // Shouldn't use this.type
   protected final inline def thisOr(inline x: Expr): this.type = reuse(this, x.asInstanceOf[this.type])
@@ -92,7 +92,7 @@ case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[
 
 case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    OpSeq(seq.map(_.descentAndApply(operator)), meta)
+    OpSeq(seq.map(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): OpSeq = copy(meta = updater(meta))
@@ -103,7 +103,7 @@ case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends Parse
 // TODO: implement minimal parens
 case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Infix(op.descentAndApply(operator), left.descentAndApply(operator), right.descentAndApply(operator), meta)
+    Infix(operator(op), operator(left), operator(right), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Infix = copy(meta = updater(meta))
@@ -113,7 +113,7 @@ case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = Non
 
 case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Prefix(op.descentAndApply(operator), operand.descentAndApply(operator), meta)
+    Prefix(operator(op), operator(operand), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Prefix = copy(meta = updater(meta))
@@ -123,7 +123,7 @@ case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extend
 
 case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Postfix(op.descentAndApply(operator), operand.descentAndApply(operator), meta)
+    Postfix(operator(op), operator(operand), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Postfix = copy(meta = updater(meta))
@@ -133,7 +133,7 @@ case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) exten
 
 case class Block(heads: Vector[Expr], tail: Option[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Block(heads.map(_.descentAndApply(operator)), tail.map(_.descentAndApply(operator)), meta)
+    Block(heads.map(operator), tail.map(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Block = copy(meta = updater(meta))
@@ -155,8 +155,8 @@ object Block {
 case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) {
   require(name.isDefined || exprOrDefault.isDefined)
 
-  def descentAndApply(operator: Expr => Expr): Arg = {
-    Arg(decorations, name, ty.map(_.descentAndApply(operator)), exprOrDefault.map(_.descentAndApply(operator)))
+  def descent(operator: Expr => Expr): Arg = {
+    Arg(decorations, name, ty.map(operator), exprOrDefault.map(operator), vararg)
   }
 
   override def toString: String = this match {
@@ -187,7 +187,7 @@ sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr
 
 case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): Tuple = thisOr {
-    Tuple(terms.map(_.descentAndApply(operator)), meta)
+    Tuple(terms.map(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Tuple = copy(meta = updater(meta))
@@ -197,7 +197,7 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
 
 case class Telescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
   override def descent(operator: Expr => Expr): Telescope = thisOr {
-    Telescope(args.map(_.descentAndApply(operator)), implicitly, meta)
+    Telescope(args.map(_.descent(operator)), implicitly, meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Telescope = copy(meta = updater(meta))
@@ -211,7 +211,7 @@ object Telescope {
 
 case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    FunctionCall(function.descentAndApply(operator), telescope.descent(operator), meta)
+    FunctionCall(operator(function), telescope.descent(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
@@ -230,7 +230,7 @@ object FunctionCall {
 
 case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    DotCall(expr.descentAndApply(operator), field.descentAndApply(operator), telescope.map(_.descent(operator)), meta)
+    DotCall(operator(expr), operator(field), telescope.map(_.descent(operator)), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DotCall = copy(meta = updater(meta))
@@ -291,7 +291,7 @@ case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends L
 
 case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): ListExpr = thisOr {
-    ListExpr(terms.map(_.descentAndApply(operator)), meta)
+    ListExpr(terms.map(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ListExpr = copy(meta = updater(meta))
@@ -307,7 +307,7 @@ case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends 
 
 case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    TypeAnnotation(expr.descentAndApply(operator), ty.descentAndApply(operator), meta)
+    TypeAnnotation(operator(expr), operator(ty), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): TypeAnnotation = copy(meta = updater(meta))
@@ -317,7 +317,7 @@ case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) e
 
 case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescope], expr: Expr, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), expr.descentAndApply(operator), meta)
+    AnnotatedExpr(annotation, telescope.map(_.descent(operator)), operator(expr), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): AnnotatedExpr = copy(meta = updater(meta))
@@ -327,8 +327,8 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescop
 
 sealed trait ObjectClause {
   def descent(operator: Expr => Expr): ObjectClause = this match {
-    case ObjectExprClause(k, v) => ObjectExprClause(k, v.descentAndApply(operator))
-    case ObjectExprClauseOnValue(k, v) => ObjectExprClauseOnValue(k.descentAndApply(operator), v.descentAndApply(operator))
+    case ObjectExprClause(k, v) => ObjectExprClause(k, operator(v))
+    case ObjectExprClauseOnValue(k, v) => ObjectExprClauseOnValue(operator(k), operator(v))
   }
 }
 
@@ -375,7 +375,7 @@ sealed trait DesaltExpr extends Expr
 case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
 
-  override def descent(operator: Expr => Expr): DesaltCaseClause = thisOr(DesaltCaseClause(pattern.descentAndApply(operator), returning.descentAndApply(operator), meta))
+  override def descent(operator: Expr => Expr): DesaltCaseClause = thisOr(DesaltCaseClause(operator(pattern), operator(returning), meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("case ") <> pattern.toDoc <> Doc.text(" => ") <> returning.toDoc)
 }
@@ -393,7 +393,7 @@ case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMe
 case class FunctionExpr(telescope: Vector[Telescope], effect: Option[Expr] = None, result: Option[Expr] = None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
 
-  override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), effect.map(_.descentAndApply(operator)), result.map(_.descentAndApply(operator)), body.descentAndApply(operator), meta))
+  override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), effect.map(operator), result.map(operator), operator(body), meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val telescopeDoc = telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
@@ -599,7 +599,7 @@ case class PrecedenceGroupResolved(
 
 
 case class LetStmt(pattern: DesaltPattern, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
-  
+
   override def getName = None
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {

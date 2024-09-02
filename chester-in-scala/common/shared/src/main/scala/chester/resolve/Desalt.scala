@@ -137,7 +137,7 @@ case object StmtDesalt {
 
 case object SimpleDesalt {
   @throws[TyckError]
-  def desugar(expr: Expr): Expr = expr.descentAndApply {
+  def desugar(expr: Expr): Expr = expr.descentRecursive {
     case DesaltCaseClauseMatch(x) => x
     case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
       val seq: Vector[Expr] = heads ++ tail.toVector
