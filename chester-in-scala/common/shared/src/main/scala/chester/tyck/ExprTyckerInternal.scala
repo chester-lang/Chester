@@ -67,13 +67,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   /** assume a subtype relationship and get a subtype back */
-  def unifyTy(rhs: Term, lhs: Term): Term = {
+  def unifyTy(lhs: Term, rhs: Term): Term = {
     val subType1 = whnfNoEffect(rhs)
     val superType1 = whnfNoEffect(lhs)
     if (subType1 == superType1) subType1
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
-      case (subType, Union(superTypes)) => Union(superTypes.map(unifyTyOrNothingType(subType, _)))
+      case (subType, Union(superTypes)) => Union(superTypes.map(x=>unifyTyOrNothingType(rhs=subType, lhs=x)))
       case (Union(subTypes), superType) => {
         val results = subTypes.map(rhs=>unifyTy(rhs=rhs, lhs=superType))
         Union(results)
@@ -93,7 +93,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def unifyTyOrNothingType(ty1: Term, ty2: Term): Term = unifyTy(ty1, ty2) // TODO
+  def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs=rhs, lhs=lhs) // TODO
 
   def unifyEff(subEff: Option[Term], superEff: Option[Term]): Option[Term] =  {
     if (subEff == superEff) subEff
@@ -294,7 +294,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   /** possibly apply an implicit conversion */
   def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Term] = None): Judge =  {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
-    val ty1 = (unifyTy(exprType, ty))
+    val ty1 = (unifyTy(ty, exprType))
     val effect1 = (unifyEff(exprEffect, effect))
     Judge(wellTypedExpr, ty1, effect1)
   }
@@ -333,7 +333,7 @@ object ExprTycker {
 
   @deprecated("error information are lost")
   def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    val result = unify(subType, superType, state, ctx)
+    val result = unifyTy(superType, subType, state, ctx)
     convertToEither(result)
   }
 
@@ -349,8 +349,8 @@ object ExprTycker {
     convertToEither(result)
   }
 
-  def unify(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    Tyck.run(ExprTyckerInternal(ctx,_).unifyTy(subType, superType))(state)
+  def unifyTy(lhs: Term, rhs: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
+    Tyck.run(ExprTyckerInternal(ctx,_).unifyTy(lhs, rhs))(state)
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
