@@ -13,19 +13,6 @@ import scala.language.implicitConversions
 
 case class TermMeta(sourcePos: Option[SourcePos])
 
-/*
-// so that it is not used in compare
-case class OptionTermMeta(meta: Option[TermMeta] = None) {
-  override def equals(obj: Any): Boolean = {
-    obj match {
-      case _: OptionTermMeta => true
-      case _ => false
-    }
-  }
-}
-implicit def toOptionTermMeta(meta: Option[TermMeta]): OptionTermMeta = new OptionTermMeta(meta)
-implicit def fromOptionTermMeta(meta: OptionTermMeta): Option[TermMeta] = meta.meta
-*/
 type OptionTermMeta = Option[TermMeta]
 
 sealed trait TermWithMeta extends Term with WithPos {
@@ -125,7 +112,9 @@ case class ListTerm(terms: Vector[Term]) extends Term {
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
 }
 
-sealed trait Sort extends Term
+sealed trait Sort extends Term {
+  def level: Term
+}
 
 case class Type(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
@@ -145,12 +134,15 @@ case class Level(n: Term) extends Term {
   override def descent(f: Term => Term): Term = thisOr(Level(f(n)))
 }
 
+val Levelω = Level(IntegerTerm(-11111)) // TODO
+
 val Level0 = Level(IntegerTerm(0))
 
 val Type0 = Type(Level0)
 
 // Referencing Setω in Agda
 case object Typeω extends Sort with Term {
+  override def level: Term = Levelω
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω").colored(ColorProfile.typeColor)
 }
 
