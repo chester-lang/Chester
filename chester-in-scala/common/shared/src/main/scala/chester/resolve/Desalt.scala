@@ -130,6 +130,11 @@ private object ObjectDesalt {
   def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
 }
 
+case object StmtDesalt {
+  @throws[TyckError]
+  def desugar(expr: Expr): Expr = ???
+}
+
 case object SimpleDesalt {
   @throws[TyckError]
   def desugar(expr: Expr): Expr = expr.descentAndApply {
@@ -139,6 +144,9 @@ case object SimpleDesalt {
       if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
       val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
       DesaltMatching(heads1, meta)
+    }
+    case b@Block(heads, tail, meta) => {
+      b // TODO: StmtDesalt
     }
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
