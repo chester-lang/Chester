@@ -2,7 +2,7 @@ package chester.parser
 
 import chester.error.*
 import chester.syntax.concrete.*
-import chester.utils.StringIndex
+import chester.utils.{StringIndex, platformUseCRLF}
 import chester.utils.parse.*
 import fastparse.*
 import fastparse.NoWhitespace.*
@@ -27,7 +27,7 @@ import chester.parser.InputStatus.*
 
 object ParserEngine {
 
-  def parseInput(history: Seq[String], currentInput: String, useCRLF: Boolean = false): Either[ParseError, ParsedExpr] = {
+  def parseInput(history: Seq[String], currentInput: String, useCRLF: Boolean = platformUseCRLF): Either[ParseError, ParsedExpr] = {
     //assert(history.last == currentInput) // doesn't hold for :t commands in repl
     val linesOffset = history.init.map(x => x.count(_ == '\n') + 1).sum
     val posOffset = history.init.map(x => x.length + (if(useCRLF) 2 else 1)).sum

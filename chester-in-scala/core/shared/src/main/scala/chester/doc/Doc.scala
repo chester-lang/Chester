@@ -1,5 +1,7 @@
 package chester.doc
 
+import chester.utils.platformUseCRLF
+
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
@@ -288,13 +290,13 @@ object DefaultCharCounter extends CharCounter:
   override val countCodePoint: Int => Int = _ => 1
 
 abstract class Renderer[T]:
-  def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): T
+  def renderTokens(tokens: Vector[Token], useCRLF: Boolean = platformUseCRLF): T
 
   def charCounter: CharCounter = DefaultCharCounter
 
-  def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = false)(implicit options: PrettierOptions = PrettierOptions.Default): T =
+  def render(doc: ToDoc, maxWidth: Int, useCRLF: Boolean = platformUseCRLF)(implicit options: PrettierOptions = PrettierOptions.Default): T =
     val tokens = chester.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
-def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = false)(implicit renderer: Renderer[T], options: PrettierOptions = PrettierOptions.Default): T =
+def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit renderer: Renderer[T], options: PrettierOptions = PrettierOptions.Default): T =
   renderer.render(doc.toDoc, maxWidth, useCRLF)

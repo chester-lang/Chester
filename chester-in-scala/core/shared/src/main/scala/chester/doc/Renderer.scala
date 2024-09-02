@@ -1,7 +1,9 @@
 package chester.doc
 
+import chester.utils.platformUseCRLF
+
 implicit object StringRenderer extends Renderer[String]:
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String =
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = platformUseCRLF): String =
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.map {
       case TokenText(content) => content
@@ -10,7 +12,7 @@ implicit object StringRenderer extends Renderer[String]:
     }.mkString
 
 implicit object FansiRenderer extends Renderer[fansi.Str]:
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): fansi.Str =
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = platformUseCRLF): fansi.Str =
     val newline = if (useCRLF) "\r\n" else "\n"
     tokens.foldLeft(fansi.Str("")) {
       case (acc, TokenText(content)) => acc ++ fansi.Str(content)
@@ -29,7 +31,7 @@ implicit object FansiRenderer extends Renderer[fansi.Str]:
     }
 
 object HtmlRenderer extends Renderer[String]:
-  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = false): String =
+  override def renderTokens(tokens: Vector[Token], useCRLF: Boolean = platformUseCRLF): String =
     val newline = "<br />"
     tokens.map {
       case TokenText(content) => content
