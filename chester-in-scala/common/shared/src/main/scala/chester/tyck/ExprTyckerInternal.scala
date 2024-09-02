@@ -45,6 +45,12 @@ object LocalCtx {
 
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
+
+  implicit val reporter1: Reporter[TyckErrorOrWarning] = {
+    case e: TyckError => tyck.errorsReporter.apply(e)
+    case e: TyckWarning => tyck.warningsReporter.apply(e)
+  }
+
   def superTypes(ty: Term): Option[Vector[Term]] = {
     ty match {
       case Intersection(ts) => Some(ts)
@@ -61,7 +67,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case _ => Unknown
     }
   }
-  
+
   def unifyLevel(rhs: Term, lhs: Term): Term = {
     rhs // TODO
   }
@@ -73,29 +79,29 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     if (subType1 == superType1) subType1
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
-      case (subType, Union(superTypes)) => Union(superTypes.map(x=>unifyTyOrNothingType(rhs=subType, lhs=x)))
+      case (subType, Union(superTypes)) => Union(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
       case (Union(subTypes), superType) => {
-        val results = subTypes.map(rhs=>unifyTy(rhs=rhs, lhs=superType))
+        val results = subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType))
         Union(results)
       }
       case (subType, Intersection(superTypes)) => {
-        val results = superTypes.map(x=>unifyTy(rhs=subType, lhs=x))
+        val results = superTypes.map(x => unifyTy(rhs = subType, lhs = x))
         Intersection(results)
       }
-      case (Intersection(subTypes),superTypes) => {
-        val results = subTypes.map(x=>unifyTy(rhs=x, lhs=superTypes))
+      case (Intersection(subTypes), superTypes) => {
+        val results = subTypes.map(x => unifyTy(rhs = x, lhs = superTypes))
         Intersection(results)
       }
       case (subType, superType) =>
-        val err = UnifyFailedError(rhs=subType, lhs=superType)
+        val err = UnifyFailedError(rhs = subType, lhs = superType)
         tyck.error(err)
         new ErrorTerm(err)
     }
   }
 
-  def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs=rhs, lhs=lhs) // TODO
+  def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs) // TODO
 
-  def unifyEff( lhs: Option[Term], rhs: Option[Term]): Option[Term] =  {
+  def unifyEff(lhs: Option[Term], rhs: Option[Term]): Option[Term] = {
     if (rhs == lhs) rhs
     else if (lhs.isEmpty) rhs
     else if (rhs.isEmpty) lhs // TODO: what does this mean?
@@ -104,10 +110,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def unifyEff(lhs: Option[Term], rhs: Term ): Term = unifyEff(lhs, Some(rhs)).get
+  def unifyEff(lhs: Option[Term], rhs: Term): Term = unifyEff(lhs, Some(rhs)).get
 
   /** get the most sub common super type */
-  def common(ty1: Term, ty2: Term): Term =  {
+  def common(ty1: Term, ty2: Term): Term = {
     if (ty1 == ty2) ty1
     else (ty1, ty2) match {
       case (_, AnyType(level)) => AnyType0 // TODO: level
@@ -122,7 +128,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def common(seq: Seq[Term]): Term =  {
+  def common(seq: Seq[Term]): Term = {
     seq.reduce(common)
   }
 
@@ -135,15 +141,15 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def effectUnion(e1: Term, e2: Term): Term =  {
+  def effectUnion(e1: Term, e2: Term): Term = {
     effectUnion_impl(e1, e2)
   }
 
-  def effectFold(es: Seq[Term]): Term =  {
+  def effectFold(es: Seq[Term]): Term = {
     es.reduceOption(effectUnion_impl).getOrElse(NoEffect)
   }
 
-  def collectLevel(xs: Seq[Term]): Term =  {
+  def collectLevel(xs: Seq[Term]): Term = {
     Level0 // TODO
   }
 
@@ -151,7 +157,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     types.reduce((ty1, ty2) => common(ty1, ty2))
   }
 
-  def synthesizeObjectExpr(x: ObjectExpr): Judge =  {
+  def synthesizeObjectExpr(x: ObjectExpr): Judge = {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
       case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
         val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr)
@@ -171,11 +177,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     Judge(objectTerm, objectType, combinedEffect)
   }
 
-  def synthesizeBlock(block: Block): Judge =  {
+  def synthesizeBlock(block: Block): Judge = {
     ???
   }
 
-  def synthesize(expr: Expr): Judge =  {
+  def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
         if (value.isValidInt)
@@ -224,7 +230,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def synthesizeTerm(term: Term): JudgeNoEffect =  {
+  def synthesizeTerm(term: Term): JudgeNoEffect = {
     term match {
       case _ => ???
     }
@@ -232,12 +238,12 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   case class EffectWith[T](effect: Term, value: T)
 
-  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] =  {
+  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] = {
     ??? // TODO
   }
 
   /** part of whnf */
-  def normalizeNoEffect(term: Term): Term =  {
+  def normalizeNoEffect(term: Term): Term = {
     term match {
       case Union(xs) => {
         val xs1 = xs.map(x => whnfNoEffect(x))
@@ -252,13 +258,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def walk(term: MetaTerm): JudgeMaybeEffect =  {
+  def walk(term: MetaTerm): JudgeMaybeEffect = {
     val state = tyck.getState
     val result = state.subst.walk(term)
     result
   }
 
-  def whnfNoEffect(term: Term): Term =  {
+  def whnfNoEffect(term: Term): Term = {
     val result = normalizeNoEffect(term)
     result match
       case term: MetaTerm => {
@@ -269,19 +275,19 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case _ => result
   }
 
-  def resolve(expr: Expr): Expr =  {
-    ExprResolver.resolve(localCtx, expr, tyck.warningsReporter, tyck.errorsReporter)
+  def resolve(expr: Expr): Expr = {
+    ExprResolver.resolve(localCtx, expr)
   }
 
   /** possibly apply an implicit conversion */
-  def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Term] = None): Judge =  {
+  def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Term] = None): Judge = {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
     val ty1 = (unifyTy(ty, exprType))
     val effect1 = (unifyEff(effect, exprEffect))
     Judge(wellTypedExpr, ty1, effect1)
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge =  {
+  def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge = {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
@@ -295,7 +301,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
           val Judge(wellTypedTerm, termType, termEffect) = (inherit(term, ty))
           EffectWith(termEffect, wellTypedTerm)
         }
-        val effect1 = (unifyEff(effect, (effectFold(checkedTerms.map(_.effect))) ))
+        val effect1 = (unifyEff(effect, (effectFold(checkedTerms.map(_.effect)))))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
         inheritFallbackUnify(synthesize(expr), ty, effect)
@@ -332,14 +338,14 @@ object ExprTycker {
   }
 
   def unifyTy(lhs: Term, rhs: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    Tyck.run(ExprTyckerInternal(ctx,_).unifyTy(lhs, rhs))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).unifyTy(lhs, rhs))(state)
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[EffectTerm] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx,_).inherit(expr, ty, effect))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).inherit(expr, ty, effect))(state)
   }
 
   def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx,_).synthesize(expr))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).synthesize(expr))(state)
   }
 }
