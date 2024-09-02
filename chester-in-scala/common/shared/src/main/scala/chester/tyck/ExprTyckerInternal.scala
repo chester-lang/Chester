@@ -61,6 +61,10 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case _ => Unknown
     }
   }
+  
+  def unifyLevel(subLevel: Term, superLevel: Term): Term = {
+    subLevel // TODO
+  }
 
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(subType: Term, superType: Term): Term = {
@@ -294,7 +298,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   /** possibly apply an implicit conversion */
-  def conversion(judge: Judge, ty: Term, effect: Option[Term] = None): Judge =  {
+  def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Term] = None): Judge =  {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
     val ty1 = (unifyTy(exprType, ty))
     val effect1 = (unifyEff(exprEffect, effect))
@@ -318,7 +322,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
         val effect1 = (unifyEff((effectFold(checkedTerms.map(_.effect))), effect))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
-        conversion(synthesize(expr), ty, effect)
+        inheritFallbackUnify(synthesize(expr), ty, effect)
     }
   }
 
