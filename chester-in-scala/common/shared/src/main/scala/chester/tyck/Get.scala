@@ -5,8 +5,6 @@ import chester.utils.MutBox
 
 trait Reporter[T] {
   def report(value: T): Unit
-  final def apply(value: T): Unit = report(value)
-  final def apply(value: Seq[T]): Unit = value.foreach(report)
 }
 
 class VectorReporter[T] extends Reporter[T] {
@@ -17,10 +15,11 @@ class VectorReporter[T] extends Reporter[T] {
   def getReports: Vector[T] = buffer.toVector
 }
 
-case class Get[W, E, S](warnings: Reporter[W], errors: Reporter[E], state: MutBox[S]) {
+case class Get[W, E, S](warningsReporter: Reporter[W], errorsReporter: Reporter[E], state: MutBox[S]) {
   def getState: S = state.get
-  def error(error: E): Unit = errors.report(error)
-  def warning(warning: W): Unit = warnings.report(warning)
+  def error(error: E): Unit = errorsReporter.report(error)
+  def errors(errors: Seq[E]): Unit = errors.foreach(error)
+  def warning(warning: W): Unit = warningsReporter.report(warning)
 }
 
 object Get {
