@@ -60,7 +60,7 @@ val permitGPLcontamination: Boolean = false
 
 val classVersion = java.lang.Float.parseFloat(System.getProperty("java.class.version"))
 val jdk17ClassVersion = 61.0f
-val jdk17: Boolean = classVersion >= jdk17ClassVersion
+val jdk17: Boolean = false /* because of -java-output-version 8 */ // classVersion >= jdk17ClassVersion
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
