@@ -141,10 +141,7 @@ val Level0 = Level(IntegerTerm(0))
 val Type0 = Type(Level0)
 
 // Referencing Setω in Agda
-case object Typeω extends Sort with Term {
-  override def level: Term = Levelω
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Typeω").colored(ColorProfile.typeColor)
-}
+val Typeω = Type(Levelω)
 
 case class Prop(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(level)
