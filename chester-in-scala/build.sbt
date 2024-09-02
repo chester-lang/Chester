@@ -16,6 +16,10 @@ val nativeImageOption = Seq(
   "-O2",
 )
 
+val classVersion = java.lang.Float.parseFloat(System.getProperty("java.class.version"))
+val jdk17ClassVersion = 61.0f
+val jdk17: Boolean = false /* because of -java-output-version 8 */ // classVersion >= jdk17ClassVersion
+
 val commonSettings = Seq(
   scalaVersion := scala3Version,
   //githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
@@ -23,6 +27,20 @@ val commonSettings = Seq(
   resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.mavenLocal,
   scalacOptions ++= Seq("-java-output-version", "8"),
+  autoCompilerPlugins := true,
+  addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21"),
+)
+val commonJvmSettings = Seq(
+  scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
+)
+val commonTestSettings = Seq(
+  libraryDependencies ++= Seq(
+    "org.scalameta" %%% "munit" % "1.0.0" % Test,
+    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
+    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
+    "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
+  ),
 )
 val graalvmSettings = Seq(
   nativeImageVersion := graalVersion,
@@ -58,61 +76,81 @@ val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 val permitGPLcontamination: Boolean = false
 
-val classVersion = java.lang.Float.parseFloat(System.getProperty("java.class.version"))
-val jdk17ClassVersion = 61.0f
-val jdk17: Boolean = false /* because of -java-output-version 8 */ // classVersion >= jdk17ClassVersion
-
-lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
-  .in(file("common"))
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
+  .in(file("core"))
   .settings(
-    name := "chester",
-    libraryDependencies ++= Seq(
-      "org.scalameta" %%% "munit" % "1.0.0" % Test,
-    ),
-    assembly / assemblyJarName := "common.jar",
-    commonSettings,
-    autoCompilerPlugins := true,
-    addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21")
+    name := "chester-core",
+    assembly / assemblyJarName := "core.jar",
+    commonTestSettings,
+    commonSettings
   )
   .jvmSettings(
-    libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
-    scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
+    commonJvmSettings,
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0",
+      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
-      "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
-      "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % Test,
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
-      "com.lihaoyi" %% "os-lib" % "0.10.4",
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0",
+      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8",
       "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
-      "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
-      "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % Test,
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
+    ),
+  )
+  .jsSettings(
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.CommonJSModule)
+    },
+    libraryDependencies ++= Seq(
+      "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
+      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
+      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
+      "org.typelevel" %%% "spire" % "0.18.0",
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-free" % "2.12.0",
+      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+    ),
+  )
+
+lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("common"))
+  .jsEnablePlugins(ScalablyTypedConverterPlugin)
+  .dependsOn(core)
+  .settings(
+    name := "chester",
+    commonTestSettings,
+    assembly / assemblyJarName := "common.jar",
+    commonSettings,
+  )
+  .jvmSettings(
+    libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "os-lib" % "0.10.4",
+    ),
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq(
       "com.lihaoyi" %% "os-lib" % "0.10.4",
     ),
   )
@@ -123,19 +161,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.CommonJSModule)
     },
-    libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0",
-      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
-      "org.typelevel" %%% "spire" % "0.18.0",
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-free" % "2.12.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
-      "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
-      "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % Test,
-    ),
   )
 
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)

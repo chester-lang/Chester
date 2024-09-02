@@ -1,7 +1,5 @@
 package chester.doc
 
-import chester.utils.platformUseCRLF
-
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
@@ -298,5 +296,5 @@ abstract class Renderer[T]:
     val tokens = chester.doc.renderTokens(doc.toDoc, maxWidth, charCounter)
     renderTokens(tokens, useCRLF)
 
-def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = platformUseCRLF)(implicit renderer: Renderer[T], options: PrettierOptions = PrettierOptions.Default): T =
+def render[T](doc: ToDoc, maxWidth: Int = Integer.MAX_VALUE, useCRLF: Boolean = false)(implicit renderer: Renderer[T], options: PrettierOptions = PrettierOptions.Default): T =
   renderer.render(doc.toDoc, maxWidth, useCRLF)
