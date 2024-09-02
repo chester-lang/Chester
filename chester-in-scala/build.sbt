@@ -21,7 +21,8 @@ val commonSettings = Seq(
   //githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
   //resolvers += Resolver.githubPackages("edadma", "readline"),
   resolvers += "jitpack" at "https://jitpack.io",
-  resolvers += Resolver.mavenLocal
+  resolvers += Resolver.mavenLocal,
+  scalacOptions ++= Seq("-java-output-version", "8"),
 )
 val graalvmSettings = Seq(
   nativeImageVersion := graalVersion,
