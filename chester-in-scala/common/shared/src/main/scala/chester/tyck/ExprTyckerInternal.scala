@@ -52,9 +52,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def checkSubtype(rhs: Term, lhs: Term): Trilean = {
-    val subType1 = whnfTy(rhs)
-    val superType1 = whnfTy(lhs)
+  def compareTy(rhs: Term, lhs: Term): Trilean = {
+    val subType1 = whnfNoEffect(rhs)
+    val superType1 = whnfNoEffect(lhs)
     if (subType1 == superType1) True
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => True // TODO: level
@@ -68,22 +68,22 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(rhs: Term, lhs: Term): Term = {
-    val subType1 = whnfTy(rhs)
-    val superType1 = whnfTy(lhs)
+    val subType1 = whnfNoEffect(rhs)
+    val superType1 = whnfNoEffect(lhs)
     if (subType1 == superType1) subType1
     else (subType1, superType1) match {
       case (subType, AnyType(level)) => subType // TODO: level
       case (subType, Union(superTypes)) => Union(superTypes.map(unifyTyOrNothingType(subType, _)))
       case (Union(subTypes), superType) => {
-        val results = subTypes.map(unifyTy(rhs=_, lhs=superType))
+        val results = subTypes.map(rhs=>unifyTy(rhs=rhs, lhs=superType))
         Union(results)
       }
       case (subType, Intersection(superTypes)) => {
-        val results = superTypes.map(unifyTy(rhs=subType, lhs=_))
+        val results = superTypes.map(x=>unifyTy(rhs=subType, lhs=x))
         Intersection(results)
       }
       case (Intersection(subTypes),superTypes) => {
-        val results = subTypes.map(unifyTy(rhs=_, lhs=superTypes))
+        val results = subTypes.map(x=>unifyTy(rhs=x, lhs=superTypes))
         Intersection(results)
       }
       case (subType, superType) =>
@@ -253,24 +253,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   /** part of whnf */
-  def normalize(judge: Judge): Judge =  {
-    val ty0 = judge.ty
-    val ty = if (ty0.whnf) ty0 else whnfTy(ty0)
-    val effect = judge.effect
-    val wellTyped = judge.wellTyped match {
+  def normalizeNoEffect(term: Term): Term =  {
+    term match {
       case Union(xs) => {
-        if (ty.whnf) assert(ty.isInstanceOf[Sort])
-        assert(effect.isInstanceOf[NoEffect.type])
-        val xs1 = xs.map(x => whnf(Judge(x, ty))).map(_.wellTyped)
+        val xs1 = xs.map(x => whnfNoEffect(x))
         Union(xs1)
       }
       case wellTyped => wellTyped
-    }
-    wellTyped match {
+    } match {
       case Union(xs) if xs.exists(_.isInstanceOf[AnyType]) =>
         val level = collectLevel(xs)
-        Judge(AnyType(level), unifyTy(Type(level), ty), effect)
-      case wellTyped => reuse(judge, Judge(wellTyped, ty, effect))
+        AnyType(level)
+      case wellTyped => reuse(term, wellTyped)
     }
   }
 
@@ -280,24 +274,20 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     result
   }
 
-  def whnf(judge: Judge): Judge =  {
-    val result = normalize(judge)
-    result.wellTyped match
+  def whnfNoEffect(term: Term): Term =  {
+    val result = normalizeNoEffect(term)
+    result match
       case term: MetaTerm => {
         val walked = walk(term)
-        whnf(Judge(walked.wellTyped, unifyTy(walked.ty, result.ty), unifyEff(walked.effect, result.effect)))
+        require(walked.effect == NoEffect)
+        whnfNoEffect(walked.wellTyped)
       }
       case _ => result
   }
 
-  def whnfTy(term: Term): Term =  {
-    val result = whnf(Judge(term, Typeω))
-    result.wellTyped
-  }
-
   def resolve(expr: Expr): Expr =  {
     val (errors, result) = ExprResolver.resolveFunctional(localCtx, expr)
-    (Trying.errors(errors))
+    tyck.errors(errors)
     result
   }
 
@@ -311,7 +301,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def inherit(expr: Expr, ty: Term, effect: Option[Term] = None): Judge =  {
     val expr1: Expr = (resolve(expr))
-    val ty1: Term = whnfTy(ty)
+    val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
       case (expr, Union(xs)) => ??? // TODO
       case (expr, Intersection(xs)) => ??? // TODO

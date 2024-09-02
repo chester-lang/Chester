@@ -5,6 +5,8 @@ import chester.utils.MutBox
 
 trait Reporter[T] {
   def report(value: T): Unit
+  final def apply(value: T): Unit = report(value)
+  final def apply(value: Seq[T]): Unit = value.foreach(report)
 }
 
 class VectorReporter[T] extends Reporter[T] {
