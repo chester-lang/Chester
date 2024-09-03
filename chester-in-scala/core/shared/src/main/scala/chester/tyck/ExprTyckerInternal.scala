@@ -73,7 +73,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   /** assume a subtype relationship and get a subtype back */
-  def unifyTy(lhs: Term, rhs: Term): Term = {
+  def unifyTy(lhs: Term, rhs: Term, failed: => Term = null): Term = {
     val subType1 = whnfNoEffect(rhs)
     val superType1 = whnfNoEffect(lhs)
     if (subType1 == superType1) subType1
@@ -93,13 +93,15 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
         Intersection(results)
       }
       case (subType, superType) =>
-        val err = UnifyFailedError(rhs = subType, lhs = superType)
-        tyck.error(err)
-        new ErrorTerm(err)
+        if (failed != null) failed else {
+          val err = UnifyFailedError(rhs = subType, lhs = superType)
+          tyck.error(err)
+          new ErrorTerm(err)
+        }
     }
   }
 
-  def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs) // TODO
+  def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs, failed = NothingType)
 
   def unifyEff(lhs: Option[Term], rhs: Option[Term]): Option[Term] = {
     if (rhs == lhs) rhs
