@@ -90,6 +90,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   .jvmSettings(
     commonJvmSettings,
     libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
@@ -105,6 +106,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8",
@@ -124,6 +126,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
         .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
     },
     libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
