@@ -92,6 +92,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
         val results = subTypes.map(x => unifyTy(rhs = x, lhs = superTypes))
         Intersection(results)
       }
+      case (IntType, IntegerType) => IntType
       case (subType, superType) =>
         if (failed != null) failed else {
           val err = UnifyFailedError(rhs = subType, lhs = superType)
