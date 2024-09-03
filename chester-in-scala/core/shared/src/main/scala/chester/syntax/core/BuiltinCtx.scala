@@ -7,6 +7,8 @@ case class CtxItem(name: MaybeVarCall, judge: JudgeNoEffect)
 
 trait Import
 
+case class ImportModuleOrObject(id: QualifiedIDString, open: Boolean) extends Import
+
 type Imports = Vector[Import]
 
 object Imports {
