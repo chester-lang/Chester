@@ -7,20 +7,21 @@ import chester.syntax.core.stmt.TyckedModule
 import scala.collection.immutable.HashMap
 
 type FileName = String
+type Hash = Int
 
 case class ResolvingBlock(statements: Vector[Stmt], expr: Option[Expr])
 
-case class ResolvingModuleFile(id: QualifiedIDString, fileName: FileName, content: Option[ResolvingBlock], tycked: Option[Nothing] = None) {
+case class ResolvingModuleFile(id: QualifiedIDString, fileName: FileName, sourceHash: Option[Hash] = None, content: Option[ResolvingBlock] = None, tycked: Option[Nothing] = None) {
   require(content.isDefined || tycked.isDefined)
 }
 
 
 object ResolvingModuleFile {
-  def apply(id: QualifiedIDString, fileName: FileName, content: Option[ResolvingBlock], tycked: Option[Nothing] = None): ResolvingModuleFile = {
-    new ResolvingModuleFile(id, fileName, content, tycked)
+  def apply(id: QualifiedIDString, fileName: FileName, sourceHash: Option[Hash] = None, content: Option[ResolvingBlock] = None, tycked: Option[Nothing] = None): ResolvingModuleFile = {
+    new ResolvingModuleFile(id, fileName, sourceHash, content, tycked)
   }
   def apply(id: QualifiedIDString, fileName: FileName, content: ResolvingBlock): ResolvingModuleFile = {
-    new ResolvingModuleFile(id, fileName, Some(content))
+    new ResolvingModuleFile(id, fileName, content=Some(content))
   }
 }
 
