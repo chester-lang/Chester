@@ -31,7 +31,7 @@ extension (subst: Solutions) {
 
 case class TyckState(subst: Solutions = Solutions.Empty)
 
-case class LocalCtx(ctx: Context = Context.builtin, modules: ResolvingModules = ResolvingModules.Empty) {
+case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
 
   def resolve(id: VarId): Option[CtxItem] = ctx.getByVarId(id)

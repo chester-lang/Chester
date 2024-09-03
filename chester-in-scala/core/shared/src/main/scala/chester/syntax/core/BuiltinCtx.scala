@@ -1,5 +1,6 @@
 package chester.syntax.core
 
+import chester.syntax.concrete.ResolvingModules
 import chester.syntax.{Id, QualifiedIDString}
 
 case class CtxItem(name: MaybeVarCall, judge: JudgeNoEffect)
@@ -12,7 +13,7 @@ object Imports {
   val Empty: Imports = Vector.empty
 }
 
-class Context(map: Map[Id, CtxItem], imports: Imports = Imports.Empty) {
+class Context(map: Map[Id, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
   private val varMap: Map[VarId, Id] = map.map { case (id, CtxItem(name, _)) => name.varId -> id }
 
   def get(id: Id): Option[CtxItem] = map.get(id)
