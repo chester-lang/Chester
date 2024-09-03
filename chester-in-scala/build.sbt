@@ -1,3 +1,5 @@
+import org.scalajs.linker.interface.OutputPatterns
+
 import scala.scalanative.build.*
 
 val scala3Version = "3.5.0"
@@ -118,7 +120,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.CommonJSModule)
+      _.withModuleKind(ModuleKind.ESModule)
+        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
     },
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross(CrossVersion.for3Use2_13),
@@ -293,7 +296,7 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
+  .aggregate(core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version
