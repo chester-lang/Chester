@@ -8,7 +8,7 @@ import scala.collection.immutable.HashMap
 
 case class ResolvingBlock(statements: Vector[Stmt], expr: Option[Expr])
 
-case class ResolvingModuleFile(fileName: FilePath, content: ResolvingBlock)
+case class ResolvingModuleFile(id: QualifiedIDString, fileName: FilePath, content: ResolvingBlock)
 
 case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], tycked: Option[TyckedModule]) {
   def isTycked: Boolean = tycked.isDefined
