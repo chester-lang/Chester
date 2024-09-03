@@ -1,7 +1,6 @@
 package chester.syntax.core.stmt
 
 import chester.syntax.{Id, QualifiedIDString}
-import chester.syntax.concrete.FilePath
 import chester.syntax.core._
 import chester.tyck._
 

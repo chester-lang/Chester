@@ -1,21 +1,37 @@
 package chester.syntax.concrete
 
 import chester.syntax.QualifiedIDString
-import chester.syntax.concrete._
+import chester.syntax.concrete.*
 import chester.syntax.core.stmt.TyckedModule
 
 import scala.collection.immutable.HashMap
 
+type FileName = String
+
 case class ResolvingBlock(statements: Vector[Stmt], expr: Option[Expr])
 
-case class ResolvingModuleFile(id: QualifiedIDString, fileName: FilePath, content: ResolvingBlock)
-
-case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile], tycked: Option[TyckedModule]) {
-  def isTycked: Boolean = tycked.isDefined
+case class ResolvingModuleFile(id: QualifiedIDString, fileName: FileName, content: Option[ResolvingBlock], tycked: Option[Nothing] = None) {
+  require(content.isDefined || tycked.isDefined)
 }
+
+
+object ResolvingModuleFile {
+  def apply(id: QualifiedIDString, fileName: FileName, content: Option[ResolvingBlock], tycked: Option[Nothing] = None): ResolvingModuleFile = {
+    new ResolvingModuleFile(id, fileName, content, tycked)
+  }
+  def apply(id: QualifiedIDString, fileName: FileName, content: ResolvingBlock): ResolvingModuleFile = {
+    new ResolvingModuleFile(id, fileName, Some(content))
+  }
+}
+
+case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile])
 
 case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) {
   def getOption(id: QualifiedIDString): Option[ResolvingModule] = modules.get(id)
+  def addModuleFile(id: QualifiedIDString, moduleFile: ResolvingModuleFile): ResolvingModules = {
+    require(moduleFile.id == id)
+    ???
+  }
 }
 
 object ResolvingBlock {
@@ -27,32 +43,9 @@ object ResolvingBlock {
   }
 }
 
-object ResolvingModuleFile {
-  def fromParsed(parsedFile: ParsedModuleFile): ResolvingModuleFile = {
-    ResolvingModuleFile(
-      fileName = parsedFile.fileName,
-      content = ResolvingBlock.fromParsed(parsedFile.content)
-    )
-  }
-}
-
 object ResolvingModule {
-  def fromParsed(id: QualifiedIDString, parsedFiles: Vector[ParsedModuleFile]): ResolvingModule = {
-    ResolvingModule(
-      id = id,
-      resolving = parsedFiles.map(ResolvingModuleFile.fromParsed),
-      tycked = None
-    )
-  }
 }
 
 object ResolvingModules {
   val Empty: ResolvingModules = ResolvingModules(HashMap.empty)
-  def fromParsed(parsedModules: ParsedModules): ResolvingModules = {
-    ResolvingModules(
-      modules = parsedModules.modules.map { case (id, parsedFiles) =>
-        id -> ResolvingModule.fromParsed(id, parsedFiles)
-      }
-    )
-  }
 }

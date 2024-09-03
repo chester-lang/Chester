@@ -65,13 +65,13 @@ def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
   }
 }
 
-def parseModule(source: ParserSource, modules: ParsedModules = ParsedModules.Empty, ignoreLocation: Boolean = false): Either[ParseError, ParsedModules] = {
+def parseModule(source: ParserSource, modules: ResolvingModules = ResolvingModules.Empty, ignoreLocation: Boolean = false): Either[ParseError, ResolvingModules] = {
   getContentFromSource(source) match {
     case Right((fileName, content)) =>
       parseTopLevel(FileNameAndContent(fileName, content), ignoreLocation).flatMap { block =>
-        val moduleFile = ParsedModuleFile(fileName, block)
         extractModuleName(block).map { id =>
-          modules.addModule(id, moduleFile)
+          val moduleFile = ResolvingModuleFile(id, fileName, ResolvingBlock.fromParsed(block))
+          modules.addModuleFile(id, moduleFile)
         }
       }
     case Left(error) => Left(error)
