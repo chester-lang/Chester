@@ -74,26 +74,26 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(lhs: Term, rhs: Term, failed: => Term = null): Term = {
-    val subType1 = whnfNoEffect(rhs)
-    val superType1 = whnfNoEffect(lhs)
-    if (subType1 == superType1) subType1
-    else (subType1, superType1) match {
-      case (subType, AnyType(level)) => subType // TODO: level
-      case (subType, Union(superTypes)) => Union(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
-      case (Union(subTypes), superType) => {
+    val rhs1 = whnfNoEffect(rhs)
+    val lhs1 = whnfNoEffect(lhs)
+    if (rhs1 == lhs1) rhs1
+    else (lhs1, rhs1) match {
+      case (AnyType(level), subType) => subType // TODO: level
+      case (Union(superTypes), subType) => Union(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
+      case (superType, Union(subTypes)) => {
         val results = subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType))
         Union(results)
       }
-      case (subType, Intersection(superTypes)) => {
+      case (Intersection(superTypes), subType) => {
         val results = superTypes.map(x => unifyTy(rhs = subType, lhs = x))
         Intersection(results)
       }
-      case (Intersection(subTypes), superTypes) => {
+      case (superTypes, Intersection(subTypes)) => {
         val results = subTypes.map(x => unifyTy(rhs = x, lhs = superTypes))
         Intersection(results)
       }
-      case (IntType, IntegerType) => IntType
-      case (subType, superType) =>
+      case (IntegerType, IntType) => IntType
+      case (superType, subType) =>
         if (failed != null) failed else {
           val err = UnifyFailedError(rhs = subType, lhs = superType)
           tyck.error(err)
