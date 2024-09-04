@@ -5,13 +5,13 @@ import fastparse.ParserInput
 import scala.annotation.tailrec
 import upickle.default._
 
-case class Pos(index: Int, line: Int, column: Int) derives ReadWriter
+case class Pos(index: Int, line: Int, column: Int)derives ReadWriter
 
 object Pos {
   lazy val Zero = Pos(0, 0, 0)
 }
 
-case class RangeInFile(start: Pos, end: Pos) derives ReadWriter
+case class RangeInFile(start: Pos, end: Pos)derives ReadWriter
 
 case class FileContent(content: String | LazyList[String] | ParserInput, lineOffset: Int, indexOffset: Int)
 
@@ -22,10 +22,11 @@ object FileContent {
     case ll: LazyList[String] => ll.mkString
     case pi: ParserInput => convertToString0(parserInputToLazyList(pi))
   }
-  def convertToString(fileContent: FileContent): String = convertToString0(fileContent.content )
+
+  def convertToString(fileContent: FileContent): String = convertToString0(fileContent.content)
 }
 
-case class SourcePosSerialized(val fileName: String, val range: RangeInFile) derives ReadWriter {
+case class SourcePosSerialized(val fileName: String, val range: RangeInFile)derives ReadWriter {
   def toSourcePos: SourcePos = {
     SourcePos(fileName, None, range)
   }
@@ -33,7 +34,7 @@ case class SourcePosSerialized(val fileName: String, val range: RangeInFile) der
 
 implicit val sourcePosRW: ReadWriter[SourcePos] = readwriter[SourcePosSerialized].bimap(_.toSerialized, _.toSourcePos)
 
-case class SourcePos(val fileName: String, val fileContent: Option[FileContent], val range: RangeInFile) {
+class SourcePos(val fileName: String, val fileContent: Option[FileContent], val range: RangeInFile) {
   def toSerialized: SourcePosSerialized = SourcePosSerialized(fileName, range)
 
   // Method to extract all lines within the range with line numbers
@@ -70,6 +71,10 @@ case class SourcePos(val fileName: String, val fileContent: Option[FileContent],
 }
 
 object SourcePos {
+  def apply(fileName: String, fileContent: Option[FileContent], range: RangeInFile): SourcePos = {
+    new SourcePos(fileName, fileContent, range)
+  }
+
   def apply(fileName: String, fileContent: FileContent, range: RangeInFile): SourcePos = {
     new SourcePos(fileName, Some(fileContent), range)
   }

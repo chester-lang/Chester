@@ -218,7 +218,7 @@ case object NothingType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
 }
 
-implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW
+implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
 case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
