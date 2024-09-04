@@ -102,8 +102,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
-      "org.typelevel" %%% "paiges-core" % "0.4.4",
-      "org.typelevel" %%% "paiges-cats" % "0.4.4",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
     ),
   )
