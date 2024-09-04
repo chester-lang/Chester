@@ -224,7 +224,7 @@ trait PrettyPrinterBase {
    * A document representing a potential line break.  Behaves like the
    * string `repl` if the break is omitted by a group.
    */
-  def line(repl: Layout): Doc
+  def line(repl: String): Doc
 
   /**
    * A document representing a choice among different ways to print a structure.
