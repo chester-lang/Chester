@@ -1,6 +1,5 @@
 package chester.utils.doc
 
-import chester.doc.PrettierOptions
 import kiama.output._
 
 import scala.language.implicitConversions

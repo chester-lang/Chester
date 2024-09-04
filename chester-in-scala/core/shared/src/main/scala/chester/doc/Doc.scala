@@ -1,5 +1,6 @@
 package chester.doc
 
+import chester.utils.doc.PrettierOptions
 import chester.utils.platformUseCRLF
 
 import scala.annotation.tailrec

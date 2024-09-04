@@ -1,4 +1,4 @@
-package chester.doc
+package chester.utils.doc
 
 trait PrettierOptionsKey[T] {
   def default: T
@@ -31,8 +31,4 @@ object PrettierOptions {
   val Default: PrettierOptions = Map()
 
   def apply(options: PrettierKeyValue[?]*): PrettierOptions = options.map(prettyKeyValue2Tuple).toMap
-}
-
-trait ToDoc {
-  def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc
 }

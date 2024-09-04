@@ -1,7 +1,7 @@
 package chester.i18n
 
-import chester.doc.{PrettierOptions, PrettierOptionsKey}
 import chester.i18n.Language
+import chester.utils.doc.{PrettierOptions, PrettierOptionsKey}
 
 case object LanguageKey extends PrettierOptionsKey[Language] {
   val default: Language = Language.from("en_NZ")

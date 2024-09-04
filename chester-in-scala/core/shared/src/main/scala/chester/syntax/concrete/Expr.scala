@@ -3,14 +3,15 @@ package chester.syntax.concrete
 
 import chester.doc.*
 import chester.doc.Doc.group
-import chester.error._
+import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
+import chester.utils.doc.PrettierOptions
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
-import chester.utils.impls._
+import chester.utils.impls.*
 
 enum CommentType derives ReadWriter {
   case OneLine

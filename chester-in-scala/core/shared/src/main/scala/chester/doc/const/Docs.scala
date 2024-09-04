@@ -1,6 +1,7 @@
 package chester.doc.const
 
-import chester.doc.{Doc, PrettierOptions}
+import chester.doc.Doc
+import chester.utils.doc.PrettierOptions
 
 
 object Docs {

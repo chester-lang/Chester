@@ -1,9 +1,10 @@
 package chester.error
 
-import chester.doc.{PrettierOptions, *}
+import chester.doc.*
 import chester.i18n.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
+import chester.utils.doc.PrettierOptions
 import chester.utils.impls.*
 import upickle.default.*
 

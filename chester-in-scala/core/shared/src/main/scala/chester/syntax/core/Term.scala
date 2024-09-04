@@ -6,10 +6,11 @@ import chester.doc.Doc.group
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
+import chester.utils.doc.PrettierOptions
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
-import upickle.default._
-import chester.utils.impls._
+import upickle.default.*
+import chester.utils.impls.*
 
 import scala.language.implicitConversions
 
