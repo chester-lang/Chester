@@ -33,7 +33,7 @@ trait Source {
      * count of how many lines are present. The line offset map is
      * indexed starting at zero and contains at least one entry.
      */
-    lazy val (lineStarts, charCount, lineCount) =
+    val (lineStarts, charCount, lineCount) =
         content.foldLeft((Vector[Int](0), 1, 1)) {
             case ((v, chs, nls), ch) =>
                 if (ch == '\n')
