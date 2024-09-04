@@ -4,8 +4,12 @@ import chester.doc.{PrettierOptions, *}
 import chester.i18n.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
+import chester.utils.impls.*
+import upickle.default.*
 
-sealed abstract class TyckErrorOrWarning extends Exception with ToDoc {
+import scala.reflect.ClassTag
+
+sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter {
   def message: String = render(toDoc)
 
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message
@@ -24,8 +28,11 @@ sealed abstract class TyckErrorOrWarning extends Exception with ToDoc {
 
     val locationInfo = location match {
       case Some(pos) =>
-        val lines = pos.getLinesInRange.map { case (lineNumber, line) =>
-          Doc.text(t"$lineNumber: ") <> Doc.text(line).colored(Attribute.BoldOn)
+        val lines = pos.getLinesInRange match {
+          case Some(lines) => lines.map { case (lineNumber, line) =>
+            Doc.text(t"$lineNumber: ") <> Doc.text(line).colored(Attribute.BoldOn)
+          }
+          case None => Vector.empty
         }
         val locationHeader = Doc.text(t"Location: ") <>
           Doc.text(t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column + 1}]").colored(Attribute.BoldOn)
@@ -44,11 +51,17 @@ sealed abstract class TyckErrorOrWarning extends Exception with ToDoc {
   }
 }
 
-abstract class TyckError extends TyckErrorOrWarning {
+sealed trait TyckError extends TyckErrorOrWarning derives ReadWriter {
 }
 
-abstract class TyckWarning extends TyckErrorOrWarning {
+sealed trait TyckWarning extends TyckErrorOrWarning derives ReadWriter {
 
+}
+
+case object ExampleWarning extends TyckWarning {
+  override def cause: Term | Expr = EmptyExpr
+
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Example warning"
 }
 
 case class EmptyResultsError() extends TyckError {
@@ -79,6 +92,8 @@ case class UnexpectedStmt(x: Stmt) extends TyckError {
   override def cause: Expr = x
 }
 
+import chester.syntax.concrete.qualifiedNameRW
+implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a=qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b=readwriter[String]).asInstanceOf
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName | String) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Field type not found for $qualifiedName"
 

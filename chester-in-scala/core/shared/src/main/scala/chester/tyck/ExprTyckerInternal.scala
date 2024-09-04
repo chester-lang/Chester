@@ -79,18 +79,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
       case (AnyType(level), subType) => subType // TODO: level
-      case (Union(superTypes), subType) => Union(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
+      case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
       case (superType, Union(subTypes)) => {
         val results = subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType))
-        Union(results)
+        Union.from(results)
       }
       case (Intersection(superTypes), subType) => {
         val results = superTypes.map(x => unifyTy(rhs = subType, lhs = x))
-        Intersection(results)
+        Intersection.from(results)
       }
       case (superTypes, Intersection(subTypes)) => {
         val results = subTypes.map(x => unifyTy(rhs = x, lhs = superTypes))
-        Intersection(results)
+        Intersection.from(results)
       }
       case (IntegerType, IntType) => IntType
       case (superType, subType) =>
@@ -127,7 +127,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2)))
       case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _)))
       case (ty1, ty2) =>
-        Union(Vector(ty1, ty2))
+        Union.from(Vector(ty1, ty2))
     }
   }
 
@@ -140,7 +140,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (NoEffect, _) => e2
       case (_, NoEffect) => e1
       case _ if e1 == e2 => e1
-      case _ => EffectUnion(Vector(e1, e2))
+      case _ => EffectUnion.from(Vector(e1, e2))
     }
   }
 
@@ -250,7 +250,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     term match {
       case Union(xs) => {
         val xs1 = xs.map(x => whnfNoEffect(x))
-        Union(xs1)
+        Union.from(xs1)
       }
       case wellTyped => wellTyped
     } match {

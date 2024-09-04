@@ -2,16 +2,16 @@ package chester.error
 
 import chester.utils.{encodeString, parserInputToLazyList}
 import fastparse.ParserInput
-
 import scala.annotation.tailrec
+import upickle.default._
 
-case class Pos(index: Int, line: Int, column: Int)
+case class Pos(index: Int, line: Int, column: Int) derives ReadWriter
 
 object Pos {
   lazy val Zero = Pos(0, 0, 0)
 }
 
-case class RangeInFile(start: Pos, end: Pos)
+case class RangeInFile(start: Pos, end: Pos) derives ReadWriter
 
 case class FileContent(content: String | LazyList[String] | ParserInput, lineOffset: Int, indexOffset: Int)
 
@@ -25,11 +25,19 @@ object FileContent {
   def convertToString(fileContent: FileContent): String = convertToString0(fileContent.content )
 }
 
-class SourcePos(val fileName: String, val fileContent: FileContent, val range: RangeInFile) {
+case class SourcePosSerialized(val fileName: String, val range: RangeInFile) derives ReadWriter {
+  def toSourcePos: SourcePos = {
+    SourcePos(fileName, None, range)
+  }
+}
 
+implicit val sourcePosRW: ReadWriter[SourcePos] = readwriter[SourcePosSerialized].bimap(_.toSerialized, _.toSourcePos)
+
+case class SourcePos(val fileName: String, val fileContent: Option[FileContent], val range: RangeInFile) {
+  def toSerialized: SourcePosSerialized = SourcePosSerialized(fileName, range)
 
   // Method to extract all lines within the range with line numbers
-  def getLinesInRange: Vector[(Int, String)] = {
+  def getLinesInRange: Option[Vector[(Int, String)]] = fileContent map { fileContent =>
     val startLine = range.start.line - fileContent.lineOffset
     val endLine = range.end.line - fileContent.lineOffset
     val contentString = FileContent.convertToString(fileContent)
@@ -63,7 +71,7 @@ class SourcePos(val fileName: String, val fileContent: FileContent, val range: R
 
 object SourcePos {
   def apply(fileName: String, fileContent: FileContent, range: RangeInFile): SourcePos = {
-    new SourcePos(fileName, fileContent, range)
+    new SourcePos(fileName, Some(fileContent), range)
   }
 }
 

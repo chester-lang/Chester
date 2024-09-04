@@ -3,27 +3,29 @@ package chester.syntax.concrete
 
 import chester.doc.*
 import chester.doc.Doc.group
-import chester.error.{SourcePos, TyckError, TyckErrorOrWarning, TyckWarning, WithPos}
+import chester.error._
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
+import upickle.default.*
+import chester.utils.impls._
 
-enum CommentType {
+enum CommentType derives ReadWriter {
   case OneLine
   case MultiLine
 }
 
-case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])
+case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos]) derives ReadWriter
 
-case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty, commentEndInThisLine: Vector[Comment] = Vector.empty) {
+case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty, commentEndInThisLine: Vector[Comment] = Vector.empty) derives ReadWriter {
   if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty && commentEndInThisLine.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
 
-case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) {
+case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) derives ReadWriter {
   require(sourcePos.isDefined || commentInfo.isDefined)
 }
 
@@ -35,7 +37,7 @@ object MetaFactory {
   }
 }
 
-sealed trait Expr extends WithPos with ToDoc {
+sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
   def descent(operator: Expr => Expr): Expr = this
 
   final def descentRecursive(operator: Expr => Expr): Expr = {
@@ -67,11 +69,11 @@ sealed trait Expr extends WithPos with ToDoc {
   override def toString: String = render(this)
 }
 
-sealed trait ParsedExpr extends Expr
+sealed trait ParsedExpr extends Expr derives ReadWriter
 
-sealed trait MaybeSaltedExpr extends Expr
+sealed trait MaybeSaltedExpr extends Expr derives ReadWriter
 
-case class Identifier(name: String, meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class Identifier(name: String, meta: Option[ExprMeta] = None) extends ParsedExpr derives ReadWriter {
   override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"Identifier(\"${encodeString(name)}\")"
     case Some(pos) => s"Identifier(\"${encodeString(name)}\", ${pos.toString})"
@@ -152,7 +154,7 @@ object Block {
 }
 
 // maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
   require(name.isDefined || exprOrDefault.isDefined)
 
   def descent(operator: Expr => Expr): Arg = {
@@ -179,11 +181,11 @@ object Arg {
   def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
-sealed trait MaybeTelescope extends Expr {
+sealed trait MaybeTelescope extends Expr derives ReadWriter {
   override def descent(operator: Expr => Expr): MaybeTelescope = thisOr(super.descent(operator).asInstanceOf[MaybeTelescope])
 }
 
-sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr
+sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr derives ReadWriter
 
 case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): Tuple = thisOr {
@@ -228,7 +230,7 @@ object FunctionCall {
   }
 }
 
-case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr derives ReadWriter {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     DotCall(operator(expr), operator(field), telescope.map(_.descent(operator)), meta)
   }
@@ -251,19 +253,19 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], m
 }
 
 type QualifiedName = DotCall | Identifier
+implicit val qualifiedNameRW: ReadWriter[QualifiedName] = union2RW
 
 object QualifiedName {
   def build(x: QualifiedName, field: Identifier, meta: Option[ExprMeta] = None): QualifiedName = DotCall(x, field, Vector(), meta)
 }
 
-sealed trait Literal extends ParsedExpr
+sealed trait Literal extends ParsedExpr derives ReadWriter
 
 case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
-
 case class RationalLiteral(value: Rational, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
@@ -325,7 +327,7 @@ case class AnnotatedExpr(annotation: Identifier, telescope: Vector[MaybeTelescop
   override def toDoc(implicit options: PrettierOptions): Doc = group(annotation.toDoc <> telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty) <> expr.toDoc)
 }
 
-sealed trait ObjectClause {
+sealed trait ObjectClause derives ReadWriter {
   def descent(operator: Expr => Expr): ObjectClause = this match {
     case ObjectExprClause(k, v) => ObjectExprClause(k, operator(v))
     case ObjectExprClauseOnValue(k, v) => ObjectExprClauseOnValue(operator(k), operator(v))
@@ -370,7 +372,7 @@ case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[Expr
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("#" + key) <> telescope.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty))
 }
 
-sealed trait DesaltExpr extends Expr
+sealed trait DesaltExpr extends Expr derives ReadWriter
 
 case class DesaltCaseClause(pattern: Expr, returning: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCaseClause = copy(meta = updater(meta))
@@ -405,7 +407,7 @@ case class FunctionExpr(telescope: Vector[Telescope], effect: Option[Expr] = Non
 }
 
 
-sealed trait ErrorExpr extends Expr
+sealed trait ErrorExpr extends Expr derives ReadWriter
 
 case object EmptyExpr extends ErrorExpr {
   override def meta: Option[ExprMeta] = None
@@ -421,7 +423,7 @@ case class DesaltFailed(origin: Expr, error: TyckErrorOrWarning, meta: Option[Ex
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")"))
 }
 
-sealed trait DesaltPattern extends DesaltExpr {
+sealed trait DesaltPattern extends DesaltExpr derives ReadWriter {
   override def descent(operator: Expr => Expr): DesaltPattern = this
 }
 
@@ -439,7 +441,7 @@ case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltP
 
 
 // TODO: maybe merge with BlockStmt
-sealed trait Stmt extends DesaltExpr {
+sealed trait Stmt extends DesaltExpr derives ReadWriter  {
 
   def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Stmt) = (Vector.empty, Vector.empty, this)
 
@@ -455,17 +457,11 @@ sealed trait Stmt extends DesaltExpr {
   def getName: Option[Id] = None
 }
 
-private sealed trait NameUnknown extends Stmt {
+private sealed trait NameUnknown extends Stmt derives ReadWriter  {
   override def getName: Option[Id] = None
 }
 
-private sealed trait NameKnown extends Stmt {
-  def name: Id
-
-  override def getName: Option[Id] = Some(name)
-}
-
-private sealed trait NameOption extends Stmt {
+private sealed trait NameOption extends Stmt derives ReadWriter  {
   def name: Option[Id]
 
   override def getName: Option[Id] = name

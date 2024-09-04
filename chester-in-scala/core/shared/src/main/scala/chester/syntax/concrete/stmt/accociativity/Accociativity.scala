@@ -2,6 +2,7 @@ package chester.syntax.concrete.stmt.accociativity
 // TODO: rewrite, refact and remove
 import chester.parser.*
 import chester.syntax.concrete.stmt.QualifiedID
+import upickle.default._
 
 case class PrecedenceGroup(
                             name: QualifiedID,
@@ -22,7 +23,7 @@ val DefinePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Define), l
 
 val TypePrecedenceGroup = PrecedenceGroup(QualifiedID.builtin(Names.Type), higherThan = Vector(DefinePrecedenceGroup), lowerThan = Vector(DefaultPrecedenceGroup))
 
-enum Associativity {
+enum Associativity derives ReadWriter {
   case None
   case Left
   case Right

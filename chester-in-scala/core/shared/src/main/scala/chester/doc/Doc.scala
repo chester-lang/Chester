@@ -29,7 +29,7 @@ object Doc {
 
   val empty: Doc = ""
 
-  def concat(docs: ToDoc*): Doc = if (docs.isEmpty) Text("") else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
+  def concat(docs: ToDoc*): Doc = if (docs.isEmpty) empty else if (docs.length == 1) docs.head.toDoc else Concat(docs.map(_.toDoc))
 
   def colored(doc: ToDoc, color: Attribute): Doc = Colored(doc.toDoc, color)
 
