@@ -12,6 +12,10 @@
 package kiama
 package output
 
+import kiama.output.PrettyPrinterTypes.{LinkRange, LinkValue, Links, Width, emptyLinks}
+import org.bitbucket.inkytonik.kiama.util.Trampolines.Done
+
+import scala.collection.immutable.Queue.empty as emptyDq
 import scala.language.implicitConversions
 
 /**
@@ -889,6 +893,68 @@ trait PrettyPrinterBase {
 
 }
 
+trait PrettyPrinter extends AbstractPrettyPrinter {
+    type Layout = String
+
+    // Obtaining output
+
+    def pretty(d : Doc, w : Width = defaultWidth) : Document = {
+
+        val initBuffer = Seq[Entry]()
+        val cend =
+            (p : PPosition, dq : Dq) =>
+                Done((r : Remaining) => Done(initBuffer))
+        val finalBufferComputation =
+            for {
+                c <- d((0, w))(cend)
+                o <- c(0, emptyDq)
+                buffer <- o(w)
+            } yield buffer
+        val finalBuffer = finalBufferComputation.runT
+
+        case class PPState(
+                            links : Links,
+                            sourceStarts : List[Int],
+                            targetStarts : List[Int],
+                            offset : Int,
+                            layout : StringBuilder
+                          )
+
+        val PPState(links, _, _, _, stringBuilder) =
+            finalBuffer.foldLeft(
+                PPState(emptyLinks, List[Int](), List[Int](), 0,
+                    new StringBuilder)
+            ) {
+                case (PPState(x, ss, ts, o, l), e) =>
+                    e match {
+                        case Start(a) =>
+                            PPState(x, ss, o :: ts, o, l)
+                        case StartOffset(t) =>
+                            PPState(x, t :: ss, o :: ts, o, l)
+                        case Finish(a) =>
+                            PPState(
+                                LinkValue(a, Range(ts.head, o + 1)) :: x,
+                                ss, ts.tail, o, l
+                            )
+                        case FinishOffset(f) =>
+                            PPState(
+                                LinkRange(
+                                    Range(ss.head, f),
+                                    Range(ts.head, o + 1)
+                                ) :: x,
+                                ss.tail, ts.tail, o, l
+                            )
+                        case Text(t) =>
+                            PPState(x, ss, ts, o + t.length, l.append(t))
+                    }
+            }
+
+        Document(stringBuilder.result(), links)
+
+    }
+
+}
+
 /**
  * A pretty-printer implemented using the continuation-based approach
  * from Section 3.3 of Swierstra, S., and Chitil, O. Linear, bounded,
@@ -899,15 +965,13 @@ trait PrettyPrinterBase {
  * uses of the `nest` method (default: 4). `defaultWidth` specifies the
  * default output width (default: 75).
  */
-trait PrettyPrinter extends PrettyPrinterBase {
+trait AbstractPrettyPrinter extends PrettyPrinterBase {
 
     import org.bitbucket.inkytonik.kiama.util.Trampolines.{Done, More, step, Trampoline}
     import PrettyPrinterTypes.{emptyLinks, Indent, LinkRange, Links, LinkValue, Width}
     import scala.collection.immutable.{Queue, Seq}
     import scala.collection.immutable.Queue.{empty => emptyDq}
     import scala.collection.mutable.StringBuilder
-
-    type Layout = String
 
     // Internal data types
 
@@ -1095,7 +1159,7 @@ trait PrettyPrinter extends PrettyPrinterBase {
         else
             insert(t.length, Text(t))
 
-    def line(repl : Layout) : Doc =
+    def line(repl : String) : Doc =
         new Doc({
             case (i, w) =>
                 val width = repl.length
@@ -1173,63 +1237,6 @@ trait PrettyPrinter extends PrettyPrinterBase {
 
     def linkRange(f : Int, t : Int, d : Doc) : Doc =
         insert(0, StartOffset(f)) <> d <> insert(0, FinishOffset(t))
-
-    // Obtaining output
-
-    def pretty(d : Doc, w : Width = defaultWidth) : Document = {
-
-        val initBuffer = Seq[Entry]()
-        val cend =
-            (p : PPosition, dq : Dq) =>
-                Done((r : Remaining) => Done(initBuffer))
-        val finalBufferComputation =
-            for {
-                c <- d((0, w))(cend)
-                o <- c(0, emptyDq)
-                buffer <- o(w)
-            } yield buffer
-        val finalBuffer = finalBufferComputation.runT
-
-        case class PPState(
-            links : Links,
-            sourceStarts : List[Int],
-            targetStarts : List[Int],
-            offset : Int,
-            layout : StringBuilder
-        )
-
-        val PPState(links, _, _, _, stringBuilder) =
-            finalBuffer.foldLeft(
-                PPState(emptyLinks, List[Int](), List[Int](), 0,
-                    new StringBuilder)
-            ) {
-                    case (PPState(x, ss, ts, o, l), e) =>
-                        e match {
-                            case Start(a) =>
-                                PPState(x, ss, o :: ts, o, l)
-                            case StartOffset(t) =>
-                                PPState(x, t :: ss, o :: ts, o, l)
-                            case Finish(a) =>
-                                PPState(
-                                    LinkValue(a, Range(ts.head, o + 1)) :: x,
-                                    ss, ts.tail, o, l
-                                )
-                            case FinishOffset(f) =>
-                                PPState(
-                                    LinkRange(
-                                        Range(ss.head, f),
-                                        Range(ts.head, o + 1)
-                                    ) :: x,
-                                    ss.tail, ts.tail, o, l
-                                )
-                            case Text(t) =>
-                                PPState(x, ss, ts, o + t.length, l.append(t))
-                        }
-                }
-
-        Document(stringBuilder.result(), links)
-
-    }
 
 }
 
