@@ -14,7 +14,7 @@ val nativeImageOption = Seq(
   "--no-fallback",
   "-enablesystemassertions",
   // runtime: org.jline
-  "--initialize-at-build-time=os,scalax,sbt,ujson,upack,upickle,algebra,cps,com.oracle,spire,org.graalvm,scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
+  "--initialize-at-build-time=org.typelevel,os,scalax,sbt,ujson,upack,upickle,algebra,cps,com.oracle,spire,org.graalvm,scopt,fastparse,scala,java,chester,org.eclipse,cats,fansi,sourcecode,com.monovore.decline,geny,pprint",
   "-O2",
 )
 
@@ -92,6 +92,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
+      "org.typelevel" %%% "paiges-core" % "0.4.4",
+      "org.typelevel" %%% "paiges-cats" % "0.4.4",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
     ),
   )
