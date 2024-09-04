@@ -30,20 +30,22 @@ val commonSettings = Seq(
   resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.mavenLocal,
   scalacOptions ++= Seq("-java-output-version", "8"),
+  libraryDependencies ++= Seq(
+    "org.scalameta" %%% "munit" % "1.0.0" % Test,
+    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
+    "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test,
+    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test,
+    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
+    "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
+  ),
+)
+val cpsSettings = Seq(
   autoCompilerPlugins := true,
   addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21"),
 )
 val commonJvmSettings = Seq(
   scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
-)
-val commonTestSettings = Seq(
-  libraryDependencies ++= Seq(
-    "org.scalameta" %%% "munit" % "1.0.0" % Test,
-    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
-    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
-    "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
-    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
-  ),
 )
 val graalvmSettings = Seq(
   nativeImageVersion := graalVersion,
@@ -79,14 +81,22 @@ val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 val permitGPLcontamination: Boolean = false
 
+lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("kiama-core"))
+  .settings(
+    commonSettings
+  )
+
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("core"))
+  .dependsOn(kiamaCore)
   .settings(
     name := "chester-core",
     assembly / assemblyJarName := "core.jar",
-    commonTestSettings,
     commonSettings,
+    cpsSettings,
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "upickle" % "4.0.1",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
@@ -140,7 +150,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .dependsOn(core)
   .settings(
     name := "chester",
-    commonTestSettings,
     assembly / assemblyJarName := "common.jar",
     commonSettings,
   )
