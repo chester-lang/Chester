@@ -56,7 +56,9 @@ case class Infix(side : Side) extends Fixity
 /**
  * Super type of all expressions that are to be pretty-printed.
  */
-trait PrettyExpression
+trait PrettyExpression[Doc]
+
+case class PrettyExpressionDoc[Doc](doc : Doc) extends PrettyExpression[Doc]
 
 /**
  * An expression that contains an operator.  Defines `priority` to relate
@@ -64,25 +66,20 @@ trait PrettyExpression
  * default). Also defines `fixity` to specify the relationship between the
  * operator and its operand(s) (no default).
  */
-trait PrettyOperatorExpression extends PrettyExpression {
+trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
     def priority : Int
     def fixity : Fixity
 }
-
-/**
- * N-ary infix expressions that are to be pretty-printed.
- */
-trait PrettyNaryExpression extends PrettyOperatorExpression
 
 /**
  * Binary expressions that are to be pretty-printed. `left` and `right`
  * give the two operand expressions and `op` the string that is to be
  * used as the output of the operator.
  */
-trait PrettyBinaryExpression extends PrettyOperatorExpression {
-    def left : PrettyExpression
+trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
+    def left : PrettyExpression[Doc]
     def op : String
-    def right : PrettyExpression
+    def right : PrettyExpression[Doc]
 }
 
 /**
@@ -90,9 +87,9 @@ trait PrettyBinaryExpression extends PrettyOperatorExpression {
  * expressions and `op` the string that is to be used as the output of the
  * operator.
  */
-trait PrettyUnaryExpression extends PrettyOperatorExpression {
+trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
     def op : String
-    def exp : PrettyExpression
+    def exp : PrettyExpression[Doc]
 }
 
 /**
@@ -108,10 +105,12 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
     /**
      * Pretty-print a recursive child reference, parenthesizing if necessary.
      */
-    def recursiveToDoc(outer : PrettyOperatorExpression, inner : PrettyExpression, side : Side) : Doc =
+    def recursiveToDoc(outer : PrettyOperatorExpression[Doc], inner : PrettyExpression[Doc], side : Side) : Doc =
         inner match {
-            case l : PrettyOperatorExpression =>
+            case l : PrettyOperatorExpression[Doc] =>
                 bracket(outer, l, side)
+            case doc: PrettyExpressionDoc[Doc] =>
+                doc.doc
             case l =>
                 toParenDoc(l)
         }
@@ -119,15 +118,15 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
     /**
      * Pretty-print a unary, binary or nary expression.
      */
-    def toParenDoc(e : PrettyExpression) : Doc =
+    def toParenDoc(e : PrettyExpression[Doc]) : Doc =
         e match {
 
-            case b : PrettyBinaryExpression =>
+            case b : PrettyBinaryExpression[Doc] =>
                 val ld = recursiveToDoc(b, b.left, LeftAssoc)
                 val rd = recursiveToDoc(b, b.right, RightAssoc)
                 ld <+> text(b.op) <+> rd
 
-            case u : PrettyUnaryExpression =>
+            case u : PrettyUnaryExpression[Doc] =>
                 val ed = recursiveToDoc(u, u.exp, NonAssoc)
                 if (u.fixity == Prefix)
                     text(u.op) <> ed
@@ -143,7 +142,7 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
      * Optionally parenthesise an operator expression based on the precedence relation
      * with an outer expression's operator.
      */
-    def bracket(outer : PrettyOperatorExpression, inner : PrettyOperatorExpression,
+    def bracket(outer : PrettyOperatorExpression[Doc], inner : PrettyOperatorExpression[Doc],
         side : Side) : Doc = {
         val d = toParenDoc(inner)
         if (noparens(outer, inner, side)) d else parens(d)
@@ -153,7 +152,7 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
      * Return true if the inner expression should not be parenthesised when appearing
      * on the given side with the outer expression.
      */
-    def noparens(outer : PrettyOperatorExpression, inner : PrettyOperatorExpression,
+    def noparens(outer : PrettyOperatorExpression[Doc], inner : PrettyOperatorExpression[Doc],
         side : Side) : Boolean = {
         val pi = inner.priority
         val po = outer.priority
