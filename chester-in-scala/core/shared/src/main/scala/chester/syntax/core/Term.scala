@@ -8,25 +8,27 @@ import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
+import upickle.default._
+import chester.utils.impls._
 
 import scala.language.implicitConversions
 
-case class TermMeta(sourcePos: Option[SourcePos])
+case class TermMeta(sourcePos: Option[SourcePos])  derives ReadWriter
 
 type OptionTermMeta = Option[TermMeta]
 
-sealed trait TermWithMeta extends Term with WithPos {
+sealed trait TermWithMeta extends Term with WithPos derives ReadWriter {
   def meta: OptionTermMeta
 
   def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 }
 
 /** CallTerm has meta to trace runtime errors and debug */
-sealed trait MaybeCallTerm extends TermWithMeta {
+sealed trait MaybeCallTerm extends TermWithMeta derives ReadWriter {
   override def whnf: Boolean = false
 }
 
-case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc {
+case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc  derives ReadWriter{
   override def toDoc(implicit options: PrettierOptions): Doc = {
     if (name.isEmpty && !vararg) return value.toDoc
     if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
@@ -37,7 +39,7 @@ case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = fa
   }
 }
 
-case class Calling(args: Vector[CallingArg], implicitly: Boolean = false) extends ToDoc {
+case class Calling(args: Vector[CallingArg], implicitly: Boolean = false) extends ToDoc derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = {
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
@@ -73,7 +75,7 @@ object FCallTerm {
   }
 }
 
-sealed trait Pat extends ToDoc {
+sealed trait Pat extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
   def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = this
@@ -89,7 +91,7 @@ object Bind {
   def from(bind: LocalVar): Bind = Bind(bind, bind.ty)
 }
 
-sealed trait Term extends ToDoc {
+sealed trait Term extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
   def whnf: Boolean = true
@@ -106,13 +108,13 @@ sealed trait Term extends ToDoc {
   }
 }
 
-case class ListTerm(terms: Vector[Term]) extends Term {
+case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter  {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
 
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
 }
 
-sealed trait Sort extends Term {
+sealed trait Sort extends Term derives ReadWriter {
   def level: Term
 }
 
@@ -147,17 +149,17 @@ case class Prop(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(level)
 }
 
-sealed trait LiteralTerm extends Term
+sealed trait LiteralTerm extends Term derives ReadWriter
 
-case class IntTerm(value: Int) extends LiteralTerm {
+case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class IntegerTerm(value: BigInt) extends LiteralTerm {
+case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-sealed trait TypeTerm extends Term
+sealed trait TypeTerm extends Term derives ReadWriter
 
 case object IntegerType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
@@ -177,15 +179,15 @@ case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
 
-case class RationalTerm(value: Rational) extends LiteralTerm {
+case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class StringTerm(value: String) extends LiteralTerm {
+case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
-case class SymbolTerm(value: String) extends Term {
+case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
 }
 
@@ -206,7 +208,7 @@ case object SymbolType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").colored(ColorProfile.typeColor)
 }
 
-case class AnyType(level: Term) extends TypeTerm {
+case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
@@ -215,6 +217,8 @@ val AnyType0 = AnyType(Level0)
 case object NothingType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
 }
+
+implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
 case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
@@ -243,7 +247,7 @@ object TelescopeTerm {
   def from(x: ArgTerm*): VisibleTelescopeTerm = VisibleTelescopeTerm(x.toVector)
 }
 
-sealed trait TelescopeTerm extends Term
+sealed trait TelescopeTerm extends Term derives ReadWriter
 
 case class VisibleTelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
@@ -253,7 +257,7 @@ case class InvisibleTelescopeTerm() extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
 }
 
-case class ScopeId(id: VarId)
+case class ScopeId(id: VarId) derives ReadWriter
 
 object ScopeId {
   def generate: ScopeId = ScopeId(VarId.generate)
@@ -267,7 +271,7 @@ case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None,
   }
 }
 
-case class MatchingClause() {
+case class MatchingClause() derives ReadWriter {
 
 }
 
@@ -304,7 +308,7 @@ def TyToty: FunctionType = {
 }
 
 
-case class ObjectClauseValueTerm(key: Term, value: Term) {
+case class ObjectClauseValueTerm(key: Term, value: Term) derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 }
 
@@ -349,7 +353,7 @@ private inline def flatList[T <: Term](inline constructor: Vector[Term] => T, in
 
 object Union {
   //def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None }, _.distinct)(xs)
-  def apply(xs: Vector[Term]): Term = {
+  def from(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
       case Union(ys) => ys
       case x => Vector(x)
@@ -359,7 +363,7 @@ object Union {
   }
 }
 
-case class Intersection(xs: Vector[Term]) extends Term {
+case class Intersection(xs: Vector[Term]) extends Term derives ReadWriter {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
@@ -367,7 +371,7 @@ case class Intersection(xs: Vector[Term]) extends Term {
 
 object Intersection {
   //def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
-  def apply(xs: Vector[Term]): Term = {
+  def from(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
       case Intersection(ys) => ys
       case x => Vector(x)
@@ -377,7 +381,7 @@ object Intersection {
   }
 }
 
-sealed trait EffectTerm extends Term
+sealed trait EffectTerm extends Term derives ReadWriter
 
 case class EffectUnion(xs: Vector[Term]) extends EffectTerm {
   require(xs.nonEmpty)
@@ -387,7 +391,7 @@ case class EffectUnion(xs: Vector[Term]) extends EffectTerm {
 
 object EffectUnion {
   // do flatten
-  def apply(xs: Vector[Term]): EffectTerm = {
+  def from(xs: Vector[Term]): EffectTerm = {
     val flattened = xs.flatMap {
       case EffectUnion(ys) => ys
       case x => Vector(x)
@@ -427,7 +431,7 @@ private object ResolvedVarCounter {
   var varIdCounter = 0
 }
 
-case class VarId(id: Int)
+case class VarId(id: Int) derives ReadWriter
 
 object VarId {
   def generate: VarId = ResolvedVarCounter.synchronized {
@@ -436,7 +440,7 @@ object VarId {
   }
 }
 
-sealed trait MaybeVarCall extends MaybeCallTerm {
+sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
   def varId: VarId
 
   def id: Id
@@ -466,7 +470,7 @@ object MetaTerm {
   def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, VarId.generate, ty)
 }
 
-sealed trait StmtTerm {
+sealed trait StmtTerm derives ReadWriter {
 
 }
 
