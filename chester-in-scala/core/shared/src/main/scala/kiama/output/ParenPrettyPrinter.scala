@@ -58,7 +58,7 @@ case class Infix(side: Side) extends Fixity
 /**
  * Super type of all expressions that are to be pretty-printed.
  */
-trait PrettyExpression[Doc]
+sealed trait PrettyExpression[Doc]
 
 implicit class PrettyExpressionDoc[Doc](val doc: Doc) extends PrettyExpression[Doc]
 
@@ -68,7 +68,7 @@ implicit class PrettyExpressionDoc[Doc](val doc: Doc) extends PrettyExpression[D
  * default). Also defines `fixity` to specify the relationship between the
  * operator and its operand(s) (no default).
  */
-trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
+sealed trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
   def priority: Int
 
   def fixity: Fixity
@@ -82,7 +82,7 @@ trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
 trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
   def left: PrettyExpression[Doc]
 
-  def op: String
+  def op: Doc
 
   def right: PrettyExpression[Doc]
 }
@@ -93,7 +93,7 @@ trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
  * operator.
  */
 trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
-  def op: String
+  def op: Doc
 
   def exp: PrettyExpression[Doc]
 }
@@ -117,8 +117,6 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
     inner match {
       case l: PrettyOperatorExpression[Doc] =>
         bracket(outer, l, side)
-      case doc: PrettyExpressionDoc[Doc] =>
-        doc.doc
       case l =>
         toParenDoc(l)
     }
@@ -132,21 +130,17 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
       case b: PrettyBinaryExpression[Doc] =>
         val ld = recursiveToDoc(b, b.left, LeftAssoc)
         val rd = recursiveToDoc(b, b.right, RightAssoc)
-        ld <+> text(b.op) <+> rd
+        ld <+> b.op <+> rd
 
       case u: PrettyUnaryExpression[Doc] =>
         val ed = recursiveToDoc(u, u.exp, NonAssoc)
         if (u.fixity == Prefix)
-          text(u.op) <> ed
+          u.op <> ed
         else
-          ed <> text(u.op)
+          ed <> u.op
 
       case d: PrettyExpressionDoc[Doc] =>
         d.doc
-
-      case _ =>
-        sys.error(s"toParenDoc: unexpected PrettyExpression $e")
-
     }
 
   /**
