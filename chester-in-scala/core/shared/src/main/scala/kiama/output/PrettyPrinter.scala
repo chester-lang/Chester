@@ -891,109 +891,24 @@ trait PrettyPrinterBase {
   def space: Doc =
     char(' ')
 
+
+  def useCRLF: Boolean = false
 }
 
 trait PrettyPrinter extends AbstractPrettyPrinter {
   type Layout = String
 
-  // Internal data types
+  type Attribute = Unit
 
-  /**
-   * An entry in the final output stream.
-   */
-  sealed abstract class Entry
+  def noAttribute: Attribute = ()
 
-  /**
-   * An output entry for a piece of the pretty-printed text.
-   */
-  case class Text(s: String) extends Entry
-  def eText(s: String) = Text(s)
+  type Builder = StringBuilder
 
-  /**
-   * An output entry that indicates the start of a document linked with
-   * the position of value `n`.
-   */
-  case class Start(n: AnyRef) extends Entry
-  def eStart(n: AnyRef) = Start(n)
+  override def newBuilder: StringBuilder = new StringBuilder
 
-  /**
-   * An output entry that indicates the start of a document linked with
-   * the offset `o`.
-   */
-  case class StartOffset(o: Int) extends Entry
-  def eStartOffset(o: Int) = StartOffset(o)
+  override def BuilderAppend(b: StringBuilder, text: Text): StringBuilder = b.append(text.s)
 
-  /**
-   * An output entry that indicates the finish of a document linked with
-   * the position of value `n`.
-   */
-  case class Finish(n: AnyRef) extends Entry
-  def eFinish(n: AnyRef) = Finish(n)
-
-  /**
-   * An output entry that indicates the finish of a document linked with
-   * the offset `o`.
-   */
-  case class FinishOffset(o: Int) extends Entry
-  def eFinishOffset(o: Int) = FinishOffset(o)
-
-  // Obtaining output
-
-  def pretty(d: Doc, w: Width = defaultWidth): Document = {
-
-    val initBuffer = Seq[Entry]()
-    val cend =
-      (p: PPosition, dq: Dq) =>
-        Done((r: Remaining) => Done(initBuffer))
-    val finalBufferComputation =
-      for {
-        c <- d((0, w))(cend)
-        o <- c(0, emptyDq)
-        buffer <- o(w)
-      } yield buffer
-    val finalBuffer = finalBufferComputation.runT
-
-    case class PPState(
-                        links: Links,
-                        sourceStarts: List[Int],
-                        targetStarts: List[Int],
-                        offset: Int,
-                        layout: StringBuilder
-                      )
-
-    val PPState(links, _, _, _, stringBuilder) =
-      finalBuffer.foldLeft(
-        PPState(emptyLinks, List[Int](), List[Int](), 0,
-          new StringBuilder)
-      ) {
-        case (PPState(x, ss, ts, o, l), e) =>
-          e match {
-            case Start(a) =>
-              PPState(x, ss, o :: ts, o, l)
-            case StartOffset(t) =>
-              PPState(x, t :: ss, o :: ts, o, l)
-            case Finish(a) =>
-              PPState(
-                LinkValue(a, Range(ts.head, o + 1)) :: x,
-                ss, ts.tail, o, l
-              )
-            case FinishOffset(f) =>
-              PPState(
-                LinkRange(
-                  Range(ss.head, f),
-                  Range(ts.head, o + 1)
-                ) :: x,
-                ss.tail, ts.tail, o, l
-              )
-            case Text(t) =>
-              PPState(x, ss, ts, o + t.length, l.append(t))
-          }
-      }
-
-    Document(stringBuilder.result(), links)
-
-  }
-
+  override def BuilderResult(b: StringBuilder): String = b.result()
 }
 
 /**
@@ -1016,39 +931,43 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
 
   // Internal data types
 
+  type Attribute
+
+  def noAttribute: Attribute
+
   /**
    * An entry in the final output stream.
    */
-  type Entry
+  sealed abstract class Entry
 
   /**
    * An output entry for a piece of the pretty-printed text.
    */
-  def eText(s: String) : Entry
+  case class Text(s: String, meta: Attribute = noAttribute) extends Entry
 
   /**
    * An output entry that indicates the start of a document linked with
    * the position of value `n`.
    */
-  def eStart(n: AnyRef) : Entry
+  case class Start(n: AnyRef) extends Entry
 
   /**
    * An output entry that indicates the start of a document linked with
    * the offset `o`.
    */
-  def eStartOffset(o: Int) : Entry
+  case class StartOffset(o: Int) extends Entry
 
   /**
    * An output entry that indicates the finish of a document linked with
    * the position of value `n`.
    */
-  def eFinish(n: AnyRef) : Entry
+  case class Finish(n: AnyRef) extends Entry
 
   /**
    * An output entry that indicates the finish of a document linked with
    * the offset `o`.
    */
-  def eFinishOffset(o: Int) : Entry
+  case class FinishOffset(o: Int) extends Entry
 
   // As per Swierstra and Chitil with addition of trampolines
 
@@ -1198,7 +1117,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
     if (t == "")
       emptyDoc
     else
-      insert(t.length, eText(t))
+      insert(t.length, Text(t))
 
   def line(repl: String): Doc =
     new Doc({
@@ -1209,9 +1128,9 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
             Done(
               (r: Remaining) =>
                 if (h)
-                  output(o, r - width, eText(repl))
+                  output(o, r - width, Text(repl))
                 else
-                  output(o, w - i, eText("\n" + " " * i))
+                  output(o, w - i, Text(if (useCRLF) "\r\n" else "\n" + " " * i))
             )
         scan(width, outLine)
     })
@@ -1274,10 +1193,79 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
   // Linking combinator
 
   def link(n: AnyRef, d: Doc): Doc =
-    insert(0, eStart(n)) <> d <> insert(0, eFinish(n))
+    insert(0, Start(n)) <> d <> insert(0, Finish(n))
 
   def linkRange(f: Int, t: Int, d: Doc): Doc =
-    insert(0, eStartOffset(f)) <> d <> insert(0, eFinishOffset(t))
+    insert(0, StartOffset(f)) <> d <> insert(0, FinishOffset(t))
+
+  // Obtaining output
+  type Builder
+
+  def newBuilder: Builder
+
+  def BuilderResult(b: Builder): Layout
+
+  def BuilderAppend(b: Builder, text: Text): Builder
+
+  extension (b: Builder) {
+    inline def append(inline text: Text): Builder = BuilderAppend(b, text)
+    inline def result: Layout = BuilderResult(b)
+  }
+
+  def pretty(d: Doc, w: Width = defaultWidth): Document = {
+
+    val initBuffer = Seq[Entry]()
+    val cend =
+      (p: PPosition, dq: Dq) =>
+        Done((r: Remaining) => Done(initBuffer))
+    val finalBufferComputation =
+      for {
+        c <- d((0, w))(cend)
+        o <- c(0, emptyDq)
+        buffer <- o(w)
+      } yield buffer
+    val finalBuffer = finalBufferComputation.runT
+
+    case class PPState(
+                        links: Links,
+                        sourceStarts: List[Int],
+                        targetStarts: List[Int],
+                        offset: Int,
+                        layout: Builder
+                      )
+
+    val PPState(links, _, _, _, stringBuilder) =
+      finalBuffer.foldLeft(
+        PPState(emptyLinks, List[Int](), List[Int](), 0,
+          newBuilder)
+      ) {
+        case (PPState(x, ss, ts, o, l), e) =>
+          e match {
+            case Start(a) =>
+              PPState(x, ss, o :: ts, o, l)
+            case StartOffset(t) =>
+              PPState(x, t :: ss, o :: ts, o, l)
+            case Finish(a) =>
+              PPState(
+                LinkValue(a, Range(ts.head, o + 1)) :: x,
+                ss, ts.tail, o, l
+              )
+            case FinishOffset(f) =>
+              PPState(
+                LinkRange(
+                  Range(ss.head, f),
+                  Range(ts.head, o + 1)
+                ) :: x,
+                ss.tail, ts.tail, o, l
+              )
+            case text@Text(t, meta) =>
+              PPState(x, ss, ts, o + t.length, l.append(text))
+          }
+      }
+
+    Document(stringBuilder.result, links)
+
+  }
 
 }
 
