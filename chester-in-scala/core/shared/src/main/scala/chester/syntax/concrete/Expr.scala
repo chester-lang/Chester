@@ -253,7 +253,7 @@ case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], m
 }
 
 type QualifiedName = DotCall | Identifier
-implicit val qualifiedNameRW: ReadWriter[QualifiedName] = union2RW
+implicit val qualifiedNameRW: ReadWriter[QualifiedName] = union2RW[DotCall, Identifier]
 
 object QualifiedName {
   def build(x: QualifiedName, field: Identifier, meta: Option[ExprMeta] = None): QualifiedName = DotCall(x, field, Vector(), meta)

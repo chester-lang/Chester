@@ -151,11 +151,11 @@ case class Prop(level: Term) extends Sort with Term {
 
 sealed trait LiteralTerm extends Term derives ReadWriter
 
-case class IntTerm(value: Int) extends LiteralTerm {
+case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class IntegerTerm(value: BigInt) extends LiteralTerm {
+case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
@@ -179,15 +179,15 @@ case object NaturalType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
 }
 
-case class RationalTerm(value: Rational) extends LiteralTerm {
+case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
 }
 
-case class StringTerm(value: String) extends LiteralTerm {
+case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
 }
 
-case class SymbolTerm(value: String) extends Term {
+case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
 }
 
@@ -208,7 +208,7 @@ case object SymbolType extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").colored(ColorProfile.typeColor)
 }
 
-case class AnyType(level: Term) extends TypeTerm {
+case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
 }
 
