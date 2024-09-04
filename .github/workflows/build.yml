@@ -178,7 +178,7 @@ jobs:
         path: |
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           chester-in-scala/target/chester
           chester-in-scala/target/chester-lsp
@@ -192,7 +192,7 @@ jobs:
         path: |
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           chester-in-scala/target/chester.exe
           chester-in-scala/target/chester-lsp.exe
@@ -209,7 +209,7 @@ jobs:
         artifacts: |
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
           chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           chester-in-scala/target/chester,
           chester-in-scala/target/chester-lsp,
@@ -226,7 +226,7 @@ jobs:
         artifacts: |
           chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          chester-in-scala/lsp/jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
           chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           chester-in-scala/target/chester.exe,
           chester-in-scala/target/chester-lsp.exe,
