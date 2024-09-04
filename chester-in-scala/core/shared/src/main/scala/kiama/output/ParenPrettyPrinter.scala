@@ -12,6 +12,8 @@
 package kiama
 package output
 
+import kiama.output.PrettyPrinterTypes.Width
+
 /**
  * The sides that an expression may appear on inside another expression
  * or associativities that infix operators can have.
@@ -51,14 +53,14 @@ case object Postfix extends Fixity
 /**
  * The binary operator occurs in infix position (i.e., between its two operands).
  */
-case class Infix(side : Side) extends Fixity
+case class Infix(side: Side) extends Fixity
 
 /**
  * Super type of all expressions that are to be pretty-printed.
  */
 trait PrettyExpression[Doc]
 
-case class PrettyExpressionDoc[Doc](doc : Doc) extends PrettyExpression[Doc]
+implicit class PrettyExpressionDoc[Doc](val doc: Doc) extends PrettyExpression[Doc]
 
 /**
  * An expression that contains an operator.  Defines `priority` to relate
@@ -67,8 +69,9 @@ case class PrettyExpressionDoc[Doc](doc : Doc) extends PrettyExpression[Doc]
  * operator and its operand(s) (no default).
  */
 trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
-    def priority : Int
-    def fixity : Fixity
+  def priority: Int
+
+  def fixity: Fixity
 }
 
 /**
@@ -77,9 +80,11 @@ trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
  * used as the output of the operator.
  */
 trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
-    def left : PrettyExpression[Doc]
-    def op : String
-    def right : PrettyExpression[Doc]
+  def left: PrettyExpression[Doc]
+
+  def op: String
+
+  def right: PrettyExpression[Doc]
 }
 
 /**
@@ -88,8 +93,9 @@ trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
  * operator.
  */
 trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
-    def op : String
-    def exp : PrettyExpression[Doc]
+  def op: String
+
+  def exp: PrettyExpression[Doc]
 }
 
 /**
@@ -102,77 +108,84 @@ trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
  */
 trait ParenPrettyPrinter extends AbstractPrettyPrinter {
 
-    /**
-     * Pretty-print a recursive child reference, parenthesizing if necessary.
-     */
-    def recursiveToDoc(outer : PrettyOperatorExpression[Doc], inner : PrettyExpression[Doc], side : Side) : Doc =
-        inner match {
-            case l : PrettyOperatorExpression[Doc] =>
-                bracket(outer, l, side)
-            case doc: PrettyExpressionDoc[Doc] =>
-                doc.doc
-            case l =>
-                toParenDoc(l)
-        }
+  type Expr = PrettyExpression[Doc]
 
-    /**
-     * Pretty-print a unary, binary or nary expression.
-     */
-    def toParenDoc(e : PrettyExpression[Doc]) : Doc =
-        e match {
-
-            case b : PrettyBinaryExpression[Doc] =>
-                val ld = recursiveToDoc(b, b.left, LeftAssoc)
-                val rd = recursiveToDoc(b, b.right, RightAssoc)
-                ld <+> text(b.op) <+> rd
-
-            case u : PrettyUnaryExpression[Doc] =>
-                val ed = recursiveToDoc(u, u.exp, NonAssoc)
-                if (u.fixity == Prefix)
-                    text(u.op) <> ed
-                else
-                    ed <> text(u.op)
-
-            case _ =>
-                sys.error(s"toParenDoc: unexpected PrettyExpression $e")
-
-        }
-
-    /**
-     * Optionally parenthesise an operator expression based on the precedence relation
-     * with an outer expression's operator.
-     */
-    def bracket(outer : PrettyOperatorExpression[Doc], inner : PrettyOperatorExpression[Doc],
-        side : Side) : Doc = {
-        val d = toParenDoc(inner)
-        if (noparens(outer, inner, side)) d else parens(d)
+  /**
+   * Pretty-print a recursive child reference, parenthesizing if necessary.
+   */
+  def recursiveToDoc(outer: PrettyOperatorExpression[Doc], inner: PrettyExpression[Doc], side: Side): Doc =
+    inner match {
+      case l: PrettyOperatorExpression[Doc] =>
+        bracket(outer, l, side)
+      case doc: PrettyExpressionDoc[Doc] =>
+        doc.doc
+      case l =>
+        toParenDoc(l)
     }
 
-    /**
-     * Return true if the inner expression should not be parenthesised when appearing
-     * on the given side with the outer expression.
-     */
-    def noparens(outer : PrettyOperatorExpression[Doc], inner : PrettyOperatorExpression[Doc],
-        side : Side) : Boolean = {
-        val pi = inner.priority
-        val po = outer.priority
-        lazy val fi = inner.fixity
-        lazy val fo = outer.fixity
-        (pi < po) ||
-            ((fi, side) match {
-                case (Postfix, LeftAssoc) =>
-                    true
-                case (Prefix, RightAssoc) =>
-                    true
-                case (Infix(LeftAssoc), LeftAssoc) =>
-                    (pi == po) && (fo == Infix(LeftAssoc))
-                case (Infix(RightAssoc), RightAssoc) =>
-                    (pi == po) && (fo == Infix(RightAssoc))
-                case (_, NonAssoc) =>
-                    fi == fo
-                case _ =>
-                    false
-            })
+  /**
+   * Pretty-print a unary, binary or nary expression.
+   */
+  def toParenDoc(e: PrettyExpression[Doc]): Doc =
+    e match {
+
+      case b: PrettyBinaryExpression[Doc] =>
+        val ld = recursiveToDoc(b, b.left, LeftAssoc)
+        val rd = recursiveToDoc(b, b.right, RightAssoc)
+        ld <+> text(b.op) <+> rd
+
+      case u: PrettyUnaryExpression[Doc] =>
+        val ed = recursiveToDoc(u, u.exp, NonAssoc)
+        if (u.fixity == Prefix)
+          text(u.op) <> ed
+        else
+          ed <> text(u.op)
+
+      case d: PrettyExpressionDoc[Doc] =>
+        d.doc
+
+      case _ =>
+        sys.error(s"toParenDoc: unexpected PrettyExpression $e")
+
     }
+
+  /**
+   * Optionally parenthesise an operator expression based on the precedence relation
+   * with an outer expression's operator.
+   */
+  def bracket(outer: PrettyOperatorExpression[Doc], inner: PrettyOperatorExpression[Doc],
+              side: Side): Doc = {
+    val d = toParenDoc(inner)
+    if (noparens(outer, inner, side)) d else parens(d)
+  }
+
+  /**
+   * Return true if the inner expression should not be parenthesised when appearing
+   * on the given side with the outer expression.
+   */
+  def noparens(outer: PrettyOperatorExpression[Doc], inner: PrettyOperatorExpression[Doc],
+               side: Side): Boolean = {
+    val pi = inner.priority
+    val po = outer.priority
+    lazy val fi = inner.fixity
+    lazy val fo = outer.fixity
+    (pi < po) ||
+      ((fi, side) match {
+        case (Postfix, LeftAssoc) =>
+          true
+        case (Prefix, RightAssoc) =>
+          true
+        case (Infix(LeftAssoc), LeftAssoc) =>
+          (pi == po) && (fo == Infix(LeftAssoc))
+        case (Infix(RightAssoc), RightAssoc) =>
+          (pi == po) && (fo == Infix(RightAssoc))
+        case (_, NonAssoc) =>
+          fi == fo
+        case _ =>
+          false
+      })
+  }
+
+  def prettyExpr(d: Expr, w: Width = defaultWidth): Document = pretty(toParenDoc(d), w)
 
 }
