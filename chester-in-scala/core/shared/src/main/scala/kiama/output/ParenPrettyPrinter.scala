@@ -2,6 +2,7 @@
  * This file is part of Kiama.
  *
  * Copyright (C) 2011-2021 Anthony M Sloane, Macquarie University.
+ * 2024 Mio. obtained from https://github.com/inkytonik/kiama/tree/3bcc03ae08e60c79b3c4b9bad3ae9ae233979d4a. modified
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -102,7 +103,7 @@ trait PrettyUnaryExpression extends PrettyOperatorExpression {
  * Ramsey, SP&E, 28 (12), October 1998.  We have not implemented support for
  * arbitrary arity infix operators.
  */
-trait ParenPrettyPrinter extends PrettyPrinter {
+trait ParenPrettyPrinter extends AbstractPrettyPrinter {
 
     /**
      * Pretty-print a recursive child reference, parenthesizing if necessary.
