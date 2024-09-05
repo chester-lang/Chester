@@ -38,6 +38,7 @@ def render(doc: Doc, w: Width = maxWidth)(using printer: DocPrinter): printer.La
 def render(doc: ToDoc)(using options: PrettierOptions, printer: DocPrinter): printer.Layout = render0(doc.toDoc)
 def render(doc: ToDoc, w: Width)(using options: PrettierOptions, printer: DocPrinter): printer.Layout = render0(doc.toDoc, w)
 
+// TODO: this is broken, please fix
 def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(using options: PrettierOptions): Doc = group {
   docs match {
     case Seq() => (begin.toDoc <> end.toDoc)
