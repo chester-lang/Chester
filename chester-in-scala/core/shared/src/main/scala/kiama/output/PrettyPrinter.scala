@@ -945,7 +945,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
   /**
    * An output entry for a piece of the pretty-printed text.
    */
-  case class Text(s: String, meta: Attribute = noAttribute) extends Entry
+  case class Text(s: String, attr: Attribute = noAttribute) extends Entry
 
   /**
    * An output entry that indicates the start of a document linked with

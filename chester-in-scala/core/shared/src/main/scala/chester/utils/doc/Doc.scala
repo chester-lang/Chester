@@ -1,17 +1,36 @@
 package chester.utils.doc
 
-import kiama.output._
+import kiama.output.*
+import kiama.output.PrettyPrinter.defaultWidth
+import kiama.output.PrettyPrinterTypes.Width
 
 import scala.language.implicitConversions
 
 type DocPrinter = ParenPrettyPrinter & StylePrettyPrinter
 
 object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinter with StylePrettyPrinter {
-  
+
 }
 
 trait Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr
+}
+
+object Doc {
+  def renderToDocument(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
+
+  def render(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = renderToDocument(doc, w).layout
+}
+
+extension (doc: Doc) {
+  def renderToDocument(w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = Doc.renderToDocument(doc, w)
+  def render(w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = Doc.render(doc, w)
+}
+
+implicit class DocPrinterOps(val printer: DocPrinter) {
+  def render(doc: Doc, w: Width = defaultWidth): printer.Layout = doc.render(w)(using printer)
+
+  def renderToDocument(doc: Doc, w: Width = defaultWidth): printer.Document = doc.renderToDocument(w)(using printer)
 }
 
 trait ToDoc {
@@ -76,7 +95,4 @@ extension (self: ToDoc)(using options: PrettierOptions) {
   def styled(style: Style): Doc = new Doc {
     def printToExpr(using printer: DocPrinter): printer.Expr = getDoc.styled(style)
   }
-}
-
-object Doc {
 }
