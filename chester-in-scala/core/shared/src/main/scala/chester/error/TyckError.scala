@@ -4,14 +4,17 @@ import chester.doc.*
 import chester.i18n.*
 import chester.syntax.concrete.*
 import chester.syntax.core.Term
-import chester.utils.doc.PrettierOptions
+import chester.utils.doc._
 import chester.utils.impls.*
 import upickle.default.*
 
 import scala.reflect.ClassTag
 
 sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter {
-  def message: String = render(toDoc)
+  def message: String = {
+    implicit val options: PrettierOptions = PrettierOptions.Default
+    render(toDoc)
+  }
 
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message
 
@@ -25,26 +28,26 @@ sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter 
   val stack: Array[StackTraceElement] = this.getStackTrace
 
   def renderWithLocation(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
-    val baseMessage = Doc.text(t"Error: ") <> Doc.text(message).colored(Attribute.BoldOn)
+    val baseMessage = Doc.text(t"Error: ") <> Doc.text(message).styled(Styling.BoldOn)
 
     val locationInfo = location match {
       case Some(pos) =>
         val lines = pos.getLinesInRange match {
           case Some(lines) => lines.map { case (lineNumber, line) =>
-            Doc.text(t"$lineNumber: ") <> Doc.text(line).colored(Attribute.BoldOn)
+            Doc.text(t"$lineNumber: ") <> Doc.text(line).styled(Styling.BoldOn)
           }
           case None => Vector.empty
         }
         val locationHeader = Doc.text(t"Location: ") <>
-          Doc.text(t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column + 1}]").colored(Attribute.BoldOn)
+          Doc.text(t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column + 1}]").styled(Styling.BoldOn)
 
-        val codeBlock = Doc.group(Doc.concat(lines.map(_ <|> Doc.empty): _*))
+        val codeBlock = Doc.group(Doc.concat(lines.map(_.end): _*))
 
         locationHeader <|> codeBlock
 
       case None =>
-        val causeHeader = Doc.text(t"Cause: ").colored(Attribute.BoldOn)
-        val causeText = cause.toDoc
+        val causeHeader = Doc.text(t"Cause: ").styled(Styling.BoldOn)
+        val causeText = cause
         causeHeader <|> causeText
     }
 

@@ -8,7 +8,7 @@ import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 import chester.tyck.*
-import chester.utils.doc.PrettierOptions
+import chester.utils.doc._
 import chester.utils.env
 import chester.utils.env.WindowsNarratorChecker
 import fansi.*
@@ -20,8 +20,8 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
 
   val maxWidth = 80
 
-  val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt)
-  val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt)
+  val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt.toFansi)
+  val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt.toFansi)
   assert(mainPrompt.length == continuationPrompt0.length)
 
   val terminalInfo = new TerminalInfo {
@@ -123,10 +123,10 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
   def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {
     for {
       _ <- er.traverse(x => {
-        InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
+        InTerminal.writeln(FansiPrettyPrinter.render(x.renderWithLocation, maxWidth))
       })
       _ <- wr.traverse(x => {
-        InTerminal.writeln(FansiRenderer.render(x.renderWithLocation, maxWidth, useCRLF = false))
+        InTerminal.writeln(FansiPrettyPrinter.render(x.renderWithLocation, maxWidth))
       })
     } yield ()
   }
@@ -140,12 +140,12 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
     val doc = if (checkOnEffect == "NoEffect") termDoc <+> Doc.text(":") <+> typeDoc
     else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
 
-    FansiRenderer.render(doc, maxWidth, useCRLF = false).render
+    FansiPrettyPrinter.render(doc, maxWidth).render
   }
 
   def prettyPrintJudgeWellTyped(judge: Judge): String = {
     val termDoc = judge.wellTyped
-    FansiRenderer.render(termDoc, maxWidth, useCRLF = false).render
+    FansiPrettyPrinter.render(termDoc, maxWidth).render
   }
 
   startF

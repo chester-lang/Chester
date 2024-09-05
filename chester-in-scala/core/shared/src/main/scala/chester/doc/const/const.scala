@@ -1,17 +1,17 @@
 package chester.doc.const
 
 import chester.doc.*
-import chester.utils.doc.{PrettierOptions, PrettierOptionsKey}
+import chester.utils.doc._
 
 
 object Colors {
-  def REPLPrompt: Vector[Attribute] = Vector(Color.LightBlue, Attribute.BoldOn)
+  def REPLPrompt: Style = Foreground.LightBlue ++ Styling.BoldOn
 }
 
 class ColorProfile {
-  def literalColor: Color = Color.Red
+  def literalColor: Style = Foreground.Red
 
-  def typeColor: Color = Color.LightBlue
+  def typeColor: Style = Foreground.LightBlue
 }
 
 
@@ -19,8 +19,8 @@ case object ColorProfile extends PrettierOptionsKey[ColorProfile] {
   
     val default = new ColorProfile
 
-    def literalColor(implicit options: PrettierOptions): Color = get.literalColor
+    def literalColor(implicit options: PrettierOptions): Style = get.literalColor
 
-    def typeColor(implicit options: PrettierOptions): Color = get.typeColor
+    def typeColor(implicit options: PrettierOptions): Style = get.typeColor
   
 }

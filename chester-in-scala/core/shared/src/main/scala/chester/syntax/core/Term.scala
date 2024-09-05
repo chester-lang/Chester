@@ -2,11 +2,10 @@
 package chester.syntax.core
 
 import chester.doc.*
-import chester.doc.Doc.group
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
-import chester.utils.doc.PrettierOptions
+import chester.utils.doc._
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
@@ -153,76 +152,76 @@ case class Prop(level: Term) extends Sort with Term {
 sealed trait LiteralTerm extends Term derives ReadWriter
 
 case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
 }
 
 case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
 }
 
 sealed trait TypeTerm extends Term derives ReadWriter
 
 case object IntegerType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").styled(ColorProfile.typeColor)
 }
 
 // int of 64 bits or more
 case object IntType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int").styled(ColorProfile.typeColor)
 }
 
 // unsigned int of 64 bits or more
 case object UIntType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt").styled(ColorProfile.typeColor)
 }
 
 case object NaturalType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").styled(ColorProfile.typeColor)
 }
 
 case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).colored(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
 }
 
 case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").colored(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").styled(ColorProfile.literalColor)
 }
 
 case class SymbolTerm(value: String) extends Term derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).colored(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).styled(ColorProfile.literalColor)
 }
 
 case object RationalType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational").styled(ColorProfile.typeColor)
 }
 
 // float of 32 bits or more
 case object FloatType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float").styled(ColorProfile.typeColor)
 }
 
 case object StringType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String").styled(ColorProfile.typeColor)
 }
 
 case object SymbolType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").styled(ColorProfile.typeColor)
 }
 
 case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").styled(ColorProfile.typeColor)
 }
 
 val AnyType0 = AnyType(Level0)
 
 case object NothingType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").styled(ColorProfile.typeColor)
 }
 
 implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
 case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).colored(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).styled(ColorProfile.typeColor)
 }
 
 case class ArgTerm(pattern: Pat, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {

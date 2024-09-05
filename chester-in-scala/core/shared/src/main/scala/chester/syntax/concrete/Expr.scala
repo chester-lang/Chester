@@ -2,12 +2,11 @@
 package chester.syntax.concrete
 
 import chester.doc.*
-import chester.doc.Doc.group
 import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
-import chester.utils.doc.PrettierOptions
+import chester.utils.doc._
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
@@ -67,7 +66,10 @@ sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
 
   def commentInfo: Option[CommentInfo] = meta.flatMap(_.commentInfo)
 
-  override def toString: String = render(this)
+  override def toString: String = {
+    implicit val options: PrettierOptions = PrettierOptions.Default
+    render(this)
+  }
 }
 
 sealed trait ParsedExpr extends Expr derives ReadWriter

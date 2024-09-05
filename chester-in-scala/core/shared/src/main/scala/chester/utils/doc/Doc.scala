@@ -2,7 +2,7 @@ package chester.utils.doc
 
 import kiama.output.*
 import kiama.output.PrettyPrinter.defaultWidth
-import kiama.output.PrettyPrinterTypes.Width
+import kiama.output.PrettyPrinterTypes.{Indent, Width}
 
 import scala.language.implicitConversions
 
@@ -28,11 +28,17 @@ def group(doc: Doc): Doc = new Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.group(doc.getDoc)
 }
 
-def renderToDocument(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
+val maxWidth = Integer.MAX_VALUE
+export kiama.output.PrettyPrinter.defaultWidth
 
-def render(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = renderToDocument(doc, w).layout
+def renderToDocument(doc: Doc, w: Width = maxWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
 
-def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: Seq[ToDoc])(using options: PrettierOptions): Doc = group {
+private def render0(doc: Doc, w: Width = maxWidth)(using printer: DocPrinter): printer.Layout = renderToDocument(doc, w).layout
+def render(doc: Doc, w: Width = maxWidth)(using printer: DocPrinter): printer.Layout = render0(doc, w)
+def render(doc: ToDoc)(using options: PrettierOptions, printer: DocPrinter): printer.Layout = render0(doc.toDoc)
+def render(doc: ToDoc, w: Width)(using options: PrettierOptions, printer: DocPrinter): printer.Layout = render0(doc.toDoc, w)
+
+def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(using options: PrettierOptions): Doc = group {
   docs match {
     case Seq() => (begin.toDoc <> end.toDoc)
     case Seq(head) => (begin.toDoc <> head.toDoc <> end.toDoc)
@@ -44,82 +50,101 @@ def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: Seq[ToDoc])(us
   }
 }
 
+def concat(docs: ToDoc*)(using options: PrettierOptions): Doc = group {
+  docs.foldLeft(Doc.empty) { (acc, doc) => acc <> doc.toDoc }
+}
+
+val empty = text("")
+val hardline = text("\n") // TODO: CRLF?
+
 object Doc {
-  export chester.utils.doc.{renderToDocument, render}
+  def indented(doc: ToDoc)(using options: PrettierOptions): Doc = doc.indented()
+
+  export chester.utils.doc.{renderToDocument, render, text, group, wrapperlist, empty, concat, hardline}
 }
 
 implicit class DocOps(doc: Doc) {
-  def renderToDocument(w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = Doc.renderToDocument(doc, w)
+  def renderToDocument(w: Width = maxWidth)(using printer: DocPrinter): printer.Document = Doc.renderToDocument(doc, w)
 
-  def render(w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = Doc.render(doc, w)
+  def render(w: Width = maxWidth)(using printer: DocPrinter): printer.Layout = Doc.render(doc, w)
 }
 
-implicit class DocPrinterOps(val printer: DocPrinter) {
-  def render(doc: Doc, w: Width = defaultWidth): printer.Layout = doc.render(w)(using printer)
+implicit class DocPrinterOps[T <: DocPrinter](val printer: T) {
+  def render(doc: Doc, w: Width = maxWidth): printer.Layout = doc.render(w)(using printer)
 
-  def renderToDocument(doc: Doc, w: Width = defaultWidth): printer.Document = doc.renderToDocument(w)(using printer)
+  def render(doc: ToDoc)(using options: PrettierOptions): printer.Layout = Doc.render(doc)(using options, printer)
+
+  def render(doc: ToDoc, w: Width)(using options: PrettierOptions): printer.Layout = Doc.render(doc, w)(using options, printer)
+
+  def renderToDocument(doc: Doc, w: Width = maxWidth): printer.Document = doc.renderToDocument(w)(using printer)
 }
 
 trait ToDoc {
   def toDoc(using options: PrettierOptions): Doc
 }
 
-extension (self: ToDoc)(using options: PrettierOptions) {
-  inline implicit def getDoc2(using printer: DocPrinter): printer.Doc = self.toDoc.getDoc
+extension (todoc: ToDoc)(using options: PrettierOptions) {
+  private def self(using printer: DocPrinter): printer.Doc = todoc.toDoc.getDoc
   /**
    * Return the concatenation of this document with the argument.
    */
   def <>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <> other.self
   }
   /**
    * Return the concatenation of this document with the argument
    * using a `space` separator.
    */
   def <+>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <+> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <+> other.self
   }
   /**
    * Return the concatenation of this document with the argument
    * using a `softline` separator.
    */
   def </>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc </> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self </> other.self
   }
   /**
    * Return the concatenation of this document with the argument
    * using a `softbreak` separator.
    */
   def <\>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <\> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <\> other.self
   }
   /**
    * Return the concatenation of this document with the argument
    * using a `line` separator.
    */
   def <@>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <@> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <@> other.self
   }
   /**
    * Return the concatenation of this document with the argument
    * using a `linebreak` separator.
    */
   def <@@>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <@@> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <@@> other.self
   }
   /**
    * Align the argument below this document using a `line` separator.
    */
   def <%>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <%> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <%> other.self
   }
   /**
    * Align the argument below this document using a `linebreak` separator.
    */
   def <%%>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc <%%> other
+    def printToExpr(using printer: DocPrinter): printer.Expr = self <%%> other.self
   }
   def styled(style: Style): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = getDoc.styled(style)
+    def printToExpr(using printer: DocPrinter): printer.Expr = self.styled(style)
+  }
+  def end: Doc = todoc <> hardline
+  def <|>(other: ToDoc): Doc = todoc <> hardline <> other
+  // TODO: add custom indent
+  def indented(): Doc = new Doc {
+    def printToExpr(using printer: DocPrinter): printer.Expr = printer.indent(self)
   }
 }

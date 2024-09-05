@@ -1,7 +1,7 @@
 package chester.syntax
 
 import chester.doc.*
-import chester.utils.doc.PrettierOptions
+import chester.utils.doc._
 import upickle.default.*
 
 sealed trait Builtin extends ToDoc derives ReadWriter

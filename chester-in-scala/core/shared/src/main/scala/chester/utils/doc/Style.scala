@@ -1,6 +1,8 @@
 package chester.utils.doc
 
-case class Style(foreground: Option[Foreground], background: Option[Background], styling: Vector[Styling]) {
+import scala.language.implicitConversions
+
+case class Style(foreground: Option[Foreground] = None, background: Option[Background] = None, styling: Vector[Styling] = Vector.empty) {
   def ++(other: Style): Style = {
     Style(
       foreground = other.foreground.orElse(foreground),
@@ -18,12 +20,15 @@ case class Style(foreground: Option[Foreground], background: Option[Background],
 }
 
 object Style {
-  val Empty: Style = Style(None, None, Vector.empty)
+  val Empty: Style = Style()
 }
 
 sealed trait Foreground {
   def toFansi: fansi.Attrs
+  implicit final inline def toStyle: Style = Style(foreground = Some(this))
 }
+
+implicit inline def ForegroundToStyle(fg: Foreground): Style = fg.toStyle
 
 object Foreground {
   case object Black extends Foreground {
@@ -93,7 +98,10 @@ object Foreground {
 
 sealed trait Background {
   def toFansi: fansi.Attrs
+  implicit final inline def toStyle: Style = Style(background = Some(this))
 }
+
+implicit inline def BackgroundToStyle(bg: Background): Style = bg.toStyle
 
 object Background {
   case object Black extends Background {
@@ -163,7 +171,10 @@ object Background {
 
 sealed trait Styling {
   def toFansi: fansi.Attrs
+  implicit final inline def toStyle: Style = Style(styling = Vector(this))
 }
+
+implicit inline def StylingToStyle(styling: Styling): Style = styling.toStyle
 
 object Styling {
   case object BoldOn extends Styling {
