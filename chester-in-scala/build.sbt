@@ -81,6 +81,7 @@ val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 val permitGPLcontamination: Boolean = false
 
+// original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("kiama-core"))
@@ -88,10 +89,33 @@ lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
     commonSettings
   )
 
+// kiama fork from effekt - https://github.com/effekt-lang/kiama
+lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("effekt-kiama"))
+  .settings(
+    commonSettings
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "jline" % "jline" % "2.14.6",
+      "org.rogach" %% "scallop" % "4.1.0",
+      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.12.0",
+      "com.google.code.gson" % "gson" % "2.8.2",
+    )
+  )
+  .nativeSettings(
+    // https://github.com/scala-native/scala-native/issues/4044#issuecomment-2329088930
+    scalacOptions ++= Seq(
+      "-Ylegacy-lazy-vals",
+    ),
+  )
+
+
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("core"))
-  .dependsOn(kiamaCore)
+  .dependsOn(kiamaCore, effektKiama)
   .settings(
     name := "chester-core",
     assembly / assemblyJarName := "core.jar",
