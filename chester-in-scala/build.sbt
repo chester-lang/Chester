@@ -99,9 +99,9 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
   .jvmSettings(
     libraryDependencies ++= Seq(
       "jline" % "jline" % "2.14.6",
-      "org.rogach" %% "scallop" % "4.1.0",
-      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.12.0",
-      "com.google.code.gson" % "gson" % "2.8.2",
+      "org.rogach" %% "scallop" % "5.1.0",
+      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
+      "com.google.code.gson" % "gson" % "2.10.1",
     )
   )
   .nativeSettings(
