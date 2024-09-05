@@ -9,10 +9,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package kiama
-package output
+package kiama2.output
 
-import kiama.output.PrettyPrinterTypes.{LinkRange, LinkValue, Links, Width, emptyLinks}
+import PrettyPrinterTypes.{LinkRange, LinkValue, Links, Width, emptyLinks}
 import org.bitbucket.inkytonik.kiama.util.Trampolines.Done
 
 import scala.collection.immutable.Queue.empty as emptyDq

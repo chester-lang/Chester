@@ -8,8 +8,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package kiama
-package output
+package kiama2.output
 
 /**
  * A collection of useful string filters. They are particularly intended

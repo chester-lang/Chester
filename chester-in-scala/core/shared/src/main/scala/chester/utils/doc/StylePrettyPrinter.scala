@@ -1,6 +1,6 @@
 package chester.utils.doc
 
-import kiama.output.AbstractPrettyPrinter
+import kiama2.output.AbstractPrettyPrinter
 import org.bitbucket.inkytonik.kiama.util.Trampolines._
 
 trait StylePrettyPrinter extends AbstractPrettyPrinter {

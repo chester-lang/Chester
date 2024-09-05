@@ -1,6 +1,6 @@
 package chester.utils.doc
 
-import kiama.output.ParenPrettyPrinter
+import kiama2.output.ParenPrettyPrinter
 
 trait FansiPrettyPrinter extends StylePrettyPrinter {
   type Layout = fansi.Str

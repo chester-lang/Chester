@@ -1,8 +1,8 @@
 package chester.utils.doc
 
-import kiama.output.*
-import kiama.output.PrettyPrinter.defaultWidth
-import kiama.output.PrettyPrinterTypes.{Indent, Width}
+import kiama2.output._
+import kiama2.output.PrettyPrinter.defaultWidth
+import kiama2.output.PrettyPrinterTypes.{Indent, Width}
 
 import scala.language.implicitConversions
 
@@ -32,7 +32,7 @@ def group(doc: Doc): Doc = new Doc {
 }
 
 val maxWidth = Integer.MAX_VALUE
-export kiama.output.PrettyPrinter.defaultWidth
+export PrettyPrinter.defaultWidth
 
 def renderToDocument(doc: Doc, w: Width = maxWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
 
