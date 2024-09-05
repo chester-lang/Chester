@@ -72,7 +72,7 @@ object IO {
     val writer = filewriter(filename)
     try {
       if (executable) {
-        val pPath = Path.of(filename)
+        val pPath = get(filename)
         val perms = Set(
           OWNER_READ, OWNER_WRITE, OWNER_EXECUTE,
           GROUP_READ,
