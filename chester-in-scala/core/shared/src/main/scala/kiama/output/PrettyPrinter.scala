@@ -895,12 +895,8 @@ trait PrettyPrinterBase {
   def useCRLF: Boolean = false
 }
 
-trait PrettyPrinter extends AbstractPrettyPrinter {
+trait StringPrettyPrinter extends AbstractPrettyPrinter {
   type Layout = String
-
-  type Attribute = Unit
-
-  def noAttribute: Attribute = ()
 
   type Builder = StringBuilder
 
@@ -909,6 +905,12 @@ trait PrettyPrinter extends AbstractPrettyPrinter {
   override def BuilderAppend(b: StringBuilder, text: Text): StringBuilder = b.append(text.s)
 
   override def BuilderResult(b: StringBuilder): String = b.result()
+}
+
+trait PrettyPrinter extends StringPrettyPrinter {
+  type Attribute = Unit
+
+  def noAttribute: Attribute = ()
 }
 
 /**

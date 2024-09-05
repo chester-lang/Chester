@@ -17,6 +17,10 @@ case class Style(foreground: Option[Foreground], background: Option[Background],
   }
 }
 
+object Style {
+  val Empty: Style = Style(None, None, Vector.empty)
+}
+
 sealed trait Foreground {
   def toFansi: fansi.Attrs
 }
