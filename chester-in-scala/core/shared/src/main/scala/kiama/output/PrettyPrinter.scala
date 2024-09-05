@@ -1115,11 +1115,13 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
 
   // Basic combinators
 
-  implicit def text(t: String): Doc =
+  implicit def text(t: String): Doc = text(t, noAttribute)
+
+  def text(t: String, attribute: Attribute): Doc =
     if (t == "")
       emptyDoc
     else
-      insert(t.length, Text(t))
+      insert(t.length, Text(t, attribute))
 
   def line(repl: String): Doc =
     new Doc({

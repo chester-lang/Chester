@@ -13,7 +13,7 @@ import chester.utils.impls.*
 
 import scala.language.implicitConversions
 
-case class TermMeta(sourcePos: Option[SourcePos])  derives ReadWriter
+case class TermMeta(sourcePos: Option[SourcePos])derives ReadWriter
 
 type OptionTermMeta = Option[TermMeta]
 
@@ -28,7 +28,7 @@ sealed trait MaybeCallTerm extends TermWithMeta derives ReadWriter {
   override def whnf: Boolean = false
 }
 
-case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc  derives ReadWriter{
+case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     if (name.isEmpty && !vararg) return value.toDoc
     if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
@@ -108,7 +108,7 @@ sealed trait Term extends ToDoc derives ReadWriter {
   }
 }
 
-case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter  {
+case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
 
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
@@ -152,76 +152,76 @@ case class Prop(level: Term) extends Sort with Term {
 sealed trait LiteralTerm extends Term derives ReadWriter
 
 case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
 case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
 sealed trait TypeTerm extends Term derives ReadWriter
 
 case object IntegerType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer", ColorProfile.typeColor)
 }
 
 // int of 64 bits or more
 case object IntType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int", ColorProfile.typeColor)
 }
 
 // unsigned int of 64 bits or more
 case object UIntType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt", ColorProfile.typeColor)
 }
 
 case object NaturalType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural", ColorProfile.typeColor)
 }
 
 case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString).styled(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
 case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"").styled(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"", ColorProfile.literalColor)
 }
 
 case class SymbolTerm(value: String) extends Term derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value).styled(ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value, ColorProfile.literalColor)
 }
 
 case object RationalType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational", ColorProfile.typeColor)
 }
 
 // float of 32 bits or more
 case object FloatType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float", ColorProfile.typeColor)
 }
 
 case object StringType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String", ColorProfile.typeColor)
 }
 
 case object SymbolType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol", ColorProfile.typeColor)
 }
 
 case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any", ColorProfile.typeColor)
 }
 
 val AnyType0 = AnyType(Level0)
 
 case object NothingType extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing").styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing", ColorProfile.typeColor)
 }
 
 implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
 case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString).styled(ColorProfile.typeColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString, ColorProfile.typeColor)
 }
 
 case class ArgTerm(pattern: Pat, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
@@ -257,7 +257,7 @@ case class InvisibleTelescopeTerm() extends TelescopeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
 }
 
-case class ScopeId(id: VarId) derives ReadWriter
+case class ScopeId(id: VarId)derives ReadWriter
 
 object ScopeId {
   def generate: ScopeId = ScopeId(VarId.generate)
@@ -271,7 +271,7 @@ case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None,
   }
 }
 
-case class MatchingClause() derives ReadWriter {
+case class MatchingClause()derives ReadWriter {
 
 }
 
@@ -308,7 +308,7 @@ def TyToty: FunctionType = {
 }
 
 
-case class ObjectClauseValueTerm(key: Term, value: Term) derives ReadWriter {
+case class ObjectClauseValueTerm(key: Term, value: Term)derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 }
 
@@ -431,7 +431,7 @@ private object ResolvedVarCounter {
   var varIdCounter = 0
 }
 
-case class VarId(id: Int) derives ReadWriter
+case class VarId(id: Int)derives ReadWriter
 
 object VarId {
   def generate: VarId = ResolvedVarCounter.synchronized {

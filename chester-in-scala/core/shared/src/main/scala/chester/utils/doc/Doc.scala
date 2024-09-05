@@ -23,6 +23,9 @@ trait Doc extends ToDoc {
 implicit def text(s: String): Doc = new Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s)
 }
+def text(s: String, style: Style): Doc = new Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s, style)
+}
 
 def group(doc: Doc): Doc = new Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.group(doc.getDoc)
@@ -139,8 +142,8 @@ extension (todoc: ToDoc)(using options: PrettierOptions) {
   def <%%>(other: ToDoc): Doc = new Doc {
     def printToExpr(using printer: DocPrinter): printer.Expr = self <%%> other.self
   }
-  def styled(style: Style): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self.styled(style)
+  def styled_broken(style: Style): Doc = new Doc {
+    def printToExpr(using printer: DocPrinter): printer.Expr = self.styled_broken(style)
   }
   def end: Doc = todoc <> hardline
   def <|>(other: ToDoc): Doc = todoc <> hardline <> other

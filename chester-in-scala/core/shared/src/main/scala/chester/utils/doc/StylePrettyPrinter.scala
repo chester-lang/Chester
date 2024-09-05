@@ -10,7 +10,7 @@ trait StylePrettyPrinter extends AbstractPrettyPrinter {
 
   extension (doc: Doc) {
     // TODO: no, this is broken
-    def styled(style: Attribute): Doc = new Doc(
+    def styled_broken(style: Attribute): Doc = new Doc(
       (iw: IW) =>
         (c1: TreeCont) =>
           More(() =>
