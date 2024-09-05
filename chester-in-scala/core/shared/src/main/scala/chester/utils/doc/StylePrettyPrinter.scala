@@ -9,6 +9,7 @@ trait StylePrettyPrinter extends AbstractPrettyPrinter {
   def noAttribute: Attribute = Style.Empty
 
   extension (doc: Doc) {
+    // TODO: no, this is broken
     def styled(style: Attribute): Doc = new Doc(
       (iw: IW) =>
         (c1: TreeCont) =>
