@@ -8,22 +8,49 @@ import scala.language.implicitConversions
 
 type DocPrinter = ParenPrettyPrinter & StylePrettyPrinter
 
-object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinter with StylePrettyPrinter {
+implicit object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinter with StylePrettyPrinter {
 
 }
 
-trait Doc {
+trait Doc extends ToDoc {
+  final inline implicit def getDoc(using printer: DocPrinter): printer.Doc = printer.toParenDoc(printToExpr)
+
   def printToExpr(using printer: DocPrinter): printer.Expr
+
+  final inline def toDoc(using options: PrettierOptions): Doc = this
+}
+
+implicit def text(s: String): Doc = new Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s)
+}
+
+def group(doc: Doc): Doc = new Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = printer.group(doc.getDoc)
+}
+
+def renderToDocument(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
+
+def render(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = renderToDocument(doc, w).layout
+
+def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: Seq[ToDoc])(using options: PrettierOptions): Doc = group {
+  docs match {
+    case Seq() => (begin.toDoc <> end.toDoc)
+    case Seq(head) => (begin.toDoc <> head.toDoc <> end.toDoc)
+    case Seq(head, tail) => (begin.toDoc <> group(head.toDoc <> sep.toDoc) </> tail.toDoc <> end.toDoc)
+    case Seq(head, tail*) =>
+      val init = (head.toDoc <> sep.toDoc)
+      val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc </> acc.toDoc }
+      (begin.toDoc <> init <> last.toDoc)
+  }
 }
 
 object Doc {
-  def renderToDocument(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = printer.pretty(printer.toParenDoc(doc.printToExpr), w)
-
-  def render(doc: Doc, w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = renderToDocument(doc, w).layout
+  export chester.utils.doc.{renderToDocument, render}
 }
 
-extension (doc: Doc) {
+implicit class DocOps(doc: Doc) {
   def renderToDocument(w: Width = defaultWidth)(using printer: DocPrinter): printer.Document = Doc.renderToDocument(doc, w)
+
   def render(w: Width = defaultWidth)(using printer: DocPrinter): printer.Layout = Doc.render(doc, w)
 }
 
@@ -38,7 +65,7 @@ trait ToDoc {
 }
 
 extension (self: ToDoc)(using options: PrettierOptions) {
-  inline implicit def getDoc(using printer: DocPrinter): printer.Doc = printer.toParenDoc(self.toDoc.printToExpr)
+  inline implicit def getDoc2(using printer: DocPrinter): printer.Doc = self.toDoc.getDoc
   /**
    * Return the concatenation of this document with the argument.
    */
