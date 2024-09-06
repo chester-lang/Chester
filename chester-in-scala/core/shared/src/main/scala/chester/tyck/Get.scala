@@ -7,6 +7,10 @@ trait Reporter[-T] {
   def apply(value: T): Unit
 }
 
+extension [T](reporter: Reporter[T]){
+  def report(xs: Seq[T]): Unit = xs.foreach(reporter.apply)
+}
+
 class VectorReporter[T] extends Reporter[T] {
   private val buffer = scala.collection.mutable.ArrayBuffer[T]()
 

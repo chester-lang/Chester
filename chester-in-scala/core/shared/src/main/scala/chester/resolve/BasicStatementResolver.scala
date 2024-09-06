@@ -7,6 +7,7 @@ import chester.error._
 
 import scala.annotation.tailrec
 
+@deprecated("TODO rewrite")
 object BasicStatementResolver {
   def resolveStatements(exprs: Vector[Expr]): (Vector[TyckWarning], Vector[TyckError], Vector[Stmt]) = {
     var warnings = Vector.empty[TyckWarning]

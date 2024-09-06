@@ -4,7 +4,8 @@ import cats.implicits.*
 import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
-import chester.tyck.Reporter
+import chester.tyck.*
+import chester.utils.reuse
 
 case class DesugarInfo()
 
@@ -27,7 +28,7 @@ private object DesaltCaseClauseMatch {
 private object MatchDeclarationTelescope {
   @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = x match {
-    case id: Identifier => Some(Telescope(Vector(Arg(name=Some(id)))))
+    case id: Identifier => Some(Telescope(Vector(Arg(name = Some(id)))))
     case _ => ???
   }
 }
@@ -131,12 +132,117 @@ private object ObjectDesalt {
   def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
 }
 
-case object StmtDesalt {
+case object StmtDesaltDeprecated {
   @throws[TyckWarning]
   @throws[TyckError]
   def desugar(expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = {
-    val result = BasicStatementResolver.resolveStatement(expr)
-    ???
+    val (w, e, result) = BasicStatementResolver.resolveStatement(expr)
+    reporter.report(w)
+    reporter.report(e)
+    result match {
+      case ExprStmt(x, _) => x
+      case result => result
+    }
+  }
+}
+
+case object PatternDesalt {
+  def desugar(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[DesaltPattern] = x match {
+    case id@Identifier(_, meta) => Some(PatternBind(id, meta))
+    case _ => None // TODO: more
+  }
+}
+
+case object MatchDefinedTelescope {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = x match {
+    // TODO
+    case _ => None
+  }
+}
+
+case object StmtDesalt {
+  def desugar(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = x match {
+    case StmtDesalt(x) => x
+    case _ => x
+  }
+
+  def defined(xs: Vector[Expr])(using reporter: Reporter[TyckErrorOrWarning]): Option[Defined] = {
+    if (xs.length < 1) return None
+    if (xs.length == 1) return PatternDesalt.desugar(xs.head).map(DefinedPattern(_))
+    xs.head match
+      case identifier: Identifier =>
+        val telescopes = xs.tail
+        telescopes.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
+          DefinedFunction(identifier, telescopes)
+        }
+      case _ =>
+        return None
+  }
+
+  @throws[TyckWarning]
+  @throws[TyckError]
+  def letdef(decorations: Vector[Expr], kw: Identifier, xs: Vector[Expr], cause: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Stmt = {
+    val typeAnnotation = xs.indexWhere {
+      case Identifier(Const.`:`, meta) => true
+      case _ => false
+    }
+    val valueAnnotation = xs.indexWhere {
+      case Identifier(Const.`=`, meta) => true
+      case _ => false
+    }
+    val kind = kw.name match {
+      case Const.Let => LetDefType.Let
+      case Const.Def => LetDefType.Def
+      case _ => unreachable(s"Unknown keyword ${kw.name}")
+    }
+    if (xs.length < 1) throw ExpectLetDef(cause)
+    if (typeAnnotation == -1 && valueAnnotation == -1) {
+      val on = defined(xs).getOrElse(throw ExpectLetDef(cause))
+      return LetDefStmt(kind, on, decorations = decorations, meta = cause.meta)
+    }
+    if (typeAnnotation != -1 && valueAnnotation == -1) {
+      val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
+      val typeExpr = SingleExpr.unapply(xs.drop(typeAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      return LetDefStmt(kind, on, ty = Some(typeExpr), decorations = decorations, meta = cause.meta)
+    }
+    if (typeAnnotation == -1 && valueAnnotation != -1) {
+      val on = defined(xs.take(valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
+      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      return LetDefStmt(kind, on, body = Some(valueExpr), decorations = decorations, meta = cause.meta)
+    }
+    if (typeAnnotation != -1 && valueAnnotation != -1) {
+      if (typeAnnotation > valueAnnotation) throw ExpectLetDef(cause)
+      val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
+      val typeExpr = SingleExpr.unapply(xs.slice(typeAnnotation + 1, valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
+      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      return LetDefStmt(kind, on, ty = Some(typeExpr), body = Some(valueExpr), decorations = decorations, meta = cause.meta)
+    }
+    throw ExpectLetDef(cause)
+  }
+
+  @throws[TyckWarning]
+  @throws[TyckError]
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Stmt] = x match {
+    case opseq@OpSeq(seq, meta) => {
+      val kw = seq.indexWhere {
+        case Identifier(id, meta) if Const.kw1.contains(id) => true
+        case _ => false
+      }
+      if (kw == -1) return None
+      val kwId = seq(kw).asInstanceOf[Identifier]
+      val beforeKw = seq.take(kw)
+      val afterKw = seq.drop(kw + 1)
+      val beforeKWIsAllIdentifier = beforeKw.forall {
+        case Identifier(_, _) => true
+        case _ => false
+      }
+      if (!beforeKWIsAllIdentifier) return None
+      kwId.name match {
+        case Const.Let | Const.Def => Some(letdef(beforeKw, kwId, afterKw, opseq))
+        case _ => unreachable(s"Unknown keyword ${kwId.name}")
+      }
+    }
+    case _ => None
   }
 }
 
@@ -152,7 +258,7 @@ case object SimpleDesalt {
       DesaltMatching(heads1, meta)
     }
     case b@Block(heads, tail, meta) => {
-      b // TODO: StmtDesalt
+      reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
     }
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
