@@ -293,7 +293,7 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
 
   def objectClause0: P[ObjectClause] = (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClause)
 
-  def objectClause1: P[ObjectClause] = (maybeSpace ~ parse(ctx=ParsingContext(dontallowOpSeq = true)) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClauseOnValue)
+  def objectClause1: P[ObjectClause] = (maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true)) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClauseOnValue)
 
   def objectParse: P[ParsedExpr] = PwithMeta("{" ~ (objectClause0 | objectClause1).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}").map { (fields, meta) =>
     ObjectExpr(fields.toVector, meta)
@@ -344,6 +344,7 @@ case class ParseError(message: String, index: Pos)
 
 sealed trait ParserSource derives ReadWriter {
   def fileName: String
+
   def readContent: Either[ParseError, String]
 }
 
@@ -353,19 +354,29 @@ case class FileNameAndContent(fileName: String, content: String) extends ParserS
 
 trait FilePathImpl {
   def readContent(fileName: String): Either[ParseError, String]
+
+  def absolute(fileName: String): String
 }
 
 private var impl: FilePathImpl = null
 
-case class FilePath(fileName: String) extends ParserSource{
+object FilePath {
+  def from(fileName: String): FilePath = {
+    val path = if (impl == null) fileName else impl.absolute(fileName)
+    FilePath(path)
+  }
+}
+
+case class FilePath(fileName: String) extends ParserSource {
   override lazy val readContent: Either[ParseError, String] = {
-    if(impl==null) Left(ParseError("No FilePathImpl provided", Pos.Zero))
+    if (impl == null) Left(ParseError("No FilePathImpl provided", Pos.Zero))
     else impl.readContent(fileName)
   }
 }
 
 
-case class SourceOffset(source: ParserSource, linesOffset: Int = 0, posOffset: Int = 0) derives ReadWriter {
+case class SourceOffset(source: ParserSource, linesOffset: Int = 0, posOffset: Int = 0)derives ReadWriter {
   def fileName: String = source.fileName
+
   def readContent: Either[ParseError, String] = source.readContent
 }

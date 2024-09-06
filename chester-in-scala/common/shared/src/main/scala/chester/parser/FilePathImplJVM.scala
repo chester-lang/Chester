@@ -1,4 +1,5 @@
 package chester.parser
+
 import chester.parser._
 import chester.error.*
 import chester.syntax.IdentifierRules.*
@@ -16,8 +17,10 @@ import scala.scalajs.js.annotation._
 
 object FilePathImplJVM extends FilePathImpl {
   def load: Unit = {}
+
   require(impl == null, "FilePathImplJVM is already loaded")
   impl = this
+
   override def readContent(fileName: String): Either[ParseError, String] = {
     Try(readFileFrom(fileName)) match {
       case Success(content) =>
@@ -26,4 +29,7 @@ object FilePathImplJVM extends FilePathImpl {
         Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
     }
   }
+
+  override def absolute(fileName: String): String = Paths.get(fileName).toAbsolutePath.toString
 }
+
