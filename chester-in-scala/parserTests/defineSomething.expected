@@ -6,7 +6,16 @@ Block(
           name = "id",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(0,0,0),Pos(1,0,1)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 1, line = 0, column = 1))
+                )
+              ),
               commentInfo = None
             )
           )
@@ -15,7 +24,16 @@ Block(
           name = ":",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(2,0,2),Pos(2,0,2)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(start = Pos(index = 2, line = 0, column = 2), end = Pos(index = 2, line = 0, column = 2))
+                )
+              ),
               commentInfo = None
             )
           )
@@ -29,7 +47,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(5,0,5),Pos(5,0,5)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 5, line = 0, column = 5),
+                            end = Pos(index = 5, line = 0, column = 5)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -40,7 +68,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(6,0,6),Pos(6,0,6)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 6, line = 0, column = 6),
+                            end = Pos(index = 6, line = 0, column = 6)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -51,7 +89,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(8,0,8),Pos(11,0,11)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 8, line = 0, column = 8),
+                            end = Pos(index = 11, line = 0, column = 11)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -60,7 +108,19 @@ Block(
               ),
               meta = Some(
                 value = ExprMeta(
-                  sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(5,0,5),Pos(5,0,5)))),
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 5, line = 0, column = 5),
+                        end = Pos(index = 5, line = 0, column = 5)
+                      )
+                    )
+                  ),
                   commentInfo = None
                 )
               )
@@ -68,7 +128,19 @@ Block(
           ),
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(4,0,4),Pos(12,0,12)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 4, line = 0, column = 4),
+                    end = Pos(index = 12, line = 0, column = 12)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -82,7 +154,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(14,0,14),Pos(14,0,14)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 14, line = 0, column = 14),
+                            end = Pos(index = 14, line = 0, column = 14)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -93,7 +175,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(15,0,15),Pos(15,0,15)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 15, line = 0, column = 15),
+                            end = Pos(index = 15, line = 0, column = 15)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -104,7 +196,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(17,0,17),Pos(17,0,17)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 17, line = 0, column = 17),
+                            end = Pos(index = 17, line = 0, column = 17)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -114,7 +216,17 @@ Block(
               meta = Some(
                 value = ExprMeta(
                   sourcePos = Some(
-                    value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(14,0,14),Pos(14,0,14)))
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 14, line = 0, column = 14),
+                        end = Pos(index = 14, line = 0, column = 14)
+                      )
+                    )
                   ),
                   commentInfo = None
                 )
@@ -123,7 +235,19 @@ Block(
           ),
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(13,0,13),Pos(18,0,18)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 13, line = 0, column = 13),
+                    end = Pos(index = 18, line = 0, column = 18)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -132,7 +256,19 @@ Block(
           name = "->",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(20,0,20),Pos(21,0,21)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 20, line = 0, column = 20),
+                    end = Pos(index = 21, line = 0, column = 21)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -141,7 +277,19 @@ Block(
           name = "a",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(23,0,23),Pos(23,0,23)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 23, line = 0, column = 23),
+                    end = Pos(index = 23, line = 0, column = 23)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -149,7 +297,16 @@ Block(
       ),
       meta = Some(
         value = ExprMeta(
-          sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(0,0,0),Pos(1,0,1)))),
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                linesOffset = 0,
+                posOffset = 0
+              ),
+              range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 1, line = 0, column = 1))
+            )
+          ),
           commentInfo = None
         )
       )
@@ -161,7 +318,19 @@ Block(
             name = "id",
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(26,1,0),Pos(27,1,1)))),
+                sourcePos = Some(
+                  value = SourcePos(
+                    source = SourceOffset(
+                      source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                      linesOffset = 0,
+                      posOffset = 0
+                    ),
+                    range = RangeInFile(
+                      start = Pos(index = 26, line = 1, column = 0),
+                      end = Pos(index = 27, line = 1, column = 1)
+                    )
+                  )
+                ),
                 commentInfo = None
               )
             )
@@ -173,7 +342,17 @@ Block(
                 meta = Some(
                   value = ExprMeta(
                     sourcePos = Some(
-                      value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(29,1,3),Pos(29,1,3)))
+                      value = SourcePos(
+                        source = SourceOffset(
+                          source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                          linesOffset = 0,
+                          posOffset = 0
+                        ),
+                        range = RangeInFile(
+                          start = Pos(index = 29, line = 1, column = 3),
+                          end = Pos(index = 29, line = 1, column = 3)
+                        )
+                      )
                     ),
                     commentInfo = None
                   )
@@ -182,14 +361,38 @@ Block(
             ),
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(28,1,2),Pos(30,1,4)))),
+                sourcePos = Some(
+                  value = SourcePos(
+                    source = SourceOffset(
+                      source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                      linesOffset = 0,
+                      posOffset = 0
+                    ),
+                    range = RangeInFile(
+                      start = Pos(index = 28, line = 1, column = 2),
+                      end = Pos(index = 30, line = 1, column = 4)
+                    )
+                  )
+                ),
                 commentInfo = None
               )
             )
           ),
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(26,1,0),Pos(27,1,1)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 26, line = 1, column = 0),
+                    end = Pos(index = 27, line = 1, column = 1)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -198,7 +401,19 @@ Block(
           name = "=",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(32,1,6),Pos(32,1,6)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 32, line = 1, column = 6),
+                    end = Pos(index = 32, line = 1, column = 6)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -207,7 +422,19 @@ Block(
           name = "x",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(34,1,8),Pos(34,1,8)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 34, line = 1, column = 8),
+                    end = Pos(index = 34, line = 1, column = 8)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -215,7 +442,16 @@ Block(
       ),
       meta = Some(
         value = ExprMeta(
-          sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(26,1,0),Pos(27,1,1)))),
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                linesOffset = 0,
+                posOffset = 0
+              ),
+              range = RangeInFile(start = Pos(index = 26, line = 1, column = 0), end = Pos(index = 27, line = 1, column = 1))
+            )
+          ),
           commentInfo = None
         )
       )
@@ -229,7 +465,17 @@ Block(
               meta = Some(
                 value = ExprMeta(
                   sourcePos = Some(
-                    value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(38,3,0),Pos(40,3,2)))
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 38, line = 3, column = 0),
+                        end = Pos(index = 40, line = 3, column = 2)
+                      )
+                    )
                   ),
                   commentInfo = None
                 )
@@ -244,7 +490,17 @@ Block(
                       meta = Some(
                         value = ExprMeta(
                           sourcePos = Some(
-                            value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(42,3,4),Pos(42,3,4)))
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 42, line = 3, column = 4),
+                                end = Pos(index = 42, line = 3, column = 4)
+                              )
+                            )
                           ),
                           commentInfo = None
                         )
@@ -255,7 +511,17 @@ Block(
                       meta = Some(
                         value = ExprMeta(
                           sourcePos = Some(
-                            value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(43,3,5),Pos(43,3,5)))
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 43, line = 3, column = 5),
+                                end = Pos(index = 43, line = 3, column = 5)
+                              )
+                            )
                           ),
                           commentInfo = None
                         )
@@ -266,7 +532,17 @@ Block(
                       meta = Some(
                         value = ExprMeta(
                           sourcePos = Some(
-                            value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(45,3,7),Pos(48,3,10)))
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 45, line = 3, column = 7),
+                                end = Pos(index = 48, line = 3, column = 10)
+                              )
+                            )
                           ),
                           commentInfo = None
                         )
@@ -276,7 +552,17 @@ Block(
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
-                        value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(42,3,4),Pos(42,3,4)))
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 42, line = 3, column = 4),
+                            end = Pos(index = 42, line = 3, column = 4)
+                          )
+                        )
                       ),
                       commentInfo = None
                     )
@@ -286,7 +572,17 @@ Block(
               meta = Some(
                 value = ExprMeta(
                   sourcePos = Some(
-                    value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(41,3,3),Pos(49,3,11)))
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 41, line = 3, column = 3),
+                        end = Pos(index = 49, line = 3, column = 11)
+                      )
+                    )
                   ),
                   commentInfo = None
                 )
@@ -294,7 +590,19 @@ Block(
             ),
             meta = Some(
               value = ExprMeta(
-                sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(38,3,0),Pos(40,3,2)))),
+                sourcePos = Some(
+                  value = SourcePos(
+                    source = SourceOffset(
+                      source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                      linesOffset = 0,
+                      posOffset = 0
+                    ),
+                    range = RangeInFile(
+                      start = Pos(index = 38, line = 3, column = 0),
+                      end = Pos(index = 40, line = 3, column = 2)
+                    )
+                  )
+                ),
                 commentInfo = None
               )
             )
@@ -308,7 +616,17 @@ Block(
                     meta = Some(
                       value = ExprMeta(
                         sourcePos = Some(
-                          value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(51,3,13),Pos(51,3,13)))
+                          value = SourcePos(
+                            source = SourceOffset(
+                              source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                              linesOffset = 0,
+                              posOffset = 0
+                            ),
+                            range = RangeInFile(
+                              start = Pos(index = 51, line = 3, column = 13),
+                              end = Pos(index = 51, line = 3, column = 13)
+                            )
+                          )
                         ),
                         commentInfo = None
                       )
@@ -319,7 +637,17 @@ Block(
                     meta = Some(
                       value = ExprMeta(
                         sourcePos = Some(
-                          value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(52,3,14),Pos(52,3,14)))
+                          value = SourcePos(
+                            source = SourceOffset(
+                              source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                              linesOffset = 0,
+                              posOffset = 0
+                            ),
+                            range = RangeInFile(
+                              start = Pos(index = 52, line = 3, column = 14),
+                              end = Pos(index = 52, line = 3, column = 14)
+                            )
+                          )
                         ),
                         commentInfo = None
                       )
@@ -330,7 +658,17 @@ Block(
                     meta = Some(
                       value = ExprMeta(
                         sourcePos = Some(
-                          value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(54,3,16),Pos(54,3,16)))
+                          value = SourcePos(
+                            source = SourceOffset(
+                              source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                              linesOffset = 0,
+                              posOffset = 0
+                            ),
+                            range = RangeInFile(
+                              start = Pos(index = 54, line = 3, column = 16),
+                              end = Pos(index = 54, line = 3, column = 16)
+                            )
+                          )
                         ),
                         commentInfo = None
                       )
@@ -340,7 +678,17 @@ Block(
                 meta = Some(
                   value = ExprMeta(
                     sourcePos = Some(
-                      value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(51,3,13),Pos(51,3,13)))
+                      value = SourcePos(
+                        source = SourceOffset(
+                          source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                          linesOffset = 0,
+                          posOffset = 0
+                        ),
+                        range = RangeInFile(
+                          start = Pos(index = 51, line = 3, column = 13),
+                          end = Pos(index = 51, line = 3, column = 13)
+                        )
+                      )
                     ),
                     commentInfo = None
                   )
@@ -350,7 +698,17 @@ Block(
             meta = Some(
               value = ExprMeta(
                 sourcePos = Some(
-                  value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(50,3,12),Pos(55,3,17)))
+                  value = SourcePos(
+                    source = SourceOffset(
+                      source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                      linesOffset = 0,
+                      posOffset = 0
+                    ),
+                    range = RangeInFile(
+                      start = Pos(index = 50, line = 3, column = 12),
+                      end = Pos(index = 55, line = 3, column = 17)
+                    )
+                  )
                 ),
                 commentInfo = None
               )
@@ -358,7 +716,19 @@ Block(
           ),
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(38,3,0),Pos(40,3,2)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 38, line = 3, column = 0),
+                    end = Pos(index = 40, line = 3, column = 2)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -367,7 +737,19 @@ Block(
           name = ":",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(56,3,18),Pos(56,3,18)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 56, line = 3, column = 18),
+                    end = Pos(index = 56, line = 3, column = 18)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -376,7 +758,19 @@ Block(
           name = "a",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(58,3,20),Pos(58,3,20)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 58, line = 3, column = 20),
+                    end = Pos(index = 58, line = 3, column = 20)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -385,7 +779,19 @@ Block(
           name = "=",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(60,3,22),Pos(60,3,22)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 60, line = 3, column = 22),
+                    end = Pos(index = 60, line = 3, column = 22)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -394,7 +800,19 @@ Block(
           name = "x",
           meta = Some(
             value = ExprMeta(
-              sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(62,3,24),Pos(62,3,24)))),
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                    linesOffset = 0,
+                    posOffset = 0
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = 62, line = 3, column = 24),
+                    end = Pos(index = 62, line = 3, column = 24)
+                  )
+                )
+              ),
               commentInfo = None
             )
           )
@@ -402,7 +820,16 @@ Block(
       ),
       meta = Some(
         value = ExprMeta(
-          sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(38,3,0),Pos(40,3,2)))),
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/defineSomething.chester"),
+                linesOffset = 0,
+                posOffset = 0
+              ),
+              range = RangeInFile(start = Pos(index = 38, line = 3, column = 0), end = Pos(index = 40, line = 3, column = 2))
+            )
+          ),
           commentInfo = None
         )
       )
@@ -411,7 +838,16 @@ Block(
   tail = None,
   meta = Some(
     value = ExprMeta(
-      sourcePos = Some(value = SourcePos("parserTests/defineSomething.chester",RangeInFile(Pos(0,0,0),Pos(63,3,25)))),
+      sourcePos = Some(
+        value = SourcePos(
+          source = SourceOffset(
+            source = FilePath(fileName = "parserTests/defineSomething.chester"),
+            linesOffset = 0,
+            posOffset = 0
+          ),
+          range = RangeInFile(start = Pos(index = 0, line = 0, column = 0), end = Pos(index = 63, line = 3, column = 25))
+        )
+      ),
       commentInfo = None
     )
   )

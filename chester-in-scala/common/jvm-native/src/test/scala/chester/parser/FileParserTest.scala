@@ -17,10 +17,10 @@ class FileParserTest extends FunSuite {
 
       val expectedFile = testDir.resolve(s"$baseName.expected")
 
-      val input = new String(Files.readAllBytes(inputFile))
       val expectedExists = Files.exists(expectedFile)
+      FilePathImplJVM.load
 
-      Parser.parseTopLevel(FileNameAndContent(inputFile.toString, input)) match {
+      Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
           val actual: String = pprint.apply(parsedBlock, width = 128, height = Integer.MAX_VALUE).plainText
 

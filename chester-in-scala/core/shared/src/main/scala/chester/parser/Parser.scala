@@ -13,8 +13,12 @@ import java.nio.file.{Files, Paths}
 import scala.collection.immutable
 import scala.util.*
 import scala.scalajs.js.annotation._
+import upickle.default.*
 
-case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None, linesOffset: Integer = 0, posOffset: Integer = 0)(implicit p: P[?]) {
+case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
+  val fileName = sourceOffset.fileName
+  val linesOffset = sourceOffset.linesOffset
+  val posOffset = sourceOffset.posOffset
   // TODO: column offset for :t command in repl
   if (linesOffset != 0) require(posOffset != 0)
   if (posOffset != 0) require(linesOffset != 0)
@@ -71,7 +75,7 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
     val range = RangeInFile(
       Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
       Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
-    Some(SourcePos(fileName, FileContent(p.input, linesOffset, posOffset), range))
+    Some(SourcePos(sourceOffset, range))
   }
 
   private def createMeta(pos: Option[SourcePos], comments: Option[CommentInfo]): Option[ExprMeta] = {
@@ -338,10 +342,32 @@ case class ParserInternal(fileName: String, ignoreLocation: Boolean = false, def
 
 case class ParseError(message: String, index: Pos)
 
-trait ParserSource {
-  def getContentFromSource: Either[ParseError, (String, String)]
+sealed trait ParserSource derives ReadWriter {
+  def fileName: String
+  def readContent: Either[ParseError, String]
 }
 
-case class FileNameAndContent(fileName: String, content: String) extends ParserSource {
-  override def getContentFromSource: Either[ParseError, (String, String)] = Right((fileName, content))
+case class FileNameAndContent(fileName: String, content: String) extends ParserSource derives ReadWriter {
+  override def readContent: Either[ParseError, String] = Right(content)
+}
+
+trait FilePathImpl {
+  def readContent(fileName: String): Either[ParseError, String]
+}
+
+case class FilePathSerialized(fileName: String) derives ReadWriter
+
+private var impl: FilePathImpl = null
+
+case class FilePath(fileName: String) extends ParserSource{
+  override lazy val readContent: Either[ParseError, String] = {
+    if(impl==null) Left(ParseError("No FilePathImpl provided", Pos.Zero))
+    else impl.readContent(fileName)
+  }
+}
+
+
+case class SourceOffset(source: ParserSource, linesOffset: Int = 0, posOffset: Int = 0) derives ReadWriter {
+  def fileName: String = source.fileName
+  def readContent: Either[ParseError, String] = source.readContent
 }

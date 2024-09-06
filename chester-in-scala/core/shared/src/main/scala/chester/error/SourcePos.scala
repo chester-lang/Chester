@@ -1,9 +1,11 @@
 package chester.error
 
+import chester.parser.SourceOffset
 import chester.utils.{encodeString, parserInputToLazyList}
 import fastparse.ParserInput
+
 import scala.annotation.tailrec
-import upickle.default._
+import upickle.default.*
 
 case class Pos(index: Int, line: Int, column: Int)derives ReadWriter
 
@@ -13,7 +15,9 @@ object Pos {
 
 case class RangeInFile(start: Pos, end: Pos)derives ReadWriter
 
-case class FileContent(content: String | LazyList[String] | ParserInput, lineOffset: Int, indexOffset: Int)
+type AcceptedString = String | LazyList[String] | ParserInput
+
+case class FileContent(content: AcceptedString, lineOffset: Int, indexOffset: Int)
 
 object FileContent {
   @tailrec
@@ -26,16 +30,9 @@ object FileContent {
   def convertToString(fileContent: FileContent): String = convertToString0(fileContent.content)
 }
 
-case class SourcePosSerialized(val fileName: String, val range: RangeInFile)derives ReadWriter {
-  def toSourcePos: SourcePos = {
-    SourcePos(fileName, None, range)
-  }
-}
-
-implicit val sourcePosRW: ReadWriter[SourcePos] = readwriter[SourcePosSerialized].bimap(_.toSerialized, _.toSourcePos)
-
-class SourcePos(val fileName: String, val fileContent: Option[FileContent], val range: RangeInFile) {
-  def toSerialized: SourcePosSerialized = SourcePosSerialized(fileName, range)
+case class SourcePos(source: SourceOffset, range: RangeInFile)derives ReadWriter {
+  lazy val fileContent = source.readContent.toOption.map(FileContent(_, source.linesOffset, source.posOffset))
+  val fileName = source.fileName
 
   // Method to extract all lines within the range with line numbers
   def getLinesInRange: Option[Vector[(Int, String)]] = fileContent map { fileContent =>
@@ -57,27 +54,13 @@ class SourcePos(val fileName: String, val fileContent: Option[FileContent], val 
     if (fileName != other.fileName) {
       throw new IllegalArgumentException("Cannot combine source positions from different files")
     }
-    /*
-    if (fileContent != other.fileContent) {
-      throw new IllegalArgumentException("Cannot combine source positions from different files")
-    }
-    */
     require(range.start.index <= other.range.start.index)
+    require(source == other.source)
     val newRange = RangeInFile(range.start, other.range.end)
-    SourcePos(fileName, fileContent, newRange)
+    SourcePos(source, newRange)
   }
 
   override def toString: String = s"SourcePos(\"${encodeString(fileName)}\",${range})"
-}
-
-object SourcePos {
-  def apply(fileName: String, fileContent: Option[FileContent], range: RangeInFile): SourcePos = {
-    new SourcePos(fileName, fileContent, range)
-  }
-
-  def apply(fileName: String, fileContent: FileContent, range: RangeInFile): SourcePos = {
-    new SourcePos(fileName, Some(fileContent), range)
-  }
 }
 
 extension (pos: Option[SourcePos]) {

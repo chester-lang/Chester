@@ -10,6 +10,8 @@ import fastparse.NoWhitespace.*
 import java.lang.Character.{isDigit, isLetter}
 import scala.util.*
 
+import chester.parser.InputStatus.*
+
 
 sealed trait InputStatus
 
@@ -22,8 +24,6 @@ object InputStatus {
   case class Error(message: String) extends InputStatus
 
 }
-
-import chester.parser.InputStatus.*
 
 object ParserEngine {
 
@@ -60,7 +60,7 @@ object ParserEngine {
   }
 
   private def parseCompleteExpression(input: String, linesOffset: Int, posOffset: Int): Either[ParseError, ParsedExpr] = {
-    parse(input, p => new ParserInternal("repl", linesOffset = linesOffset, posOffset = posOffset)(p).exprEntrance) match {
+    parse(input, p => new ParserInternal(SourceOffset(FileNameAndContent("repl", input), linesOffset = linesOffset, posOffset = posOffset))(p).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
       case f: Parsed.Failure => Left(ParseError(f.msg, Pos.Zero))
     }

@@ -14,16 +14,11 @@ import scala.collection.immutable
 import scala.util.*
 import scala.scalajs.js.annotation._
 
-
-private def getContentFromSource(source: ParserSource): Either[ParseError, (String, String)] = {
-  source.getContentFromSource
-}
-
 private def parseFromSource[T](source: ParserSource, parserFunc: ParserInternal => P[T], ignoreLocation: Boolean = false): Either[ParseError, T] = {
-  getContentFromSource(source) match {
-    case Right((fileName, content)) =>
+  source.readContent match {
+    case Right(content) =>
       val indexer = StringIndex(content)
-      parse(content, x => parserFunc(ParserInternal(fileName, ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(x))) match {
+      parse(content, x => parserFunc(ParserInternal(SourceOffset(source), ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(x))) match {
         case Parsed.Success(result, _) => Right(result)
         case Parsed.Failure(msg, index, extra) =>
           val pos = indexer.charIndexToUnicodeLineAndColumn(index)
@@ -53,7 +48,7 @@ def parseContent(fileName: String, input: String, ignoreLocation: Boolean = fals
 
 @deprecated("Use parseExpr with ParserSource instead")
 def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[ParsedExpr] = {
-  parse(input, x => ParserInternal(fileName, ignoreLocation = ignoreLocation)(x).exprEntrance)
+  parse(input, x => ParserInternal(SourceOffset(FileNameAndContent(fileName, input)), ignoreLocation = ignoreLocation)(x).exprEntrance)
 }
 
 def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
@@ -66,14 +61,10 @@ def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
 }
 
 def parseModule(source: ParserSource, modules: ResolvingModules = ResolvingModules.Empty, ignoreLocation: Boolean = false): Either[ParseError, ResolvingModules] = {
-  getContentFromSource(source) match {
-    case Right((fileName, content)) =>
-      parseTopLevel(FileNameAndContent(fileName, content), ignoreLocation).flatMap { block =>
-        extractModuleName(block).map { id =>
-          val moduleFile = ResolvingModuleFile(id, fileName, ResolvingBlock.fromParsed(block))
-          modules.addModuleFile(id, moduleFile)
-        }
-      }
-    case Left(error) => Left(error)
+  parseTopLevel(source, ignoreLocation).flatMap { block =>
+    extractModuleName(block).map { id =>
+      val moduleFile = ResolvingModuleFile(id, source.fileName, ResolvingBlock.fromParsed(block))
+      modules.addModuleFile(id, moduleFile)
+    }
   }
 }

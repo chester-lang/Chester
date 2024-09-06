@@ -14,13 +14,14 @@ import scala.collection.immutable
 import scala.util.*
 import scala.scalajs.js.annotation._
 
-
-case class FilePath(path: String) extends ParserSource {
-  override def getContentFromSource: Either[ParseError, (String, String)] = {
-    Try(readFileFrom(path)) match {
+object FilePathImplJVM extends FilePathImpl {
+  def load: Unit = {}
+  require(impl == null, "FilePathImplJVM is already loaded")
+  impl = this
+  override def readContent(fileName: String): Either[ParseError, String] = {
+    Try(readFileFrom(fileName)) match {
       case Success(content) =>
-        val fileName = normalizeFilePath(path)
-        Right((fileName, content))
+        Right(content)
       case Failure(exception) =>
         Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
     }
