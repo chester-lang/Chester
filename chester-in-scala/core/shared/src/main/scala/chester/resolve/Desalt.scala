@@ -4,7 +4,7 @@ import cats.implicits.*
 import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
-import chester.tyck.Reporter
+import chester.tyck.*
 
 case class DesugarInfo()
 
@@ -135,8 +135,13 @@ case object StmtDesalt {
   @throws[TyckWarning]
   @throws[TyckError]
   def desugar(expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = {
-    val result = BasicStatementResolver.resolveStatement(expr)
-    ???
+    val (w,e,result) = BasicStatementResolver.resolveStatement(expr)
+    reporter.report(w)
+    reporter.report(e)
+    result match {
+      case ExprStmt(x, _) => x
+      case result => result
+    }
   }
 }
 
