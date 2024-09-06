@@ -122,11 +122,12 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     commonSettings,
     cpsSettings,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "upickle" % "4.0.1",
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "scalatags" % "0.13.1",
     ),
   )
   .jvmSettings(
