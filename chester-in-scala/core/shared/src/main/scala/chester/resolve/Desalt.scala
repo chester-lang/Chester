@@ -5,6 +5,7 @@ import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.tyck.*
+import chester.utils.reuse
 
 case class DesugarInfo()
 
@@ -131,7 +132,7 @@ private object ObjectDesalt {
   def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
 }
 
-case object StmtDesalt {
+case object StmtDesaltDeprecated {
   @throws[TyckWarning]
   @throws[TyckError]
   def desugar(expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = {
@@ -142,6 +143,16 @@ case object StmtDesalt {
       case ExprStmt(x, _) => x
       case result => result
     }
+  }
+}
+
+case object StmtDesalt {
+  def desugar(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = x match {
+    case StmtDesalt(x) => x
+    case _ => x
+  }
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Stmt] = x match {
+    case _ => None
   }
 }
 
@@ -157,7 +168,7 @@ case object SimpleDesalt {
       DesaltMatching(heads1, meta)
     }
     case b@Block(heads, tail, meta) => {
-      b // TODO: StmtDesalt
+      reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
     }
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
