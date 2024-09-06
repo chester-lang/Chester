@@ -355,8 +355,6 @@ trait FilePathImpl {
   def readContent(fileName: String): Either[ParseError, String]
 }
 
-case class FilePathSerialized(fileName: String) derives ReadWriter
-
 private var impl: FilePathImpl = null
 
 case class FilePath(fileName: String) extends ParserSource{
