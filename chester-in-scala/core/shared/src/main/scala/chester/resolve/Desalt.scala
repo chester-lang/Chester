@@ -198,24 +198,24 @@ case object StmtDesalt {
     if (xs.length < 1) throw ExpectLetDef(cause)
     if (typeAnnotation == -1 && valueAnnotation == -1) {
       val on = defined(xs).getOrElse(throw ExpectLetDef(cause))
-      LetDefStmt(kind, on, decorations = decorations, meta = cause.meta)
+      return LetDefStmt(kind, on, decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation != -1 && valueAnnotation == -1) {
       val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
       val typeExpr = SingleExpr.unapply(xs.drop(typeAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
-      LetDefStmt(kind, on, ty = Some(typeExpr), decorations = decorations, meta = cause.meta)
+      return LetDefStmt(kind, on, ty = Some(typeExpr), decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation == -1 && valueAnnotation != -1) {
       val on = defined(xs.take(valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
       val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
-      LetDefStmt(kind, on, body = Some(valueExpr), decorations = decorations, meta = cause.meta)
+      return LetDefStmt(kind, on, body = Some(valueExpr), decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation != -1 && valueAnnotation != -1) {
       if (typeAnnotation > valueAnnotation) throw ExpectLetDef(cause)
       val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
       val typeExpr = SingleExpr.unapply(xs.slice(typeAnnotation + 1, valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
       val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
-      LetDefStmt(kind, on, ty = Some(typeExpr), body = Some(valueExpr), decorations = decorations, meta = cause.meta)
+      return LetDefStmt(kind, on, ty = Some(typeExpr), body = Some(valueExpr), decorations = decorations, meta = cause.meta)
     }
     throw ExpectLetDef(cause)
   }

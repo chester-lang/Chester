@@ -637,7 +637,7 @@ case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = N
     val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
     val bodyDoc = body.map(b => Doc.text(" = ") <> b.toDoc).getOrElse(Doc.empty)
     val decorationsDoc = if (decorations.isEmpty) Doc.empty else decorations.map(_.toDoc).reduce(_ <+> _)
-    kindDoc <+> definedDoc <+> tyDoc <+> bodyDoc <+> decorationsDoc
+    decorationsDoc <+> kindDoc <+> definedDoc <+> tyDoc <+> bodyDoc
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
