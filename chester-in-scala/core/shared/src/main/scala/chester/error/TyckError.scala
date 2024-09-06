@@ -141,3 +141,7 @@ case class ExpectLambda(x: Expr) extends TyckError {
 case class ExpectPattern(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a pattern, got $cause"
 }
+
+case class ExpectLetDef(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a let or def statement, got $cause"
+}

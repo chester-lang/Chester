@@ -456,38 +456,42 @@ sealed trait Stmt extends DesaltExpr derives ReadWriter  {
       (warnings ++ newWarnings, errors ++ newErrors, newStmt)
     }
   }
+}
 
+@deprecated("not used")
+private sealed trait NameUnknown extends Stmt derives ReadWriter  {
   def getName: Option[Id] = None
 }
 
-private sealed trait NameUnknown extends Stmt derives ReadWriter  {
-  override def getName: Option[Id] = None
-}
-
+@deprecated("not used")
 private sealed trait NameOption extends Stmt derives ReadWriter  {
   def name: Option[Id]
 
-  override def getName: Option[Id] = name
+  def getName: Option[Id] = name
 }
 
+@deprecated("not used")
 case class DataStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("data") <+> rest.map(_.toDoc).reduce(_ <+> _))
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class TraitStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("trait") <+> rest.map(_.toDoc).reduce(_ <+> _))
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class ImplementStmt(rest: Vector[Expr], meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("implement") <+> rest.map(_.toDoc).reduce(_ <+> _))
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class TypeDeclaration(name: Option[String], exprs: Vector[Expr], types: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
@@ -499,6 +503,7 @@ case class TypeDeclaration(name: Option[String], exprs: Vector[Expr], types: Vec
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class Definition(name: Option[String], exprs: Vector[Expr], defns: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
@@ -510,6 +515,7 @@ case class Definition(name: Option[String], exprs: Vector[Expr], defns: Vector[E
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class DeclarationAndDefinition(name: Option[String], declNameExprs: Vector[Expr], types: Vector[Expr], defns: Vector[Expr], meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
@@ -522,12 +528,13 @@ case class DeclarationAndDefinition(name: Option[String], declNameExprs: Vector[
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
-case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt with NameUnknown {
+case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
   override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class GroupedStmt(name: Option[Id], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
@@ -539,6 +546,7 @@ case class GroupedStmt(name: Option[Id], declaration: TypeDeclaration, definitio
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class ErrorStmt(name: Option[Id], message: String, meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
@@ -548,15 +556,17 @@ case class ErrorStmt(name: Option[Id], message: String, meta: Option[ExprMeta] =
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 sealed trait PrecedenceGroup
 
+@deprecated("not used")
 case class PrecedenceGroupResolving(
                                      name: Id,
                                      higherThan: Vector[UnresolvedID] = Vector(),
                                      lowerThan: Vector[UnresolvedID] = Vector(),
                                      associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                    ) extends Stmt with PrecedenceGroup {
-  override def getName: Option[Id] = Some(name)
+  def getName: Option[Id] = Some(name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toDoc
@@ -573,13 +583,14 @@ case class PrecedenceGroupResolving(
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+@deprecated("not used")
 case class PrecedenceGroupResolved(
                                     name: QualifiedID,
                                     higherThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                   ) extends Stmt with PrecedenceGroup {
-  override def getName: Option[Id] = Some(name.name)
+   def getName: Option[Id] = Some(name.name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toString
@@ -596,22 +607,46 @@ case class PrecedenceGroupResolved(
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+enum LetDefType derives ReadWriter {
+  case Let
+  case Def
+}
 
-case class LetStmt(pattern: DesaltPattern, ty: Option[Expr], expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
+sealed trait Defined extends ToDoc derives ReadWriter
 
-  override def getName = None
+case class DefinedPattern(pattern: DesaltPattern) extends Defined {
+  override def toDoc(implicit options: PrettierOptions): Doc = pattern.toDoc
+}
+case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope]) extends Defined{
+  require(telescope.nonEmpty)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
+}
+
+case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = None, ty: Option[Expr] = None, decorations: Vector[Expr] = Vector(), meta: Option[ExprMeta] = None) extends Stmt {
+  override def descent(operator: Expr => Expr): Expr = thisOr {
+    LetDefStmt(kind, defined, body.map(operator), ty.map(operator), decorations.map(operator), meta)
+  }
+
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
-    val patternDoc = pattern.toDoc
+    val kindDoc = kind match {
+      case LetDefType.Let => Doc.text("let")
+      case LetDefType.Def => Doc.text("def")
+    }
+    val definedDoc = defined.toDoc
     val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
-    val exprDoc = expr.toDoc
-    patternDoc <+> tyDoc <+> Doc.text(" = ") <+> exprDoc
+    val bodyDoc = body.map(b => Doc.text(" = ") <> b.toDoc).getOrElse(Doc.empty)
+    val decorationsDoc = if (decorations.isEmpty) Doc.empty else decorations.map(_.toDoc).reduce(_ <+> _)
+    kindDoc <+> definedDoc <+> tyDoc <+> bodyDoc <+> decorationsDoc
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
 case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
+  override def descent(operator: Expr => Expr): Expr = thisOr {
+    ReturnStmt(operator(expr), meta)
+  }
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("return ") <> expr.toDoc)
 
@@ -619,6 +654,7 @@ case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 }
 
 case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None) extends Expr {
+  override def descent(operator: Expr => Expr): Expr = this
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): BuiltinExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc
