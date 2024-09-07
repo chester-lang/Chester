@@ -42,7 +42,7 @@ def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[Par
 }
 
 @deprecated("Use parseExpr with ParserSource instead")
-def parseFile(fileName: String): Either[ParseError, ParsedExpr] = {
+def parseFile(fileName: String)(using used: FilePathImpl): Either[ParseError, ParsedExpr] = {
   parseExpr(FilePath(fileName))
 }
 

@@ -15,7 +15,7 @@ import scala.collection.immutable
 import scala.util.*
 import scala.scalajs.js.annotation._
 
-object FilePathImplJVM extends FilePathImpl {
+implicit object FilePathImplJVM extends FilePathImpl {
   def load: Unit = {}
 
   require(impl == null, "FilePathImplJVM is already loaded")

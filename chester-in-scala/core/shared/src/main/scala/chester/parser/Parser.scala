@@ -353,6 +353,7 @@ case class FileNameAndContent(fileName: String, content: String) extends ParserS
 }
 
 trait FilePathImpl {
+  def load: Unit
   def readContent(fileName: String): Either[ParseError, String]
 
   def absolute(fileName: String): String
@@ -361,19 +362,23 @@ trait FilePathImpl {
 private var impl: FilePathImpl = null
 
 object FilePath {
-  def from(fileName: String): FilePath = {
+  def apply(fileName: String)(using used: FilePathImpl): FilePath = {
+    used.load
+    new FilePath(fileName)
+  }
+  def from(fileName: String)(using used: FilePathImpl): FilePath = {
+    used.load
     val path = if (impl == null) fileName else impl.absolute(fileName)
-    FilePath(path)
+    new FilePath(path)
   }
 }
 
-case class FilePath(fileName: String) extends ParserSource {
+case class FilePath private (fileName: String) extends ParserSource {
   override lazy val readContent: Either[ParseError, String] = {
     if (impl == null) Left(ParseError("No FilePathImpl provided", Pos.Zero))
     else impl.readContent(fileName)
   }
 }
-
 
 case class SourceOffset(source: ParserSource, linesOffset: Int = 0, posOffset: Int = 0)derives ReadWriter {
   def fileName: String = source.fileName
