@@ -101,7 +101,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
       "jline" % "jline" % "2.14.6",
       "org.rogach" %% "scallop" % "5.1.0",
       "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
-      "com.google.code.gson" % "gson" % "2.10.1",
+      "com.google.code.gson" % "gson" % "2.11.0",
     )
   )
   .nativeSettings(
@@ -215,8 +215,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     nativeImageOutput := file("target") / "chester",
     graalvmSettings,
     libraryDependencies ++= Seq(
-      // https://github.com/jline/jline3/issues/954
-      "org.jline" % "jline" % "3.26.2",
+      "org.jline" % "jline" % "3.26.3",
     )
   )
   .jsSettings(
