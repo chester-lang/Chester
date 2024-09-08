@@ -1,0 +1,36 @@
+package typings.xtermXterm.mod
+
+import typings.xtermXterm.xtermXtermStrings.center
+import typings.xtermXterm.xtermXtermStrings.full
+import typings.xtermXterm.xtermXtermStrings.left
+import typings.xtermXterm.xtermXtermStrings.right
+import org.scalablytyped.runtime.StObject
+import scala.scalajs.js
+import scala.scalajs.js.annotation.{JSGlobalScope, JSGlobal, JSImport, JSName, JSBracketAccess}
+
+/**
+  * Overview ruler decoration options
+  */
+trait IDecorationOverviewRulerOptions extends StObject {
+  
+  var color: String
+  
+  var position: js.UndefOr[left | center | right | full] = js.undefined
+}
+object IDecorationOverviewRulerOptions {
+  
+  inline def apply(color: String): IDecorationOverviewRulerOptions = {
+    val __obj = js.Dynamic.literal(color = color.asInstanceOf[js.Any])
+    __obj.asInstanceOf[IDecorationOverviewRulerOptions]
+  }
+  
+  @scala.inline
+  implicit open class MutableBuilder[Self <: IDecorationOverviewRulerOptions] (val x: Self) extends AnyVal {
+    
+    inline def setColor(value: String): Self = StObject.set(x, "color", value.asInstanceOf[js.Any])
+    
+    inline def setPosition(value: left | center | right | full): Self = StObject.set(x, "position", value.asInstanceOf[js.Any])
+    
+    inline def setPositionUndefined: Self = StObject.set(x, "position", js.undefined)
+  }
+}

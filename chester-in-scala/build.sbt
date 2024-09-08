@@ -160,11 +160,32 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     ),
   )
 
+lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("js-typings"))
+  // Remove comments to generate typings again
+  //.jsEnablePlugins(ScalablyTypedConverterPlugin)
+  .settings(
+    commonSettings,
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "com.olvind" %%% "scalablytyped-runtime" % "2.4.2",
+      "org.scala-js" %%% "scalajs-dom" % "2.3.0",
+    ),
+    /*
+    Compile / npmDependencies ++= Seq(
+      "@types/node" -> "22.3.0",
+      "@xterm/xterm" -> "5.5.0",
+    ),
+    */
+  )
+
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
   .dependsOn(core)
+  .dependsOn(jsTypings)
   .settings(
     name := "chester",
     assembly / assemblyJarName := "common.jar",
@@ -182,9 +203,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     ),
   )
   .jsSettings(
-    Compile / npmDependencies ++= Seq(
-      "@types/node" -> "22.3.0"
-    ),
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.CommonJSModule)
     },
@@ -202,8 +220,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .crossType(CrossType.Full)
   .in(file("cli"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
-  .dependsOn(common)
+  .dependsOn(common, jsTypings)
   .settings(
     name := "chester-cli",
     Compile / mainClass := Some("chester.cli.Main"),
@@ -223,8 +240,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-    libraryDependencies ++= Seq(
-    ),
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -238,8 +254,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   .crossType(CrossType.Full)
   .in(file("up"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
-  .dependsOn(common)
+  .dependsOn(common, jsTypings)
   .settings(
     name := "chesterup",
     Compile / mainClass := Some("chester.up.Main"),
@@ -259,17 +274,13 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .crossType(CrossType.Full)
   .in(file("js"))
-  .jsEnablePlugins(ScalablyTypedConverterPlugin)
-  .dependsOn(common)
+  .dependsOn(common, jsTypings)
   .settings(
     name := "chester-js",
     commonSettings
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-    Compile / npmDependencies ++= Seq(
-      "@xterm/xterm" -> "5.5.0"
-    ),
   )
 
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
@@ -328,7 +339,7 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
+  .aggregate(jsTypings.jvm, jsTypings.js, jsTypings.native, core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
   .settings(
     name := "Chester",
     scalaVersion := scala3Version

@@ -1,0 +1,16 @@
+package typings.node.cryptoMod
+
+import typings.node.anon.PlaintextLength
+import typings.node.bufferMod.global.Buffer
+import typings.node.globalsMod.global.NodeJS.ArrayBufferView
+import org.scalablytyped.runtime.StObject
+import scala.scalajs.js
+import scala.scalajs.js.annotation.{JSGlobalScope, JSGlobal, JSImport, JSName, JSBracketAccess}
+
+@js.native
+trait CipherCCM extends StObject {
+  
+  def getAuthTag(): Buffer = js.native
+  
+  def setAAD(buffer: ArrayBufferView, options: PlaintextLength): this.type = js.native
+}
