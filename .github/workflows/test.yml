@@ -16,6 +16,11 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -49,7 +54,6 @@ jobs:
             break
           fi
         done
-      shell: bash
 
     - name: Setup Java
       uses: actions/setup-java@v4
@@ -78,15 +82,10 @@ jobs:
         cd scala-graph
         git checkout 6381eb20c8595f5507410f4e2bfa9e27b8d88a30
         sbt publishM2
-      shell: bash
 
     - name: SBT Clean
-      working-directory: chester-in-scala
       run: sbt clean
-      shell: bash
       continue-on-error: true
 
     - name: Run Tests
-      working-directory: chester-in-scala
       run: sbt test || sbt test
-      shell: bash

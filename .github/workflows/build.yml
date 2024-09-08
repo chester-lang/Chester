@@ -27,6 +27,11 @@ jobs:
       SCALA_VERSION: '3.5.0'
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -87,54 +92,38 @@ jobs:
       shell: bash
 
     - name: SBT Clean
-      working-directory: chester-in-scala
       run: sbt clean
-      shell: bash
       # for some reason clean calls stImport and stImport usually fails at first run
       continue-on-error: true
 
     # maybe test will fail on the first try because of stImport, the typescript to scala thing.
     - name: Run Tests
-      working-directory: chester-in-scala
       run: sbt test || sbt test
-      shell: bash
 
     - name: Build Common JAR with SBT
-      working-directory: chester-in-scala
       run: sbt common/assembly
-      shell: bash
 
     - name: Build CLI JAR with SBT
-      working-directory: chester-in-scala
       run: sbt cli/assembly
-      shell: bash
 
     - name: Build LSP JAR with SBT
-      working-directory: chester-in-scala
       run: sbt lsp/assembly
-      shell: bash
 
     - name: Build CLI Native Executable
-      working-directory: chester-in-scala
       run: sbt cliNative/nativeLink
-      shell: bash
 
     - name: Rename CLI Native Executable
-      working-directory: chester-in-scala
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           mv cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-cli-out.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
         else
           mv cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-cli-out cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
         fi
-      shell: bash
 
     - name: Generate JS Artifacts for CLI
-      working-directory: chester-in-scala
       run: |
         sbt cliJS/fullLinkJS
         mv cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
-      shell: bash
 
     - uses: graalvm/setup-graalvm@v1
       with:
@@ -144,30 +133,21 @@ jobs:
         native-image-job-reports: 'true'
 
     - name: GraalVM Env
-      working-directory: chester-in-scala
       run: |
         echo "NATIVE_IMAGE_INSTALLED=true" >> $GITHUB_ENV
         echo "GRAALVM_INSTALLED=true" >> $GITHUB_ENV
-      shell: bash
 
     - name: Build Native Image for LSP
-      working-directory: chester-in-scala
       run: sbt lsp/nativeImage
-      shell: bash
 
     - name: Build Native Image for CLI
-      working-directory: chester-in-scala
       run: sbt cli/nativeImage
-      shell: bash
 
     - name: Test Native Image for CLI integrity
-      working-directory: chester-in-scala
       run: ./target/chester integrity
-      shell: bash
 
     - name: List files for debugging
-      run: find chester-in-scala -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
-      shell: bash
+      run: find . -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
       continue-on-error: true
 
     - name: Upload Unix Artifacts
@@ -176,13 +156,13 @@ jobs:
       with:
         name: ${{ matrix.release_name }}
         path: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
-          chester-in-scala/target/chester
-          chester-in-scala/target/chester-lsp
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+          ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+          ./target/chester
+          ./target/chester-lsp
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
 
     - name: Upload Windows Artifacts
       if: runner.os == 'Windows'
@@ -190,13 +170,13 @@ jobs:
       with:
         name: ${{ matrix.release_name }}
         path: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
-          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
-          chester-in-scala/target/chester.exe
-          chester-in-scala/target/chester-lsp.exe
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+          ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
+          ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
+          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+          ./target/chester.exe
+          ./target/chester-lsp.exe
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
 
     - name: Create or Update GitHub Release for Unix
       if: runner.os != 'Windows'
@@ -207,13 +187,13 @@ jobs:
         allowUpdates: true
         prerelease: true
         artifacts: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
-          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
-          chester-in-scala/target/chester,
-          chester-in-scala/target/chester-lsp,
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+          ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
+          ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
+          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
+          ./target/chester,
+          ./target/chester-lsp,
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
 
     - name: Create or Update GitHub Release for Windows
       if: runner.os == 'Windows'
@@ -224,10 +204,10 @@ jobs:
         allowUpdates: true
         prerelease: true
         artifacts: |
-          chester-in-scala/common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
-          chester-in-scala/cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          chester-in-scala/lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
-          chester-in-scala/cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
-          chester-in-scala/target/chester.exe,
-          chester-in-scala/target/chester-lsp.exe,
-          chester-in-scala/cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+          ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
+          ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
+          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
+          ./target/chester.exe,
+          ./target/chester-lsp.exe,
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
