@@ -128,6 +128,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "com.lihaoyi" %%% "fansi" % "0.5.0",
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "scalatags" % "0.13.1",
+      "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
     ),
   )
   .jvmSettings(
@@ -135,7 +136,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
     ),
     libraryDependencies ++= Seq(
@@ -146,7 +146,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "com.github.rssh.dotty-cps-async" %%% "dotty-cps-async-for34" % "29dc6f3bf8",
       "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
     ),
     libraryDependencies ++= Seq(
@@ -161,7 +160,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "com.github.rssh" %%% "dotty-cps-async" % "0.9.21",
       "org.typelevel" %%% "spire" % "0.18.0",
     ),
   )
