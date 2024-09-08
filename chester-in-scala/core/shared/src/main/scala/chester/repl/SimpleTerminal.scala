@@ -14,3 +14,10 @@ class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id]) extends Abstr
 
   override inline def writeln(line: Str): Unit = println(line.render)
 }
+
+class SimpleTerminalFactory(using runner: Runner[Id]) extends Terminal[Id] {
+  inline def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+    val terminal = new SimpleTerminal(init)
+    block(using terminal)
+  }
+}

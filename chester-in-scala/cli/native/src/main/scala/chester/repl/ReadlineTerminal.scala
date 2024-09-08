@@ -1,11 +1,14 @@
 package chester.repl
 
+import cats.Id
+import chester.io._
 import chester.parser.InputStatus.*
 import io.github.edadma.readline.facade.*
+import io.github.edadma.readline.facade
 
 import scala.concurrent.Future
 
-class ReadlineTerminal  {
+class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id]  {
   private var history: Vector[String] = Vector()
   private val homeDir = System.getProperty("user.home")
   private val HISTORY_FILE = s"$homeDir/.my_readline_history"
@@ -32,14 +35,18 @@ class ReadlineTerminal  {
     }
   }
 
-  def readLine(info: TerminalInfo): ReadLineResult = {
+  override def writeln(line: fansi.Str): Unit = {
+    println(line.render)
+  }
+  
+  override def readline(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
     var result: ReadLineResult = EndOfFile
     var currentInputs: String = ""
 
     while (continue) {
-      val line = readline(prompt.render)
+      val line = facade.readline(prompt.render)
 
       if (line == null) {
         continue = false
@@ -85,5 +92,12 @@ class ReadlineTerminal  {
     writeHistory()
   }
 
-  def getHistory: Seq[String] = history
+  override def getHistory: Seq[String] = history
+}
+
+object ReadlineTerminal extends Terminal[Id] {
+  override def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+    val terminal = new ReadlineTerminal(init)
+    block(using terminal)
+  }
 }

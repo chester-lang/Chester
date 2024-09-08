@@ -1,11 +1,10 @@
 package chester.io
 
 import cats.Id
-import chester.repl.{ReadLineResult, SimpleTerminal, TerminalInfo, TerminalInit}
+import chester.repl.*
+import com.eed3si9n.ifdef.ifndef
 
-implicit object DefaultTerminal extends Terminal[Id] {
-  inline def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
-    val terminal = new SimpleTerminal(init)
-    block(using terminal)
-  }
-}
+@ifndef("readline")
+implicit val DefaultTerminal: Terminal[Id] = new SimpleTerminalFactory
+@ifdef("readline")
+implicit val DefaultTerminal: Terminal[Id] = ReadlineTerminal

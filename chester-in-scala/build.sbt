@@ -79,7 +79,7 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
 
 val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
-val permitGPLcontamination: Boolean = false
+val linkReadline: Boolean = false
 
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -226,7 +226,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       //"io.github.edadma" %%% "readline" % "0.1.3"
     ),
-    scalacOptions ++= (if (unix && permitGPLcontamination) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
+    scalacOptions ++= (if (unix && linkReadline) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 
 lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
