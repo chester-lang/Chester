@@ -77,10 +77,6 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   }
 })
 
-val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
-val unix: Boolean = !windows
-val linkReadline: Boolean = false
-
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -194,6 +190,14 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     },
   )
 
+addCommandAlias("cliReadline", "set enableCliReadline := true;")
+addCommandAlias("cliSimple", "set enableCliReadline := false;")
+
+val enableCliReadline = settingKey[Boolean]("Flag to enable or disable cliReadline")
+
+val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
+val unix: Boolean = !windows
+
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("cli"))
@@ -226,7 +230,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       //"io.github.edadma" %%% "readline" % "0.1.3"
     ),
-    scalacOptions ++= (if (unix && linkReadline) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
+    enableCliReadline := false,
+    scalacOptions ++= (if (enableCliReadline.value) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 
 lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
