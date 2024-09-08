@@ -208,11 +208,11 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     },
   )
 
-addCommandAlias("cliReadline", "set enableCliReadline := true;")
-addCommandAlias("cliSimple", "set enableCliReadline := false;")
+addCommandAlias("cliReadline", "set ThisBuild / enableCliReadline := true;")
+addCommandAlias("cliSimple", "set ThisBuild / enableCliReadline := false;")
 
 val enableCliReadline = settingKey[Boolean]("Flag to enable or disable cliReadline")
-
+ThisBuild / enableCliReadline := false
 val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 
@@ -246,8 +246,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       //"io.github.edadma" %%% "readline" % "0.1.3"
     ),
-    enableCliReadline := false,
-    scalacOptions ++= (if (enableCliReadline.value) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
+    scalacOptions ++= (if ((ThisBuild / enableCliReadline).value) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 
 lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)

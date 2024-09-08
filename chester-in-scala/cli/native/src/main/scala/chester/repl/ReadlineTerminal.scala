@@ -66,10 +66,10 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id]  {
         status match {
           case Complete =>
             val prev = history_get(history_base + history_length - 1)
-            if (prev == null || prev != currentInputs) {
-              history = history :+ currentInputs
+            if (prev == null || prev != line) { //GNU Readline can only handle one line entry in history
               writeHistory() // Manage history based on existence
             }
+            history = history :+ currentInputs
             result = LineRead(currentInputs)
             continue = false
           case Incomplete =>
