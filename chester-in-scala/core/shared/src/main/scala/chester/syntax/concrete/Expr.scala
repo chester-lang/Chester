@@ -428,6 +428,7 @@ case class DesaltFailed(origin: Expr, error: TyckErrorOrWarning, meta: Option[Ex
 
 sealed trait DesaltPattern extends DesaltExpr derives ReadWriter {
   override def descent(operator: Expr => Expr): DesaltPattern = this
+  def bindings: Vector[Identifier] = Vector.empty
 }
 
 case class PatternCompare(literal: Expr, meta: Option[ExprMeta]) extends DesaltPattern {
@@ -440,11 +441,23 @@ case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltP
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): PatternBind = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = name.toDoc
+
+  override def bindings: Vector[Identifier] = Vector(name)
 }
 
+case class Bindings(forwardingBindings: Vector[Identifier]=Vector.empty, sequentialBindings: Vector[Identifier]=Vector.empty) {
+}
 
-// TODO: maybe merge with BlockStmt
+object Bindings {
+  def reduce(bindings: Seq[Bindings]): Bindings = {
+    val forwardingBindings = bindings.toVector.flatMap(_.forwardingBindings)
+    val sequentialBindings = bindings.toVector.flatMap(_.sequentialBindings)
+    Bindings(forwardingBindings, sequentialBindings)
+  }
+}
+
 sealed trait Stmt extends DesaltExpr derives ReadWriter  {
+  def bindings: Bindings = Bindings(Vector.empty, Vector.empty)
 
   def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Stmt) = (Vector.empty, Vector.empty, this)
 
@@ -612,19 +625,28 @@ enum LetDefType derives ReadWriter {
   case Def
 }
 
-sealed trait Defined extends ToDoc derives ReadWriter
+sealed trait Defined extends ToDoc derives ReadWriter {
+  def bindings: Vector[Identifier]
+}
 
 case class DefinedPattern(pattern: DesaltPattern) extends Defined {
   override def toDoc(implicit options: PrettierOptions): Doc = pattern.toDoc
+  def bindings: Vector[Identifier] = pattern.bindings
 }
 case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope]) extends Defined{
   require(telescope.nonEmpty)
+  def bindings: Vector[Identifier] = Vector(id)
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
 }
 
 case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = None, ty: Option[Expr] = None, decorations: Vector[Expr] = Vector(), meta: Option[ExprMeta] = None) extends Stmt {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     LetDefStmt(kind, defined, body.map(operator), ty.map(operator), decorations.map(operator), meta)
+  }
+
+  override def bindings: Bindings = kind match {
+    case LetDefType.Let => Bindings(sequentialBindings=defined.bindings)
+    case LetDefType.Def => Bindings(forwardingBindings=defined.bindings)
   }
 
 

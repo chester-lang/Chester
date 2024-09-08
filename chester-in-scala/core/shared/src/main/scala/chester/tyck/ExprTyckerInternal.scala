@@ -181,6 +181,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   def synthesizeBlock(block: Block): Judge = {
+    val heads: Vector[Stmt] = block.heads.map {
+      case stmt: Stmt => stmt
+      case expr => ExprStmt(expr, expr.meta)
+    }
+    val bindings = Bindings.reduce(heads.map(_.bindings))
     ???
   }
 
