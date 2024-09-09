@@ -192,10 +192,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   @deprecated("not needed")
   def resolveId(id: Identifier, resolved: ResolvedLocalVar, expr: Expr): Expr = {
     def continue(expr: Expr): Expr = resolveId(id, resolved, expr)
+
     expr match {
       case id1: Identifier if id1.name == id.name => resolved
       case e: (OpSeq | ListExpr | Stmt) => e.descent(continue)
-      case e:Literal => e
+      case e: Literal => e
       case e: FunctionExpr => ???
       case e => ???
     }
@@ -203,15 +204,36 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def telescopePrecheck(telescopes: Vector[DefTelescope], cause: Expr): Unit = {
     var ids = telescopes.flatMap(_.args).map(_.getName)
-    if(ids.distinct.length != ids.length) {
+    if (ids.distinct.length != ids.length) {
       tyck.error(DuplicateTelescopeArgError(cause))
+    }
+    var inits = telescopes.filter(_.args.nonEmpty).flatMap(_.args.init)
+    if (inits.exists(_.vararg)) {
+      tyck.error(UnsupportedVarargError(cause))
+    }
+    if (telescopes.exists(_.args.isEmpty)) {
+      if (telescopes.length != 1) {
+        tyck.error(UnsupportedEmptyTelescopeError(cause))
+      }
     }
   }
 
   def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
 
-  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr) = {
-    if(args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
+  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Term)
+
+  def synthesizeArg(arg: Arg, cause: Expr): ArgResult = {
+    val tyJudge = arg.ty.map(checkType)
+    val ty = tyJudge.map(_.wellTyped)
+    val default = arg.exprOrDefault.map(check(_, ty))
+    val ty1 = ty.orElse(default.map(_.ty)).getOrElse(genTypeVariable(name=Some(arg.getName+"_t")))
+    ???
+  }
+
+  case class TelescopeResult(localCtx: LocalCtx, args: Vector[ArgTerm], effect: Term)
+
+  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): TelescopeResult = {
+    if (args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
     ???
   }
 
@@ -256,7 +278,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
-      case f:FunctionExpr => {
+      case f: FunctionExpr => {
         telescopePrecheck(f.telescope, f)
         ???
       }
@@ -267,6 +289,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
         Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
     }
   }
+
+  def checkType(expr: Expr): Judge = inherit(expr, Typeω)
 
   def synthesizeTerm(term: Term): JudgeNoEffect = {
     term match {
@@ -311,6 +335,12 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
         whnfNoEffect(walked.wellTyped)
       }
       case _ => result
+  }
+  
+  def genTypeVariable(name: Option[Id] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term  = {
+    val id = name.getOrElse("t")
+    val varid = VarId.generate
+    MetaTerm(id, varid, ty.getOrElse(Typeω), meta=meta)
   }
 
   def resolve(expr: Expr): Expr = {

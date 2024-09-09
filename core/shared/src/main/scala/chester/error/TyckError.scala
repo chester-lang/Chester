@@ -145,3 +145,11 @@ case class DuplicateTelescopeArgError(cause: Expr) extends TyckError {
 case class UnsupportedDecorationError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported decoration "
 }
+
+case class UnsupportedVarargError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported vararg"
+}
+
+case class UnsupportedEmptyTelescopeError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported empty telescope"
+}
