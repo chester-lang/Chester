@@ -224,23 +224,18 @@ case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | Rational
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString, ColorProfile.typeColor)
 }
 
-case class ArgTerm(pattern: Pat, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
+case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val patternDoc = pattern.toDoc
+    val patternDoc = bind.toDoc
     val tyDoc = ty.toDoc
     val defaultDoc = default.map(_.toDoc).getOrElse(Doc.empty)
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
   }
-
-  def name: Option[Id] = pattern match {
-    case Bind(LocalVar(id, _, _, _), _) => Some(id)
-    case _ => None
-  }
 }
 
 object ArgTerm {
-  def from(bind: LocalVar): ArgTerm = ArgTerm(Bind.from(bind), bind.ty)
+  def from(bind: LocalVar): ArgTerm = ArgTerm(bind, bind.ty)
 }
 
 object TelescopeTerm {
