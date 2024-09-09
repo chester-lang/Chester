@@ -31,9 +31,9 @@ class ObjectWithIntegersSuite extends FunSuite {
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntTerm(100)) => true }.isDefined, true)
 
         // Check the field types
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntType) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntType) => true }.isDefined, true)
-        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType) => true }.isDefined, true)
+        assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType) => true }.isDefined, true)
 
       case _ => fail("Synthesis failed")
     }

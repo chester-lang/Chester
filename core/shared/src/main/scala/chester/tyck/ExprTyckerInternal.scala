@@ -226,7 +226,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     val tyJudge = arg.ty.map(checkType)
     val ty = tyJudge.map(_.wellTyped)
     val default = arg.exprOrDefault.map(check(_, ty))
-    val ty1 = ty.orElse(default.map(_.ty)).getOrElse(genTypeVariable(name=Some(arg.getName+"_t")))
+    val ty1 = ty.orElse(default.map(_.ty)).getOrElse(genTypeVariable(name = Some(arg.getName + "_t")))
     ???
   }
 
@@ -240,10 +240,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
-        if (value.isValidInt)
-          Judge(IntTerm(value.toInt), IntType, NoEffect)
-        else
-          Judge(IntegerTerm(value), IntegerType, NoEffect)
+        Judge(if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value), IntegerType, NoEffect)
       case RationalLiteral(value, meta) =>
         Judge(RationalTerm(value), RationalType, NoEffect)
       case StringLiteral(value, meta) =>
@@ -336,11 +333,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       }
       case _ => result
   }
-  
-  def genTypeVariable(name: Option[Id] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term  = {
+
+  def genTypeVariable(name: Option[Id] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
     val id = name.getOrElse("t")
     val varid = VarId.generate
-    MetaTerm(id, varid, ty.getOrElse(Typeω), meta=meta)
+    MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)
   }
 
   def resolve(expr: Expr): Expr = {
@@ -359,6 +356,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
+      case (IntegerLiteral(value, meta), IntType) => {
+        if (value.isValidInt)
+          Judge(IntTerm(value.toInt), IntType, NoEffect)
+        else
+          ???
+      }
+      case (IntegerLiteral(value, meta), NaturalType) => {
+        if (value > 0)
+          Judge(NaturalTerm(value), NaturalType, NoEffect)
+        else
+          ???
+      }
       case (expr, Union(xs)) => ??? // TODO
       case (expr, Intersection(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>

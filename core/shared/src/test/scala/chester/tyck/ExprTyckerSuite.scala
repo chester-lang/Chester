@@ -31,6 +31,6 @@ class ExprTyckerSuite extends FunSuite {
 
     assert(result.isRight)
     assertEquals(result.map(_.wellTyped), Right(IntTerm(42)))
-    assertEquals(result.map(_.ty), Right(IntType))
+    assertEquals(result.map(_.ty), Right(IntegerType))
   }
 }
