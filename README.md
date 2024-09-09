@@ -5,16 +5,14 @@ It might look like?
 ```chester
 trait 舞 <: Show;
 
-@derive(Show)
-record 超会議 <: 舞 {
-  let year: Nat;
+record 超会議 <: 舞 derives Show {
+  val year: Nat;
 }
 
-@derive(Show)
-object InternetOverdose <: 舞;
+object InternetOverdose <: 舞 derives Show;
 
 module 超会議 {
-  let バタフライ_グラフィティ: 舞 = 超会議(2017);
+  val バタフライ_グラフィティ: 舞 = 超会議(2017);
 }
 i: InternetOverdose.type = InternetOverdose;
 
@@ -23,12 +21,12 @@ sealed trait Expr[T: Type] {
 }
 
 record IVal <: Expr[Int] {
-  let val: Int;
+  val val: Int;
   override def eval = val;
 }
 
 record BVal <: Expr[Int] {
-  let val: Bool;
+  val val: Bool;
   override def eval = val;
 }
 
@@ -38,8 +36,8 @@ sealed trait Vect[n: Nat, T: Type] {
 
 object Nil[T] <: Vect[0, T];
 record Cons[n,T] <: Vect[n+1, T] {
-  let head: T;
-  let tail: Vect[n, T];
+  val head: T;
+  val tail: Vect[n, T];
 }
 n: Nil.type[Int] = Nil;
 
