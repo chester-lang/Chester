@@ -240,7 +240,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
-        Judge(if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value), IntegerType, NoEffect)
+        Judge(AbstractIntTerm.from(value), IntegerType, NoEffect)
       case RationalLiteral(value, meta) =>
         Judge(RationalTerm(value), RationalType, NoEffect)
       case StringLiteral(value, meta) =>

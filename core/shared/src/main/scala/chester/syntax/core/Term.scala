@@ -159,8 +159,14 @@ case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
+type AbstractIntTerm = IntegerTerm | IntTerm
+
+object AbstractIntTerm {
+  def from(value: BigInt): AbstractIntTerm = if(value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
+}
+
 object NaturalTerm {
-  def apply(value: BigInt): IntegerTerm = IntegerTerm(value)
+  def apply(value: BigInt): AbstractIntTerm = AbstractIntTerm.from(value)
 }
 
 sealed trait TypeTerm extends Term derives ReadWriter
