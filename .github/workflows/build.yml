@@ -98,7 +98,12 @@ jobs:
 
     # maybe test will fail on the first try because of stImport, the typescript to scala thing.
     - name: Run Tests
-      run: sbt test || sbt test
+      uses: nick-fields/retry@v3
+      with:
+        timeout-minutes: 20
+        max_attempts: 3
+        shell: bash
+        run: sbt test
 
     - name: Build Common JAR with SBT
       run: sbt common/assembly
