@@ -115,15 +115,15 @@ jobs:
     - name: Rename CLI Native Executable
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-cli-out.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/cli-out.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
         else
-          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-cli-out cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+          mv cli/native/target/scala-${{ env.SCALA_VERSION }}/cli-out cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
         fi
 
     - name: Generate JS Artifacts for CLI
       run: |
         sbt cliJS/fullLinkJS
-        mv cli/js/target/scala-${{ env.SCALA_VERSION }}/chester-cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+        mv cli/js/target/scala-${{ env.SCALA_VERSION }}/cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
 
     - uses: graalvm/setup-graalvm@v1
       with:

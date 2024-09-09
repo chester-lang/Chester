@@ -113,7 +113,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   .in(file("core"))
   .dependsOn(kiamaCore, effektKiama)
   .settings(
-    name := "chestercore",
+    name := "core",
     assembly / assemblyJarName := "core.jar",
     commonSettings,
     cpsSettings,
@@ -222,7 +222,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common, jsTypings)
   .settings(
-    name := "chestercli",
+    name := "cli",
     Compile / mainClass := Some("chester.cli.Main"),
     assembly / assemblyJarName := "chester.jar",
     libraryDependencies ++= Seq(
@@ -255,7 +255,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common, jsTypings)
   .settings(
-    name := "chesterup",
+    name := "up",
     Compile / mainClass := Some("chester.up.Main"),
     assembly / assemblyJarName := "chesterup.jar",
     libraryDependencies ++= Seq(
@@ -275,7 +275,7 @@ lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .in(file("js"))
   .dependsOn(common, jsTypings)
   .settings(
-    name := "chesterjs",
+    name := "js",
     commonSettings
   )
   .jsSettings(
@@ -288,7 +288,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(
-    name := "chesterlsp",
+    name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
     assembly / assemblyJarName := "chester-lsp.jar",
@@ -306,7 +306,7 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .settings(commonSettings)
   // https://github.com/b-studios/scala-graal-truffle-example/blob/c2747a6eece156f878c5b934116aaa00a2cd6311/build.sbt
   .settings(
-    name := "chestertruffle",
+    name := "truffle",
     assembly / assemblyJarName := "chester-truffle.jar",
     assembly / test := {},
     assembly / assemblyExcludedJars := {
