@@ -242,7 +242,9 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
-      case f@FunctionExpr => ???
+      case f@FunctionExpr => {
+        ???
+      }
 
       case _ =>
         val err = UnsupportedExpressionError(expr)

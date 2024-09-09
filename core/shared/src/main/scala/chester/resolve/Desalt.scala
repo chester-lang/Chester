@@ -27,15 +27,15 @@ private object DesaltCaseClauseMatch {
 
 private object MatchDeclarationTelescope {
   @throws[TyckError]
-  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = x match {
-    case id: Identifier => Some(Telescope(Vector(Arg(name = Some(id)))))
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[DefTelescope] = x match {
+    case id: Identifier => Some(DefTelescope(Vector(Arg(name = id))))
     case _ => ???
   }
 }
 
 private object MatchApplyingTelescope {
   @throws[TyckError]
-  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = ???
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[DefTelescope] = ???
 }
 
 private object SingleExpr {
@@ -155,7 +155,7 @@ case object PatternDesalt {
 }
 
 case object MatchDefinedTelescope {
-  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Telescope] = x match {
+  def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[DefTelescope] = x match {
     // TODO
     case _ => None
   }

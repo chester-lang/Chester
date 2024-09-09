@@ -163,24 +163,22 @@ object Block {
   def apply(heads: Vector[Expr], tail: Expr, meta: Option[ExprMeta]): Block = Block(heads, Some(tail), meta)
 }
 
-// maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Expr], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
-  require(name.isDefined || exprOrDefault.isDefined)
-  require(name.isEmpty || name.get.isInstanceOf[Identifier] || name.get.isInstanceOf[ResolvedLocalVar])
+// in function declaration
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
+  require(name.isInstanceOf[Identifier] || name.isInstanceOf[ResolvedLocalVar])
 
   def descent(operator: Expr => Expr): Arg = {
-    Arg(decorations, name.map(operator), ty.map(operator), exprOrDefault.map(operator), vararg)
+    Arg(decorations, operator(name), ty.map(operator), exprOrDefault.map(operator), vararg)
   }
 
   override def toString: String = this match {
-    case Arg(Vector(), None, None, Some(expr), false) => s"Arg.of($expr)"
     case Arg(decorations, name, ty, exorOrDefault, false) => s"Arg($decorations,$name,$ty,$exorOrDefault)"
     case Arg(decorations, name, ty, exorOrDefault, vararg) => s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
   }
 
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val decDoc = if (decorations.nonEmpty) decorations.map(_.toDoc).reduce(_ </> _) <> Doc.text(" ") else Doc.empty
-    val nameDoc = name.map(_.toDoc).getOrElse(Doc.empty)
+    val nameDoc = name.toDoc
     val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
     val exprDoc = exprOrDefault.map(e => Doc.text(" = ") <> e.toDoc).getOrElse(Doc.empty)
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
@@ -188,8 +186,20 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Expr], t
   }
 }
 
+case class CallingArg(name: Option[Expr] = None, expr: Expr, vararg: Boolean = false) derives ReadWriter {
+  def descent(operator: Expr => Expr): CallingArg = {
+    CallingArg(name.map(operator), operator(expr), vararg)
+  }
+
+  def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(n => n.toDoc <> Doc.text(" = ")).getOrElse(Doc.empty)
+    val exprDoc = expr.toDoc
+    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
+    nameDoc <> exprDoc <> varargDoc
+  }
+}
+
 object Arg {
-  def of(expr: Expr): Arg = Arg(Vector.empty, None, None, Some(expr))
 }
 
 sealed trait MaybeTelescope extends Expr derives ReadWriter {
@@ -208,18 +218,18 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms: _*)
 }
 
-case class Telescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
-  override def descent(operator: Expr => Expr): Telescope = thisOr {
-    Telescope(args.map(_.descent(operator)), implicitly, meta)
+case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
+  override def descent(operator: Expr => Expr): DefTelescope = thisOr {
+    DefTelescope(args.map(_.descent(operator)), implicitly, meta)
   }
 
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Telescope = copy(meta = updater(meta))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DefTelescope = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(args.map(_.toDoc) *)
 }
 
-object Telescope {
-  def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): Telescope = Telescope(args.toVector, meta = meta)
+object DefTelescope {
+  def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): DefTelescope = DefTelescope(args.toVector, meta = meta)
 }
 
 case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta] = None) extends ParsedExpr {
@@ -403,7 +413,7 @@ case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMe
   )
 }
 
-case class FunctionExpr(telescope: Vector[Telescope], resultTy: Option[Expr] = None, effect: Option[Expr] = None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+case class FunctionExpr(telescope: Vector[DefTelescope], resultTy: Option[Expr] = None, effect: Option[Expr] = None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
 
   override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), resultTy.map(operator), effect.map(operator), operator(body), meta))
