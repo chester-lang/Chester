@@ -484,3 +484,17 @@ case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Te
 
 // TODO: tuple?
 val UnitType = ObjectType(Vector.empty)
+
+sealed trait ErasedType extends TypeTerm derives ReadWriter
+
+case object ErasedInteger extends ErasedType
+
+case object ErasedString extends ErasedType
+
+case object ErasedList extends ErasedType
+
+case object ErasedTuple extends ErasedType
+
+case object ErasedObject extends ErasedType
+
+case object ErasedErasedType extends ErasedType
