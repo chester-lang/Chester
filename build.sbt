@@ -169,6 +169,13 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
     commonSettings,
   )
   .jsSettings(
+    resolvers += Resolver.file("local-ivy2", file("js-typings/local"))(Resolver.ivyStylePatterns),
+    libraryDependencies ++= Seq(
+      "org.scalablytyped" %%% "node" % "22.3.0-fa071c",
+      "org.scalablytyped" %%% "std" % "4.3-5d95db",
+      "org.scalablytyped" %%% "undici-types" % "6.18.2-4cf613",
+      "org.scalablytyped" %%% "xterm__xterm" % "5.5.0-951203",
+    ),
     libraryDependencies ++= Seq(
       "com.olvind" %%% "scalablytyped-runtime" % "2.4.2",
       "org.scala-js" %%% "scalajs-dom" % "2.3.0",
