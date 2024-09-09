@@ -230,6 +230,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
+      case f@FunctionExpr => ???
 
       case _ =>
         val err = UnsupportedExpressionError(expr)
@@ -316,6 +317,13 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
+  def check(expr: Expr, ty: Option[Term] = None, effect: Option[Term] = None): Judge = ty match {
+    case Some(ty) => inherit(expr, ty, effect)
+    case None => {
+      val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
+      Judge(wellTypedExpr, exprType, unifyEff(effect, exprEffect))
+    }
+  }
 }
 
 object ExprTycker {

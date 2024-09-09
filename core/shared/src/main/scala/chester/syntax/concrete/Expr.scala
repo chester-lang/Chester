@@ -395,15 +395,15 @@ case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMe
   )
 }
 
-case class FunctionExpr(telescope: Vector[Telescope], effect: Option[Expr] = None, result: Option[Expr] = None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+case class FunctionExpr(telescope: Vector[Telescope], resultTy: Option[Expr] = None, effect: Option[Expr] = None, body: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionExpr = copy(meta = updater(meta))
 
-  override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), effect.map(operator), result.map(operator), operator(body), meta))
+  override def descent(operator: Expr => Expr): Expr = thisOr(FunctionExpr(telescope.map(_.descent(operator)), resultTy.map(operator), effect.map(operator), operator(body), meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val telescopeDoc = telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
     val effectDoc = effect.map(e => Doc.text(" ") <> e.toDoc).getOrElse(Doc.empty)
-    val resultDoc = result.map(r => Doc.text(" -> ") <> r.toDoc).getOrElse(Doc.empty)
+    val resultDoc = resultTy.map(r => Doc.text(" -> ") <> r.toDoc).getOrElse(Doc.empty)
     val bodyDoc = body.toDoc
     telescopeDoc <> effectDoc <> resultDoc <> Doc.text(" {") </> Doc.indented(bodyDoc) </> Doc.text("}")
   }

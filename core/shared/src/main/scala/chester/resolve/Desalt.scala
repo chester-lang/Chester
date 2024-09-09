@@ -66,6 +66,7 @@ private object DesaltSimpleFunction {
   def unapply(x: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Option[Expr] = x match {
     case OpSeq(xs, meta) if xs.exists(predicate) => {
       val index = xs.indexWhere(predicate)
+      assert(index >= 0)
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
