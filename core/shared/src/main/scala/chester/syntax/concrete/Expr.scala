@@ -5,8 +5,9 @@ import chester.doc.*
 import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
+import chester.syntax.core.VarId
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
-import chester.utils.doc._
+import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
@@ -95,6 +96,12 @@ case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(module.toString) <> Doc.text(".") <> Doc.text(name.toString))
 }
 
+case class ResolvedLocalVar(name: Id, varId: VarId, meta: Option[ExprMeta] = None) extends Expr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedLocalVar = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(name.toString) <> Doc.text(s"(${varId.id})"))
+}
+
 case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     OpSeq(seq.map(operator), meta)
@@ -157,11 +164,12 @@ object Block {
 }
 
 // maybe argument in function call or in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Identifier], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Option[Expr], ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
   require(name.isDefined || exprOrDefault.isDefined)
+  require(name.isEmpty || name.get.isInstanceOf[Identifier] || name.get.isInstanceOf[ResolvedLocalVar])
 
   def descent(operator: Expr => Expr): Arg = {
-    Arg(decorations, name, ty.map(operator), exprOrDefault.map(operator), vararg)
+    Arg(decorations, name.map(operator), ty.map(operator), exprOrDefault.map(operator), vararg)
   }
 
   override def toString: String = this match {
