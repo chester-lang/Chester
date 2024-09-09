@@ -166,6 +166,11 @@ object Block {
 // in function declaration
 case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
   require(name.isInstanceOf[Identifier] || name.isInstanceOf[ResolvedLocalVar])
+  
+  def getName: Id = name match {
+    case Identifier(name, _) => name
+    case ResolvedLocalVar(name, _, _) => name
+  }
 
   def descent(operator: Expr => Expr): Arg = {
     Arg(decorations, operator(name), ty.map(operator), exprOrDefault.map(operator), vararg)

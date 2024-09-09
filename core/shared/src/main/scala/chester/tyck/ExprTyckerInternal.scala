@@ -201,6 +201,20 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
+  def telescopePrecheck(telescopes: Vector[DefTelescope], cause: Expr): Unit = {
+    var ids = telescopes.flatMap(_.args).map(_.getName)
+    if(ids.distinct.length != ids.length) {
+      tyck.error(DuplicateTelescopeArgError(cause))
+    }
+  }
+
+  def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
+
+  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr) = {
+    if(args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
+    ???
+  }
+
   def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
@@ -242,7 +256,8 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
-      case f@FunctionExpr => {
+      case f:FunctionExpr => {
+        telescopePrecheck(f.telescope, f)
         ???
       }
 
