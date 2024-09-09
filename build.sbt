@@ -345,7 +345,7 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(jsTypings.jvm, jsTypings.js, jsTypings.native, core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
+  .aggregate(kiamaCore.jvm, kiamaCore.js, kiamaCore.native, effektKiama.jvm, effektKiama.js, effektKiama.native, jsTypings.jvm, jsTypings.js, jsTypings.native, core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
