@@ -160,6 +160,34 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     ),
   )
 
+lazy val typednode = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typednode"))
+  .settings(commonSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/srcs/node_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/jars/node_sjs1_3.jar"),
+  )
+lazy val typedstd = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedstd"))
+  .settings(commonSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/std_sjs1_3/4.3-5d95db/srcs/std_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/std_sjs1_3/4.3-5d95db/jars/std_sjs1_3.jar"),
+  )
+lazy val typedundici = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedundici"))
+  .settings(commonSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/srcs/undici-types_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/jars/undici-types_sjs1_3.jar"),
+  )
+lazy val typedxterm = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedxterm"))
+  .settings(commonSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/srcs/xterm__xterm_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/jars/xterm__xterm_sjs1_3.jar"),
+  )
 lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("js-typings"))
@@ -168,13 +196,14 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
   .settings(
     commonSettings,
   )
+  .dependsOn(typednode, typedstd, typedundici, typedxterm)
   .jsSettings(
     resolvers += Resolver.file("local-ivy2", file("js-typings/local"))(Resolver.ivyStylePatterns),
     libraryDependencies ++= Seq(
-      "org.scalablytyped" %%% "node" % "22.3.0-fa071c",
-      "org.scalablytyped" %%% "std" % "4.3-5d95db",
-      "org.scalablytyped" %%% "undici-types" % "6.18.2-4cf613",
-      "org.scalablytyped" %%% "xterm__xterm" % "5.5.0-951203",
+      "org.scalablytyped" %%% "node" % "22.3.0-fa071c" % Compile,
+      "org.scalablytyped" %%% "std" % "4.3-5d95db" % Compile,
+      "org.scalablytyped" %%% "undici-types" % "6.18.2-4cf613" % Compile,
+      "org.scalablytyped" %%% "xterm__xterm" % "5.5.0-951203" % Compile,
     ),
     libraryDependencies ++= Seq(
       "com.olvind" %%% "scalablytyped-runtime" % "2.4.2",
@@ -247,7 +276,9 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.CommonJSModule)
+    },
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -345,7 +376,19 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 
 lazy val root = project
   .in(file("."))
-  .aggregate(kiamaCore.jvm, kiamaCore.js, kiamaCore.native, effektKiama.jvm, effektKiama.js, effektKiama.native, jsTypings.jvm, jsTypings.js, jsTypings.native, core.jvm, core.js, core.native, common.jvm, common.js, common.native, cli.jvm, cli.js, cli.native, lsp.jvm, js.js)
+  .aggregate(
+    typednode.jvm, typednode.js, typednode.native,
+    typedstd.jvm, typedstd.js, typedstd.native,
+    typedundici.jvm, typedundici.js, typedundici.native,
+    typedxterm.jvm, typedxterm.js, typedxterm.native,
+    kiamaCore.jvm, kiamaCore.js, kiamaCore.native,
+    effektKiama.jvm, effektKiama.js, effektKiama.native,
+    jsTypings.jvm, jsTypings.js, jsTypings.native,
+    core.jvm, core.js, core.native,
+    common.jvm, common.js, common.native,
+    cli.jvm, cli.js, cli.native,
+    lsp.jvm,
+    js.js)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
