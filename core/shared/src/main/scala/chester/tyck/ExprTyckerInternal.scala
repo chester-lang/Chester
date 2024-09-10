@@ -104,7 +104,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs, failed = NothingType)
 
-  def unifyEff(lhs: Option[EffectCollection], rhs: Option[EffectCollection]): Option[EffectCollection] = {
+  def unifyEff(lhs: Option[Effects], rhs: Option[Effects]): Option[Effects] = {
     if (rhs == lhs) rhs
     else if (lhs.isEmpty) rhs
     else if (rhs.isEmpty) ???
@@ -113,7 +113,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def unifyEff(lhs: Option[EffectCollection], rhs: EffectCollection): EffectCollection = unifyEff(lhs, Some(rhs)).get
+  def unifyEff(lhs: Option[Effects], rhs: Effects): Effects = unifyEff(lhs, Some(rhs)).get
 
   /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): Term = {
@@ -135,11 +135,11 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     seq.reduce(common)
   }
 
-  def effectFold(es: Seq[EffectCollection]): EffectCollection = {
-    EffectCollection.merge(es)
+  def effectFold(es: Seq[Effects]): Effects = {
+    Effects.merge(es)
   }
 
-  def effectUnion(e1: EffectCollection, e2: EffectCollection): EffectCollection = e1.merge(e2)
+  def effectUnion(e1: Effects, e2: Effects): Effects = e1.merge(e2)
 
   def collectLevel(xs: Seq[Term]): Term = {
     Level0 // TODO
@@ -284,7 +284,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  case class EffectWith[T](effect: EffectCollection, value: T)
+  case class EffectWith[T](effect: Effects, value: T)
 
   def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Term]): EffectWith[Vector[ObjectClauseValueTerm]] = {
     ??? // TODO
@@ -334,14 +334,14 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
   }
 
   /** possibly apply an implicit conversion */
-  def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[EffectCollection] = None): Judge = {
+  def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Effects] = None): Judge = {
     val Judge(wellTypedExpr, exprType, exprEffect) = judge
     val ty1 = (unifyTy(ty, exprType))
     val effect1 = (unifyEff(effect, exprEffect))
     Judge(wellTypedExpr, ty1, effect1)
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[EffectCollection] = None): Judge = {
+  def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
@@ -374,7 +374,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def check(expr: Expr, ty: Option[Term] = None, effect: Option[EffectCollection] = None): Judge = ty match {
+  def check(expr: Expr, ty: Option[Term] = None, effect: Option[Effects] = None): Judge = ty match {
     case Some(ty) => inherit(expr, ty, effect)
     case None => {
       val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
@@ -399,7 +399,7 @@ object ExprTycker {
   }
 
   @deprecated("error information are lost")
-  def inheritV0(expr: Expr, ty: Term, effect: Option[EffectCollection] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
+  def inheritV0(expr: Expr, ty: Term, effect: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
     val result = inherit(expr, ty, effect, state, ctx)
     convertToEither(result)
   }
@@ -414,7 +414,7 @@ object ExprTycker {
     Tyck.run(ExprTyckerInternal(ctx, _).unifyTy(lhs, rhs))(state)
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[EffectCollection] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
+  def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
     Tyck.run(ExprTyckerInternal(ctx, _).inherit(expr, ty, effect))(state)
   }
 

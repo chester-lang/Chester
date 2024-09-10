@@ -398,10 +398,10 @@ case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc deriv
   def descent(f: Term => Term): NamedEffect = copy(effect = f(effect))
 }
 
-case class EffectCollection private[syntax] (xs: Vector[NamedEffect]) extends Term {
+case class Effects private[syntax](xs: Vector[NamedEffect]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
   override def descent(f: Term => Term): Term = thisOr(copy(xs = xs.map(_.descent(f))))
-  def add(one: NamedEffect): EffectCollection = {
+  def add(one: NamedEffect): Effects = {
     val found = xs.indexWhere { case NamedEffect(name, effect) => effect == one.effect }
     if(found!= -1) {
       val NamedEffect(name, effect) = xs(found)
@@ -410,7 +410,7 @@ case class EffectCollection private[syntax] (xs: Vector[NamedEffect]) extends Te
       copy(xs = xs :+ one)
     }
   }
-  def merge(other: EffectCollection): EffectCollection = {
+  def merge(other: Effects): Effects = {
     var result = this
     for (one <- other.xs) {
       result = result.add(one)
@@ -419,15 +419,15 @@ case class EffectCollection private[syntax] (xs: Vector[NamedEffect]) extends Te
   }
 }
 
-object EffectCollection {
-  val Empty: EffectCollection = EffectCollection(Vector.empty)
-  def merge(xs: Seq[EffectCollection]): EffectCollection = {
+object Effects {
+  val Empty: Effects = Effects(Vector.empty)
+  def merge(xs: Seq[Effects]): Effects = {
     require(xs.nonEmpty)
     xs.reduce(_.merge(_))
   }
 }
 
-val NoEffect = EffectCollection.Empty
+val NoEffect = Effects.Empty
 
 // may raise an exception
 case object ExceptionEffect extends EffectTerm {
@@ -483,7 +483,7 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
 }
 
-case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[EffectCollection] = None, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[Effects] = None, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 
