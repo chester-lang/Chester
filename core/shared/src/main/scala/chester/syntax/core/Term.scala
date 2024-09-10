@@ -388,30 +388,46 @@ object Intersection {
 
 sealed trait EffectTerm extends Term derives ReadWriter
 
-case class EffectUnion(xs: Vector[Term]) extends EffectTerm {
-  require(xs.nonEmpty)
-
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs: _*)
+case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc derives ReadWriter {
+  require(name.nonEmpty)
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val nameDoc = name.map(_.toDoc).reduce(_ <+> _)
+    val effectDoc = effect.toDoc
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(nameDoc <+> effectDoc)
+  }
+  def descent(f: Term => Term): NamedEffect = copy(effect = f(effect))
 }
 
-object EffectUnion {
-  // do flatten
-  def from(xs: Vector[Term]): EffectTerm = {
-    val flattened = xs.flatMap {
-      case EffectUnion(ys) => ys
-      case x => Vector(x)
-    }.filter {
-      case NoEffect => false
-      case _ => true
+case class EffectCollection private[syntax] (xs: Vector[NamedEffect]) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
+  override def descent(f: Term => Term): Term = thisOr(copy(xs = xs.map(_.descent(f))))
+  def add(one: NamedEffect): EffectCollection = {
+    val found = xs.indexWhere { case NamedEffect(name, effect) => effect == one.effect }
+    if(found!= -1) {
+      val NamedEffect(name, effect) = xs(found)
+      copy(xs = xs.updated(found, NamedEffect(name ++ one.name, effect)))
+    } else {
+      copy(xs = xs :+ one)
     }
-    val distinct = flattened.distinct
-    if (distinct.nonEmpty) new EffectUnion(distinct) else NoEffect
+  }
+  def merge(other: EffectCollection): EffectCollection = {
+    var result = this
+    for (one <- other.xs) {
+      result = result.add(one)
+    }
+    result
   }
 }
 
-case object NoEffect extends EffectTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("NoEffect")
+object EffectCollection {
+  val Empty: EffectCollection = EffectCollection(Vector.empty)
+  def merge(xs: Seq[EffectCollection]): EffectCollection = {
+    require(xs.nonEmpty)
+    xs.reduce(_.merge(_))
+  }
 }
+
+val NoEffect = EffectCollection.Empty
 
 // may raise an exception
 case object ExceptionEffect extends EffectTerm {
@@ -467,7 +483,7 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
 }
 
-case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[Term] = None, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[EffectCollection] = None, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 
