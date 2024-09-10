@@ -4,6 +4,8 @@ Taken from https://github.com/msteveb/jimtcl/ master branch https://github.com/m
 
 linenoise-win32.c is renamed to linenoise-win32.h
 
-`//#include <jim-config.h>`
+`#include <jim-config.h>` -> `#include "jim-config.h"`
+
+created jim-config.h to enable utf8
 
 for linenoise.h added `#include <stddef.h>` for size_t
