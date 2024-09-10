@@ -9,3 +9,5 @@ linenoise-win32.c is renamed to linenoise-win32.h
 created jim-config.h to enable utf8
 
 for linenoise.h added `#include <stddef.h>` for size_t
+
+`_unicode_mapping.c` generated with `./configure` and `make _unicode_mapping.c` and renamed to `_unicode_mapping.h`

@@ -172,7 +172,7 @@ struct utf8range {
 
 
 /* Generated mapping tables */
-#include "_unicode_mapping.c"
+#include "_unicode_mapping.h"
 
 #define ARRAYSIZE(A) sizeof(A) / sizeof(*(A))
 
