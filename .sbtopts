@@ -1,2 +1,2 @@
 # https://github.com/scala-native/scala-native/blob/main/.sbtopts
--J-Xmx3G
+-J-Xmx5G -J-XX:+UseG1GC
