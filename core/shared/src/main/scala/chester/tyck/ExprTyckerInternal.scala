@@ -55,6 +55,14 @@ trait Tycker[Self <: Tycker[Self]] {
 
   inline final def rec(localCtx: LocalCtx): Self = copy(localCtx = localCtx)
 
+  final def tryOne[A](xs: Self => A): TyckResult[TyckState, A] = {
+    Tyck.run(tyck => xs(copy(tyck = tyck)))(tyck.getState)
+  }
+
+  final def tryAll[A](xs: Seq[Self => A]): A = {
+    ???
+  }
+
   def localCtx: LocalCtx
 
   def tyck: Tyck
@@ -285,6 +293,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
   }
 
   def checkEffect(effectExpr: Expr): Effects = NoEffect // TODO
+
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
 
   def synthesizeTerm(term: Term): JudgeNoEffect = {
