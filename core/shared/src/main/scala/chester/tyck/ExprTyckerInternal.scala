@@ -35,6 +35,8 @@ case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
 
   def resolve(id: VarId): Option[CtxItem] = ctx.getByVarId(id)
+
+  def extend(name: LocalVar): LocalCtx = copy(ctx = ctx.extend(name))
 }
 
 object LocalCtx {
@@ -209,14 +211,22 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
 
-  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Term)
+  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Effects)
 
   def synthesizeArg(arg: Arg, cause: Expr): ArgResult = {
     val tyJudge = arg.ty.map(checkType)
+    assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
     val ty = tyJudge.map(_.wellTyped)
-    val default = arg.exprOrDefault.map(check(_, ty))
-    val ty1 = ty.orElse(default.map(_.ty)).getOrElse(genTypeVariable(name = Some(arg.getName + "_t")))
-    ???
+    val ty1 = ty.getOrElse(genTypeVariable(name = Some(arg.getName + "_t")))
+    val default = arg.exprOrDefault.map(inherit(_, ty1))
+    val id = arg.name match {
+      case id: Identifier => id
+      case _ => ???
+    }
+    val idVar = LocalVar.generate(id.name, ty1)
+    val newCtx = localCtx.extend(idVar)
+    val effect = default.map(_.effect).getOrElse(NoEffect)
+    ArgResult(newCtx, ArgTerm(idVar, ty1, default.map(_.wellTyped)), effect)
   }
 
   case class TelescopeResult(localCtx: LocalCtx, args: Vector[ArgTerm], effect: Term)

@@ -23,6 +23,12 @@ class Context(map: Map[Id, CtxItem], imports: Imports = Imports.Empty, modules: 
   def get(id: Id): Option[CtxItem] = map.get(id)
 
   def getByVarId(varId: VarId): Option[CtxItem] = varMap.get(varId).flatMap(get)
+  
+  def extend(name: LocalVar): Context = {
+    val id = name.id
+    val item = CtxItem(name, JudgeNoEffect(name, name.ty))
+    new Context(map + (id -> item), imports, modules)
+  }
 }
 
 object Context {
