@@ -38,21 +38,18 @@ private object MatchApplyingTelescope {
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = ???
 }
 
+@throws[TyckProblem]
+def opSeq(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Expr = SimpleDesalt.desugar(OpSeq(xs.toVector))
+
+@scala.deprecated("use opSeq")
 private object SingleExpr {
   def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Option[Expr] = {
-    if (xs.isEmpty) return None
-    if (xs.tail.isEmpty) return Some(xs.head)
-    val xs0 = xs.tail.traverse(MatchApplyingTelescope.unapply)
-    if (xs0.isDefined) return Some(FunctionCall.calls(xs.head, xs0.get))
-    None
+    Some(opSeq(xs))
   }
 
   object Expect {
     @throws[TyckError]
-    def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Some[Expr] = SingleExpr.unapply(xs) match {
-      case Some(x) => Some(x)
-      case None => throw ExpectSingleExpr(xs)
-    }
+    def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Some[Expr] = Some(opSeq(xs))
   }
 }
 
@@ -237,6 +234,7 @@ case object SimpleDesalt {
   @throws[TyckWarning]
   @throws[TyckError]
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = expr.descentRecursive {
+    case OpSeq(xs, meta) if xs.length == 1 => xs.head
     case DesaltCaseClauseMatch(x) => x
     case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
       val seq: Vector[Expr] = heads ++ tail.toVector

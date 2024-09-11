@@ -144,13 +144,6 @@ case class ExpectFullCaseBlock(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a full case block, got "
 }
 
-
-case class ExpectSingleExpr(xs: Seq[Expr]) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a single expression, got $xs"
-
-  override def cause: Expr = xs.head
-}
-
 case class ExpectLambda(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a lambda expression, got "
 }
