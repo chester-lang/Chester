@@ -30,7 +30,7 @@ trait Problem extends ToDoc {
 sealed trait TyckProblem extends Exception with Problem derives ReadWriter {
   final def stage: Problem.Stage = Problem.Stage.TYCK
 
-  final override def getMessage(): String = {
+  final override def getMessage: String = {
     implicit val options: PrettierOptions = PrettierOptions.Default
     render(toDoc)
   }
