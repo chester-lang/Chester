@@ -31,7 +31,7 @@ object TyckResult {
 
   object Success {
     def unapply[S, T](x: TyckResult[S, T]): Option[(T, S, Vector[TyckWarning])] = {
-      if (x.errorsEmpty) Some((x.result, x.state, x.problems.asInstanceOf))
+      if (x.errorsEmpty) Some((x.result, x.state, x.problems.asInstanceOf[Vector[TyckWarning]]))
       else None
     }
   }
