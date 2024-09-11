@@ -226,7 +226,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     ???
   }
 
-  def synthesize(expr: Expr): Judge = {
+  def synthesize(expr: Expr): Judge = cleanup {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
         Judge(AbstractIntTerm.from(value), IntegerType, NoEffect)
@@ -341,7 +341,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     Judge(wellTypedExpr, ty1, effect1)
   }
 
-  def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = {
+  def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = cleanup {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
@@ -380,6 +380,12 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
       Judge(wellTypedExpr, exprType, unifyEff(effect, exprEffect))
     }
+  }
+  
+  /** do cleanup on Effects to only use one variable for an effect */
+  def cleanup(judge: Judge): Judge = {
+    // TODO
+    judge
   }
 }
 
