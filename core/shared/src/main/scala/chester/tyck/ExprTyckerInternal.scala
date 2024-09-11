@@ -49,11 +49,11 @@ case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
 
 trait Tycker[Self <: Tycker[Self]] {
   //implicit inline def thisToSelf(x: this.type): Self = x.asInstanceOf
-  implicit val ev: Tycker[Self] =:= Self = null
+  implicit val ev: Tycker[Self] =:= Self = null //axiom
 
   def copy(localCtx: LocalCtx = localCtx, tyck: Tyck = tyck): Self
 
-  def rec(localCtx: LocalCtx): Self
+  inline final def rec(localCtx: LocalCtx): Self = copy(localCtx = localCtx)
 
   def localCtx: LocalCtx
 
@@ -224,8 +224,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       }
     }
   }
-
-  def rec(localCtx: LocalCtx): Self = copy(localCtx = localCtx)
 
   def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
