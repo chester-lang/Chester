@@ -261,17 +261,11 @@ object ArgTerm {
 }
 
 object TelescopeTerm {
-  def from(x: ArgTerm*): VisibleTelescopeTerm = VisibleTelescopeTerm(x.toVector)
+  def from(x: ArgTerm*): TelescopeTerm = TelescopeTerm(x.toVector)
 }
 
-sealed trait TelescopeTerm extends Term derives ReadWriter
-
-case class VisibleTelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends TelescopeTerm {
+case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
-}
-
-case class InvisibleTelescopeTerm() extends TelescopeTerm {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("InvisibleTelescopeTerm")
 }
 
 case class ScopeId(id: VarId)derives ReadWriter

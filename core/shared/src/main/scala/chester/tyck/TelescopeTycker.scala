@@ -36,6 +36,16 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
   }
 
   def synthesizeTelescopes(telescopes: Vector[DefTelescope], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
-    ???
+    if(telescopes.isEmpty) return WithCtxEffect(this.localCtx, NoEffect, Vector.empty)
+    var checker = this
+    var results = Vector.empty[TelescopeTerm]
+    var effect = NoEffect
+    for (tele <- telescopes) {
+      val WithCtxEffect(newCtx, teleEffect, teleTerm) = checker.synthesizeDefTelescope(tele.args, cause)
+      checker = checker.rec(newCtx)
+      results = results :+ TelescopeTerm(teleTerm, tele.implicitly)
+      effect = this.effectUnion(effect, teleEffect)
+    }
+    WithCtxEffect(checker.localCtx, effect, results)
   }
 }
