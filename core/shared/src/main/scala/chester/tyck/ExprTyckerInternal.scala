@@ -381,11 +381,21 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       Judge(wellTypedExpr, exprType, unifyEff(effect, exprEffect))
     }
   }
-  
+
   /** do cleanup on Effects to only use one variable for an effect */
   def cleanup(judge: Judge): Judge = {
-    // TODO
-    judge
+    val xs = judge.effect.xs
+    val newXs = xs.map(named => named.copy(name = Vector(named.name.head)))
+    val effects = Effects.unchecked(newXs)
+    var wellTyped = judge.wellTyped
+    var ty = judge.ty
+    for (x <- xs) {
+      for (name <- x.name) {
+        wellTyped = wellTyped.substitute(name, x.name.head)
+        ty = ty.substitute(name, x.name.head)
+      }
+    }
+    Judge(wellTyped, ty, effects)
   }
 }
 

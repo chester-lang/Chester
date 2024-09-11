@@ -111,9 +111,12 @@ sealed trait Term extends ToDoc derives ReadWriter {
     if (level.value == 0) this else doElevate(level)
   }
 
-  final def rewrite(from: Term & HasVarId, to: Term): Term = descentRecursive {
-    case x: HasVarId if x.varId == from.varId => to
-    case x => x
+  final def substitute(from: Term & HasVarId, to: Term): Term = {
+    if (from == to) return this
+    descentRecursive {
+      case x: HasVarId if x.varId == from.varId => to
+      case x => x
+    }
   }
 }
 
@@ -425,10 +428,10 @@ case class Effects private[syntax](xs: Vector[NamedEffect]) extends AnyVal with 
       copy(xs = xs :+ one)
     }
   }
-  
+
   def lookup(effect: Term): Option[Vector[LocalVar]] = {
     var results = xs.filter(_.effect == effect)
-    assert(results.length<=1)
+    assert(results.length <= 1)
     results.headOption.map(_.name)
   }
 
@@ -448,6 +451,8 @@ object Effects {
     require(xs.nonEmpty)
     xs.reduce(_.merge(_))
   }
+
+  def unchecked(xs: Seq[NamedEffect]): Effects = Effects(xs.toVector)
 }
 
 val NoEffect = Effects.Empty
