@@ -116,7 +116,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     name := "core",
     assembly / assemblyJarName := "core.jar",
     commonSettings,
-    cpsSettings,
+    //cpsSettings,
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
