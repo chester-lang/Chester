@@ -111,7 +111,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("core"))
-  .dependsOn(kiamaCore, effektKiama)
+  .dependsOn(kiamaCore)
   .settings(
     name := "core",
     assembly / assemblyJarName := "core.jar",
