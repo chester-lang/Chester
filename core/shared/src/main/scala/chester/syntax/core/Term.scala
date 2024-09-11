@@ -5,12 +5,13 @@ import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.syntax.{Builtin, Id, QualifiedIDString}
-import chester.utils.doc._
+import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
 import chester.utils.impls.*
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.language.implicitConversions
 
 case class TermMeta(sourcePos: Option[SourcePos])derives ReadWriter
@@ -471,23 +472,6 @@ case object IOEffect extends EffectTerm {
 
 case object STEffect extends EffectTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("STEffect")
-}
-
-private object ResolvedVarCounter {
-  var varIdCounter = 0
-}
-
-case class VarId(id: Int)derives ReadWriter
-
-trait HasVarId extends Any {
-  def varId: VarId
-}
-
-object VarId {
-  def generate: VarId = ResolvedVarCounter.synchronized {
-    ResolvedVarCounter.varIdCounter += 1
-    VarId(ResolvedVarCounter.varIdCounter)
-  }
 }
 
 sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {

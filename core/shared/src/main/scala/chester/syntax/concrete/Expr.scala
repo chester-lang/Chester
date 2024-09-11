@@ -5,7 +5,7 @@ import chester.doc.*
 import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
-import chester.syntax.core.VarId
+import chester.syntax.core.*
 import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
@@ -99,7 +99,7 @@ case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[
 case class ResolvedLocalVar(name: Id, varId: VarId, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedLocalVar = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(name.toString) <> Doc.text(s"(${varId.id})"))
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(name.toString) <> Doc.text(s"(${varId})"))
 }
 
 case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
