@@ -115,7 +115,7 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
   def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
     val initialState = TyckState()
     val initialCtx = LocalCtx.Empty
-    ExprTycker.synthesize(expr, initialState, initialCtx)
+    ExprTycker.synthesize(expr, state=initialState, ctx=initialCtx)
   }
 
   def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {

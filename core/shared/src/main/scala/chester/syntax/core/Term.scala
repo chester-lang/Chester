@@ -412,6 +412,7 @@ case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc deriv
 
 implicit val rwNamedEffect: ReadWriter[Effects] = readwriter[Vector[NamedEffect]].bimap(_.xs, Effects(_))
 
+// TODO: maybe a hashmap?
 case class Effects private[syntax](xs: Vector[NamedEffect]) extends AnyVal with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
 
