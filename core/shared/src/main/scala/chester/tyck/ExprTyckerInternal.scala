@@ -37,6 +37,7 @@ extension (subst: Solutions) {
     case Some(Constraint.TyRange(lower, upper)) => Judge(term, term.ty, term.effect) // TODO
     case None => Judge(term, term.ty, term.effect)
   }
+  def isDefined(term: MetaTerm): Boolean = subst.contains(term.id)
 }
 
 case class TyckState(subst: Solutions = Solutions.Empty)
@@ -106,12 +107,24 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     rhs // TODO
   }
 
+  def isDefined(x: MetaTerm): Boolean = tyck.getState.subst.isDefined(x)
+
+  def link(from: MetaTerm, to: Judge): Unit = ???
+
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(lhs: Term, rhs: Term, failed: => Term = null): Term = {
     val rhs1 = whnfNoEffect(rhs)
     val lhs1 = whnfNoEffect(lhs)
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
+      case (lhs: MetaTerm, rhs: MetaTerm) => {
+        if(isDefined(rhs)) {
+          ???
+        } else {
+          link(rhs, synthesizeTyTerm(lhs).toJudge)
+          lhs
+        }
+      }
       case (AnyType(level), subType) => subType // TODO: level
       case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
       case (superType, Union(subTypes)) => {
@@ -296,7 +309,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
 
-  def synthesizeTerm(term: Term): JudgeNoEffect = {
+  def synthesizeTyTerm(term: Term): JudgeNoEffect = {
     term match {
       case _ => ???
     }
