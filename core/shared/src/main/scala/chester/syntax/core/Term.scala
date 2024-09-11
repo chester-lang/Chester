@@ -265,7 +265,10 @@ object TelescopeTerm {
 }
 
 case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Telescope")
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
+    Docs.`(` <> argsDoc <> Docs.`)`
+  }
 }
 
 case class ScopeId(id: VarId)derives ReadWriter
