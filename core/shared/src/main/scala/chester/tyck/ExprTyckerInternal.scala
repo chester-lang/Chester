@@ -46,7 +46,7 @@ object LocalCtx {
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
-  implicit val reporter1: Reporter[TyckErrorOrWarning] = {
+  implicit val reporter1: Reporter[TyckProblem] = {
     case e: TyckError => tyck.errorsReporter.apply(e)
     case e: TyckWarning => tyck.warningsReporter.apply(e)
   }

@@ -10,11 +10,13 @@ import upickle.default.*
 
 import scala.reflect.ClassTag
 
-sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter {
+sealed trait TyckProblem extends Exception with ToDoc derives ReadWriter {
   def message: String = {
     implicit val options: PrettierOptions = PrettierOptions.Default
     render(toDoc)
   }
+
+  def hint: ToDoc = empty
 
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message
 
@@ -24,8 +26,6 @@ sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter 
     case x: WithPos => x.sourcePos
     case _ => None
   }
-
-  val stack: Array[StackTraceElement] = this.getStackTrace
 
   def renderWithLocation(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
     val baseMessage = Doc.text(t"Error") <> Doc.text(message, Styling.BoldOn)
@@ -46,7 +46,7 @@ sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter 
         locationHeader <|> codeBlock
 
       case None =>
-        val causeHeader = Doc.text(t"Cause",Styling.BoldOn)
+        val causeHeader = Doc.text(t"Cause", Styling.BoldOn)
         val causeText = cause
         causeHeader <|> causeText
     }
@@ -55,10 +55,10 @@ sealed trait TyckErrorOrWarning extends Exception with ToDoc derives ReadWriter 
   }
 }
 
-sealed trait TyckError extends TyckErrorOrWarning derives ReadWriter {
+sealed trait TyckError extends TyckProblem derives ReadWriter {
 }
 
-sealed trait TyckWarning extends TyckErrorOrWarning derives ReadWriter {
+sealed trait TyckWarning extends TyckProblem derives ReadWriter {
 
 }
 
@@ -89,11 +89,13 @@ case class IdentifierNotFoundError(cause: Expr) extends TyckError {
 }
 
 case class UnexpectedStmt(cause: Stmt) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =  t"Unexpected statement"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected statement"
 }
 
 import chester.syntax.concrete.qualifiedNameRW
-implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a=qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b=readwriter[String]).asInstanceOf
+
+implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a = qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b = readwriter[String]).asInstanceOf
+
 case class FieldTypeNotFoundError(qualifiedName: QualifiedName | String) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Field type not found for $qualifiedName"
 

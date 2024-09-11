@@ -6,13 +6,13 @@ import chester.tyck.{LocalCtx, Reporter, VectorReporter}
 import chester.utils.reuse
 
 object ExprResolver {
-  def resolve(localCtx: LocalCtx, expr: Expr)(using reporter: Reporter[TyckErrorOrWarning]): Expr = {
+  def resolve(localCtx: LocalCtx, expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = {
     resolve(localCtx, expr, reporter, reporter)
   }
 
   def resolve(localCtx: LocalCtx, expr: Expr, warning: Reporter[TyckWarning], reporter: Reporter[TyckError]): Expr = {
     val expr0 = try {
-      val reporter1: Reporter[TyckErrorOrWarning] = {
+      val reporter1: Reporter[TyckProblem] = {
         case e: TyckError => reporter.apply(e)
         case e: TyckWarning => warning.apply(e)
       }
