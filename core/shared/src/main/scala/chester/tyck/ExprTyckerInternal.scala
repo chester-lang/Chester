@@ -46,10 +46,24 @@ object LocalCtx {
 }
 
 case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
-// deterministic logic with a resolution system that try all candidates
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
+trait Tycker[Self <: Tycker[Self]] {
+  //implicit inline def thisToSelf(x: this.type): Self = x.asInstanceOf
+  implicit val ev: Tycker[Self] =:= Self = null
 
+  def copy(localCtx: LocalCtx = localCtx, tyck: Tyck = tyck): Self
+
+  def rec(localCtx: LocalCtx): Self
+
+  def localCtx: LocalCtx
+
+  def tyck: Tyck
+}
+
+case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with TelescopeTycker[ExprTyckerInternal] {
+}
+
+trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycker[Self] {
   implicit val reporter1: Reporter[TyckProblem] = {
     case e: TyckError => tyck.errorsReporter.apply(e)
     case e: TyckWarning => tyck.warningsReporter.apply(e)
@@ -211,41 +225,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     }
   }
 
-  def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
-
-  def synthesizeArg(arg: Arg, cause: Expr): WithCtxEffect[ArgTerm] = {
-    val tyJudge = arg.ty.map(checkType)
-    assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
-    val ty = tyJudge.map(_.wellTyped)
-    val ty1 = ty.getOrElse(genTypeVariable(name = Some(arg.getName + "_t")))
-    val default = arg.exprOrDefault.map(inherit(_, ty1))
-    val id = arg.name match {
-      case id: Identifier => id
-      case _ => ???
-    }
-    val idVar = LocalVar.generate(id.name, ty1)
-    val newCtx = localCtx.extend(idVar)
-    val effect = default.map(_.effect).getOrElse(NoEffect)
-    WithCtxEffect(newCtx, effect, ArgTerm(idVar, ty1, default.map(_.wellTyped)))
-  }
-
-  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): WithCtxEffect[Vector[ArgTerm]] = {
-    if (args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
-    var checker = this
-    var results = Vector.empty[ArgTerm]
-    var effect = NoEffect
-    for (arg <- args) {
-      val WithCtxEffect(newCtx, argEffect, argTerm) = checker.synthesizeArg(arg, cause)
-      checker = checker.rec(newCtx)
-      results = results :+ argTerm
-      effect = effectUnion(effect, argEffect)
-    }
-    WithCtxEffect(checker.localCtx, effect, results)
-  }
-  
-  def synthesizeTelescopes(telescopes: Vector[DefTelescope], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
-    ???
-  }
+  def rec(localCtx: LocalCtx): Self = copy(localCtx = localCtx)
 
   def synthesize(expr: Expr): Judge = {
     resolve(expr) match {
