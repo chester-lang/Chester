@@ -100,11 +100,20 @@ sealed trait Term extends ToDoc derives ReadWriter {
 
   def descent(f: Term => Term): Term = this
 
+  final def descentRecursive(f: Term => Term): Term = thisOr {
+    f(descent(_.descentRecursive(f)))
+  }
+
   def doElevate(level: IntegerTerm): Term = descent(_.doElevate(level))
 
   final def elevate(level: IntegerTerm): Term = {
     require(level.value >= 0)
     if (level.value == 0) this else doElevate(level)
+  }
+
+  final def rewrite(from: Term & HasVarId, to: Term): Term = descentRecursive {
+    case x: HasVarId if x.varId == from.varId => to
+    case x => x
   }
 }
 
@@ -462,6 +471,10 @@ private object ResolvedVarCounter {
 
 case class VarId(id: Int)derives ReadWriter
 
+trait HasVarId extends Any {
+  def varId: VarId
+}
+
 object VarId {
   def generate: VarId = ResolvedVarCounter.synchronized {
     ResolvedVarCounter.varIdCounter += 1
@@ -475,7 +488,7 @@ sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
   def id: Id
 }
 
-case class LocalVar(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall {
+case class LocalVar(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall with HasVarId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
