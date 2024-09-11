@@ -265,7 +265,16 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       }
       case f: FunctionExpr => {
         telescopePrecheck(f.telescope, f)
-        ???
+        val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, f)
+        val checker = rec(newCtx)
+        val resultTy = f.resultTy.map(checker.checkType)
+        assert(resultTy.isEmpty || resultTy.get.effect == NoEffect)
+        val effects = f.effect.map(checker.checkEffect)
+        unifyEff(effects, defaultEff)
+        val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
+        val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effect))
+        val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)
+        Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
       }
 
       case _ =>
@@ -275,6 +284,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     }
   }
 
+  def checkEffect(effectExpr: Expr): Effects = NoEffect // TODO
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
 
   def synthesizeTerm(term: Term): JudgeNoEffect = {
