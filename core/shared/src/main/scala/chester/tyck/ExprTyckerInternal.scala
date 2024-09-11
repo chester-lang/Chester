@@ -12,7 +12,7 @@ import spire.math.Trilean.{True, Unknown}
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-type Solutions = Map[VarId, JudgeMaybeEffect]
+type Solutions = Map[VarId, Judge]
 
 object Solutions {
   val Empty: Solutions = Map.empty
@@ -20,12 +20,12 @@ object Solutions {
 
 extension (subst: Solutions) {
   @tailrec
-  def walk(term: MetaTerm): JudgeMaybeEffect = subst.get(term.id) match {
+  def walk(term: MetaTerm): Judge = subst.get(term.id) match {
     case Some(clause) => clause.wellTyped match {
       case term: MetaTerm => subst.walk(term)
-      case _ => JudgeMaybeEffect(clause.wellTyped, clause.ty, clause.effect)
+      case _ => Judge(clause.wellTyped, clause.ty, clause.effect)
     }
-    case None => JudgeMaybeEffect(term, term.ty, Some(term.effect))
+    case None => Judge(term, term.ty, term.effect)
   }
 }
 
@@ -314,7 +314,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     }
   }
 
-  def walk(term: MetaTerm): JudgeMaybeEffect = {
+  def walk(term: MetaTerm): Judge = {
     val state = tyck.getState
     val result = state.subst.walk(term)
     result
