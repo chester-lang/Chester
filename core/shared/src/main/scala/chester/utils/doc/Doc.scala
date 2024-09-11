@@ -1,8 +1,7 @@
 package chester.utils.doc
 
-import kiama2.output._
-import kiama2.output.PrettyPrinter.defaultWidth
-import kiama2.output.PrettyPrinterTypes.{Indent, Width}
+import kiama2.output.*
+import kiama2.output.PrettyPrinterTypes.Width
 
 import scala.language.implicitConversions
 
@@ -12,7 +11,7 @@ implicit object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinte
 
 }
 
-trait Doc extends ToDoc {
+sealed trait Doc extends ToDoc {
   final inline implicit def getDoc(using printer: DocPrinter): printer.Doc = printer.toParenDoc(printToExpr)
 
   def printToExpr(using printer: DocPrinter): printer.Expr
@@ -20,14 +19,15 @@ trait Doc extends ToDoc {
   final inline def toDoc(using options: PrettierOptions): Doc = this
 }
 
-implicit def text(s: String): Doc = new Doc {
-  def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s)
-}
-def text(s: String, style: Style): Doc = new Doc {
+implicit inline def textFrom(inline s: String): Doc = text(s)
+
+inline def text(inline s: String, inline style: Style = Style.Empty): Doc = Text(s, style)
+case class Text(s: String, style: Style = Style.Empty) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s, style)
 }
 
-def group(doc: Doc): Doc = new Doc {
+inline def group(inline doc: Doc): Doc = Group(doc)
+case class Group(doc: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.group(doc.getDoc)
 }
 
@@ -87,68 +87,84 @@ trait ToDoc extends Any {
   def toDoc(using options: PrettierOptions): Doc
 }
 
-extension (todoc: ToDoc)(using options: PrettierOptions) {
-  private def self(using printer: DocPrinter): printer.Doc = todoc.toDoc.getDoc
+case class `$<>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <> right.getDoc
+}
+
+case class `$<+>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <+> right.getDoc
+}
+
+case class `$</>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc </> right.getDoc
+}
+
+case class `$<\\>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <\> right.getDoc
+}
+
+case class `$<@>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <@> right.getDoc
+}
+
+case class `$<@@>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <@@> right.getDoc
+}
+
+case class `$<%>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <%> right.getDoc
+}
+
+case class `$<%%>`(left: Doc, right: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <%%> right.getDoc
+}
+
+// TODO: add custom indent
+case class $indent(doc: Doc) extends Doc {
+  def printToExpr(using printer: DocPrinter): printer.Expr = printer.indent(doc.getDoc)
+}
+
+extension (self: ToDoc)(using options: PrettierOptions) {
+  implicit inline def asDoc: Doc = self.toDoc
   /**
    * Return the concatenation of this document with the argument.
    */
-  def <>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <> other.self
-  }
+  def <>(other: ToDoc): Doc = `$<>`(self, other)
   /**
    * Return the concatenation of this document with the argument
    * using a `space` separator.
    */
-  def <+>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <+> other.self
-  }
+  def <+>(other: ToDoc): Doc = `$<+>`(self, other)
   /**
    * Return the concatenation of this document with the argument
    * using a `softline` separator.
    */
-  def </>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self </> other.self
-  }
+  def </>(other: ToDoc): Doc = `$</>`(self, other)
   /**
    * Return the concatenation of this document with the argument
    * using a `softbreak` separator.
    */
-  def <\>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <\> other.self
-  }
+  def <\>(other: ToDoc): Doc = `$<\\>`(self, other)
   /**
    * Return the concatenation of this document with the argument
    * using a `line` separator.
    */
-  def <@>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <@> other.self
-  }
+  def <@>(other: ToDoc): Doc = `$<@>`(self, other)
   /**
    * Return the concatenation of this document with the argument
    * using a `linebreak` separator.
    */
-  def <@@>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <@@> other.self
-  }
+  def <@@>(other: ToDoc): Doc = `$<@@>`(self, other)
   /**
    * Align the argument below this document using a `line` separator.
    */
-  def <%>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <%> other.self
-  }
+  def <%>(other: ToDoc): Doc = `$<%>`(self, other)
   /**
    * Align the argument below this document using a `linebreak` separator.
    */
-  def <%%>(other: ToDoc): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self <%%> other.self
-  }
-  def styled_broken(style: Style): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = self.styled_broken(style)
-  }
-  def end: Doc = todoc <> hardline
-  def <|>(other: ToDoc): Doc = todoc <> hardline <> other
+  def <%%>(other: ToDoc): Doc = `$<%%>`(self, other)
+  def end: Doc = self <> hardline
+  def <|>(other: ToDoc): Doc = self <> hardline <> other
   // TODO: add custom indent
-  def indented(): Doc = new Doc {
-    def printToExpr(using printer: DocPrinter): printer.Expr = printer.indent(self)
-  }
+  def indented(): Doc = $indent(self)
 }
