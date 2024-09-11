@@ -371,7 +371,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         }
       }
       case (expr, Union(xs)) => ??? // TODO
-      case (expr, Intersection(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
         Judge(ObjectTerm(inheritedFields), ty, (unifyEff(effect, inheritedEffect)))
