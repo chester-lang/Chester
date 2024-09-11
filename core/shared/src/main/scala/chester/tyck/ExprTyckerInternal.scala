@@ -45,8 +45,14 @@ object LocalCtx {
   def fromParent(parent: LocalCtx): LocalCtx = parent
 }
 
+private[chester] object ExprTyckerInternal {
+  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Effects)
+  case class TelescopeResult(localCtx: LocalCtx, args: Vector[ArgTerm], effect: Effects)
+}
+
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
+  import ExprTyckerInternal._
 
   implicit val reporter1: Reporter[TyckProblem] = {
     case e: TyckError => tyck.errorsReporter.apply(e)
@@ -211,8 +217,6 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
 
-  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Effects)
-
   def synthesizeArg(arg: Arg, cause: Expr): ArgResult = {
     val tyJudge = arg.ty.map(checkType)
     assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
@@ -229,11 +233,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     ArgResult(newCtx, ArgTerm(idVar, ty1, default.map(_.wellTyped)), effect)
   }
 
-  case class TelescopeResult(localCtx: LocalCtx, args: Vector[ArgTerm], effect: Term)
-
   def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): TelescopeResult = {
     if (args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
-    ???
+    var checker = this
+    var results = Vector.empty[ArgTerm]
+    var effect = NoEffect
+    for (arg <- args) {
+      val ArgResult(newCtx, argTerm, argEffect) = checker.synthesizeArg(arg, cause)
+      checker = checker.rec(newCtx)
+      results = results :+ argTerm
+      effect = effectUnion(effect, argEffect)
+    }
+    TelescopeResult(checker.localCtx, results, effect)
   }
 
   def synthesize(expr: Expr): Judge = {
