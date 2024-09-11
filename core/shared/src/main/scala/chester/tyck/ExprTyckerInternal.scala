@@ -72,10 +72,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) e
 }
 
 trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycker[Self] {
-  implicit val reporter1: Reporter[TyckProblem] = {
-    case e: TyckError => tyck.errorsReporter.apply(e)
-    case e: TyckWarning => tyck.warningsReporter.apply(e)
-  }
+  implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
 
   def superTypes(ty: Term): Option[Vector[Term]] = {
     ty match {
@@ -422,8 +419,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
 object ExprTycker {
   private def convertToEither[T](result: TyckResult[TyckState, T]): Either[Vector[TyckError], T] = {
-    if (result.errors.nonEmpty) {
-      Left(result.errors)
+    if (!result.errorsEmpty) {
+      Left(result.problems.filter(_.isInstanceOf[TyckError]).asInstanceOf[Vector[TyckError]])
     } else {
       Right(result.result)
     }

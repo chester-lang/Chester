@@ -34,7 +34,7 @@ object ModuleTyckState {
   val Empty = ModuleTyckState(ResolvingModules.Empty)
 }
 
-type ModuleTyck = Get[TyckWarning, TyckError, ModuleTyckState]
+type ModuleTyck = Get[TyckProblem, ModuleTyckState]
 
 case class ModuleTyckerInternal()(implicit S: ModuleTyck) {
   def checkModule(path: QualifiedIDString): Unit = {

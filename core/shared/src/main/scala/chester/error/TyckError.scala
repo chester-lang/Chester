@@ -20,11 +20,14 @@ object Problem {
   }
 }
 
-trait Problem extends ToDoc {
-  def stage: Problem.Stage
-
+trait WithServerity extends Any {
   def level: Problem.Severity
+  
+  final def isError: Boolean = level == Problem.Severity.ERROR
+}
 
+trait Problem extends ToDoc with WithServerity {
+  def stage: Problem.Stage
 }
 
 sealed trait TyckProblem extends Exception with Problem derives ReadWriter {
