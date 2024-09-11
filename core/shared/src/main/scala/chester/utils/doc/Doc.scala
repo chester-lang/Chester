@@ -67,13 +67,13 @@ object Doc {
   export chester.utils.doc.{renderToDocument, render, text, group, wrapperlist, empty, concat, hardline}
 }
 
-implicit class DocOps(doc: Doc) {
+implicit class DocOps(doc: Doc) extends AnyVal {
   def renderToDocument(w: Width = maxWidth)(using printer: DocPrinter): printer.Document = Doc.renderToDocument(doc, w)
 
   def render(w: Width = maxWidth)(using printer: DocPrinter): printer.Layout = Doc.render(doc, w)
 }
 
-implicit class DocPrinterOps[T <: DocPrinter](val printer: T) {
+implicit class DocPrinterOps[T <: DocPrinter](val printer: T) extends AnyVal {
   def render(doc: Doc, w: Width = maxWidth): printer.Layout = doc.render(w)(using printer)
 
   def render(doc: ToDoc)(using options: PrettierOptions): printer.Layout = Doc.render(doc)(using options, printer)

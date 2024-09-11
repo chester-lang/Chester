@@ -162,7 +162,7 @@ case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
 type AbstractIntTerm = IntegerTerm | IntTerm
 
 object AbstractIntTerm {
-  def from(value: BigInt): AbstractIntTerm = if(value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
+  def from(value: BigInt): AbstractIntTerm = if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
 }
 
 object NaturalTerm {
@@ -287,7 +287,7 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingCl
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Term = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
+case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduce(_ <+> _)
     val effectDoc = effect.toDoc
@@ -298,7 +298,7 @@ case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect
 
 
 object FunctionType {
-  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Term = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
+  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
     new FunctionType(telescope, resultTy, effect, restrictInScope, meta)
   }
 
@@ -390,26 +390,33 @@ sealed trait EffectTerm extends Term derives ReadWriter
 
 case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc derives ReadWriter {
   require(name.nonEmpty)
+
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val nameDoc = name.map(_.toDoc).reduce(_ <+> _)
     val effectDoc = effect.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(nameDoc <+> effectDoc)
   }
+
   def descent(f: Term => Term): NamedEffect = copy(effect = f(effect))
 }
 
-case class Effects private[syntax](xs: Vector[NamedEffect]) extends Term {
+implicit val rwNamedEffect: ReadWriter[Effects] = readwriter[Vector[NamedEffect]].bimap(_.xs, Effects(_))
+
+case class Effects private[syntax](xs: Vector[NamedEffect]) extends ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
-  override def descent(f: Term => Term): Term = thisOr(copy(xs = xs.map(_.descent(f))))
+
+  def descent(f: Term => Term): Effects = copy(xs = xs.map(_.descent(f)))
+
   def add(one: NamedEffect): Effects = {
     val found = xs.indexWhere { case NamedEffect(name, effect) => effect == one.effect }
-    if(found!= -1) {
+    if (found != -1) {
       val NamedEffect(name, effect) = xs(found)
       copy(xs = xs.updated(found, NamedEffect(name ++ one.name, effect)))
     } else {
       copy(xs = xs :+ one)
     }
   }
+
   def merge(other: Effects): Effects = {
     var result = this
     for (one <- other.xs) {
@@ -421,6 +428,7 @@ case class Effects private[syntax](xs: Vector[NamedEffect]) extends Term {
 
 object Effects {
   val Empty: Effects = Effects(Vector.empty)
+
   def merge(xs: Seq[Effects]): Effects = {
     require(xs.nonEmpty)
     xs.reduce(_.merge(_))

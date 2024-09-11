@@ -6,7 +6,7 @@ import chester.tyck._
 
 import scala.collection.immutable.HashMap
 
-case class TyckedSpace(modules: HashMap[QualifiedIDString, TyckedModule])
+case class TyckedSpace(modules: HashMap[QualifiedIDString, TyckedModule]) extends AnyVal
 
 case class TyckedModule(id: QualifiedIDString, definitions: HashMap[Id, TyckedDefinitionNamed], lastExpr: Option[Judge])
 

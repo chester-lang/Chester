@@ -27,7 +27,7 @@ object ResolvingModuleFile {
 
 case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile])
 
-case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) {
+case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) extends AnyVal {
   def getOption(id: QualifiedIDString): Option[ResolvingModule] = modules.get(id)
   def addModuleFile(id: QualifiedIDString, moduleFile: ResolvingModuleFile): ResolvingModules = {
     require(moduleFile.id == id)
