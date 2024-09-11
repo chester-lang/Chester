@@ -496,7 +496,7 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
 }
 
-case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[Effects] = None, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(description: String, id: VarId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 

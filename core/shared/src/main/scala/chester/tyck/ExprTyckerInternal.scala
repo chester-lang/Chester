@@ -25,7 +25,7 @@ extension (subst: Solutions) {
       case term: MetaTerm => subst.walk(term)
       case _ => JudgeMaybeEffect(clause.wellTyped, clause.ty, clause.effect)
     }
-    case None => JudgeMaybeEffect(term, term.ty, term.effect)
+    case None => JudgeMaybeEffect(term, term.ty, Some(term.effect))
   }
 }
 
