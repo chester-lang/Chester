@@ -402,7 +402,7 @@ case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc deriv
 
 implicit val rwNamedEffect: ReadWriter[Effects] = readwriter[Vector[NamedEffect]].bimap(_.xs, Effects(_))
 
-case class Effects private[syntax](xs: Vector[NamedEffect]) extends ToDoc {
+case class Effects private[syntax](xs: Vector[NamedEffect]) extends AnyVal with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
 
   def descent(f: Term => Term): Effects = copy(xs = xs.map(_.descent(f)))

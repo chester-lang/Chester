@@ -83,7 +83,7 @@ implicit class DocPrinterOps[T <: DocPrinter](val printer: T) extends AnyVal {
   def renderToDocument(doc: Doc, w: Width = maxWidth): printer.Document = doc.renderToDocument(w)(using printer)
 }
 
-trait ToDoc {
+trait ToDoc extends Any {
   def toDoc(using options: PrettierOptions): Doc
 }
 
