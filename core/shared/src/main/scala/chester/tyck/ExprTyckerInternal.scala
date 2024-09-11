@@ -166,11 +166,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     types.reduce((ty1, ty2) => common(ty1, ty2))
   }
 
-  def synthesizeObjectExpr(x: ObjectExpr): Judge = {
+  def synthesizeObjectExpr(x: ObjectExpr, effects: Option[Effects]): Judge = {
     val synthesizedClausesWithEffects: Vector[EffectWith[(Term, Term, Term)]] = x.clauses.map {
       case ObjectExprClauseOnValue(keyExpr, valueExpr) => {
-        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr)
-        val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr)
+        val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(valueExpr, effects)
+        val Judge(keyWellTyped, _, keyEffect) = synthesize(keyExpr, effects)
         val combinedEffect = effectUnion(exprEffect, keyEffect)
         EffectWith(combinedEffect, (keyWellTyped, wellTypedExpr, exprType))
       }
@@ -186,7 +186,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     Judge(objectTerm, objectType, combinedEffect)
   }
 
-  def synthesizeBlock(block: Block): Judge = {
+  def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
     val heads: Vector[Stmt] = block.heads.map {
       case stmt: Stmt => stmt
       case expr => ExprStmt(expr, expr.meta)
@@ -238,14 +238,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         Judge(ListTerm(Vector()), ListType(NothingType), NoEffect)
       case ListExpr(terms, meta) =>
         val judges: Vector[Judge] = terms.map { term =>
-          synthesize(term)
+          synthesize(term, effects)
         }
         val ty = tyFold(judges.map(_.ty))
         val effect = effectFold(judges.map(_.effect))
         Judge(ListTerm(judges.map(_.wellTyped)), ListType(ty), effect)
       case objExpr: ObjectExpr =>
-        synthesizeObjectExpr(objExpr)
-      case block: Block => (synthesizeBlock(block))
+        synthesizeObjectExpr(objExpr, effects)
+      case block: Block => (synthesizeBlock(block, effects))
       case expr: Stmt => {
         val err = UnexpectedStmt(expr)
         tyck.report(err)
@@ -343,10 +343,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
   /** possibly apply an implicit conversion */
   def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Effects] = None): Judge = {
-    val Judge(wellTypedExpr, exprType, exprEffect) = judge
+    val Judge(wellTypedExpr, exprType, exprEffect) = unifyEff(effect, judge)
     val ty1 = (unifyTy(ty, exprType))
-    val effect1 = (unifyEff(effect, exprEffect))
-    Judge(wellTypedExpr, ty1, effect1)
+    Judge(wellTypedExpr, ty1, exprEffect)
   }
 
   def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = {
@@ -372,24 +371,24 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       case (expr, Union(xs)) => ??? // TODO
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
-        Judge(ObjectTerm(inheritedFields), ty, (unifyEff(effect, inheritedEffect)))
+        Judge(ObjectTerm(inheritedFields), ty, inheritedEffect)
       case (ListExpr(terms, meta), lstTy@ListType(ty)) =>
         val checkedTerms: Vector[EffectWith[Term]] = terms.map { term =>
-          val Judge(wellTypedTerm, termType, termEffect) = (inherit(term, ty))
+          val Judge(wellTypedTerm, termType, termEffect) = (inherit(term, ty, effect))
           EffectWith(termEffect, wellTypedTerm)
         }
-        val effect1 = (unifyEff(effect, (effectFold(checkedTerms.map(_.effect)))))
+        val effect1 = effectFold(checkedTerms.map(_.effect))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
       case (expr, ty) =>
-        inheritFallbackUnify(synthesize(expr), ty, effect)
+        inheritFallbackUnify(synthesize(expr, effect), ty, effect)
     }
   }
 
   def check(expr: Expr, ty: Option[Term] = None, effect: Option[Effects] = None): Judge = ty match {
     case Some(ty) => inherit(expr, ty, effect)
     case None => {
-      val Judge(wellTypedExpr, exprType, exprEffect) = synthesize(expr)
-      Judge(wellTypedExpr, exprType, unifyEff(effect, exprEffect))
+      val Judge(wellTypedExpr, exprType, exprEffect) = unifyEff(effect, synthesize(expr, effect))
+      Judge(wellTypedExpr, exprType, exprEffect)
     }
   }
 
@@ -433,7 +432,7 @@ object ExprTycker {
 
   @deprecated("error information are lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    val result = synthesize(expr, state, ctx)
+    val result = synthesize(expr, state=state, ctx=ctx)
     convertToEither(result)
   }
 

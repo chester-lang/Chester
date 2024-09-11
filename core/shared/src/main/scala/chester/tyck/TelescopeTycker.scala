@@ -10,7 +10,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
     assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
     val ty = tyJudge.map(_.wellTyped)
     val ty1 = ty.getOrElse(this.genTypeVariable(name = Some(arg.getName + "_t")))
-    val default = arg.exprOrDefault.map(this.inherit(_, ty1))
+    val default = arg.exprOrDefault.map(this.inherit(_, ty1, effects))
     val id = arg.name match {
       case id: Identifier => id
       case _ => ???
@@ -27,7 +27,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
     var results = Vector.empty[ArgTerm]
     var effect = NoEffect
     for (arg <- args) {
-      val WithCtxEffect(newCtx, argEffect, argTerm) = checker.synthesizeArg(arg, cause)
+      val WithCtxEffect(newCtx, argEffect, argTerm) = checker.synthesizeArg(arg, effects, cause)
       checker = checker.rec(newCtx)
       results = results :+ argTerm
       effect = this.effectUnion(effect, argEffect)
@@ -41,7 +41,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
     var results = Vector.empty[TelescopeTerm]
     var effect = NoEffect
     for (tele <- telescopes) {
-      val WithCtxEffect(newCtx, teleEffect, teleTerm) = checker.synthesizeDefTelescope(tele.args, cause)
+      val WithCtxEffect(newCtx, teleEffect, teleTerm) = checker.synthesizeDefTelescope(tele.args, effects, cause)
       checker = checker.rec(newCtx)
       results = results :+ TelescopeTerm(teleTerm, tele.implicitly)
       effect = this.effectUnion(effect, teleEffect)
