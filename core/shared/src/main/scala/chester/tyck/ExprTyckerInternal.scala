@@ -45,14 +45,10 @@ object LocalCtx {
   def fromParent(parent: LocalCtx): LocalCtx = parent
 }
 
-private[chester] object ExprTyckerInternal {
-  case class ArgResult(localCtx: LocalCtx, arg: ArgTerm, effect: Effects)
-  case class TelescopeResult(localCtx: LocalCtx, args: Vector[ArgTerm], effect: Effects)
-}
-
+case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
 // deterministic logic with a resolution system that try all candidates
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
-  import ExprTyckerInternal._
+
 
   implicit val reporter1: Reporter[TyckProblem] = {
     case e: TyckError => tyck.errorsReporter.apply(e)
@@ -217,7 +213,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
 
   def rec(localCtx: LocalCtx): ExprTyckerInternal = copy(localCtx = localCtx)
 
-  def synthesizeArg(arg: Arg, cause: Expr): ArgResult = {
+  def synthesizeArg(arg: Arg, cause: Expr): WithCtxEffect[ArgTerm] = {
     val tyJudge = arg.ty.map(checkType)
     assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
     val ty = tyJudge.map(_.wellTyped)
@@ -230,21 +226,25 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
     val idVar = LocalVar.generate(id.name, ty1)
     val newCtx = localCtx.extend(idVar)
     val effect = default.map(_.effect).getOrElse(NoEffect)
-    ArgResult(newCtx, ArgTerm(idVar, ty1, default.map(_.wellTyped)), effect)
+    WithCtxEffect(newCtx, effect, ArgTerm(idVar, ty1, default.map(_.wellTyped)))
   }
 
-  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): TelescopeResult = {
+  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): WithCtxEffect[Vector[ArgTerm]] = {
     if (args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
     var checker = this
     var results = Vector.empty[ArgTerm]
     var effect = NoEffect
     for (arg <- args) {
-      val ArgResult(newCtx, argTerm, argEffect) = checker.synthesizeArg(arg, cause)
+      val WithCtxEffect(newCtx, argEffect, argTerm) = checker.synthesizeArg(arg, cause)
       checker = checker.rec(newCtx)
       results = results :+ argTerm
       effect = effectUnion(effect, argEffect)
     }
-    TelescopeResult(checker.localCtx, results, effect)
+    WithCtxEffect(checker.localCtx, effect, results)
+  }
+  
+  def synthesizeTelescopes(telescopes: Vector[DefTelescope], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
+    ???
   }
 
   def synthesize(expr: Expr): Judge = {
@@ -377,7 +377,7 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (IntegerLiteral(value, meta), NaturalType) => {
         if (value > 0)
           Judge(NaturalTerm(value), NaturalType, NoEffect)
-        else{
+        else {
           tyck.error(InvalidNaturalError(expr))
           Judge(IntegerTerm(value.toInt), NaturalType, NoEffect)
         }
