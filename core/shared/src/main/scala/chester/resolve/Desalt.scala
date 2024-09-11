@@ -133,20 +133,6 @@ private object ObjectDesalt {
   def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
 }
 
-case object StmtDesaltDeprecated {
-  @throws[TyckWarning]
-  @throws[TyckError]
-  def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = {
-    val (w, e, result) = BasicStatementResolver.resolveStatement(expr)
-    reporter.report(w)
-    reporter.report(e)
-    result match {
-      case ExprStmt(x, _) => x
-      case result => result
-    }
-  }
-}
-
 case object PatternDesalt {
   def desugar(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DesaltPattern] = x match {
     case id@Identifier(_, meta) => Some(PatternBind(id, meta))
