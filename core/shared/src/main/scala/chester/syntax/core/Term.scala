@@ -425,6 +425,12 @@ case class Effects private[syntax](xs: Vector[NamedEffect]) extends AnyVal with 
       copy(xs = xs :+ one)
     }
   }
+  
+  def lookup(effect: Term): Option[Vector[LocalVar]] = {
+    var results = xs.filter(_.effect == effect)
+    assert(results.length<=1)
+    results.headOption.map(_.name)
+  }
 
   def merge(other: Effects): Effects = {
     var result = this
