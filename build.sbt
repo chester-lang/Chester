@@ -42,7 +42,7 @@ val commonSettings = Seq(
 )
 val cpsSettings = Seq(
   autoCompilerPlugins := true,
-  addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.21"),
+  addCompilerPlugin("com.github.rssh" %% "dotty-cps-async-compiler-plugin" % "0.9.22"),
 )
 val commonJvmSettings = Seq(
   scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
