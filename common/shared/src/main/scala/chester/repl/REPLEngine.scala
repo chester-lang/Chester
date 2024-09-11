@@ -14,8 +14,6 @@ import chester.utils.env.WindowsNarratorChecker
 import fansi.*
 
 inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F]): F[Unit] = {
-
-  import chester.utils.doc.updated
   implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, WindowsNarratorChecker())
 
   val maxWidth = 80

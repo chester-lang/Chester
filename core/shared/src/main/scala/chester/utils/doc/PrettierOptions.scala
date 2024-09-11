@@ -6,9 +6,7 @@ trait PrettierOptionsKey[T] {
   def get(implicit options: PrettierOptions): T = options.get(this)
 }
 
-opaque type PrettierOptions = Map[PrettierOptionsKey[?], Any]
-
-extension (x: PrettierOptions) {
+case class PrettierOptions(x:Map[PrettierOptionsKey[?], Any]) extends AnyVal {
   private inline def options: Map[PrettierOptionsKey[?], Any] = x
   def get[T](key: PrettierOptionsKey[T]): T = {
     val default: T = key.default
@@ -19,7 +17,7 @@ extension (x: PrettierOptions) {
 
   private def getOrElse__[T](key: PrettierOptionsKey[T], default: T): T = getOption(key).getOrElse(default)
 
-  def updated[T](key: PrettierOptionsKey[T], value: T): PrettierOptions = options.updated(key, value)
+  def updated[T](key: PrettierOptionsKey[T], value: T): PrettierOptions = PrettierOptions(options.updated(key, value))
 }
 
 case class PrettierKeyValue[T](key: PrettierOptionsKey[T], value: T)
@@ -28,7 +26,7 @@ implicit def tuple2PrettyKeyValue[T](tuple: (PrettierOptionsKey[T], T)): Prettie
 implicit def prettyKeyValue2Tuple[T](kv: PrettierKeyValue[T]): (PrettierOptionsKey[T], T) = (kv.key, kv.value)
 
 object PrettierOptions {
-  val Default: PrettierOptions = Map()
+  val Default: PrettierOptions = PrettierOptions(Map())
 
-  def apply(options: PrettierKeyValue[?]*): PrettierOptions = options.map(prettyKeyValue2Tuple).toMap
+  def apply(options: PrettierKeyValue[?]*): PrettierOptions = PrettierOptions(options.map(prettyKeyValue2Tuple).toMap)
 }
