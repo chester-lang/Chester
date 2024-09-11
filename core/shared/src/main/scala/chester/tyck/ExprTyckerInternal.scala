@@ -119,7 +119,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       case (superType, subType) =>
         if (failed != null) failed else {
           val err = UnifyFailedError(rhs = subType, lhs = superType)
-          tyck.error(err)
+          tyck.report(err)
           new ErrorTerm(err)
         }
     }
@@ -217,15 +217,15 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
   def telescopePrecheck(telescopes: Vector[DefTelescope], cause: Expr): Unit = {
     var ids = telescopes.flatMap(_.args).map(_.getName)
     if (ids.distinct.length != ids.length) {
-      tyck.error(DuplicateTelescopeArgError(cause))
+      tyck.report(DuplicateTelescopeArgError(cause))
     }
     var inits = telescopes.filter(_.args.nonEmpty).flatMap(_.args.init)
     if (inits.exists(_.vararg)) {
-      tyck.error(UnsupportedVarargError(cause))
+      tyck.report(UnsupportedVarargError(cause))
     }
     if (telescopes.exists(_.args.isEmpty)) {
       if (telescopes.length != 1) {
-        tyck.error(UnsupportedEmptyTelescopeError(cause))
+        tyck.report(UnsupportedEmptyTelescopeError(cause))
       }
     }
   }
@@ -254,7 +254,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       case block: Block => (synthesizeBlock(block))
       case expr: Stmt => {
         val err = UnexpectedStmt(expr)
-        tyck.error(err)
+        tyck.report(err)
         Judge(new ErrorTerm(err), UnitType, NoEffect)
       }
       case Identifier(id, meta) => {
@@ -264,7 +264,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
             Judge(name, ty, NoEffect)
           case None =>
             val err = IdentifierNotFoundError(expr)
-            tyck.error(err)
+            tyck.report(err)
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
@@ -284,7 +284,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
       case _ =>
         val err = UnsupportedExpressionError(expr)
-        tyck.error(err)
+        tyck.report(err)
         Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
     }
   }
@@ -364,7 +364,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         if (value.isValidInt)
           Judge(IntTerm(value.toInt), IntType, NoEffect)
         else {
-          tyck.error(InvalidIntError(expr))
+          tyck.report(InvalidIntError(expr))
           Judge(IntegerTerm(value.toInt), IntType, NoEffect)
         }
       }
@@ -372,7 +372,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         if (value > 0)
           Judge(NaturalTerm(value), NaturalType, NoEffect)
         else {
-          tyck.error(InvalidNaturalError(expr))
+          tyck.report(InvalidNaturalError(expr))
           Judge(IntegerTerm(value.toInt), NaturalType, NoEffect)
         }
       }

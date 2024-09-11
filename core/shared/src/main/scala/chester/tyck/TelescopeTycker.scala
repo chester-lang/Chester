@@ -22,7 +22,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
   }
 
   def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): WithCtxEffect[Vector[ArgTerm]] = {
-    if (args.flatMap(_.decorations).nonEmpty) tyck.error(UnsupportedDecorationError(cause))
+    if (args.flatMap(_.decorations).nonEmpty) tyck.report(UnsupportedDecorationError(cause))
     var checker = this
     var results = Vector.empty[ArgTerm]
     var effect = NoEffect

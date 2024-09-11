@@ -22,11 +22,9 @@ class VectorReporter[T] extends Reporter[T] {
 case class Get[P, S](reporter: Reporter[P], state: MutBox[S]) {
   def getState: S = state.get
 
-  def error(error: P): Unit = reporter.apply(error)
+  def report(problem: P): Unit = reporter.apply(problem)
 
-  def errors(errors: Seq[P]): Unit = errors.foreach(error)
-
-  def warning(warning: P): Unit = reporter.apply(warning)
+  def reportseq(problems: Seq[P]): Unit = problems.foreach(report)
 }
 
 object Get {
