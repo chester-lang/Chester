@@ -1,3 +1,3 @@
 package chester.utils.env
 
-lazy val getRunningOn: RunningOn = RunningOn.Native("")
+lazy val platform$getRunningOn: RunningOn = RunningOn.Native("")

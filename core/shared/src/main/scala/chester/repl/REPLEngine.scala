@@ -8,13 +8,13 @@ import chester.parser.{InputStatus, ParseError, ParserEngine}
 import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 import chester.tyck.*
-import chester.utils.doc._
+import chester.utils.doc.*
 import chester.utils.env
-import chester.utils.env.WindowsNarratorChecker
+import chester.utils.env.{Environment}
 import fansi.*
 
-inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F]): F[Unit] = {
-  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, WindowsNarratorChecker())
+inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTerminal: InTerminal[F], inline env: Environment): F[Unit] = {
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, env.hasWindowsNarrator)
 
   val maxWidth = 80
 
@@ -135,7 +135,7 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
     val effectDoc = judge.effect
 
     val checkOnEffect: String = render(effectDoc)
-    val doc = if (checkOnEffect == "NoEffect") termDoc <+> Doc.text(":") <+> typeDoc
+    val doc = if (checkOnEffect == "[]") termDoc <+> Doc.text(":") <+> typeDoc
     else termDoc <+> Doc.text(":") <+> effectDoc <+> typeDoc
 
     FansiPrettyPrinter.render(doc, maxWidth).render

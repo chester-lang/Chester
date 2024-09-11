@@ -13,7 +13,7 @@ def isTermux: Boolean = {
   // Return true if any of the checks pass
   prefixIncludesTermux || ldPreloadIncludesTermux || shellIncludesTermux || pathIncludesTermux
 }
-val getOS: OS = {
+val platform$getOS: OS = {
   val os = System.getProperty("os.name").toLowerCase
   if (os.contains("win")) OS.Windows
   else if (os.contains("mac")) OS.Mac
@@ -23,7 +23,7 @@ val getOS: OS = {
   else if (os.contains("netbsd")) OS.NetBSD
   else throw new Exception(s"Unknown OS: $os")
 }
-val getArch: Architecture = {
+val platform$getArch: Architecture = {
   System.getProperty("os.arch").toLowerCase match {
     case "x86_64" | "amd64" | "x64" => Architecture.Amd64
     case "x86" | "i386" => Architecture.X86

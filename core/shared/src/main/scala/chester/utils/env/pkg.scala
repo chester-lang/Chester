@@ -12,9 +12,6 @@ sealed trait OS {
   }
 }
 
-val isUNIX = getOS.isUNIX
-val isWindows = getOS == OS.Windows
-
 object OS {
   sealed trait UNIX extends OS {
     def useCRLF: Boolean = false
@@ -53,3 +50,16 @@ object RunningOn {
 
   case class Native(version: String) extends RunningOn
 }
+
+
+trait Environment {
+  def getOS: OS
+  def getArch: Architecture
+  def getRunningOn: RunningOn
+  def hasWindowsNarrator: Boolean = false
+}
+
+inline def getOS(using inline env: Environment): OS = env.getOS
+inline def getArch(using inline env: Environment): Architecture = env.getArch
+inline def getRunningOn(using inline env: Environment): RunningOn = env.getRunningOn
+inline def hasWindowsNarrator(using inline env: Environment): Boolean = env.hasWindowsNarrator
