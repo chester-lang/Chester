@@ -153,3 +153,11 @@ case class UnsupportedVarargError(cause: Expr) extends TyckError {
 case class UnsupportedEmptyTelescopeError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported empty telescope"
 }
+
+case class InvalidNaturalError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Invalid natural number"
+}
+
+case class InvalidIntError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Invalid integer"
+}

@@ -348,14 +348,18 @@ case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) {
       case (IntegerLiteral(value, meta), IntType) => {
         if (value.isValidInt)
           Judge(IntTerm(value.toInt), IntType, NoEffect)
-        else
-          ???
+        else {
+          tyck.error(InvalidIntError(expr))
+          Judge(IntegerTerm(value.toInt), IntType, NoEffect)
+        }
       }
       case (IntegerLiteral(value, meta), NaturalType) => {
         if (value > 0)
           Judge(NaturalTerm(value), NaturalType, NoEffect)
-        else
-          ???
+        else{
+          tyck.error(InvalidNaturalError(expr))
+          Judge(IntegerTerm(value.toInt), NaturalType, NoEffect)
+        }
       }
       case (expr, Union(xs)) => ??? // TODO
       case (expr, Intersection(xs)) => ??? // TODO
