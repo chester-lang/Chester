@@ -8,7 +8,7 @@ private val varIdCounter = AtomicInteger(0)
 
 opaque type VarId = Int
 
-implicit val rwVarID: ReadWriter[VarId] = readwriter[Int].bimap(_.toInt, _.toInt)
+implicit val rwVarID: ReadWriter[VarId] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
 
 trait HasVarId extends Any {
   def varId: VarId
