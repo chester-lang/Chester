@@ -128,16 +128,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
   def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs, failed = NothingType)
 
-  def unifyEff(lhs: Option[Effects], rhs: Option[Effects]): Option[Effects] = {
-    if (rhs == lhs) rhs
-    else if (lhs.isEmpty) rhs
-    else if (rhs.isEmpty) ???
-    else {
-      rhs // TODO: correct logic
-    }
-  }
+  def unifyEff(lhs: Option[Effects], rhs: JudgeMaybeEffect): JudgeMaybeEffect = rhs // TODO
 
-  def unifyEff(lhs: Option[Effects], rhs: Effects): Effects = unifyEff(lhs, Some(rhs)).get
+  def unifyEff(lhs: Option[Effects], rhs: Judge): Judge = unifyEff(lhs, rhs.toMaybe).get
 
   /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): Term = {
@@ -231,7 +224,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     }
   }
 
-  def synthesize(expr: Expr): Judge = {
+  def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
         Judge(AbstractIntTerm.from(value), IntegerType, NoEffect)
@@ -271,12 +264,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
       }
       case f: FunctionExpr => {
         telescopePrecheck(f.telescope, f)
-        val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, f)
+        val effects = f.effect.map(this.checkEffect)
+        val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, effects, f)
         val checker = rec(newCtx)
         val resultTy = f.resultTy.map(checker.checkType)
         assert(resultTy.isEmpty || resultTy.get.effect == NoEffect)
-        val effects = f.effect.map(checker.checkEffect)
-        unifyEff(effects, defaultEff)
         val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
         val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effect))
         val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)
@@ -453,7 +445,7 @@ object ExprTycker {
     Tyck.run(ExprTyckerInternal(ctx, _).inherit(expr, ty, effect))(state)
   }
 
-  def synthesize(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).synthesize(expr))(state)
+  def synthesize(expr: Expr, effect: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
+    Tyck.run(ExprTyckerInternal(ctx, _).synthesize(expr, effect))(state)
   }
 }

@@ -1,7 +1,12 @@
 package chester.syntax.core
 
-case class Judge(wellTyped: Term, ty: Term, effect: Effects = NoEffect)
+case class Judge(wellTyped: Term, ty: Term, effect: Effects = NoEffect) {
+  def toMaybe: JudgeMaybeEffect = JudgeMaybeEffect(wellTyped, ty, Some(effect))
+}
 
 case class JudgeNoEffect(wellTyped: Term, ty: Term)
 
-case class JudgeMaybeEffect(wellTyped: Term, ty: Term, effect: Option[Effects] = None)
+case class JudgeMaybeEffect(wellTyped: Term, ty: Term, effect: Option[Effects] = None) {
+  @throws[NoSuchElementException]
+  def get: Judge = Judge(wellTyped, ty, effect.get)
+}

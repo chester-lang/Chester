@@ -5,7 +5,7 @@ import chester.syntax.concrete._
 import chester.syntax.core._
 
 trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycker[Self] {
-  def synthesizeArg(arg: Arg, cause: Expr): WithCtxEffect[ArgTerm] = {
+  def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
     val tyJudge = arg.ty.map(this.checkType)
     assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
     val ty = tyJudge.map(_.wellTyped)
@@ -21,7 +21,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
     WithCtxEffect(newCtx, effect, ArgTerm(idVar, ty1, default.map(_.wellTyped)))
   }
 
-  def synthesizeDefTelescope(args: Vector[Arg], cause: Expr): WithCtxEffect[Vector[ArgTerm]] = {
+  def synthesizeDefTelescope(args: Vector[Arg], effects: Option[Effects], cause: Expr): WithCtxEffect[Vector[ArgTerm]] = {
     if (args.flatMap(_.decorations).nonEmpty) tyck.report(UnsupportedDecorationError(cause))
     var checker = this
     var results = Vector.empty[ArgTerm]
@@ -35,7 +35,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends 
     WithCtxEffect(checker.localCtx, effect, results)
   }
 
-  def synthesizeTelescopes(telescopes: Vector[DefTelescope], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
+  def synthesizeTelescopes(telescopes: Vector[DefTelescope], effects: Option[Effects], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
     if(telescopes.isEmpty) return WithCtxEffect(this.localCtx, NoEffect, Vector.empty)
     var checker = this
     var results = Vector.empty[TelescopeTerm]
