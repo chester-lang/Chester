@@ -12,7 +12,16 @@ import spire.math.Trilean.{True, Unknown}
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-type Solutions = Map[VarId, Judge]
+sealed trait Constraint
+object Constraint {
+  case class Is(judge: Judge) extends Constraint
+
+  case class TyRange(lower: Option[Judge], upper: Option[Judge]) extends Constraint {
+    require(lower.isDefined || upper.isDefined)
+  }
+}
+
+type Solutions = Map[VarId, Constraint]
 
 object Solutions {
   val Empty: Solutions = Map.empty
@@ -21,10 +30,11 @@ object Solutions {
 extension (subst: Solutions) {
   @tailrec
   def walk(term: MetaTerm): Judge = subst.get(term.id) match {
-    case Some(clause) => clause.wellTyped match {
+    case Some(Constraint.Is(clause)) => clause.wellTyped match {
       case term: MetaTerm => subst.walk(term)
       case _ => Judge(clause.wellTyped, clause.ty, clause.effect)
     }
+    case Some(Constraint.TyRange(lower, upper)) => Judge(term, term.ty, term.effect) // TODO
     case None => Judge(term, term.ty, term.effect)
   }
 }
