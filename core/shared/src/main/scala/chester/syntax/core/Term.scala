@@ -512,7 +512,7 @@ case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: V
 }
 
 case class ErrorTerm(val error: TyckError) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(error.message)
+  override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
 }
 
 case class MetaTerm(description: String, id: VarId, ty: Term, effect: Option[Effects] = None, meta: OptionTermMeta = None) extends Term {

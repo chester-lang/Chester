@@ -4,6 +4,7 @@ import chester.error.*
 import chester.syntax.IdentifierRules.*
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
+import chester.utils.doc.{Doc, PrettierOptions}
 import chester.utils.parse.*
 import chester.utils.{StringIndex, parserInputToLazyList}
 import fastparse.*
@@ -12,7 +13,7 @@ import fastparse.NoWhitespace.*
 import java.nio.file.{Files, Paths}
 import scala.collection.immutable
 import scala.util.*
-import scala.scalajs.js.annotation._
+import scala.scalajs.js.annotation.*
 import upickle.default.*
 
 case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
@@ -340,7 +341,12 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
   def toplevelEntrance: P[Block] = P(Start ~ maybeSpace ~ insideBlock ~ maybeSpace ~ End)
 }
 
-case class ParseError(message: String, index: Pos)
+case class ParseError(message: String, index: Pos) extends Problem {
+  override def level: Problem.Severity = Problem.Severity.ERROR
+  override def stage: Problem.Stage = Problem.Stage.PARSE
+
+  override def toDoc(using options: PrettierOptions): Doc = Doc.text(message)
+}
 
 sealed trait ParserSource derives ReadWriter {
   def fileName: String

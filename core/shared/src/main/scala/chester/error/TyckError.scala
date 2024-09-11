@@ -10,15 +10,34 @@ import upickle.default.*
 
 import scala.reflect.ClassTag
 
-sealed trait TyckProblem extends Exception with ToDoc derives ReadWriter {
-  def message: String = {
+object Problem {
+  enum Stage {
+    case TYCK, PARSE, OTHER
+  }
+
+  enum Severity {
+    case ERROR, GOAL, WARN, INFO
+  }
+}
+
+trait Problem extends ToDoc {
+  def stage: Problem.Stage
+
+  def level: Problem.Severity
+
+}
+
+sealed trait TyckProblem extends Exception with Problem derives ReadWriter {
+  final def stage: Problem.Stage = Problem.Stage.TYCK
+
+  final override def getMessage(): String = {
     implicit val options: PrettierOptions = PrettierOptions.Default
     render(toDoc)
   }
 
   def hint: ToDoc = empty
 
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = message
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc
 
   def cause: Term | Expr
 
@@ -28,7 +47,7 @@ sealed trait TyckProblem extends Exception with ToDoc derives ReadWriter {
   }
 
   def renderWithLocation(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
-    val baseMessage = Doc.text(t"Error") <> Doc.text(message, Styling.BoldOn)
+    val baseMessage = Doc.text(t"Error") <> this
 
     val locationInfo = location match {
       case Some(pos) =>
@@ -56,10 +75,11 @@ sealed trait TyckProblem extends Exception with ToDoc derives ReadWriter {
 }
 
 sealed trait TyckError extends TyckProblem derives ReadWriter {
+  final override def level: Problem.Severity = Problem.Severity.ERROR
 }
 
 sealed trait TyckWarning extends TyckProblem derives ReadWriter {
-
+  final override def level: Problem.Severity = Problem.Severity.WARN
 }
 
 case object ExampleWarning extends TyckWarning {
