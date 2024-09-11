@@ -17,18 +17,28 @@ sealed trait Doc extends ToDoc {
   def printToExpr(using printer: DocPrinter): printer.Expr
 
   final inline def toDoc(using options: PrettierOptions): Doc = this
+
+  def descent(f: Doc => Doc): Doc = this
+
+  def styled(style: Style): Doc = descent(_.styled(style))
 }
 
 implicit inline def textFrom(inline s: String): Doc = text(s)
 
 inline def text(inline s: String, inline style: Style = Style.Empty): Doc = Text(s, style)
+
 case class Text(s: String, style: Style = Style.Empty) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.text(s, style)
+
+  override def styled(style: Style): Doc = copy(style = this.style ++ style)
 }
 
 inline def group(inline doc: Doc): Doc = Group(doc)
+
 case class Group(doc: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.group(doc.getDoc)
+
+  override def descent(f: Doc => Doc): Doc = copy(doc = f(doc))
 }
 
 val maxWidth = Integer.MAX_VALUE
@@ -89,39 +99,57 @@ trait ToDoc extends Any {
 
 case class `$<>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<+>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <+> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$</>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc </> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<\\>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <\> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<@>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <@> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<@@>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <@@> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<%>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <%> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 case class `$<%%>`(left: Doc, right: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = left.getDoc <%%> right.getDoc
+
+  override def descent(f: Doc => Doc): Doc = copy(left = f(left), right = f(right))
 }
 
 // TODO: add custom indent
 case class $indent(doc: Doc) extends Doc {
   def printToExpr(using printer: DocPrinter): printer.Expr = printer.indent(doc.getDoc)
+
+  override def descent(f: Doc => Doc): Doc = copy(doc = f(doc))
 }
 
 extension (self: ToDoc)(using options: PrettierOptions) {
