@@ -1,7 +1,7 @@
 package chester.up
 
 import chester.utils.env
-import chester.utils.env.{Architecture, OS, RunningOn}
+import chester.utils.env.*
 
 import scala.sys.process.*
 import scala.util.Try
