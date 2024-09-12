@@ -6,7 +6,7 @@ import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
-import chester.syntax.{Builtin, Id, QualifiedIDString, UnresolvedID}
+import chester.syntax.{ Id, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational

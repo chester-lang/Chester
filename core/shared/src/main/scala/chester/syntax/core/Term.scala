@@ -4,7 +4,7 @@ package chester.syntax.core
 import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
-import chester.syntax.{Builtin, Id, QualifiedIDString}
+import chester.syntax.{ Id, QualifiedIDString}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -55,7 +55,6 @@ case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None
   }
 
   override def whnf: Boolean = f match {
-    case ListF => true
     case _ => false
   }
 }
@@ -339,17 +338,16 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
 }
 
-case object ListF extends Term {
+sealed trait Builtin extends Term derives ReadWriter
+
+case object ListF extends Builtin {
   override def toDoc(implicit options: PrettierOptions): Doc = "List"
 }
 
-object ListType {
-  def apply(ty: Term): Term = FCallTerm.call(ListF, ty)
+sealed trait Constructed extends Term derives ReadWriter
 
-  def unapply(ty: Term): Option[Term] = ty match {
-    case FCallTerm.call(ListF, x) => Some(x)
-    case _ => None
-  }
+case class ListType(ty: Term) extends Constructed {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("List") <> Docs.`(` <> ty <> Docs.`)`
 }
 
 case class Union(xs: Vector[Term]) extends Term {
