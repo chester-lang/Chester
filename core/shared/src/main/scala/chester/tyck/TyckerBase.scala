@@ -70,7 +70,7 @@ trait Tycker[Self <: Tycker[Self]] {
 
   protected def thisToSelfTypesafe(x: this.type): Self = ev.apply(x)
 
-  implicit protected inline def thisToSelfImplementation(inline x: this.type): Self = this.asInstanceOf[Self]
+  implicit protected inline def thisToSelfImplementation(ignored: this.type): Self = this.asInstanceOf[Self]
 
   def copy(localCtx: LocalCtx = localCtx, tyck: Tyck = tyck): Self
 
