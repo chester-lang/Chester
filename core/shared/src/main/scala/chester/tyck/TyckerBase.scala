@@ -437,7 +437,12 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
           Judge(IntegerTerm(value.toInt), NaturalType, NoEffect)
         }
       }
-      case (expr, Union(xs)) => ??? // TODO
+      case (expr, ty@Union(xs)) => {
+        def firstTry(x: Self): Judge = x.inheritBySynthesize(expr, ty, effect)
+
+        val tries: Seq[Self => Judge] = xs.map(ty => (x: Self) => x.inheritBySynthesize(expr, ty, effect))
+        tryAll(firstTry +: tries)
+      }
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effect))
         Judge(ObjectTerm(inheritedFields), ty, inheritedEffect)
