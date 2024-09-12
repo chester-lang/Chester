@@ -408,6 +408,15 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     Judge(wellTypedExpr, ty1, exprEffect)
   }
 
+  def inheritBySynthesize(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = {
+    val expr1: Expr = (resolve(expr))
+    val ty1: Term = whnfNoEffect(ty)
+    (expr1, ty1) match {
+      case (expr, ty) =>
+        inheritFallbackUnify(synthesize(expr, effect), ty, effect)
+    }
+  }
+
   def inherit(expr: Expr, ty: Term, effect: Option[Effects] = None): Judge = {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
@@ -439,8 +448,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         }
         val effect1 = effectFold(checkedTerms.map(_.effect))
         Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
-      case (expr, ty) =>
-        inheritFallbackUnify(synthesize(expr, effect), ty, effect)
+      case (expr, ty) => inheritBySynthesize(expr, ty, effect)
     }
   }
 
