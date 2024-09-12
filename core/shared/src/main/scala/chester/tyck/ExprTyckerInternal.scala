@@ -109,7 +109,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
   def isDefined(x: MetaTerm): Boolean = tyck.getState.subst.isDefined(x)
 
-  def linkTy(from: MetaTerm, to: MetaTerm): Unit = link(from, synthesizeTyTerm(to).toJudge)
+  def linkTy(from: MetaTerm, to: Term): Unit = link(from, synthesizeTyTerm(to).toJudge)
   def link(from: MetaTerm, to: Judge): Unit = ???
 
   /** assume a subtype relationship and get a subtype back */
@@ -118,6 +118,10 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
     val lhs1 = whnfNoEffect(lhs)
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
+      case (lhs, rhs: MetaTerm) if !isDefined(rhs) => {
+        linkTy(rhs, lhs)
+        lhs
+      }
       case (lhs: MetaTerm, rhs: MetaTerm) => {
         if(isDefined(rhs)) {
           if(!isDefined(lhs)) {
