@@ -67,7 +67,10 @@ case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
 // https://www.alessandrolacava.com/blog/scala-self-recursive-types/
 trait Tycker[Self <: Tycker[Self]] {
   //implicit inline def thisToSelf(x: this.type): Self = x.asInstanceOf
-  implicit val ev: Tycker[Self] =:= Self = implicitly[Self =:= Self].asInstanceOf //axiom
+  //implicit val ev: Tycker[Self] =:= Self = implicitly[Self =:= Self].asInstanceOf //axiom
+
+  def ev: this.type <:< Self
+  implicit inline def thisToSelf(inline x: this.type): Self = ev.apply(x)
 
   def copy(localCtx: LocalCtx = localCtx, tyck: Tyck = tyck): Self
 
@@ -87,6 +90,7 @@ trait Tycker[Self <: Tycker[Self]] {
 }
 
 case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with TelescopeTycker[ExprTyckerInternal] {
+  override def ev: this.type <:< ExprTyckerInternal = implicitly[this.type <:< ExprTyckerInternal]
 }
 
 trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycker[Self] {
