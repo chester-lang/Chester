@@ -5,6 +5,8 @@ Dependent type without Currying?
 It might look like?
 
 ```chester
+module 🐰;
+
 trait 舞 <: Show;
 
 record 超会議 <: 舞 derives Show {
