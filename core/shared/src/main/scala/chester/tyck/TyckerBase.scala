@@ -66,11 +66,11 @@ case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
 
 // https://www.alessandrolacava.com/blog/scala-self-recursive-types/
 trait Tycker[Self <: Tycker[Self]] {
-  //implicit inline def thisToSelf(x: this.type): Self = x.asInstanceOf
-  //implicit val ev: Tycker[Self] =:= Self = implicitly[Self =:= Self].asInstanceOf //axiom
-
   def ev: this.type <:< Self
-  implicit inline def thisToSelf(inline x: this.type): Self = ev.apply(x)
+
+  protected def thisToSelfTypesafe(x: this.type): Self = ev.apply(x)
+
+  implicit protected inline def thisToSelfImplementation(inline x: this.type): Self = this.asInstanceOf[Self]
 
   def copy(localCtx: LocalCtx = localCtx, tyck: Tyck = tyck): Self
 
