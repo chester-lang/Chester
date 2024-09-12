@@ -80,8 +80,24 @@ trait Tycker[Self <: Tycker[Self]] {
     Tyck.run(tyck => xs(copy(tyck = tyck)))(tyck.getState)
   }
 
+  private final def writeResult[A](x: TyckResult[TyckState, A]): A = {
+    tyck.state.set(x.state)
+    x.result
+  }
+
   final def tryAll[A](xs: Seq[Self => A]): A = {
-    ???
+    require(xs.nonEmpty)
+    var firstTry: Option[TyckResult[TyckState, A]] = None
+    for (x <- xs) {
+      val result = tryOne(x)
+      if (result.errorsEmpty) {
+        return writeResult(result)
+      }
+      if (firstTry.isEmpty) {
+        firstTry = Some(result)
+      }
+    }
+    writeResult(firstTry.get)
   }
 
   def localCtx: LocalCtx
