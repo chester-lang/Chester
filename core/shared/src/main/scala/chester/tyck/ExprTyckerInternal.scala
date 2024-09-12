@@ -13,6 +13,7 @@ import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 sealed trait Constraint
+
 object Constraint {
   case class Is(judge: Judge) extends Constraint
 
@@ -38,6 +39,11 @@ extension (subst: Solutions) {
     case None => Judge(term, term.ty, term.effect)
   }
   def isDefined(term: MetaTerm): Boolean = subst.contains(term.id)
+  def read(term: MetaTerm): Option[Constraint] = subst.get(term.id) match {
+    case some@Some(Constraint.Is(Judge(meta2: MetaTerm, ty, effect))) => read(meta2).orElse(some)
+    case Some(x) => Some(x)
+    case None => None
+  }
 }
 
 case class TyckState(subst: Solutions = Solutions.Empty)
@@ -110,6 +116,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
   def isDefined(x: MetaTerm): Boolean = tyck.getState.subst.isDefined(x)
 
   def linkTy(from: MetaTerm, to: Term): Unit = link(from, synthesizeTyTerm(to).toJudge)
+
   def link(from: MetaTerm, to: Judge): Unit = ???
 
   /** assume a subtype relationship and get a subtype back */
@@ -123,8 +130,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
         lhs
       }
       case (lhs: MetaTerm, rhs: MetaTerm) => {
-        if(isDefined(rhs)) {
-          if(!isDefined(lhs)) {
+        if (isDefined(rhs)) {
+          if (!isDefined(lhs)) {
             linkTy(lhs, rhs)
             rhs
           } else {
@@ -465,7 +472,7 @@ object ExprTycker {
 
   @deprecated("error information are lost")
   def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    val result = synthesize(expr, state=state, ctx=ctx)
+    val result = synthesize(expr, state = state, ctx = ctx)
     convertToEither(result)
   }
 
