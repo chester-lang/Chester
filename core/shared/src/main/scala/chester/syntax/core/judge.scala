@@ -2,6 +2,7 @@ package chester.syntax.core
 
 case class Judge(wellTyped: Term, ty: Term, effects: Effects = NoEffect) {
   def toMaybe: JudgeMaybeEffect = JudgeMaybeEffect(wellTyped, ty, Some(effects))
+  def substitute(from: Term & HasVarId, to: Term): Judge = Judge(wellTyped.substitute(from, to), ty.substitute(from, to), effects)
 }
 
 case class JudgeNoEffect(wellTyped: Term, ty: Term) {

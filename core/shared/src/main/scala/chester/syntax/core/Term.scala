@@ -413,6 +413,17 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
     Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
 
   def lookup(effect: Effect): Option[Vector[LocalVar]] = effects.get(effect)
+  
+  def lookupPair(effect: Effect): Option[(Effect, Vector[LocalVar])] = effects.get(effect).map(effect -> _)
+  
+  def mapOnVars(f: (Effect, Vector[LocalVar]) => Vector[LocalVar]): Effects = 
+    Effects(effects.map { case (effect, names) => effect -> f(effect, names) })
+  
+  def getEffects: Seq[Effect] = effects.keys.toSeq
+  
+  def contains(effect: Effect): Boolean = effects.contains(effect)
+  
+  def containAll(effects: Seq[Effect]): Boolean = effects.forall(this.contains)
 
   def merge(other: Effects): Effects = 
     Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>

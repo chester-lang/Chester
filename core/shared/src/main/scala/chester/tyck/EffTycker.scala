@@ -4,11 +4,24 @@ import chester.syntax.core.*
 
 trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
 
-  def unifyEff(lhs: Option[Effects], rhs: JudgeMaybeEffect): JudgeMaybeEffect = rhs // TODO
+  def unifyEff(lhs: Option[Effects], rhs: Judge): Judge =
+    if(lhs.isEmpty) rhs
+    else unifyEff(lhs.get, rhs)
 
-  def unifyEff(lhs: Option[Effects], rhs: Judge): Judge = unifyEff(lhs, rhs.toMaybe).get
-
-  def unifyEff(lhs: Effects, rhs: Judge): Judge = unifyEff(Some(lhs), rhs)
+  def unifyEff(lhs: Effects, rhs: Judge): Judge = {
+    val rhsEffects = rhs.effects
+    if(!lhs.containAll(rhsEffects.getEffects)) {
+      ???
+    }
+    val rebuiltEffects = rhsEffects.mapOnVars((effect, names) => Vector(lhs.lookup(effect).get.head))
+    var result = rhs.copy(effects = rebuiltEffects)
+    for ((effect, names) <- rhsEffects.effects) {
+      for(name <- names) {
+        result = result.substitute(name, lhs.lookup(effect).get.head)
+      }
+    }
+    result
+  }
 
   def cleanupFunction(function: Function): Judge = {
     val oldEffects = function.ty.effects
