@@ -351,8 +351,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  def finishCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.finishMetas(check(expr, ty, effects))
-  def finishInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.finishMetas(inherit(expr, ty, effects))
+  def freezeCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.freezeMetas(check(expr, ty, effects))
+  def freezeInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.freezeMetas(inherit(expr, ty, effects))
 
 }
 
@@ -388,10 +388,10 @@ object ExprTycker {
   }
 
   def inherit(expr: Expr, ty: Term, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).finishInherit(expr, ty, effects))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).freezeInherit(expr, ty, effects))(state)
   }
 
   def synthesize(expr: Expr, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).finishCheck(expr, effects=effects))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).freezeCheck(expr, effects=effects))(state)
   }
 }

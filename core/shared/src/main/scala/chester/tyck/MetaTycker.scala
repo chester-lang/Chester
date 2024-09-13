@@ -28,7 +28,7 @@ trait MetaTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
 
 
   /** Make it concrete values, also store in state */
-  def finishMeta(term: MetaTerm): Judge = {
+  def freezeMeta(term: MetaTerm): Judge = {
     val state = tyck.getState
     state.subst.read(term) match {
       case Some(Constraint.Is(judge)) => judge
@@ -45,22 +45,22 @@ trait MetaTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  def finishMetas(term: Term): Term = {
+  def freezeMetas(term: Term): Term = {
     val metas = term.mapFlatten {
       case meta: MetaTerm => Vector(meta)
       case _ => Vector()
     }.distinctBy(_.uniqId)
     val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
-      val judge = finishMeta(meta)
+      val judge = freezeMeta(meta)
       meta -> judge.wellTyped
     }
     term.substitute(subst)
   }
 
-  def finishMetas(judge: Judge): Judge = {
-    val wellTyped = finishMetas(judge.wellTyped)
-    val ty = finishMetas(judge.ty)
-    val effects = judge.effects.descent(finishMetas)
+  def freezeMetas(judge: Judge): Judge = {
+    val wellTyped = freezeMetas(judge.wellTyped)
+    val ty = freezeMetas(judge.ty)
+    val effects = judge.effects.descent(freezeMetas)
     Judge(wellTyped, ty, effects)
   }
 }
