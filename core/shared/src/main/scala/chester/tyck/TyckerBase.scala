@@ -334,32 +334,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 }
 
 object ExprTycker {
-  private def convertToEither[T](result: TyckResult[TyckState, T]): Either[Vector[TyckError], T] = {
-    if (!result.errorsEmpty) {
-      Left(result.problems.filter(_.isInstanceOf[TyckError]).asInstanceOf[Vector[TyckError]])
-    } else {
-      Right(result.result)
-    }
-  }
-
-  @deprecated("error information are lost")
-  def unifyV0(subType: Term, superType: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Term] = {
-    val result = unifyTy(superType, subType, state, ctx)
-    convertToEither(result)
-  }
-
-  @deprecated("error information are lost")
-  def inheritV0(expr: Expr, ty: Term, effect: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    val result = inherit(expr, ty, effect, state, ctx)
-    convertToEither(result)
-  }
-
-  @deprecated("error information are lost")
-  def synthesizeV0(expr: Expr, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): Either[Vector[TyckError], Judge] = {
-    val result = synthesize(expr, state = state, ctx = ctx)
-    convertToEither(result)
-  }
-
   def unifyTy(lhs: Term, rhs: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
     Tyck.run(ExprTyckerInternal(ctx, _).unifyTy(lhs, rhs))(state)
   }

@@ -10,27 +10,21 @@ class ObjectWithIntegersSuite extends FunSuite {
     val state = TyckState()
     val ctx = LocalCtx.Empty
 
-    // Create ObjectExprClauses instead of tuples
     val intField1 = ObjectExprClause(Identifier("field1"), IntegerLiteral(42))
     val intField2 = ObjectExprClause(Identifier("field2"), IntegerLiteral(24))
     val intField3 = ObjectExprClause(Identifier("field3"), IntegerLiteral(100))
 
-    // Create the ObjectExpr with the clauses
     val intObjectExpr = ObjectExpr(Vector(intField1, intField2, intField3))
 
-    // Synthesize the object expression
-    val result = ExprTycker.synthesizeV0(intObjectExpr, state, ctx)
+    val result = ExprTycker.synthesize(intObjectExpr, state = state, ctx = ctx)
 
-    // Validate the result
-    assert(result.isRight)
-    result match {
-      case Right(Judge(ObjectTerm(clauses), ObjectType(fieldTypes, _), _)) =>
-        // Check each clause for the correct field name and value
+    assert(result.errorsEmpty)
+    result.result match {
+      case Judge(ObjectTerm(clauses), ObjectType(fieldTypes, _), _) =>
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntTerm(42)) => true }.isDefined, true)
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntTerm(24)) => true }.isDefined, true)
         assertEquals(clauses.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntTerm(100)) => true }.isDefined, true)
 
-        // Check the field types
         assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field1"), IntegerType) => true }.isDefined, true)
         assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field2"), IntegerType) => true }.isDefined, true)
         assertEquals(fieldTypes.collectFirst { case ObjectClauseValueTerm(SymbolTerm("field3"), IntegerType) => true }.isDefined, true)
@@ -57,16 +51,12 @@ class ObjectWithIntegersSuite extends FunSuite {
                   ),
                   value = IntTerm(
                     value = 1
-                  ),
-                  
+                  )
                 )
-              ),
-              
-            ),
-            
+              )
+            )
           )
-        ),
-        
+        )
       ))
   }
 }
