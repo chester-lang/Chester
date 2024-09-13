@@ -242,8 +242,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  def checkEffect(effectExpr: Expr): Effects = NoEffect // TODO
-
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
 
   def synthesizeTyTerm(term: Term): JudgeNoEffect = {
@@ -274,27 +272,15 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  def walk(term: MetaTerm): Judge = {
-    val state = tyck.getState
-    val result = state.subst.walk(term)
-    result
-  }
-
   def whnfNoEffect(term: Term): Term = {
     val result = normalizeNoEffect(term)
     result match
       case term: MetaTerm => {
-        val walked = walk(term)
+        val walked = this.walk(term)
         require(walked.effects == NoEffect)
         whnfNoEffect(walked.wellTyped)
       }
       case _ => result
-  }
-
-  def genTypeVariable(name: Option[Name] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
-    val id = name.getOrElse("t")
-    val varid = UniqId.generate
-    MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)
   }
 
   def resolve(expr: Expr): Expr = {
