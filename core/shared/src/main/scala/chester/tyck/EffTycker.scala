@@ -3,7 +3,7 @@ package chester.tyck
 import chester.error.EffectUnifyError
 import chester.syntax.core.*
 
-trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
+trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
 
   def unifyEff(lhs: Option[Effects], rhs: Judge): Judge =
     if (lhs.isEmpty) rhs

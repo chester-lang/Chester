@@ -4,7 +4,7 @@ import chester.error._
 import chester.syntax.concrete._
 import chester.syntax.core._
 
-trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
+trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
     val tyJudge = arg.ty.map(this.checkType)
     assert(tyJudge.isEmpty || tyJudge.get.effects == NoEffect)
