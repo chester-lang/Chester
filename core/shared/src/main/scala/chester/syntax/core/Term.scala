@@ -10,6 +10,7 @@ import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
 import chester.utils.impls.*
+import scala.collection.immutable.HashMap
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.language.implicitConversions
@@ -396,6 +397,7 @@ object Intersection {
 
 sealed trait EffectTerm extends Term derives ReadWriter
 
+@deprecated("not used")
 case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc derives ReadWriter {
   require(name.nonEmpty)
 
@@ -408,48 +410,37 @@ case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc deriv
   def descent(f: Term => Term): NamedEffect = copy(effect = f(effect))
 }
 
-implicit val rwNamedEffect: ReadWriter[Effects] = readwriter[Vector[NamedEffect]].bimap(_.xs, Effects(_))
+implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Term, Vector[LocalVar]]].bimap(_.effects, Effects(_))
 
-// TODO: maybe a hashmap?
-case class Effects private[syntax](xs: Vector[NamedEffect]) extends AnyVal with ToDoc {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(xs.map(_.toDoc): _*)
+case class Effects private[syntax](effects: Map[Term, Vector[LocalVar]]) extends AnyVal with ToDoc {
+  override def toDoc(implicit options: PrettierOptions): Doc = 
+    Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) => 
+      Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
+    }.toSeq: _*)
 
-  def descent(f: Term => Term): Effects = copy(xs = xs.map(_.descent(f)))
+  def descent(f: Term => Term): Effects = 
+    Effects(effects.map { case (effect, names) => f(effect) -> names })
 
-  def add(one: NamedEffect): Effects = {
-    val found = xs.indexWhere { case NamedEffect(name, effect) => effect == one.effect }
-    if (found != -1) {
-      val NamedEffect(name, effect) = xs(found)
-      copy(xs = xs.updated(found, NamedEffect(name ++ one.name, effect)))
-    } else {
-      copy(xs = xs :+ one)
-    }
-  }
+  def add(effect: Term, name: LocalVar): Effects = 
+    Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
 
-  def lookup(effect: Term): Option[Vector[LocalVar]] = {
-    var results = xs.filter(_.effect == effect)
-    assert(results.length <= 1)
-    results.headOption.map(_.name)
-  }
+  def lookup(effect: Term): Option[Vector[LocalVar]] = effects.get(effect)
 
-  def merge(other: Effects): Effects = {
-    var result = this
-    for (one <- other.xs) {
-      result = result.add(one)
-    }
-    result
-  }
+  def merge(other: Effects): Effects = 
+    Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>
+      acc.updated(effect, acc.getOrElse(effect, Vector.empty) ++ names)
+    })
 }
 
 object Effects {
-  val Empty: Effects = Effects(Vector.empty)
+  val Empty: Effects = Effects(HashMap.empty)
 
   def merge(xs: Seq[Effects]): Effects = {
     require(xs.nonEmpty)
     xs.reduce(_.merge(_))
   }
 
-  def unchecked(xs: Seq[NamedEffect]): Effects = Effects(xs.toVector)
+  def unchecked(xs: Map[Term, Vector[LocalVar]]): Effects = Effects(xs)
 }
 
 val NoEffect = Effects.Empty

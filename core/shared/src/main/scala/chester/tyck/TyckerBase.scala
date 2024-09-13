@@ -463,18 +463,16 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
 
   /** do cleanup on Effects to only use one variable for an effect */
   def cleanup(judge: Judge): Judge = {
-    val xs = judge.effect.xs
-    val newXs = xs.map(named => named.copy(name = Vector(named.name.head)))
-    val effects = Effects.unchecked(newXs)
+    val newEffects = Effects.unchecked(judge.effect.effects.map { case (effect, names) =>
+      effect -> Vector(names.head)
+    })
     var wellTyped = judge.wellTyped
     var ty = judge.ty
-    for (x <- xs) {
-      for (name <- x.name) {
-        wellTyped = wellTyped.substitute(name, x.name.head)
-        ty = ty.substitute(name, x.name.head)
-      }
+    for ((effect, names) <- judge.effect.effects; name <- names.tail) {
+      wellTyped = wellTyped.substitute(name, names.head)
+      ty = ty.substitute(name, names.head)
     }
-    Judge(wellTyped, ty, effects)
+    Judge(wellTyped, ty, newEffects)
   }
 }
 
