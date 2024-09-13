@@ -64,7 +64,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
       }
     }
   }
-  
+
   def synthesizeFunction(f: FunctionExpr, effects: Option[Effects]): Judge = {
     this.telescopePrecheck(f.telescope, f)
     val effects = f.effect.map(this.checkEffect)
@@ -78,12 +78,22 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
-  
+
   def checkCallingTelescope(f: FunctionType, telescope: Vector[MaybeTelescope], effects: Option[Effects]) = ???
-  
+
   def synthesizeFunctionCall(call: FunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
-    ???
+    function.ty match {
+      case fty: FunctionType => ???
+      case i: Intersection => {
+        val fs = i.xs.filter {
+          case f: FunctionType => true
+          case _ => false
+        }
+        ???
+      }
+      case _ => ???
+    }
   }
 
 }

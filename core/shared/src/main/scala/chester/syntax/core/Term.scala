@@ -379,11 +379,11 @@ case object ListF extends Builtin {
 
 sealed trait Constructed extends Term derives ReadWriter
 
-case class ListType(ty: Term) extends Constructed {
+case class ListType(ty: Term) extends Constructed with TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("List") <> Docs.`(` <> ty <> Docs.`)`
 }
 
-case class Union(xs: Vector[Term]) extends Term {
+case class Union(xs: Vector[Term]) extends TypeTerm {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
@@ -409,7 +409,7 @@ object Union {
   }
 }
 
-case class Intersection(xs: Vector[Term]) extends Term derives ReadWriter {
+case class Intersection(xs: Vector[Term]) extends TypeTerm derives ReadWriter {
   require(xs.nonEmpty)
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
