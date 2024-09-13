@@ -135,7 +135,7 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     val typeDoc = judge.ty
     val effectDoc = judge.effects
 
-    val doc = termDoc <+> Doc.text(":") <+> typeDoc <+?> (judge.effects.isEmpty, "/" <> effectDoc)
+    val doc = termDoc <+> Doc.text(":") <+> typeDoc <+?> (judge.effects.nonEmpty, "/" <> effectDoc)
 
     FansiPrettyPrinter.render(doc, maxWidth).render
   }

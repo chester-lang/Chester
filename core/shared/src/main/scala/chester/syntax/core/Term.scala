@@ -331,9 +331,8 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingCl
 case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = if (telescope.isEmpty) Doc.empty else telescope.map(_.toDoc).reduce(_ <+> _)
-    val effectDoc = effects.toDoc
     val resultDoc = resultTy.toDoc
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+?> (effects.nonEmpty, effects) <+> resultDoc)
   }
 
   override def descent(f: Term => Term): FunctionType = thisOr(copy(telescope = telescope.map(_.descent(f)), effects = effects.descent(f), resultTy = f(resultTy)))
@@ -466,6 +465,7 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
     })
 
   def isEmpty: Boolean = effects.isEmpty
+  def nonEmpty: Boolean = effects.nonEmpty
 }
 
 object Effects {
