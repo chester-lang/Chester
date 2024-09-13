@@ -51,6 +51,10 @@ extension (subst: Solutions) {
     case Some(x) => Some(x)
     case None => None
   }
+  
+  def update(id: UniqId, constraint: Constraint): Solutions = {
+    subst + (id -> constraint)
+  }
 }
 
 case class TyckState(subst: Solutions = Solutions.Empty)

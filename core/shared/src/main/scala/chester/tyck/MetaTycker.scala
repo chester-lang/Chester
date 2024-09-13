@@ -29,7 +29,20 @@ trait MetaTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
 
   /** Make it concrete values, also store in state */
   def finishMeta(term: MetaTerm): Judge = {
-    ??? // TODO
+    val state = tyck.getState
+    state.subst.read(term) match {
+      case Some(Constraint.Is(judge)) => judge
+      case Some(Constraint.TyRange(lower, upper)) =>
+        val result = upper.orElse(lower).get
+        val newSubst = state.subst.update(term.uniqId, Constraint.Is(result))
+        tyck.state.set(state.copy(subst = newSubst))
+        result
+      case None =>
+        val result = Judge(AnyType0, Type0, NoEffect) // TODO: level
+        val newSubst = state.subst.update(term.uniqId, Constraint.Is(result))
+        tyck.state.set(state.copy(subst = newSubst))
+        result
+    }
   }
 
   def finishMetas(term: Term): Term = {
