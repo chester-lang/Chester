@@ -4,7 +4,7 @@ package chester.syntax.core
 import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
-import chester.syntax.{Id, QualifiedIDString}
+import chester.syntax.{Name, QualifiedIDString}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -30,7 +30,7 @@ sealed trait MaybeCallTerm extends TermWithMeta derives ReadWriter {
   override def whnf: Boolean = false
 }
 
-case class CallingArg(value: Term, name: Option[Id] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
+case class CallingArg(value: Term, name: Option[Name] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     if (name.isEmpty && !vararg) return value.toDoc
     if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
@@ -470,18 +470,18 @@ case object STEffect extends Effect {
 sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
   def uniqId: UniqId
 
-  def id: Id
+  def id: Name
 }
 
-case class LocalVar(id: Id, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
 object LocalVar {
-  def generate(id: Id, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
+  def generate(id: Name, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
 }
 
-case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall {
+case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 }
 

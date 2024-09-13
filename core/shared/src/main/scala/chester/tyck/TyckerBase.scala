@@ -49,7 +49,7 @@ extension (subst: Solutions) {
 case class TyckState(subst: Solutions = Solutions.Empty)
 
 case class LocalCtx(ctx: Context = Context.builtin) {
-  def resolve(id: Id): Option[CtxItem] = ctx.get(id)
+  def resolve(id: Name): Option[CtxItem] = ctx.get(id)
 
   def resolve(id: UniqId): Option[CtxItem] = ctx.getByVarId(id)
 
@@ -388,7 +388,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
       case _ => result
   }
 
-  def genTypeVariable(name: Option[Id] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
+  def genTypeVariable(name: Option[Name] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
     val id = name.getOrElse("t")
     val varid = UniqId.generate
     MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)

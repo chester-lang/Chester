@@ -1,12 +1,12 @@
 package chester.syntax
 
-type Id = String
+type Name = String
 
-type UnresolvedID = Vector[Id]
+type UnresolvedID = Vector[Name]
 
-type QualifiedIDString = Vector[Id]
+type QualifiedIDString = Vector[Name]
 
 
 object QualifiedIDString {
-  def from(id: Id*): QualifiedIDString = id.toVector
+  def from(id: Name*): QualifiedIDString = id.toVector
 }

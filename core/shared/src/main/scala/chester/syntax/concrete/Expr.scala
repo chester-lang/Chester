@@ -6,7 +6,7 @@ import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
-import chester.syntax.{ Id, QualifiedIDString, UnresolvedID}
+import chester.syntax.{ Name, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -90,13 +90,13 @@ case class Identifier(name: String, meta: Option[ExprMeta] = None) extends Parse
   def toSymbol: SymbolLiteral = SymbolLiteral(name, meta)
 }
 
-case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[ExprMeta] = None) extends Expr {
+case class ResolvedIdentifier(module: QualifiedIDString, name: Name, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedIdentifier = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(module.toString) <> Doc.text(".") <> Doc.text(name.toString))
 }
 
-case class ResolvedLocalVar(name: Id, varId: UniqId, meta: Option[ExprMeta] = None) extends Expr {
+case class ResolvedLocalVar(name: Name, varId: UniqId, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedLocalVar = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(name.toString) <> Doc.text(s"(${varId})"))
@@ -167,7 +167,7 @@ object Block {
 case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
   require(name.isInstanceOf[Identifier] || name.isInstanceOf[ResolvedLocalVar])
   
-  def getName: Id = name match {
+  def getName: Name = name match {
     case Identifier(name, _) => name
     case ResolvedLocalVar(name, _, _) => name
   }
@@ -388,7 +388,7 @@ case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = No
   )
 }
 
-case class Keyword(key: Id, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class Keyword(key: Name, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     Keyword(key, telescope.map(_.descent(operator)), meta)
   }
@@ -496,14 +496,14 @@ sealed trait Stmt extends DesaltExpr derives ReadWriter  {
 
 @deprecated("not used")
 private sealed trait NameUnknown extends Stmt derives ReadWriter  {
-  def getName: Option[Id] = None
+  def getName: Option[Name] = None
 }
 
 @deprecated("not used")
 private sealed trait NameOption extends Stmt derives ReadWriter  {
-  def name: Option[Id]
+  def name: Option[Name]
 
-  def getName: Option[Id] = name
+  def getName: Option[Name] = name
 }
 
 @deprecated("not used")
@@ -571,7 +571,7 @@ case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 }
 
 @deprecated("not used")
-case class GroupedStmt(name: Option[Id], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption {
+case class GroupedStmt(name: Option[Name], declaration: TypeDeclaration, definitions: Vector[Definition], meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
     val declDoc = declaration.toDoc
@@ -583,7 +583,7 @@ case class GroupedStmt(name: Option[Id], declaration: TypeDeclaration, definitio
 }
 
 @deprecated("not used")
-case class ErrorStmt(name: Option[Id], message: String, meta: Option[ExprMeta] = None) extends NameOption {
+case class ErrorStmt(name: Option[Name], message: String, meta: Option[ExprMeta] = None) extends NameOption {
   def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.map(Doc.text(_)).getOrElse(Doc.empty)
     nameDoc <+> Doc.text("error: ") <+> Doc.text(message)
@@ -597,12 +597,12 @@ sealed trait PrecedenceGroup
 
 @deprecated("not used")
 case class PrecedenceGroupResolving(
-                                     name: Id,
+                                     name: Name,
                                      higherThan: Vector[UnresolvedID] = Vector(),
                                      lowerThan: Vector[UnresolvedID] = Vector(),
                                      associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                    ) extends Stmt with PrecedenceGroup {
-  def getName: Option[Id] = Some(name)
+  def getName: Option[Name] = Some(name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toDoc
@@ -626,7 +626,7 @@ case class PrecedenceGroupResolved(
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                   ) extends Stmt with PrecedenceGroup {
-   def getName: Option[Id] = Some(name.name)
+   def getName: Option[Name] = Some(name.name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toString
