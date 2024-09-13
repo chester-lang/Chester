@@ -5,7 +5,14 @@ import chester.io._
 import chester.parser.InputStatus.*
 import io.github.edadma.readline.facade.*
 import io.github.edadma.readline.facade
-
+/*
+Currently this code is not working due to the following error:
+[error] Undefined symbols for architecture arm64:
+[error]   "_append_history", referenced from:
+[error]       __SM41io.github.edadma.readline.facade.package$D14append_historyiL16java.lang.StringiEO in 10b0a649.ll.o
+[error] ld: symbol(s) not found for architecture arm64
+[error] clang: error: linker command failed with exit code 1 (use -v to see invocation)
+*/
 class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
   private var history: Vector[String] = Vector()
   private val historyFile = init.historyFile
