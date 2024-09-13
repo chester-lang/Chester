@@ -105,6 +105,14 @@ sealed trait Term extends ToDoc derives ReadWriter {
     f(descent(_.descentRecursive(f)))
   }
 
+  def foreach(f: Term => Unit): Unit = {
+    descent(term => {
+      term.foreach(f)
+      term
+    })
+    f(this)
+  }
+
   def doElevate(level: IntegerTerm): Term = descent(_.doElevate(level))
 
   final def elevate(level: IntegerTerm): Term = {
