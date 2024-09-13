@@ -164,21 +164,19 @@ object Block {
 }
 
 // in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false)derives ReadWriter {
-  require(name.isInstanceOf[Identifier] || name.isInstanceOf[ResolvedLocalVar])
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Identifier, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false, meta: Option[ExprMeta] = None)derives ReadWriter {
 
   def getName: Name = name match {
     case Identifier(name, _) => name
-    case ResolvedLocalVar(name, _, _) => name
   }
 
   def descent(operator: Expr => Expr): Arg = {
-    Arg(decorations, operator(name), ty.map(operator), exprOrDefault.map(operator), vararg)
+    Arg(decorations, name, ty.map(operator), exprOrDefault.map(operator), vararg, meta)
   }
 
   override def toString: String = this match {
-    case Arg(decorations, name, ty, exorOrDefault, false) => s"Arg($decorations,$name,$ty,$exorOrDefault)"
-    case Arg(decorations, name, ty, exorOrDefault, vararg) => s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
+    case Arg(decorations, name, ty, exorOrDefault, false, _) => s"Arg($decorations,$name,$ty,$exorOrDefault)"
+    case Arg(decorations, name, ty, exorOrDefault, vararg, _) => s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
   }
 
   def toDoc(implicit options: PrettierOptions): Doc = group {
@@ -191,9 +189,9 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Optio
   }
 }
 
-case class CallingArg(name: Option[Expr] = None, expr: Expr, vararg: Boolean = false)derives ReadWriter {
+case class CallingArg(name: Option[Identifier] = None, expr: Expr, vararg: Boolean = false, meta: Option[ExprMeta] = None) extends ToDoc  derives ReadWriter {
   def descent(operator: Expr => Expr): CallingArg = {
-    CallingArg(name.map(operator), operator(expr), vararg)
+    CallingArg(name, operator(expr), vararg, meta)
   }
 
   def toDoc(implicit options: PrettierOptions): Doc = group {
@@ -204,7 +202,18 @@ case class CallingArg(name: Option[Expr] = None, expr: Expr, vararg: Boolean = f
   }
 }
 
-object Arg {
+case class DesaltCallingTelescope(args: Vector[CallingArg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
+  override def descent(operator: Expr => Expr): DesaltCallingTelescope = thisOr {
+    DesaltCallingTelescope(args.map(_.descent(operator)), implicitly, meta)
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltCallingTelescope = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val argsDoc = args.map(_.toDoc).reduce(_ <> Doc.text(", ") <> _)
+    if (implicitly) Doc.text("@(") <> argsDoc <> Doc.text(")")
+    else Doc.text("(") <> argsDoc <> Doc.text(")")
+  }
 }
 
 sealed trait MaybeTelescope extends Expr derives ReadWriter {

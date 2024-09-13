@@ -28,14 +28,14 @@ private object DesaltCaseClauseMatch {
 private object MatchDeclarationTelescope {
   @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = x match {
-    case id: Identifier => Some(DefTelescope(Vector(Arg(name = id))))
+    case id: Identifier => Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
     case _ => ???
   }
 }
 
 private object MatchApplyingTelescope {
   @throws[TyckError]
-  def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = ???
+  def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Nothing] = ???
 }
 
 @throws[TyckProblem]
