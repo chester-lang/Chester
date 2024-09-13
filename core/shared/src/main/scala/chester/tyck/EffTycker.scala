@@ -42,7 +42,8 @@ trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Sel
     val effects = body.effects
     val args = function.ty.telescope.map(telescope => telescope.copy(args = telescope.args.map(arg => arg.copy(default = arg.default.map(default => unifyEff(effects, default, arg.ty, oldEffects))))))
     val resultTy = unifyEff(effects, function.ty.resultTy, this.synthesizeTyTerm(function.ty.resultTy).ty, oldEffects)
-    Judge(function.copy(ty = function.ty.copy(telescope = args, resultTy = resultTy), body = body.wellTyped), resultTy)
+    val ty = function.ty.copy(telescope = args, resultTy = resultTy)
+    Judge(function.copy(ty = ty, body = body.wellTyped), ty)
   }
 
   def unifyEff(effects: Effects, term: Term, ty: Term, oldEffects: Effects): Term = {
