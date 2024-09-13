@@ -284,7 +284,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
   }
 
   def resolve(expr: Expr): Expr = {
-    ExprResolver.resolve(localCtx, expr)
+    ExprResolver.resolve(localCtx, expr) match {
+      case block: Block if block.heads.isEmpty && block.tail.isDefined => block.tail.get
+      case tuple: Tuple if tuple.terms.length == 1 => tuple.terms.head
+      case expr => expr
+    }
   }
 
   /** possibly apply an implicit conversion */

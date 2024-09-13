@@ -236,7 +236,6 @@ case object SimpleDesalt {
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = expr.descentRecursive {
     case OpSeq(xs, meta) if xs.length == 1 => xs.head
     case DesaltCaseClauseMatch(x) => x
-    case Block(heads, Some(tail), meta) if heads.isEmpty => tail
     case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
       val seq: Vector[Expr] = heads ++ tail.toVector
       if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
