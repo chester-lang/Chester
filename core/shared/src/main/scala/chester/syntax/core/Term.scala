@@ -395,36 +395,24 @@ object Intersection {
   }
 }
 
-sealed trait EffectTerm extends Term derives ReadWriter
+/** Effect needs to have reasonable equals and hashcode for simple comparision, where they are not requirements for other Terms */
+sealed trait Effect extends ToDoc derives ReadWriter
 
-@deprecated("not used")
-case class NamedEffect(name: Vector[LocalVar], effect: Term) extends ToDoc derives ReadWriter {
-  require(name.nonEmpty)
+implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalVar]]].bimap(_.effects, Effects(_))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = {
-    val nameDoc = name.map(_.toDoc).reduce(_ <+> _)
-    val effectDoc = effect.toDoc
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(nameDoc <+> effectDoc)
-  }
-
-  def descent(f: Term => Term): NamedEffect = copy(effect = f(effect))
-}
-
-implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Term, Vector[LocalVar]]].bimap(_.effects, Effects(_))
-
-case class Effects private[syntax](effects: Map[Term, Vector[LocalVar]]) extends AnyVal with ToDoc {
+case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) extends AnyVal with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc = 
     Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) => 
       Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
     }.toSeq: _*)
 
-  def descent(f: Term => Term): Effects = 
+  def descent(f: Effect => Effect): Effects =
     Effects(effects.map { case (effect, names) => f(effect) -> names })
 
-  def add(effect: Term, name: LocalVar): Effects = 
+  def add(effect: Effect, name: LocalVar): Effects =
     Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
 
-  def lookup(effect: Term): Option[Vector[LocalVar]] = effects.get(effect)
+  def lookup(effect: Effect): Option[Vector[LocalVar]] = effects.get(effect)
 
   def merge(other: Effects): Effects = 
     Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>
@@ -440,27 +428,27 @@ object Effects {
     xs.reduce(_.merge(_))
   }
 
-  def unchecked(xs: Map[Term, Vector[LocalVar]]): Effects = Effects(xs)
+  def unchecked(xs: Map[Effect, Vector[LocalVar]]): Effects = Effects(xs)
 }
 
 val NoEffect = Effects.Empty
 
 // may raise an exception
-case object ExceptionEffect extends EffectTerm {
+case object ExceptionEffect extends Effect {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("PartialEffect")
 }
 
 // may not terminate
-case object DivergeEffect extends EffectTerm {
+case object DivergeEffect extends Effect {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
 }
 
 // whatever IO: console, file, network, ...
-case object IOEffect extends EffectTerm {
+case object IOEffect extends Effect {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("IOEffect")
 }
 
-case object STEffect extends EffectTerm {
+case object STEffect extends Effect {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("STEffect")
 }
 
