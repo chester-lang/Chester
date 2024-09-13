@@ -3,41 +3,32 @@ package chester.repl
 import cats.Id
 import chester.io._
 import chester.parser.InputStatus.*
-import io.github.edadma.readline.facade.*
-import io.github.edadma.readline.facade
+import linenoise.facade
 
-class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
+class LinenoiseTerminal(init: TerminalInit) extends InTerminal[Id] {
   private var history: Vector[String] = Vector()
   private val historyFile = init.historyFile
-  private var historyExists: Int = 0
 
   if (historyFile.isDefined) {
-    readHistory()
+    loadHistory()
   }
 
-  // Method for reading history
-  private def readHistory(): Unit = {
-    historyFile.foreach { file =>
-      historyExists = read_history(file)
+  private def loadHistory(): Unit = {
+    historyFile.foreach { filename =>
+      facade.loadHistory(filename)
     }
   }
 
-  // Method for writing history
-  private def writeHistory(): Unit = {
-    historyFile.foreach { file =>
-      if (historyExists == 0) {
-        append_history(1, file)
-      } else {
-        historyExists = 0
-        write_history(file)
-      }
+  private def saveHistory(): Unit = {
+    historyFile.foreach { filename =>
+      facade.saveHistory(filename)
     }
   }
 
   override def writeln(line: fansi.Str): Unit = {
     println(line.render)
   }
-  
+
   override def readline(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
@@ -45,7 +36,7 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
     var currentInputs: String = ""
 
     while (continue) {
-      val line = facade.readline(prompt.render)
+      val line = facade.prompt(prompt.render).getOrElse(null)
 
       if (line == null) {
         continue = false
@@ -59,15 +50,12 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
           currentInputs += "\n" + line
         }
 
-        add_history(line) // GNU Readline can only handle one line entry in history
+        facade.addHistory(line)
         val status = info.checkInputStatus(currentInputs)
 
         status match {
           case Complete =>
-            val prev = history_get(history_base + history_length - 1)
-            if (prev == null || prev != line) {
-              writeHistory() // Manage history based on existence
-            }
+            saveHistory()
             history = history :+ currentInputs
             result = LineRead(currentInputs)
             continue = false
@@ -87,15 +75,15 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
   }
 
   def close(): Unit = {
-    writeHistory()
+    saveHistory()
   }
 
   override def getHistory: Seq[String] = history
 }
 
-object ReadlineTerminal extends Terminal[Id] {
+object LinenoiseTerminal extends Terminal[Id] {
   override def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
-    val terminal = new ReadlineTerminal(init)
+    val terminal = new LinenoiseTerminal(init)
     try {
       block(using terminal)
     } finally {
