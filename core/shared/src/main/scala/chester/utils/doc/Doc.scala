@@ -3,6 +3,7 @@ package chester.utils.doc
 import kiama2.output.*
 import kiama2.output.PrettyPrinterTypes.Width
 
+import scala.annotation.targetName
 import scala.language.implicitConversions
 
 type DocPrinter = ParenPrettyPrinter & StylePrettyPrinter
@@ -163,6 +164,11 @@ extension (self: ToDoc)(using options: PrettierOptions) {
    * using a `space` separator.
    */
   def <+>(other: ToDoc): Doc = `$<+>`(self, other)
+  def <+?>[A <: ToDoc](tuple: (Boolean, A)): Doc = <+?>[A](tuple._1, tuple._2)
+  @targetName("plusQMark")
+  def <+?>[A <: ToDoc](tuple: (A => Boolean, A)): Doc = <+?>[A](tuple._1, tuple._2)
+  def <+?>[A <: ToDoc](pred: Boolean, other: A): Doc = if pred then self <+> other else self
+  def <+?>[A <: ToDoc](pred: A => Boolean, other: A): Doc = if pred(other) then self <+> other else self
   /**
    * Return the concatenation of this document with the argument
    * using a `softline` separator.
