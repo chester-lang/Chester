@@ -1,23 +1,33 @@
 package chester.tyck
 
+import chester.error.EffectUnifyError
 import chester.syntax.core.*
 
 trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
 
   def unifyEff(lhs: Option[Effects], rhs: Judge): Judge =
-    if(lhs.isEmpty) rhs
+    if (lhs.isEmpty) rhs
     else unifyEff(lhs.get, rhs)
 
   def unifyEff(lhs: Effects, rhs: Judge): Judge = {
     val rhsEffects = rhs.effects
-    if(!lhs.containAll(rhsEffects.getEffects)) {
-      ???
+    val errored = if (!lhs.containAll(rhsEffects.getEffects)) {
+      tyck.report(EffectUnifyError(lhs, rhs))
+      true
+    } else {
+      false
     }
-    val rebuiltEffects = rhsEffects.mapOnVars((effect, names) => Vector(lhs.lookup(effect).get.head))
+
+    def fallback[A](x: A): A = {
+      assert(errored)
+      x
+    }
+
+    val rebuiltEffects = rhsEffects.mapOnVars((effect, names) => Vector(lhs.lookup(effect).getOrElse(fallback(names)).head))
     var result = rhs.copy(effects = rebuiltEffects)
     for ((effect, names) <- rhsEffects.effects) {
-      for(name <- names) {
-        result = result.substitute(name, lhs.lookup(effect).get.head)
+      for (name <- names) {
+        result = result.substitute(name, rebuiltEffects.lookup(effect).getOrElse(fallback(names)).head)
       }
     }
     result

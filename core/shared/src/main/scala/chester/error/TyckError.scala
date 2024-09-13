@@ -3,7 +3,7 @@ package chester.error
 import chester.doc.*
 import chester.i18n.*
 import chester.syntax.concrete.*
-import chester.syntax.core.Term
+import chester.syntax.core.*
 import chester.utils.doc._
 import chester.utils.impls.*
 import upickle.default.*
@@ -178,4 +178,10 @@ case class InvalidNaturalError(cause: Expr) extends TyckError {
 
 case class InvalidIntError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Invalid integer"
+}
+
+case class EffectUnifyError(lhs: Effects, rhs: Judge) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Effect unification failed"
+
+  override def cause: Term | Expr = rhs.wellTyped
 }
