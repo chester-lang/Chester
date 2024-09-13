@@ -113,11 +113,24 @@ sealed trait Term extends ToDoc derives ReadWriter {
     f(this)
   }
 
+  def mapFlatten[B](f: Term => Seq[B]): Vector[B] = {
+    var result = Vector.empty[B]
+    foreach { term =>
+      result ++= f(term)
+    }
+    result
+  }
+
   def doElevate(level: IntegerTerm): Term = descent(_.doElevate(level))
 
   final def elevate(level: IntegerTerm): Term = {
     require(level.value >= 0)
     if (level.value == 0) this else doElevate(level)
+  }
+
+  // TODO: optimize
+  final def substitute[A<:Term & HasUniqId](mapping: Seq[(A, Term)]): Term = {
+    mapping.foldLeft(this) { case (acc, (from, to)) => acc.substitute(from, to) }
   }
 
   final def substitute(from: Term & HasUniqId, to: Term): Term = {
@@ -497,8 +510,8 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
 }
 
-case class MetaTerm(description: String, id: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
+case class MetaTerm(description: String, uniqId: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + uniqId)
 }
 
 object MetaTerm {

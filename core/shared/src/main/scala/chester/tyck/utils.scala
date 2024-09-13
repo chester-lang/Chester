@@ -37,7 +37,7 @@ object Solutions {
 
 extension (subst: Solutions) {
   @tailrec
-  def walk(term: MetaTerm): Judge = subst.get(term.id) match {
+  def walk(term: MetaTerm): Judge = subst.get(term.uniqId) match {
     case Some(Constraint.Is(clause)) => clause.wellTyped match {
       case term: MetaTerm => subst.walk(term)
       case _ => Judge(clause.wellTyped, clause.ty, clause.effects)
@@ -45,8 +45,8 @@ extension (subst: Solutions) {
     case Some(Constraint.TyRange(lower, upper)) => Judge(term, term.ty, term.effect) // TODO
     case None => Judge(term, term.ty, term.effect)
   }
-  def isDefined(term: MetaTerm): Boolean = subst.contains(term.id)
-  def read(term: MetaTerm): Option[Constraint] = subst.get(term.id) match {
+  def isDefined(term: MetaTerm): Boolean = subst.contains(term.uniqId)
+  def read(term: MetaTerm): Option[Constraint] = subst.get(term.uniqId) match {
     case some@Some(Constraint.Is(Judge(meta2: MetaTerm, ty, effect))) => read(meta2).orElse(some)
     case Some(x) => Some(x)
     case None => None
