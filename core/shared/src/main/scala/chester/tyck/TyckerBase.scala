@@ -105,11 +105,11 @@ trait Tycker[Self <: Tycker[Self]] {
   def tyck: Tyck
 }
 
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with TelescopeTycker[ExprTyckerInternal] {
+case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with TelescopeTycker[ExprTyckerInternal] with EffTycker[ExprTyckerInternal] {
   override def ev: this.type <:< ExprTyckerInternal = implicitly[this.type <:< ExprTyckerInternal]
 }
 
-trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycker[Self] {
+trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
 
   def superTypes(ty: Term): Option[Vector[Term]] = {
@@ -187,10 +187,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
   }
 
   def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs, failed = NothingType)
-
-  def unifyEff(lhs: Option[Effects], rhs: JudgeMaybeEffect): JudgeMaybeEffect = rhs // TODO
-
-  def unifyEff(lhs: Option[Effects], rhs: Judge): Judge = unifyEff(lhs, rhs.toMaybe).get
 
   /** get the most sub common super type */
   def common(ty1: Term, ty2: Term): Term = {
@@ -403,7 +399,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
 
   /** possibly apply an implicit conversion */
   def inheritFallbackUnify(judge: Judge, ty: Term, effect: Option[Effects] = None): Judge = {
-    val Judge(wellTypedExpr, exprType, exprEffect) = unifyEff(effect, judge)
+    val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effect, judge)
     val ty1 = (unifyTy(ty, exprType))
     Judge(wellTypedExpr, ty1, exprEffect)
   }
@@ -460,7 +456,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self]] extends Tycke
   def check(expr: Expr, ty: Option[Term] = None, effect: Option[Effects] = None): Judge = ty match {
     case Some(ty) => inherit(expr, ty, effect)
     case None => {
-      val Judge(wellTypedExpr, exprType, exprEffect) = unifyEff(effect, synthesize(expr, effect))
+      val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effect, synthesize(expr, effect))
       Judge(wellTypedExpr, exprType, exprEffect)
     }
   }
