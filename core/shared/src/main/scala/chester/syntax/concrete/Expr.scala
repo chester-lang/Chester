@@ -6,7 +6,7 @@ import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
-import chester.syntax.{ Name, QualifiedIDString, UnresolvedID}
+import chester.syntax.{Name, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -18,15 +18,15 @@ enum CommentType derives ReadWriter {
   case MultiLine
 }
 
-case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos]) derives ReadWriter
+case class Comment(content: String, typ: CommentType, sourcePos: Option[SourcePos])derives ReadWriter
 
-case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty, commentEndInThisLine: Vector[Comment] = Vector.empty) derives ReadWriter {
+case class CommentInfo(commentBefore: Vector[Comment], commentInBegin: Vector[Comment] = Vector.empty, commentInEnd: Vector[Comment] = Vector.empty, commentEndInThisLine: Vector[Comment] = Vector.empty)derives ReadWriter {
   if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty && commentEndInThisLine.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
 
-case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo]) derives ReadWriter {
+case class ExprMeta(sourcePos: Option[SourcePos], commentInfo: Option[CommentInfo])derives ReadWriter {
   require(sourcePos.isDefined || commentInfo.isDefined)
 }
 
@@ -164,9 +164,9 @@ object Block {
 }
 
 // in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false) derives ReadWriter {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false)derives ReadWriter {
   require(name.isInstanceOf[Identifier] || name.isInstanceOf[ResolvedLocalVar])
-  
+
   def getName: Name = name match {
     case Identifier(name, _) => name
     case ResolvedLocalVar(name, _, _) => name
@@ -191,7 +191,7 @@ case class Arg(decorations: Vector[Identifier] = Vector(), name: Expr, ty: Optio
   }
 }
 
-case class CallingArg(name: Option[Expr] = None, expr: Expr, vararg: Boolean = false) derives ReadWriter {
+case class CallingArg(name: Option[Expr] = None, expr: Expr, vararg: Boolean = false)derives ReadWriter {
   def descent(operator: Expr => Expr): CallingArg = {
     CallingArg(name.map(operator), operator(expr), vararg)
   }
@@ -237,23 +237,33 @@ object DefTelescope {
   def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): DefTelescope = DefTelescope(args.toVector, meta = meta)
 }
 
-case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class FunctionCall private[syntax](function: Expr, telescopes: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    FunctionCall(operator(function), telescope.descent(operator), meta)
+    FunctionCall(operator(function), telescopes.map(_.descent(operator)), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(function.toDoc </> telescope.toDoc)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(function.toDoc <> telescopes.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty))
 }
 
 object FunctionCall {
   def calls(function: Expr, telescopes: Seq[MaybeTelescope]): FunctionCall = {
-    if (telescopes.isEmpty) throw new IllegalArgumentException("At least one telescope should be present")
-    if (telescopes.tail.isEmpty) return FunctionCall(function, telescopes.head)
-    val head = FunctionCall(function, telescopes.head)
-    calls(head, telescopes.tail)
+    require(telescopes.nonEmpty, "At least one telescope should be present")
+    return FunctionCall(function, telescopes.toVector)
   }
+
+  def apply(function: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None): FunctionCall = {
+    require(telescope.nonEmpty, "At least one telescope should be present")
+    function match {
+      case FunctionCall(f, t, _) => new FunctionCall(f, t ++ telescope, meta)
+      case f => new FunctionCall(f, telescope, meta)
+    }
+  }
+
+  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = FunctionCall(function, Vector(telescope))
+
+  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = FunctionCall(function, Vector(telescope), meta)
 }
 
 case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr derives ReadWriter {
@@ -292,6 +302,7 @@ case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends 
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString)
 }
+
 case class RationalLiteral(value: Rational, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
@@ -451,6 +462,7 @@ case class DesaltFailed(origin: Expr, error: TyckProblem, meta: Option[ExprMeta]
 
 sealed trait DesaltPattern extends DesaltExpr derives ReadWriter {
   override def descent(operator: Expr => Expr): DesaltPattern = this
+
   def bindings: Vector[Identifier] = Vector.empty
 }
 
@@ -468,7 +480,7 @@ case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltP
   override def bindings: Vector[Identifier] = Vector(name)
 }
 
-case class Bindings(forwardingBindings: Vector[Identifier]=Vector.empty, sequentialBindings: Vector[Identifier]=Vector.empty) {
+case class Bindings(forwardingBindings: Vector[Identifier] = Vector.empty, sequentialBindings: Vector[Identifier] = Vector.empty) {
 }
 
 object Bindings {
@@ -479,7 +491,7 @@ object Bindings {
   }
 }
 
-sealed trait Stmt extends DesaltExpr derives ReadWriter  {
+sealed trait Stmt extends DesaltExpr derives ReadWriter {
   def bindings: Bindings = Bindings(Vector.empty, Vector.empty)
 
   def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Stmt) = (Vector.empty, Vector.empty, this)
@@ -495,12 +507,12 @@ sealed trait Stmt extends DesaltExpr derives ReadWriter  {
 }
 
 @deprecated("not used")
-private sealed trait NameUnknown extends Stmt derives ReadWriter  {
+private sealed trait NameUnknown extends Stmt derives ReadWriter {
   def getName: Option[Name] = None
 }
 
 @deprecated("not used")
-private sealed trait NameOption extends Stmt derives ReadWriter  {
+private sealed trait NameOption extends Stmt derives ReadWriter {
   def name: Option[Name]
 
   def getName: Option[Name] = name
@@ -626,7 +638,7 @@ case class PrecedenceGroupResolved(
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
                                   ) extends Stmt with PrecedenceGroup {
-   def getName: Option[Name] = Some(name.name)
+  def getName: Option[Name] = Some(name.name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val nameDoc = name.toString
@@ -654,11 +666,15 @@ sealed trait Defined extends ToDoc derives ReadWriter {
 
 case class DefinedPattern(pattern: DesaltPattern) extends Defined {
   override def toDoc(implicit options: PrettierOptions): Doc = pattern.toDoc
+
   def bindings: Vector[Identifier] = pattern.bindings
 }
-case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope]) extends Defined{
+
+case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope]) extends Defined {
   require(telescope.nonEmpty)
+
   def bindings: Vector[Identifier] = Vector(id)
+
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
 }
 
@@ -668,8 +684,8 @@ case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = N
   }
 
   override def bindings: Bindings = kind match {
-    case LetDefType.Let => Bindings(sequentialBindings=defined.bindings)
-    case LetDefType.Def => Bindings(forwardingBindings=defined.bindings)
+    case LetDefType.Let => Bindings(sequentialBindings = defined.bindings)
+    case LetDefType.Def => Bindings(forwardingBindings = defined.bindings)
   }
 
 
@@ -700,6 +716,7 @@ case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 
 case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = this
+
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): BuiltinExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc

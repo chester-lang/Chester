@@ -79,6 +79,8 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
   
+  def checkCallingTelescope(f: FunctionType, telescope: Vector[MaybeTelescope], effects: Option[Effects]) = ???
+  
   def synthesizeFunctionCall(call: FunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
     ???

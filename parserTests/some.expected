@@ -403,110 +403,112 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              OpSeq(
-                seq = Vector(
-                  Identifier(
-                    name = "T",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 107, line = 8, column = 20),
-                              end = Pos(index = 107, line = 8, column = 20)
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                OpSeq(
+                  seq = Vector(
+                    Identifier(
+                      name = "T",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 107, line = 8, column = 20),
+                                end = Pos(index = 107, line = 8, column = 20)
+                              )
                             )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = ":",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 108, line = 8, column = 21),
-                              end = Pos(index = 108, line = 8, column = 21)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = "Type",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 110, line = 8, column = 23),
-                              end = Pos(index = 113, line = 8, column = 26)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  )
-                ),
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 107, line = 8, column = 20),
-                          end = Pos(index = 107, line = 8, column = 20)
+                          ),
+                          commentInfo = None
                         )
                       )
                     ),
-                    commentInfo = None
-                  )
-                )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
+                    Identifier(
+                      name = ":",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 108, line = 8, column = 21),
+                                end = Pos(index = 108, line = 8, column = 21)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
                     ),
-                    range = RangeInFile(
-                      start = Pos(index = 106, line = 8, column = 19),
-                      end = Pos(index = 114, line = 8, column = 27)
+                    Identifier(
+                      name = "Type",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 110, line = 8, column = 23),
+                                end = Pos(index = 113, line = 8, column = 26)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 107, line = 8, column = 20),
+                            end = Pos(index = 107, line = 8, column = 20)
+                          )
+                        )
+                      ),
+                      commentInfo = None
                     )
                   )
-                ),
-                commentInfo = None
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 106, line = 8, column = 19),
+                        end = Pos(index = 114, line = 8, column = 27)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
               )
             )
           ),
@@ -629,46 +631,48 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              Identifier(
-                name = "Int",
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 141, line = 10, column = 23),
-                          end = Pos(index = 143, line = 10, column = 25)
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                Identifier(
+                  name = "Int",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 141, line = 10, column = 23),
+                            end = Pos(index = 143, line = 10, column = 25)
+                          )
                         )
-                      )
-                    ),
-                    commentInfo = None
-                  )
-                )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = 140, line = 10, column = 22),
-                      end = Pos(index = 144, line = 10, column = 26)
+                      ),
+                      commentInfo = None
                     )
                   )
-                ),
-                commentInfo = None
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 140, line = 10, column = 22),
+                        end = Pos(index = 144, line = 10, column = 26)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
               )
             )
           ),
@@ -902,46 +906,48 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              Identifier(
-                name = "Bool",
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 186, line = 14, column = 23),
-                          end = Pos(index = 189, line = 14, column = 26)
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                Identifier(
+                  name = "Bool",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 186, line = 14, column = 23),
+                            end = Pos(index = 189, line = 14, column = 26)
+                          )
                         )
-                      )
-                    ),
-                    commentInfo = None
-                  )
-                )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = 185, line = 14, column = 22),
-                      end = Pos(index = 190, line = 14, column = 27)
+                      ),
+                      commentInfo = None
                     )
                   )
-                ),
-                commentInfo = None
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 185, line = 14, column = 22),
+                        end = Pos(index = 190, line = 14, column = 27)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
               )
             )
           ),
@@ -1177,195 +1183,197 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              OpSeq(
-                seq = Vector(
-                  Identifier(
-                    name = "n",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 240, line = 18, column = 30),
-                              end = Pos(index = 240, line = 18, column = 30)
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                OpSeq(
+                  seq = Vector(
+                    Identifier(
+                      name = "n",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 240, line = 18, column = 30),
+                                end = Pos(index = 240, line = 18, column = 30)
+                              )
                             )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = ":",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 241, line = 18, column = 31),
-                              end = Pos(index = 241, line = 18, column = 31)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = "Nat",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 243, line = 18, column = 33),
-                              end = Pos(index = 245, line = 18, column = 35)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  )
-                ),
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 240, line = 18, column = 30),
-                          end = Pos(index = 240, line = 18, column = 30)
+                          ),
+                          commentInfo = None
                         )
                       )
                     ),
-                    commentInfo = None
+                    Identifier(
+                      name = ":",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 241, line = 18, column = 31),
+                                end = Pos(index = 241, line = 18, column = 31)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    Identifier(
+                      name = "Nat",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 243, line = 18, column = 33),
+                                end = Pos(index = 245, line = 18, column = 35)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 240, line = 18, column = 30),
+                            end = Pos(index = 240, line = 18, column = 30)
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                OpSeq(
+                  seq = Vector(
+                    Identifier(
+                      name = "T",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 248, line = 18, column = 38),
+                                end = Pos(index = 248, line = 18, column = 38)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    Identifier(
+                      name = ":",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 249, line = 18, column = 39),
+                                end = Pos(index = 249, line = 18, column = 39)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    ),
+                    Identifier(
+                      name = "Type",
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 251, line = 18, column = 41),
+                                end = Pos(index = 254, line = 18, column = 44)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 248, line = 18, column = 38),
+                            end = Pos(index = 248, line = 18, column = 38)
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
                   )
                 )
               ),
-              OpSeq(
-                seq = Vector(
-                  Identifier(
-                    name = "T",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 248, line = 18, column = 38),
-                              end = Pos(index = 248, line = 18, column = 38)
-                            )
-                          )
-                        ),
-                        commentInfo = None
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 239, line = 18, column = 29),
+                        end = Pos(index = 255, line = 18, column = 45)
                       )
                     )
                   ),
-                  Identifier(
-                    name = ":",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 249, line = 18, column = 39),
-                              end = Pos(index = 249, line = 18, column = 39)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  ),
-                  Identifier(
-                    name = "Type",
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 251, line = 18, column = 41),
-                              end = Pos(index = 254, line = 18, column = 44)
-                            )
-                          )
-                        ),
-                        commentInfo = None
-                      )
-                    )
-                  )
-                ),
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 248, line = 18, column = 38),
-                          end = Pos(index = 248, line = 18, column = 38)
-                        )
-                      )
-                    ),
-                    commentInfo = None
-                  )
+                  commentInfo = None
                 )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = 239, line = 18, column = 29),
-                      end = Pos(index = 255, line = 18, column = 45)
-                    )
-                  )
-                ),
-                commentInfo = None
               )
             )
           ),
@@ -1491,67 +1499,69 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              IntegerLiteral(
-                value = 0,
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 283, line = 20, column = 24),
-                          end = Pos(index = 283, line = 20, column = 24)
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                IntegerLiteral(
+                  value = 0,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 283, line = 20, column = 24),
+                            end = Pos(index = 283, line = 20, column = 24)
+                          )
                         )
-                      )
-                    ),
-                    commentInfo = None
-                  )
-                )
-              ),
-              Identifier(
-                name = "T",
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 286, line = 20, column = 27),
-                          end = Pos(index = 286, line = 20, column = 27)
-                        )
-                      )
-                    ),
-                    commentInfo = None
-                  )
-                )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = 282, line = 20, column = 23),
-                      end = Pos(index = 287, line = 20, column = 28)
+                      ),
+                      commentInfo = None
                     )
                   )
                 ),
-                commentInfo = None
+                Identifier(
+                  name = "T",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/some.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 286, line = 20, column = 27),
+                            end = Pos(index = 286, line = 20, column = 27)
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 282, line = 20, column = 23),
+                        end = Pos(index = 287, line = 20, column = 28)
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
               )
             )
           ),
@@ -1698,11 +1708,76 @@ Block(
               )
             )
           ),
-          telescope = ListExpr(
-            terms = Vector(
-              FunctionCall(
-                function = Identifier(
-                  name = "succ",
+          telescopes = Vector(
+            ListExpr(
+              terms = Vector(
+                FunctionCall(
+                  function = Identifier(
+                    name = "succ",
+                    meta = Some(
+                      value = ExprMeta(
+                        sourcePos = Some(
+                          value = SourcePos(
+                            source = SourceOffset(
+                              source = FilePath(fileName = "parserTests/some.chester"),
+                              linesOffset = 0,
+                              posOffset = 0
+                            ),
+                            range = RangeInFile(
+                              start = Pos(index = 319, line = 23, column = 25),
+                              end = Pos(index = 322, line = 23, column = 28)
+                            )
+                          )
+                        ),
+                        commentInfo = None
+                      )
+                    )
+                  ),
+                  telescopes = Vector(
+                    Tuple(
+                      terms = Vector(
+                        Identifier(
+                          name = "n",
+                          meta = Some(
+                            value = ExprMeta(
+                              sourcePos = Some(
+                                value = SourcePos(
+                                  source = SourceOffset(
+                                    source = FilePath(fileName = "parserTests/some.chester"),
+                                    linesOffset = 0,
+                                    posOffset = 0
+                                  ),
+                                  range = RangeInFile(
+                                    start = Pos(index = 324, line = 23, column = 30),
+                                    end = Pos(index = 324, line = 23, column = 30)
+                                  )
+                                )
+                              ),
+                              commentInfo = None
+                            )
+                          )
+                        )
+                      ),
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 323, line = 23, column = 29),
+                                end = Pos(index = 325, line = 23, column = 31)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
+                      )
+                    )
+                  ),
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
@@ -1722,30 +1797,8 @@ Block(
                     )
                   )
                 ),
-                telescope = Tuple(
-                  terms = Vector(
-                    Identifier(
-                      name = "n",
-                      meta = Some(
-                        value = ExprMeta(
-                          sourcePos = Some(
-                            value = SourcePos(
-                              source = SourceOffset(
-                                source = FilePath(fileName = "parserTests/some.chester"),
-                                linesOffset = 0,
-                                posOffset = 0
-                              ),
-                              range = RangeInFile(
-                                start = Pos(index = 324, line = 23, column = 30),
-                                end = Pos(index = 324, line = 23, column = 30)
-                              )
-                            )
-                          ),
-                          commentInfo = None
-                        )
-                      )
-                    )
-                  ),
+                Identifier(
+                  name = "T",
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
@@ -1756,72 +1809,33 @@ Block(
                             posOffset = 0
                           ),
                           range = RangeInFile(
-                            start = Pos(index = 323, line = 23, column = 29),
-                            end = Pos(index = 325, line = 23, column = 31)
+                            start = Pos(index = 328, line = 23, column = 34),
+                            end = Pos(index = 328, line = 23, column = 34)
                           )
                         )
                       ),
                       commentInfo = None
                     )
                   )
-                ),
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 319, line = 23, column = 25),
-                          end = Pos(index = 322, line = 23, column = 28)
-                        )
-                      )
-                    ),
-                    commentInfo = None
-                  )
                 )
               ),
-              Identifier(
-                name = "T",
-                meta = Some(
-                  value = ExprMeta(
-                    sourcePos = Some(
-                      value = SourcePos(
-                        source = SourceOffset(
-                          source = FilePath(fileName = "parserTests/some.chester"),
-                          linesOffset = 0,
-                          posOffset = 0
-                        ),
-                        range = RangeInFile(
-                          start = Pos(index = 328, line = 23, column = 34),
-                          end = Pos(index = 328, line = 23, column = 34)
-                        )
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/some.chester"),
+                        linesOffset = 0,
+                        posOffset = 0
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = 318, line = 23, column = 24),
+                        end = Pos(index = 329, line = 23, column = 35)
                       )
-                    ),
-                    commentInfo = None
-                  )
-                )
-              )
-            ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/some.chester"),
-                      linesOffset = 0,
-                      posOffset = 0
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = 318, line = 23, column = 24),
-                      end = Pos(index = 329, line = 23, column = 35)
                     )
-                  )
-                ),
-                commentInfo = None
+                  ),
+                  commentInfo = None
+                )
               )
             )
           ),
@@ -1997,67 +2011,69 @@ Block(
                       )
                     )
                   ),
-                  telescope = ListExpr(
-                    terms = Vector(
-                      Identifier(
-                        name = "n",
-                        meta = Some(
-                          value = ExprMeta(
-                            sourcePos = Some(
-                              value = SourcePos(
-                                source = SourceOffset(
-                                  source = FilePath(fileName = "parserTests/some.chester"),
-                                  linesOffset = 0,
-                                  posOffset = 0
-                                ),
-                                range = RangeInFile(
-                                  start = Pos(index = 359, line = 25, column = 15),
-                                  end = Pos(index = 359, line = 25, column = 15)
+                  telescopes = Vector(
+                    ListExpr(
+                      terms = Vector(
+                        Identifier(
+                          name = "n",
+                          meta = Some(
+                            value = ExprMeta(
+                              sourcePos = Some(
+                                value = SourcePos(
+                                  source = SourceOffset(
+                                    source = FilePath(fileName = "parserTests/some.chester"),
+                                    linesOffset = 0,
+                                    posOffset = 0
+                                  ),
+                                  range = RangeInFile(
+                                    start = Pos(index = 359, line = 25, column = 15),
+                                    end = Pos(index = 359, line = 25, column = 15)
+                                  )
                                 )
-                              )
-                            ),
-                            commentInfo = None
-                          )
-                        )
-                      ),
-                      Identifier(
-                        name = "T",
-                        meta = Some(
-                          value = ExprMeta(
-                            sourcePos = Some(
-                              value = SourcePos(
-                                source = SourceOffset(
-                                  source = FilePath(fileName = "parserTests/some.chester"),
-                                  linesOffset = 0,
-                                  posOffset = 0
-                                ),
-                                range = RangeInFile(
-                                  start = Pos(index = 362, line = 25, column = 18),
-                                  end = Pos(index = 362, line = 25, column = 18)
-                                )
-                              )
-                            ),
-                            commentInfo = None
-                          )
-                        )
-                      )
-                    ),
-                    meta = Some(
-                      value = ExprMeta(
-                        sourcePos = Some(
-                          value = SourcePos(
-                            source = SourceOffset(
-                              source = FilePath(fileName = "parserTests/some.chester"),
-                              linesOffset = 0,
-                              posOffset = 0
-                            ),
-                            range = RangeInFile(
-                              start = Pos(index = 358, line = 25, column = 14),
-                              end = Pos(index = 363, line = 25, column = 19)
+                              ),
+                              commentInfo = None
                             )
                           )
                         ),
-                        commentInfo = None
+                        Identifier(
+                          name = "T",
+                          meta = Some(
+                            value = ExprMeta(
+                              sourcePos = Some(
+                                value = SourcePos(
+                                  source = SourceOffset(
+                                    source = FilePath(fileName = "parserTests/some.chester"),
+                                    linesOffset = 0,
+                                    posOffset = 0
+                                  ),
+                                  range = RangeInFile(
+                                    start = Pos(index = 362, line = 25, column = 18),
+                                    end = Pos(index = 362, line = 25, column = 18)
+                                  )
+                                )
+                              ),
+                              commentInfo = None
+                            )
+                          )
+                        )
+                      ),
+                      meta = Some(
+                        value = ExprMeta(
+                          sourcePos = Some(
+                            value = SourcePos(
+                              source = SourceOffset(
+                                source = FilePath(fileName = "parserTests/some.chester"),
+                                linesOffset = 0,
+                                posOffset = 0
+                              ),
+                              range = RangeInFile(
+                                start = Pos(index = 358, line = 25, column = 14),
+                                end = Pos(index = 363, line = 25, column = 19)
+                              )
+                            )
+                          ),
+                          commentInfo = None
+                        )
                       )
                     )
                   ),
