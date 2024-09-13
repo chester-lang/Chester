@@ -280,6 +280,8 @@ case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, varar
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
   }
+
+  override def descent(f: Term => Term): ArgTerm = thisOr(copy(ty = f(ty), default = default.map(f)))
 }
 
 object ArgTerm {
@@ -295,6 +297,8 @@ case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) ext
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     Docs.`(` <> argsDoc <> Docs.`)`
   }
+
+  override def descent(f: Term => Term): TelescopeTerm = thisOr(copy(args = args.map(_.descent(f))))
 }
 
 case class ScopeId(id: UniqId)derives ReadWriter
@@ -309,6 +313,8 @@ case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None,
     val bodyDoc = body.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(tyDoc <+> bodyDoc)
   }
+
+  override def descent(f: Term => Term): Term = thisOr(copy(ty = ty.descent(f), body = f(body)))
 }
 
 case class MatchingClause()derives ReadWriter {
@@ -329,6 +335,8 @@ case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect
     val resultDoc = resultTy.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
   }
+
+  override def descent(f: Term => Term): FunctionType = thisOr(copy(telescope = telescope.map(_.descent(f)), effects = effects.descent(f), resultTy = f(resultTy)))
 }
 
 
