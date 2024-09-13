@@ -4,7 +4,7 @@ package chester.syntax.core
 import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
-import chester.syntax.{ Id, QualifiedIDString}
+import chester.syntax.{Id, QualifiedIDString}
 import chester.utils.doc.*
 import chester.utils.{encodeString, reuse}
 import spire.math.Rational
@@ -114,6 +114,10 @@ sealed trait Term extends ToDoc derives ReadWriter {
 
   final def substitute(from: Term & HasVarId, to: Term): Term = {
     if (from == to) return this
+    if (to match {
+      case to: HasVarId => from.varId == to.varId
+      case _ => false
+    }) return this
     descentRecursive {
       case x: HasVarId if x.varId == from.varId => to
       case x => x
@@ -299,7 +303,7 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingCl
 // Note that effect and result can use variables from telescope
 case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val telescopeDoc = if(telescope.isEmpty) Doc.empty else telescope.map(_.toDoc).reduce(_ <+> _)
+    val telescopeDoc = if (telescope.isEmpty) Doc.empty else telescope.map(_.toDoc).reduce(_ <+> _)
     val effectDoc = effects.toDoc
     val resultDoc = resultTy.toDoc
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+> effectDoc <+> resultDoc)
@@ -401,8 +405,8 @@ sealed trait Effect extends ToDoc derives ReadWriter
 implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalVar]]].bimap(_.effects, Effects(_))
 
 case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) extends AnyVal with ToDoc {
-  override def toDoc(implicit options: PrettierOptions): Doc = 
-    Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) => 
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) =>
       Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
     }.toSeq: _*)
 
@@ -413,19 +417,19 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
     Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
 
   def lookup(effect: Effect): Option[Vector[LocalVar]] = effects.get(effect)
-  
+
   def lookupPair(effect: Effect): Option[(Effect, Vector[LocalVar])] = effects.get(effect).map(effect -> _)
-  
-  def mapOnVars(f: (Effect, Vector[LocalVar]) => Vector[LocalVar]): Effects = 
+
+  def mapOnVars(f: (Effect, Vector[LocalVar]) => Vector[LocalVar]): Effects =
     Effects(effects.map { case (effect, names) => effect -> f(effect, names) })
-  
+
   def getEffects: Seq[Effect] = effects.keys.toSeq
-  
+
   def contains(effect: Effect): Boolean = effects.contains(effect)
-  
+
   def containAll(effects: Seq[Effect]): Boolean = effects.forall(this.contains)
 
-  def merge(other: Effects): Effects = 
+  def merge(other: Effects): Effects =
     Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>
       acc.updated(effect, acc.getOrElse(effect, Vector.empty) ++ names)
     })
