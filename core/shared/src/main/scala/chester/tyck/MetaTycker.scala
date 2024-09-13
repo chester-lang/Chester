@@ -44,4 +44,10 @@ trait MetaTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     term.substitute(subst)
   }
 
+  def finishMetas(judge: Judge): Judge = {
+    val wellTyped = finishMetas(judge.wellTyped)
+    val ty = finishMetas(judge.ty)
+    val effects = judge.effects.descent(finishMetas)
+    Judge(wellTyped, ty, effects)
+  }
 }

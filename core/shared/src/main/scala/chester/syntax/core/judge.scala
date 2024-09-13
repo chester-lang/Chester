@@ -3,7 +3,7 @@ import upickle.default.*
 
 case class Judge(wellTyped: Term, ty: Term, effects: Effects = NoEffect)  derives ReadWriter {
   def toMaybe: JudgeMaybeEffect = JudgeMaybeEffect(wellTyped, ty, Some(effects))
-  def substitute(from: Term & HasUniqId, to: Term): Judge = Judge(wellTyped.substitute(from, to), ty.substitute(from, to), effects)
+  def substitute(from: Term & HasUniqId, to: Term): Judge = Judge(wellTyped.substitute(from, to), ty.substitute(from, to), effects.descent(_.substitute(from, to)))
 }
 
 case class JudgeNoEffect(wellTyped: Term, ty: Term)  derives ReadWriter {

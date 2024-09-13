@@ -431,8 +431,10 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
       Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
     }.toSeq: _*)
 
-  def descent(f: Effect => Effect): Effects =
+  def descentEffects(f: Effect => Effect): Effects =
     Effects(effects.map { case (effect, names) => f(effect) -> names })
+    
+  def descent(f: Term => Term): Effects = this // TODO
 
   def add(effect: Effect, name: LocalVar): Effects =
     Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
