@@ -7,7 +7,7 @@ import chester.syntax.core._
 trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self]] extends Tycker[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
     val tyJudge = arg.ty.map(this.checkType)
-    assert(tyJudge.isEmpty || tyJudge.get.effect == NoEffect)
+    assert(tyJudge.isEmpty || tyJudge.get.effects == NoEffect)
     val ty = tyJudge.map(_.wellTyped)
     val ty1 = ty.getOrElse(this.genTypeVariable(name = Some(arg.getName + "_t")))
     val default = arg.exprOrDefault.map(this.inherit(_, ty1, effects))
@@ -17,7 +17,7 @@ trait TelescopeTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTyck
     }
     val idVar = LocalVar.generate(id.name, ty1)
     val newCtx = localCtx.extend(idVar)
-    val effect = default.map(_.effect).getOrElse(NoEffect)
+    val effect = default.map(_.effects).getOrElse(NoEffect)
     WithCtxEffect(newCtx, effect, ArgTerm(idVar, ty1, default.map(_.wellTyped)))
   }
 

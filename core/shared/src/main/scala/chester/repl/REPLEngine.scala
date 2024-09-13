@@ -132,7 +132,7 @@ inline private def REPLEngine[F[_]](using inline runner: Runner[F], inline inTer
   def prettyPrintJudge(judge: Judge): String = {
     val termDoc = judge.wellTyped
     val typeDoc = judge.ty
-    val effectDoc = judge.effect
+    val effectDoc = judge.effects
 
     val checkOnEffect: String = render(effectDoc)
     val doc = if (checkOnEffect == "[]") termDoc <+> Doc.text(":") <+> typeDoc

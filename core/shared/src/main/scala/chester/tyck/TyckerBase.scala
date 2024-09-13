@@ -33,7 +33,7 @@ extension (subst: Solutions) {
   def walk(term: MetaTerm): Judge = subst.get(term.id) match {
     case Some(Constraint.Is(clause)) => clause.wellTyped match {
       case term: MetaTerm => subst.walk(term)
-      case _ => Judge(clause.wellTyped, clause.ty, clause.effect)
+      case _ => Judge(clause.wellTyped, clause.ty, clause.effects)
     }
     case Some(Constraint.TyRange(lower, upper)) => Judge(term, term.ty, term.effect) // TODO
     case None => Judge(term, term.ty, term.effect)
@@ -297,7 +297,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
           synthesize(term, effects)
         }
         val ty = tyFold(judges.map(_.ty))
-        val effect = effectFold(judges.map(_.effect))
+        val effect = effectFold(judges.map(_.effects))
         Judge(ListTerm(judges.map(_.wellTyped)), ListType(ty), effect)
       case objExpr: ObjectExpr =>
         synthesizeObjectExpr(objExpr, effects)
@@ -324,9 +324,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
         val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, effects, f)
         val checker = rec(newCtx)
         val resultTy = f.resultTy.map(checker.checkType)
-        assert(resultTy.isEmpty || resultTy.get.effect == NoEffect)
+        assert(resultTy.isEmpty || resultTy.get.effects == NoEffect)
         val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
-        val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effect))
+        val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effects))
         val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)
         //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
         this.cleanupFunction(Function(funcTy, body.wellTyped))
@@ -382,7 +382,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     result match
       case term: MetaTerm => {
         val walked = walk(term)
-        require(walked.effect == NoEffect)
+        require(walked.effects == NoEffect)
         whnfNoEffect(walked.wellTyped)
       }
       case _ => result
