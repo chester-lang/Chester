@@ -96,7 +96,7 @@ case class ResolvedIdentifier(module: QualifiedIDString, name: Id, meta: Option[
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(module.toString) <> Doc.text(".") <> Doc.text(name.toString))
 }
 
-case class ResolvedLocalVar(name: Id, varId: VarId, meta: Option[ExprMeta] = None) extends Expr {
+case class ResolvedLocalVar(name: Id, varId: UniqId, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ResolvedLocalVar = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text(name.toString) <> Doc.text(s"(${varId})"))

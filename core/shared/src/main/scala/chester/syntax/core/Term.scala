@@ -112,14 +112,14 @@ sealed trait Term extends ToDoc derives ReadWriter {
     if (level.value == 0) this else doElevate(level)
   }
 
-  final def substitute(from: Term & HasVarId, to: Term): Term = {
+  final def substitute(from: Term & HasUniqId, to: Term): Term = {
     if (from == to) return this
     if (to match {
-      case to: HasVarId => from.varId == to.varId
+      case to: HasUniqId => from.uniqId == to.uniqId
       case _ => false
     }) return this
     descentRecursive {
-      case x: HasVarId if x.varId == from.varId => to
+      case x: HasUniqId if x.uniqId == from.uniqId => to
       case x => x
     }
   }
@@ -276,10 +276,10 @@ case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) ext
   }
 }
 
-case class ScopeId(id: VarId)derives ReadWriter
+case class ScopeId(id: UniqId)derives ReadWriter
 
 object ScopeId {
-  def generate: ScopeId = ScopeId(VarId.generate)
+  def generate: ScopeId = ScopeId(UniqId.generate)
 }
 
 case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None, meta: OptionTermMeta = None) extends TermWithMeta {
@@ -468,20 +468,20 @@ case object STEffect extends Effect {
 }
 
 sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
-  def varId: VarId
+  def uniqId: UniqId
 
   def id: Id
 }
 
-case class LocalVar(id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall with HasVarId {
+case class LocalVar(id: Id, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
 }
 
 object LocalVar {
-  def generate(id: Id, ty: Term): LocalVar = LocalVar(id, ty, VarId.generate)
+  def generate(id: Id, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
 }
 
-case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, varId: VarId, meta: OptionTermMeta = None) extends MaybeVarCall {
+case class ToplevelVarCall(module: QualifiedIDString, id: Id, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 }
 
@@ -489,12 +489,12 @@ case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
 }
 
-case class MetaTerm(description: String, id: VarId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term {
+case class MetaTerm(description: String, id: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + id)
 }
 
 object MetaTerm {
-  def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, VarId.generate, ty)
+  def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, UniqId.generate, ty)
 }
 
 sealed trait StmtTerm derives ReadWriter {

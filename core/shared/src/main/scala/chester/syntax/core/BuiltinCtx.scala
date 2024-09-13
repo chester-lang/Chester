@@ -18,11 +18,11 @@ object Imports {
 }
 
 class Context(map: Map[Id, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
-  private val varMap: Map[VarId, Id] = map.map { case (id, CtxItem(name, _)) => name.varId -> id }
+  private val varMap: Map[UniqId, Id] = map.map { case (id, CtxItem(name, _)) => name.uniqId -> id }
 
   def get(id: Id): Option[CtxItem] = map.get(id)
 
-  def getByVarId(varId: VarId): Option[CtxItem] = varMap.get(varId).flatMap(get)
+  def getByVarId(varId: UniqId): Option[CtxItem] = varMap.get(varId).flatMap(get)
   
   def extend(name: LocalVar): Context = {
     val id = name.id
@@ -39,7 +39,7 @@ object Context {
 
 object BuiltinCtx {
   def builtinItem(id: Id, value: Term, ty: Term): (Id, CtxItem) = {
-    val varId = VarId.generate
+    val varId = UniqId.generate
     val name = ToplevelVarCall(QualifiedIDString.from(), id, ty, varId)
     val judge = JudgeNoEffect(value, ty)
     (id, CtxItem(name, judge))

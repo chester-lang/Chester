@@ -22,7 +22,7 @@ object Constraint {
   }
 }
 
-type Solutions = Map[VarId, Constraint]
+type Solutions = Map[UniqId, Constraint]
 
 object Solutions {
   val Empty: Solutions = Map.empty
@@ -51,7 +51,7 @@ case class TyckState(subst: Solutions = Solutions.Empty)
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Id): Option[CtxItem] = ctx.get(id)
 
-  def resolve(id: VarId): Option[CtxItem] = ctx.getByVarId(id)
+  def resolve(id: UniqId): Option[CtxItem] = ctx.getByVarId(id)
 
   def extend(name: LocalVar): LocalCtx = copy(ctx = ctx.extend(name))
 }
@@ -390,7 +390,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
 
   def genTypeVariable(name: Option[Id] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
     val id = name.getOrElse("t")
-    val varid = VarId.generate
+    val varid = UniqId.generate
     MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)
   }
 

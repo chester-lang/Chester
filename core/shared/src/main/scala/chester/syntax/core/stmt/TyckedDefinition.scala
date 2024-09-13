@@ -17,13 +17,13 @@ sealed trait TyckedDefinition {
 
 sealed trait TyckedDefinitionNamed extends TyckedDefinition {
   def name: Id
-  def varId: VarId
+  def varId: UniqId
 }
 
 case class TyckedExpression(judge: Judge, meta: Option[TermMeta] = None) extends TyckedDefinition
 
 case class RecordMember()
 
-case class TyckedRecord(name: Id, varId: VarId, members: Vector[RecordMember], meta: Option[TermMeta] = None) extends TyckedDefinitionNamed
+case class TyckedRecord(name: Id, varId: UniqId, members: Vector[RecordMember], meta: Option[TermMeta] = None) extends TyckedDefinitionNamed
 
-case class TyckedDef(name: Id, varId: VarId, body: Judge, meta: Option[TermMeta] = None) extends TyckedDefinitionNamed
+case class TyckedDef(name: Id, varId: UniqId, body: Judge, meta: Option[TermMeta] = None) extends TyckedDefinitionNamed
