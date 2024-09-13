@@ -395,7 +395,7 @@ object Intersection {
   }
 }
 
-/** Effect needs to have reasonable equals and hashcode for simple comparision, where they are not requirements for other Terms */
+/** Effect needs to have reasonable equals and hashcode for simple comparison, whereas they are not requirements for other Terms */
 sealed trait Effect extends ToDoc derives ReadWriter
 
 implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalVar]]].bimap(_.effects, Effects(_))

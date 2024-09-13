@@ -328,7 +328,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
         val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
         val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effect))
         val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)
-        Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
+        //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
+        this.cleanupFunction(Function(funcTy, body.wellTyped))
       }
 
       case _ =>
@@ -344,7 +345,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
 
   def synthesizeTyTerm(term: Term): JudgeNoEffect = {
     term match {
-      case _ => ???
+      case _ => JudgeNoEffect(term, Typeω) // TODO
     }
   }
 
@@ -461,19 +462,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  /** do cleanup on Effects to only use one variable for an effect */
-  def cleanup(judge: Judge): Judge = {
-    val newEffects = Effects.unchecked(judge.effect.effects.map { case (effect, names) =>
-      effect -> Vector(names.head)
-    })
-    var wellTyped = judge.wellTyped
-    var ty = judge.ty
-    for ((effect, names) <- judge.effect.effects; name <- names.tail) {
-      wellTyped = wellTyped.substitute(name, names.head)
-      ty = ty.substitute(name, names.head)
-    }
-    Judge(wellTyped, ty, newEffects)
-  }
 }
 
 object ExprTycker {
