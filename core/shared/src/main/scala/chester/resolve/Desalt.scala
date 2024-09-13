@@ -9,36 +9,25 @@ import chester.utils.reuse
 
 case class DesugarInfo()
 
-private object ExpectDesaltPattern {
-  @throws[TyckError]
-  def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Some[DesaltPattern] = x match {
-    case _ => throw ExpectPattern(x)
-  }
-}
-
 private object DesaltCaseClauseMatch {
-  @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DesaltCaseClause] = x match {
-    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) => Some(DesaltCaseClause(pattern, returning, meta))
-    case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => throw ExpectCase(x)
+    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) => 
+      Some(DesaltCaseClause(pattern, returning, meta))
+    case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => 
+      val error = ExpectCase(x)
+      reporter(error)
+      None
     case _ => None
   }
 }
 
 private object MatchDeclarationTelescope {
-  @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = x match {
     case id: Identifier => Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
     case _ => ???
   }
 }
 
-private object MatchApplyingTelescope {
-  @throws[TyckError]
-  def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Nothing] = ???
-}
-
-@throws[TyckProblem]
 def opSeq(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Expr = SimpleDesalt.desugar(OpSeq(xs.toVector))
 
 @scala.deprecated("use opSeq")
@@ -48,7 +37,6 @@ private object SingleExpr {
   }
 
   object Expect {
-    @throws[TyckError]
     def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Some[Expr] = Some(opSeq(xs))
   }
 }
@@ -59,7 +47,6 @@ private object DesaltSimpleFunction {
     case _ => false
   }
 
-  @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Expr] = x match {
     case OpSeq(xs, meta) if xs.exists(predicate) => {
       val index = xs.indexWhere(predicate)
@@ -67,10 +54,12 @@ private object DesaltSimpleFunction {
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => {
+        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => 
           Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
-        }
-        case _ => throw ExpectLambda(x)
+        case _ => 
+          val error = ExpectLambda(x)
+          reporter(error)
+          Some(DesaltFailed(x, error, meta))
       }
     }
     case _ => None
@@ -163,8 +152,6 @@ case object StmtDesalt {
         return None
   }
 
-  @throws[TyckWarning]
-  @throws[TyckError]
   def letdef(decorations: Vector[Expr], kw: Identifier, xs: Vector[Expr], cause: Expr)(using reporter: Reporter[TyckProblem]): Stmt = {
     val typeAnnotation = xs.indexWhere {
       case Identifier(Const.`:`, meta) => true
@@ -179,33 +166,73 @@ case object StmtDesalt {
       case Const.Def => LetDefType.Def
       case _ => unreachable(s"Unknown keyword ${kw.name}")
     }
-    if (xs.length < 1) throw ExpectLetDef(cause)
+    if (xs.length < 1) {
+      val error = ExpectLetDef(cause)
+      reporter(error)
+      return DesaltFailed(cause, error, cause.meta)
+    }
     if (typeAnnotation == -1 && valueAnnotation == -1) {
-      val on = defined(xs).getOrElse(throw ExpectLetDef(cause))
+      val on = defined(xs).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
       return LetDefStmt(kind, on, decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation != -1 && valueAnnotation == -1) {
-      val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
-      val typeExpr = SingleExpr.unapply(xs.drop(typeAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      val on = defined(xs.take(typeAnnotation)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
+      val typeExpr = SingleExpr.unapply(xs.drop(typeAnnotation + 1)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
       return LetDefStmt(kind, on, ty = Some(typeExpr), decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation == -1 && valueAnnotation != -1) {
-      val on = defined(xs.take(valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
-      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      val on = defined(xs.take(valueAnnotation)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
+      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
       return LetDefStmt(kind, on, body = Some(valueExpr), decorations = decorations, meta = cause.meta)
     }
     if (typeAnnotation != -1 && valueAnnotation != -1) {
-      if (typeAnnotation > valueAnnotation) throw ExpectLetDef(cause)
-      val on = defined(xs.take(typeAnnotation)).getOrElse(throw ExpectLetDef(cause))
-      val typeExpr = SingleExpr.unapply(xs.slice(typeAnnotation + 1, valueAnnotation)).getOrElse(throw ExpectLetDef(cause))
-      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse(throw ExpectLetDef(cause))
+      if (typeAnnotation > valueAnnotation) {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
+      val on = defined(xs.take(typeAnnotation)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
+      val typeExpr = SingleExpr.unapply(xs.slice(typeAnnotation + 1, valueAnnotation)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
+      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse {
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+      }
       return LetDefStmt(kind, on, ty = Some(typeExpr), body = Some(valueExpr), decorations = decorations, meta = cause.meta)
     }
-    throw ExpectLetDef(cause)
+    val error = ExpectLetDef(cause)
+    reporter(error)
+    DesaltFailed(cause, error, cause.meta)
   }
 
-  @throws[TyckWarning]
-  @throws[TyckError]
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Stmt] = x match {
     case opseq@OpSeq(seq, meta) => {
       val kw = seq.indexWhere {
@@ -231,20 +258,22 @@ case object StmtDesalt {
 }
 
 case object SimpleDesalt {
-  @throws[TyckWarning]
-  @throws[TyckError]
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = expr.descentRecursive {
     case OpSeq(xs, meta) if xs.length == 1 => xs.head
     case DesaltCaseClauseMatch(x) => x
     case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
       val seq: Vector[Expr] = heads ++ tail.toVector
-      if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) throw ExpectFullCaseBlock(b)
-      val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
-      DesaltMatching(heads1, meta)
+      if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) {
+        val error = ExpectFullCaseBlock(b)
+        reporter(error)
+        DesaltFailed(b, error, meta)
+      } else {
+        val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
+        DesaltMatching(heads1, meta)
+      }
     }
-    case b@Block(heads, tail, meta) => {
+    case b@Block(heads, tail, meta) => 
       reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
-    }
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case default => default
@@ -252,6 +281,5 @@ case object SimpleDesalt {
 }
 
 case object OpSeqDesalt {
-  @throws[TyckError]
   def desugar(expr: Expr): Expr = ???
 }

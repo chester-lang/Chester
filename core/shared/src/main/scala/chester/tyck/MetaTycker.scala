@@ -1,7 +1,6 @@
 package chester.tyck
 
 import chester.error.*
-import chester.resolve.ExprResolver
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.{HasUniqId, *}

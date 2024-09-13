@@ -30,10 +30,10 @@ trait Problem extends ToDoc with WithServerity {
   def stage: Problem.Stage
 }
 
-sealed trait TyckProblem extends Exception with Problem derives ReadWriter {
+sealed trait TyckProblem extends Problem derives ReadWriter {
   final def stage: Problem.Stage = Problem.Stage.TYCK
 
-  final override def getMessage: String = {
+  final def getMessage: String = {
     implicit val options: PrettierOptions = PrettierOptions.Default
     render(toDoc)
   }

@@ -463,7 +463,7 @@ case object EmptyExpr extends ErrorExpr {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("EmptyExpr")
 }
 
-case class DesaltFailed(origin: Expr, error: TyckProblem, meta: Option[ExprMeta] = None) extends ErrorExpr {
+case class DesaltFailed(origin: Expr, error: TyckProblem, meta: Option[ExprMeta] = None) extends ErrorExpr with Stmt {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltFailed = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")"))

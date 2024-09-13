@@ -1,7 +1,7 @@
 package chester.tyck
 
 import chester.error.*
-import chester.resolve.ExprResolver
+import chester.resolve.SimpleDesalt
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
@@ -257,7 +257,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def resolve(expr: Expr): Expr = {
-    ExprResolver.resolve(localCtx, expr) match {
+    reuse(expr, SimpleDesalt.desugar(expr)) match {
       case block: Block if block.heads.isEmpty && block.tail.isDefined => block.tail.get
       case tuple: Tuple if tuple.terms.length == 1 => tuple.terms.head
       case expr => expr
