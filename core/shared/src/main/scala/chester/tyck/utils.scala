@@ -116,6 +116,6 @@ trait Tycker[Self <: Tycker[Self]] {
   def tyck: Tyck
 }
 
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with TelescopeTycker[ExprTyckerInternal] with EffTycker[ExprTyckerInternal] with MetaTycker[ExprTyckerInternal] {
+case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with FunctionTycker[ExprTyckerInternal] with EffTycker[ExprTyckerInternal] with MetaTycker[ExprTyckerInternal] {
   override def ev: this.type <:< ExprTyckerInternal = implicitly[this.type <:< ExprTyckerInternal]
 }

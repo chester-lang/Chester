@@ -12,7 +12,7 @@ import spire.math.Trilean.{True, Unknown}
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
+trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
 
   def superTypes(ty: Term): Option[Vector[Term]] = {
@@ -167,22 +167,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
     }
   }
 
-  def telescopePrecheck(telescopes: Vector[DefTelescope], cause: Expr): Unit = {
-    var ids = telescopes.flatMap(_.args).map(_.getName)
-    if (ids.distinct.length != ids.length) {
-      tyck.report(DuplicateTelescopeArgError(cause))
-    }
-    var inits = telescopes.filter(_.args.nonEmpty).flatMap(_.args.init)
-    if (inits.exists(_.vararg)) {
-      tyck.report(UnsupportedVarargError(cause))
-    }
-    if (telescopes.exists(_.args.isEmpty)) {
-      if (telescopes.length != 1) {
-        tyck.report(UnsupportedEmptyTelescopeError(cause))
-      }
-    }
-  }
-
   def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
@@ -221,19 +205,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Se
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
       }
-      case f: FunctionExpr => {
-        telescopePrecheck(f.telescope, f)
-        val effects = f.effect.map(this.checkEffect)
-        val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, effects, f)
-        val checker = rec(newCtx)
-        val resultTy = f.resultTy.map(checker.checkType)
-        assert(resultTy.isEmpty || resultTy.get.effects == NoEffect)
-        val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
-        val finalEffects = effects.getOrElse(effectUnion(defaultEff, body.effects))
-        val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)
-        //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
-        this.cleanupFunction(Function(funcTy, body.wellTyped))
-      }
+      case f: FunctionExpr => this.synthesizeFunction(f, effects)
+      case call: FunctionCall => this.synthesizeFunctionCall(call, effects)
 
       case _ =>
         val err = UnsupportedExpressionError(expr)

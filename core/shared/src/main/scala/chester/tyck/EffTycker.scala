@@ -4,7 +4,7 @@ import chester.error.EffectUnifyError
 import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 
-trait EffTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
+trait EffTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
 
   def checkEffect(effectExpr: Expr): Effects = NoEffect // TODO
 

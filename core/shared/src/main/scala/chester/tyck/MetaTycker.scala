@@ -12,7 +12,7 @@ import scala.annotation.tailrec
 import scala.language.implicitConversions
 import chester.syntax.core.*
 
-trait MetaTycker[Self <: TyckerBase[Self] & TelescopeTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
+trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
 
   def genTypeVariable(name: Option[Name] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
     val id = name.getOrElse("t")
