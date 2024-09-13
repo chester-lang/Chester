@@ -129,7 +129,7 @@ sealed trait Term extends ToDoc derives ReadWriter {
   }
 
   // TODO: optimize
-  final def substitute[A<:Term & HasUniqId](mapping: Seq[(A, Term)]): Term = {
+  final def substitute[A <: Term & HasUniqId](mapping: Seq[(A, Term)]): Term = {
     mapping.foldLeft(this) { case (acc, (from, to)) => acc.substitute(from, to) }
   }
 
@@ -441,7 +441,7 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
 
   def descentEffects(f: Effect => Effect): Effects =
     Effects(effects.map { case (effect, names) => f(effect) -> names })
-    
+
   def descent(f: Term => Term): Effects = this // TODO
 
   def add(effect: Effect, name: LocalVar): Effects =
@@ -464,6 +464,8 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
     Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>
       acc.updated(effect, acc.getOrElse(effect, Vector.empty) ++ names)
     })
+
+  def isEmpty: Boolean = effects.isEmpty
 }
 
 object Effects {
