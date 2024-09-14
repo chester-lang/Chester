@@ -28,7 +28,7 @@ class FilesTyckTest extends FunSuite {
                 Files.write(expectedFile, actual.getBytes)
                 println(s"Created expected file: $expectedFile")
               } else {
-                val expected = Files.readString(expectedFile)
+                val expected = new String(Files.readAllBytes(expectedFile), java.nio.charset.StandardCharsets.UTF_8)
                 assertEquals(actual, expected)
               }
 
