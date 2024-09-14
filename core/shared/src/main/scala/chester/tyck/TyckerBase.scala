@@ -67,18 +67,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       }
       case (AnyType(level), subType) => subType // TODO: level
       case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
-      case (superType, Union(subTypes)) => {
-        val results = subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType))
-        Union.from(results)
-      }
-      case (Intersection(superTypes), subType) => {
-        val results = superTypes.map(x => unifyTy(rhs = subType, lhs = x))
-        Intersection.from(results)
-      }
-      case (superTypes, Intersection(subTypes)) => {
-        val results = subTypes.map(x => unifyTy(rhs = x, lhs = superTypes))
-        Intersection.from(results)
-      }
+      case (superType, Union(subTypes)) => Union.from(subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType)))
+      case (Intersection(superTypes), subType) => Intersection.from(superTypes.map(x => unifyTy(rhs = subType, lhs = x)))
+      case (superTypes, Intersection(subTypes)) => Intersection.from(subTypes.map(x => unifyTy(rhs = x, lhs = superTypes)))
       case (IntegerType, IntType) => IntType
       case (superType, subType) =>
         if (failed != null) failed else {
