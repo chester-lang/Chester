@@ -201,6 +201,12 @@ type AbstractIntTerm = IntegerTerm | IntTerm
 
 object AbstractIntTerm {
   def from(value: BigInt): AbstractIntTerm = if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
+
+  def unapply(term: Term): Option[BigInt] = term match {
+    case IntTerm(value) => Some(BigInt(value))
+    case IntegerTerm(value) => Some(value)
+    case _ => None
+  }
 }
 
 object NaturalTerm {

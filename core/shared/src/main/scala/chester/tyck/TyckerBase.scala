@@ -109,7 +109,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def effectUnion(e1: Effects, e2: Effects): Effects = e1.merge(e2)
 
   def collectLevel(xs: Seq[Term]): Term = {
-    Level0 // TODO
+    xs.foldLeft(Level0: Term) {
+      case (Level(AbstractIntTerm(max)), Level(AbstractIntTerm(n))) => Level(AbstractIntTerm.from(max.max(n)))
+      case (max, Level(var: LocalVar)) => ??? // TODO: Handle them
+      case (max, _) => ??? // TODO
+    }
   }
 
   def tyFold(types: Vector[Term]): Term = {
