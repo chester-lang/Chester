@@ -7,13 +7,13 @@ import chester.tyck.{ExprTycker, LocalCtx, TyckState}
 
 // Test that the binary is still performing well when compiled differently.
 object IntegrityCheck {
-  private var tests: List[() => Unit] = List()
+  private val tests = scala.collection.mutable.ListBuffer[() => Unit]()
 
   private def test(name: String)(f: => Unit): Unit = {
-    tests = (() => {
+    tests += (() => {
       println(s"Running test: $name")
       f
-    }) :: tests
+    })
   }
 
   private def assertEquals[T](actual: T, expected: T, message: String = ""): Unit = {
