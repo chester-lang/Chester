@@ -1,14 +1,13 @@
 package chester.parser
 
 import chester.syntax.concrete.*
-import fastparse.*
 import munit.FunSuite
 
 class ParserTest extends FunSuite {
   test("parse valid identifier") {
-    val result = Parser.parseExpression("testFile", "validIdentifier123")
+    val result = Parser.parseExpr(FileNameAndContent("testFile", "validIdentifier123"))
     result match {
-      case Parsed.Success(Identifier(name, Some(meta)), _) =>
+      case Right(Identifier(name, Some(meta))) =>
         assertEquals(name, "validIdentifier123")
         meta.sourcePos match {
           case Some(pos) =>
@@ -22,9 +21,9 @@ class ParserTest extends FunSuite {
   }
 
   test("parse identifier with symbols") {
-    val result = Parser.parseExpression("testFile", "valid-Identifier_123")
+    val result = Parser.parseExpr(FileNameAndContent("testFile", "valid-Identifier_123"))
     result match {
-      case Parsed.Success(Identifier(name, Some(meta)), _) =>
+      case Right(Identifier(name, Some(meta))) =>
         assertEquals(name, "valid-Identifier_123")
         meta.sourcePos match {
           case Some(pos) =>
@@ -38,8 +37,8 @@ class ParserTest extends FunSuite {
   }
 
   test("parse empty input") {
-    val result = Parser.parseExpression("testFile", "")
-    assert(result.isInstanceOf[Parsed.Failure])
+    val result = Parser.parseExpr(FileNameAndContent("testFile", ""))
+    assert(result.isLeft)
   }
 
   // Tests for IntegerLiteral
@@ -102,9 +101,9 @@ class ParserTest extends FunSuite {
 
   test("parse single-line string literal") {
     val input = "\"Hello, world!\""
-    val result = Parser.parseExpression("testFile", input)
+    val result = Parser.parseExpr(FileNameAndContent("testFile", input))
     result match {
-      case Parsed.Success(StringLiteral(value, _), _) =>
+      case Right(StringLiteral(value, _)) =>
         assertEquals(value, "Hello, world!")
       case _ => fail(s"Expected StringLiteral but got $result")
     }
@@ -112,9 +111,9 @@ class ParserTest extends FunSuite {
 
   test("parse escaped characters in string literal") {
     val input = "\"Hello, \\\"world\\\"!\\n\""
-    val result = Parser.parseExpression("testFile", input)
+    val result = Parser.parseExpr(FileNameAndContent("testFile", input))
     result match {
-      case Parsed.Success(StringLiteral(value, _), _) =>
+      case Right(StringLiteral(value, _)) =>
         assertEquals(value, "Hello, \"world\"!\n")
       case _ => fail(s"Expected StringLiteral but got $result")
     }
@@ -123,9 +122,9 @@ class ParserTest extends FunSuite {
 
     test("parse heredoc string literal") {
       val input = "\"\"\"\n  Hello,\n  world!\n\"\"\""
-      val result = Parser.parseExpression("testFile", input)
+      val result = Parser.parseExpr(FileNameAndContent("testFile", input))
       result match {
-        case Parsed.Success(StringLiteral(value, _), _) =>
+        case Right(StringLiteral(value, _)) =>
           assertEquals(value, "Hello,\nworld!")
         case _ => fail(s"Expected StringLiteral but got $result")
       }
@@ -133,10 +132,10 @@ class ParserTest extends FunSuite {
 
     test("parse heredoc string literal with inconsistent indentation") {
       val input = "\"\"\"\n  Hello,\n   world!\n\"\"\""
-      val result = Parser.parseExpression("testFile", input)
+      val result = Parser.parseExpr(FileNameAndContent("testFile", input))
       result match {
-        case Parsed.Failure(label, index, extra) =>
-          assert(extra.trace().msg.contains("Inconsistent indentation in heredoc string literal"))
+        case Left(error) =>
+          assert(error.message.contains("Inconsistent indentation in heredoc string literal"))
         case _ => fail(s"Expected parsing failure due to inconsistent indentation but got $result")
       }
     }
@@ -145,11 +144,8 @@ class ParserTest extends FunSuite {
 
   test("parse invalid escape sequence in string literal") {
     val input = "\"Hello, \\xworld!\""
-    val result = Parser.parseExpression("testFile", input)
-    result match {
-      case Parsed.Failure(label, index, extra) => {}
-      case _ => fail(s"Expected parsing failure due to invalid escape sequence but got $result")
-    }
+    val result = Parser.parseExpr(FileNameAndContent("testFile", input))
+    assert(result.isLeft)
   }
 
   test("some expr") {

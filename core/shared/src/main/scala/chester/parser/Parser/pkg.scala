@@ -41,21 +41,6 @@ def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[Par
   parseFromSource(source, _.exprEntrance, ignoreLocation)
 }
 
-@deprecated("Use parseExpr with ParserSource instead")
-def parseFile(fileName: String)(using used: FilePathImpl): Either[ParseError, ParsedExpr] = {
-  parseExpr(FilePath(fileName))
-}
-
-@deprecated("Use parseExpr with ParserSource instead")
-def parseContent(fileName: String, input: String, ignoreLocation: Boolean = false): Either[ParseError, ParsedExpr] = {
-  parseExpr(FileNameAndContent(fileName, input), ignoreLocation)
-}
-
-@deprecated("Use parseExpr with ParserSource instead")
-def parseExpression(fileName: String, input: String, ignoreLocation: Boolean = false): Parsed[ParsedExpr] = {
-  parse(input, x => ParserInternal(SourceOffset(FileNameAndContent(fileName, input)), ignoreLocation = ignoreLocation)(x).exprEntrance)
-}
-
 def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
   block.heads.headOption match {
     case Some(OpSeq(Vector(Identifier("module", _), identifiers*), _)) =>
