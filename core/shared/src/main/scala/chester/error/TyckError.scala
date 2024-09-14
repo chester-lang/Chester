@@ -180,6 +180,12 @@ case class InvalidIntError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Invalid integer"
 }
 
+case class FieldNotFoundInObjectTypeError(field: Expr, objectType: ObjectType) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Field $field not found in object type $objectType"
+
+  override def cause: Term | Expr = field
+}
+
 case class EffectUnifyError(lhs: Effects, rhs: Judge) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Effect unification failed"
 

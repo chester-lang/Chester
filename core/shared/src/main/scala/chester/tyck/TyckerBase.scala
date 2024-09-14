@@ -203,8 +203,27 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   case class EffectWith[T](effect: Effects, value: T)
 
-  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effect: Option[Effects]): EffectWith[Vector[ObjectClauseValueTerm]] = {
-    ??? // TODO
+  // TODO: maybe incorrect
+  def inheritObjectFields(clauses: Vector[ObjectClause], fieldTypes: Vector[ObjectClauseValueTerm], effects: Option[Effects]): EffectWith[Vector[ObjectClauseValueTerm]] = {
+    val inheritedClauses = clauses.flatMap { clause =>
+      clause match {
+        case ObjectExprClauseOnValue(key, value) =>
+          val Judge(keyTerm, _, keyEffect) = synthesize(key, effects)
+          fieldTypes.find(ft => ft.key == keyTerm) match {
+            case Some(fieldType) =>
+              val Judge(wellTypedValue, _, valueEffect) = inherit(value, fieldType.value, effects)
+              val combinedEffect = effectUnion(keyEffect, valueEffect)
+              Some(EffectWith(combinedEffect, ObjectClauseValueTerm(keyTerm, wellTypedValue)))
+            case None =>
+              tyck.report(FieldNotFoundInObjectTypeError(key, ObjectType(fieldTypes)))
+              None
+          }
+        case _ => throw new IllegalArgumentException("Unexpected clause type, maybe not desalted")
+      }
+    }
+
+    val combinedEffect = effectFold(inheritedClauses.map(_.effect))
+    EffectWith(combinedEffect, inheritedClauses.map(_.value))
   }
 
   /** part of whnf */
@@ -285,7 +304,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         tryAll(firstTry +: tries)
       }
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
-        val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effect = effects))
+        val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effects = effects))
         Judge(ObjectTerm(inheritedFields), ty, inheritedEffect)
       case (ListExpr(terms, meta), lstTy@ListType(ty)) =>
         val checkedTerms: Vector[EffectWith[Term]] = terms.map { term =>
