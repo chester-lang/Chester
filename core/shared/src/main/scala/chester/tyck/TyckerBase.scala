@@ -315,8 +315,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
   }
 
-  def freezeCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.freezeMetas(check(expr, ty, effects))
-  def freezeInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.freezeMetas(inherit(expr, ty, effects))
+  def zonkCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.zonkMetas(check(expr, ty, effects))
+  def zonkInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.zonkMetas(inherit(expr, ty, effects))
 
 }
 
@@ -326,10 +326,10 @@ object ExprTycker {
   }
 
   def inherit(expr: Expr, ty: Term, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).freezeInherit(expr, ty, effects))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).zonkInherit(expr, ty, effects))(state)
   }
 
   def synthesize(expr: Expr, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).freezeCheck(expr, effects=effects))(state)
+    Tyck.run(ExprTyckerInternal(ctx, _).zonkCheck(expr, effects=effects))(state)
   }
 }
