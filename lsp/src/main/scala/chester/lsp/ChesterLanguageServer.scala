@@ -34,33 +34,29 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
     val text = params.getTextDocument.getText
-    val fileName = params.getTextDocument.getUri
-    val diagnostics = parseAndGenerateDiagnostics(fileName, text)
-    // Send diagnostics to client
+    val uri = params.getTextDocument.getUri
+    val diagnostics = parseAndGenerateDiagnostics(uri, text)
+    client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
     val text = params.getContentChanges.get(0).getText
-    val fileName = params.getTextDocument.getUri
-    val diagnostics = parseAndGenerateDiagnostics(fileName, text)
-    // Send diagnostics to client
+    val uri = params.getTextDocument.getUri
+    val diagnostics = parseAndGenerateDiagnostics(uri, text)
+    client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
 
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
-    val parsed = Parser.parseContent(fileName, text)
-    val index = StringIndex(text)
-
-    parsed match {
-      case Right(expr) =>
+    Parser.parseExpr(FileNameAndContent(fileName, text)) match {
+      case Right(_) =>
         List() // No errors
-      case Left(ParseError(message, pos)) =>
-
+      case Left(parseError) =>
         val diagnostic = new Diagnostic(
           new Range(
-            new Position(pos.line, pos.column),
-            new Position(pos.line, pos.column)
+            new Position(parseError.index.line, parseError.index.column),
+            new Position(parseError.index.line, parseError.index.column)
           ),
-          message,
+          parseError.message,
           DiagnosticSeverity.Error,
           "ChesterLanguageServer"
         )
