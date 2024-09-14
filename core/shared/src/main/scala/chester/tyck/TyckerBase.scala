@@ -154,19 +154,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     ???
   }
 
-  @deprecated("not needed")
-  def resolveId(id: Identifier, resolved: ResolvedLocalVar, expr: Expr): Expr = {
-    def continue(expr: Expr): Expr = resolveId(id, resolved, expr)
-
-    expr match {
-      case id1: Identifier if id1.name == id.name => resolved
-      case e: (OpSeq | ListExpr | Stmt) => e.descent(continue)
-      case e: Literal => e
-      case e: FunctionExpr => ???
-      case e => ???
-    }
-  }
-
   def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
     resolve(expr) match {
       case IntegerLiteral(value, meta) =>
