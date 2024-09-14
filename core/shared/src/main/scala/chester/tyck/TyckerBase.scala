@@ -111,7 +111,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def collectLevel(xs: Seq[Term]): Term = {
     xs.foldLeft(Level0: Term) {
       case (Level(AbstractIntTerm(max)), Level(AbstractIntTerm(n))) => Level(AbstractIntTerm.from(max.max(n)))
-      case (max, Level(var: LocalVar)) => ??? // TODO: Handle them
+      case (max, Level(v: LocalVar)) => ??? // TODO: Handle them
       case (max, _) => ??? // TODO
     }
   }
