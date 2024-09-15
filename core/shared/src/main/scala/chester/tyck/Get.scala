@@ -19,7 +19,7 @@ class VectorReporter[T] extends Reporter[T] {
   def getReports: Vector[T] = buffer.toVector
 }
 
-case class Get[P, S](reporter: Reporter[P], state: MutBox[S]) {
+class Get[P, S](val reporter: Reporter[P], private val state: MutBox[S]) {
   def getState: S = state.get
 
   def report(problem: P): Unit = reporter.apply(problem)
@@ -28,6 +28,10 @@ case class Get[P, S](reporter: Reporter[P], state: MutBox[S]) {
 
   def updateState(f: S => S): Unit = {
     state.update(f)
+  }
+
+  def uncheckedSetState(newState: S): Unit = {
+    state.set(newState)
   }
 
   def updateAndMap[T](f: S => (S, T)): T = {

@@ -118,8 +118,8 @@ trait TyckerTrait[Self <: TyckerTrait[Self]] {
     Tyck.run(tyck => xs(copy(tyck = tyck)))(tyck.getState)
   }
 
-  private final def writeResult[A](x: TyckResult[TyckState, A]): A = {
-    tyck.state.set(x.state)
+  private final def uncheckedWriteResult[A](x: TyckResult[TyckState, A]): A = {
+    tyck.uncheckedSetState(x.state)
     x.result
   }
 
@@ -129,13 +129,13 @@ trait TyckerTrait[Self <: TyckerTrait[Self]] {
     for (x <- xs) {
       val result = tryOne(x)
       if (result.errorsEmpty) {
-        return writeResult(result)
+        return uncheckedWriteResult(result)
       }
       if (firstTry.isEmpty) {
         firstTry = Some(result)
       }
     }
-    writeResult(firstTry.get)
+    uncheckedWriteResult(firstTry.get)
   }
 
   def localCtx: LocalCtx
