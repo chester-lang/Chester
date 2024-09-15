@@ -25,25 +25,12 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     result
   }
 
-  /** Make it concrete values, also store in state */
-  def zonkMeta(term: MetaTerm): Judge = {
+  private def zonkMeta(term: MetaTerm): Judge = {
     val state = tyck.getState
     state.subst.get(term.uniqId) match {
       case Some(judge) => judge
       case None =>
-        val relatedConstraints = state.constraints.filter(_.metaVar == term)
-        relatedConstraints match {
-          case Vector() =>
-            val result = Judge(AnyType0, Type0, NoEffect) // TODO: level
-            tyck.updateSubst(term.uniqId, result)
-            result
-          case Vector(Constraint.TyRange(_, lower, upper)) =>
-            val result = upper.orElse(lower).get
-            tyck.updateSubst(term.uniqId, result)
-            result
-          case _ =>
-            throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
-        }
+        throw new IllegalStateException(s"MetaTerm ${term.uniqId} not found in substitution")
     }
   }
 
@@ -52,6 +39,10 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case meta: MetaTerm => Vector(meta)
       case _ => Vector()
     }.distinctBy(_.uniqId)
+    
+    val relatedConstraints = tyck.getState.constraints.filter(c => metas.exists(_.uniqId == c.metaVar.uniqId))
+    solveConstraints(metas, relatedConstraints)
+    
     val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
       val judge = zonkMeta(meta)
       meta -> judge.wellTyped
@@ -64,5 +55,25 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val ty = zonkMetas(judge.ty)
     val effects = judge.effects.descent(zonkMetas)
     Judge(wellTyped, ty, effects)
+  }
+
+  private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[Constraint]): Unit = {
+    val results = metas.map { meta =>
+      val metaConstraints = constraints.filter(_.metaVar == meta)
+      val result = metaConstraints match {
+        case Vector() => Judge(AnyType0, Type0, NoEffect)
+        case Vector(Constraint.TyRange(_, lower, upper)) =>
+          upper.orElse(lower).getOrElse(Judge(AnyType0, Type0, NoEffect))
+        case _ =>
+          throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
+      }
+      (meta, result)
+    }
+
+    tyck.updateState { state =>
+      val newSubst = state.subst ++ results.map(r => r._1.uniqId -> r._2)
+      val remainingConstraints = state.constraints.filterNot(c => metas.exists(_.uniqId == c.metaVar.uniqId))
+      state.copy(subst = newSubst, constraints = remainingConstraints)
+    }
   }
 }
