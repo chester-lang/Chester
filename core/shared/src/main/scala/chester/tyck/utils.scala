@@ -58,7 +58,25 @@ extension (constraints: Constraints) {
   def contains(meta: MetaTerm): Boolean = constraints.exists(_.contains(meta))
 }
 
-case class TyckState(subst: Substitutions = Substitutions.Empty, constraints: Constraints = Constraints.Empty)
+case class TyckState(
+  subst: Substitutions = Substitutions.Empty, 
+  constraints: Constraints = Constraints.Empty,
+  deferredActions: DeferredActions = Vector.empty
+) {
+  def updateSubst(id: UniqId, judge: Judge, tyck: Tyck): TyckState = {
+    require(!subst.contains(id))
+    val newSubst = subst + (id -> judge)
+    var newState = this.copy(subst = newSubst)
+    
+    val (actionsToRun, remainingActions) = deferredActions.partition { action =>
+      action.dependsOn.forall(meta => newSubst.contains(meta.uniqId))
+    }
+    
+    actionsToRun.foreach(_.computation(tyck))
+    
+    newState.copy(deferredActions = remainingActions)
+  }
+}
 
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Name): Option[CtxItem] = ctx.get(id)
@@ -120,3 +138,13 @@ trait TyckerTrait[Self <: TyckerTrait[Self]] {
 case class Tycker(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[Tycker] with FunctionTycker[Tycker] with EffTycker[Tycker] with MetaTycker[Tycker] {
   override def ev: this.type <:< Tycker = implicitly[this.type <:< Tycker]
 }
+
+case class DeferredAction(
+  dependsOn: Vector[MetaTerm],
+  affects: Vector[MetaTerm],
+  computation: Tyck => Unit
+) {
+  require(dependsOn.nonEmpty, "dependsOn must not be empty")
+}
+
+type DeferredActions = Vector[DeferredAction]

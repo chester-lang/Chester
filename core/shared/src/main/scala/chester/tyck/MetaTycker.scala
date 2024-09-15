@@ -35,13 +35,13 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         relatedConstraints match {
           case Vector() =>
             val result = Judge(AnyType0, Type0, NoEffect) // TODO: level
-            val newSubst = state.subst.update(term.uniqId, result)
-            tyck.state.set(state.copy(subst = newSubst))
+            val newState = state.updateSubst(term.uniqId, result, tyck)
+            tyck.state.set(newState)
             result
           case Vector(Constraint.TyRange(_, lower, upper)) =>
             val result = upper.orElse(lower).get
-            val newSubst = state.subst.update(term.uniqId, result)
-            tyck.state.set(state.copy(subst = newSubst))
+            val newState = state.updateSubst(term.uniqId, result, tyck)
+            tyck.state.set(newState)
             result
           case _ =>
             throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
