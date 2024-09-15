@@ -31,7 +31,11 @@ object facade {
     all.add_history(toCString(line))
   }
 
-  def history_get(offset: Int): Ptr[HIST_ENTRY] = all.history_get(offset)
+  def history_get(offset: Int): String = {
+    val entry = all.history_get(offset)
+    if (entry == null) null
+    else fromCString((!entry).line)
+  }
 
   @extern
   object externs {
