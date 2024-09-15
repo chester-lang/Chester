@@ -25,6 +25,10 @@ case class Get[P, S](reporter: Reporter[P], state: MutBox[S]) {
   def report(problem: P): Unit = reporter.apply(problem)
 
   def reportseq(problems: Seq[P]): Unit = problems.foreach(report)
+
+  def updateState(f: S => S): Unit = {
+    state.update(f)
+  }
 }
 
 object Get {

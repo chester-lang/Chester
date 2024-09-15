@@ -62,19 +62,28 @@ case class TyckState(
   subst: Substitutions = Substitutions.Empty, 
   constraints: Constraints = Constraints.Empty,
   deferredActions: DeferredActions = Vector.empty
-) {
-  def updateSubst(id: UniqId, judge: Judge, tyck: Tyck): TyckState = {
-    require(!subst.contains(id))
-    val newSubst = subst + (id -> judge)
-    var newState = this.copy(subst = newSubst)
-    
-    val (actionsToRun, remainingActions) = deferredActions.partition { action =>
-      action.dependsOn.forall(meta => newSubst.contains(meta.uniqId))
+)
+
+extension (tyck: Tyck) {
+  def updateSubst(id: UniqId, judge: Judge): Unit = {
+    // Update substitution
+    tyck.updateState { state =>
+      require(!state.subst.contains(id))
+      val newSubst = state.subst + (id -> judge)
+      state.copy(subst = newSubst)
     }
-    
+
+    // Determine actions to run and update deferredActions
+    val (actionsToRun, remainingActions) = tyck.getState.deferredActions.partition { action =>
+      action.dependsOn.forall(meta => tyck.getState.subst.contains(meta.uniqId))
+    }
+
+    tyck.updateState { state =>
+      state.copy(deferredActions = remainingActions)
+    }
+
+    // Run actions
     actionsToRun.foreach(_.computation(tyck))
-    
-    newState.copy(deferredActions = remainingActions)
   }
 }
 
