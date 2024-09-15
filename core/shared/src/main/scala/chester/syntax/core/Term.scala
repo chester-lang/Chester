@@ -187,6 +187,11 @@ case class Prop(level: Term) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(level)
 }
 
+// fibrant types
+case class FType(level: Term) extends Sort with Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("FType" <> Docs.`(`, Docs.`)`)(level)
+}
+
 sealed trait LiteralTerm extends Term derives ReadWriter
 
 case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
