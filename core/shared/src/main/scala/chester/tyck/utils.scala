@@ -77,7 +77,7 @@ object LocalCtx {
 case class WithCtxEffect[T](ctx: LocalCtx, effect: Effects, value: T)
 
 // https://www.alessandrolacava.com/blog/scala-self-recursive-types/
-trait Tycker[Self <: Tycker[Self]] {
+trait TyckerTrait[Self <: TyckerTrait[Self]] {
   def ev: this.type <:< Self
 
   protected def thisToSelfTypesafe(x: this.type): Self = ev.apply(x)
@@ -117,6 +117,6 @@ trait Tycker[Self <: Tycker[Self]] {
   def tyck: Tyck
 }
 
-case class ExprTyckerInternal(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[ExprTyckerInternal] with FunctionTycker[ExprTyckerInternal] with EffTycker[ExprTyckerInternal] with MetaTycker[ExprTyckerInternal] {
-  override def ev: this.type <:< ExprTyckerInternal = implicitly[this.type <:< ExprTyckerInternal]
+case class Tycker(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends TyckerBase[Tycker] with FunctionTycker[Tycker] with EffTycker[Tycker] with MetaTycker[Tycker] {
+  override def ev: this.type <:< Tycker = implicitly[this.type <:< Tycker]
 }

@@ -12,7 +12,7 @@ import spire.math.Trilean.{True, Unknown}
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
-trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends Tycker[Self] {
+trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
 
   def superTypes(ty: Term): Option[Vector[Term]] = {
@@ -347,14 +347,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
 object ExprTycker {
   def unifyTy(lhs: Term, rhs: Term, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Term] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).unifyTy(lhs, rhs))(state)
+    Tyck.run(Tycker(ctx, _).unifyTy(lhs, rhs))(state)
   }
 
   def inherit(expr: Expr, ty: Term, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).zonkInherit(expr, ty, effects))(state)
+    Tyck.run(Tycker(ctx, _).zonkInherit(expr, ty, effects))(state)
   }
 
   def synthesize(expr: Expr, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(ExprTyckerInternal(ctx, _).zonkCheck(expr, effects=effects))(state)
+    Tyck.run(Tycker(ctx, _).zonkCheck(expr, effects=effects))(state)
   }
 }
