@@ -74,12 +74,11 @@ extension (tyck: Tyck) {
     }
 
     // Determine actions to run and update deferredActions
-    val (actionsToRun, remainingActions) = tyck.getState.deferredActions.partition { action =>
-      action.dependsOn.forall(meta => tyck.getState.subst.contains(meta.uniqId))
-    }
-
-    tyck.updateState { state =>
-      state.copy(deferredActions = remainingActions)
+    val actionsToRun = tyck.updateAndMap { state =>
+      val (toRun, remaining) = state.deferredActions.partition { action =>
+        action.dependsOn.forall(meta => state.subst.contains(meta.uniqId))
+      }
+      (state.copy(deferredActions = remaining), toRun)
     }
 
     // Run actions

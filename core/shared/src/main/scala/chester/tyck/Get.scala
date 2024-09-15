@@ -29,6 +29,10 @@ case class Get[P, S](reporter: Reporter[P], state: MutBox[S]) {
   def updateState(f: S => S): Unit = {
     state.update(f)
   }
+
+  def updateAndMap[T](f: S => (S, T)): T = {
+    state.updateAndMap(f)
+  }
 }
 
 object Get {
