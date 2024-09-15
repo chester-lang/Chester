@@ -73,7 +73,11 @@ extension (tyck: Tyck) {
       state.copy(subst = newSubst)
     }
 
-    // Determine actions to run and update deferredActions
+    runDeferredActions()
+  }
+
+  @tailrec
+  private def runDeferredActions(): Unit = {
     val actionsToRun = tyck.updateAndMap { state =>
       val (toRun, remaining) = state.deferredActions.partition { action =>
         action.dependsOn.forall(meta => state.subst.contains(meta.uniqId))
@@ -81,8 +85,10 @@ extension (tyck: Tyck) {
       (state.copy(deferredActions = remaining), toRun)
     }
 
-    // Run actions
-    actionsToRun.foreach(_.computation(tyck))
+    if (actionsToRun.nonEmpty) {
+      actionsToRun.foreach(_.computation(tyck))
+      runDeferredActions() // Recursive call to handle newly enabled actions
+    }
   }
 }
 
