@@ -51,6 +51,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val lhs1 = whnfNoEffect(lhs)
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
+      // TODO: make this part a constraint, and move logic to solveConstraints
       case (lhs, rhs: MetaTerm) if !isDefined(rhs) => {
         linkTy(rhs, lhs)
         lhs
