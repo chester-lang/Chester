@@ -24,7 +24,6 @@ sealed trait Constraint {
 }
 
 object Constraint {
-  case class Is(metaVar: MetaTerm, judge: Judge) extends Constraint
   case class TyRange(metaVar: MetaTerm, lower: Option[Judge], upper: Option[Judge]) extends Constraint {
     require(lower.isDefined || upper.isDefined)
   }

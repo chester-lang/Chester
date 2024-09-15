@@ -38,7 +38,6 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
             val newSubst = state.subst.update(term.uniqId, result)
             tyck.state.set(state.copy(subst = newSubst))
             result
-          case Vector(Constraint.Is(_, judge)) => judge
           case Vector(Constraint.TyRange(_, lower, upper)) =>
             val result = upper.orElse(lower).get
             val newSubst = state.subst.update(term.uniqId, result)
