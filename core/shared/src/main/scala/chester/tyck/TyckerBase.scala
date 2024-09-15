@@ -36,7 +36,10 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     rhs // TODO
   }
 
-  def isDefined(x: MetaTerm): Boolean = tyck.getState.subst.isDefined(x)
+  def isDefined(x: MetaTerm): Boolean = {
+    val state = tyck.getState
+    state.subst.isDefined(x) || state.constraints.contains(x)
+  }
 
   def linkTy(from: MetaTerm, to: Term): Unit = link(from, synthesizeTyTerm(to).toJudge)
 

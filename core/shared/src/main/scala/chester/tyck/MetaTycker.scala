@@ -25,22 +25,28 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     result
   }
 
-
   /** Make it concrete values, also store in state */
   def zonkMeta(term: MetaTerm): Judge = {
     val state = tyck.getState
-    state.subst.read(term) match {
-      case Some(Constraint.Is(judge)) => judge
-      case Some(Constraint.TyRange(lower, upper)) =>
-        val result = upper.orElse(lower).get
-        val newSubst = state.subst.update(term.uniqId, Constraint.Is(result))
-        tyck.state.set(state.copy(subst = newSubst))
-        result
+    state.subst.get(term.uniqId) match {
+      case Some(judge) => judge
       case None =>
-        val result = Judge(AnyType0, Type0, NoEffect) // TODO: level
-        val newSubst = state.subst.update(term.uniqId, Constraint.Is(result))
-        tyck.state.set(state.copy(subst = newSubst))
-        result
+        val relatedConstraints = state.constraints.filter(_.metaVar == term)
+        relatedConstraints match {
+          case Vector() =>
+            val result = Judge(AnyType0, Type0, NoEffect) // TODO: level
+            val newSubst = state.subst.update(term.uniqId, result)
+            tyck.state.set(state.copy(subst = newSubst))
+            result
+          case Vector(Constraint.Is(_, judge)) => judge
+          case Vector(Constraint.TyRange(_, lower, upper)) =>
+            val result = upper.orElse(lower).get
+            val newSubst = state.subst.update(term.uniqId, result)
+            tyck.state.set(state.copy(subst = newSubst))
+            result
+          case _ =>
+            throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
+        }
     }
   }
 

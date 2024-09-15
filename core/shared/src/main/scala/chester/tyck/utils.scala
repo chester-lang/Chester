@@ -18,45 +18,48 @@ def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
   meta.map(exprMeta => TermMeta(exprMeta.sourcePos))
 }
 
-sealed trait Constraint
+sealed trait Constraint {
+  def metaVar: MetaTerm
+  def contains(meta: MetaTerm): Boolean = metaVar == meta
+}
 
 object Constraint {
-  case class Is(judge: Judge) extends Constraint
-
-  case class TyRange(lower: Option[Judge], upper: Option[Judge]) extends Constraint {
+  case class Is(metaVar: MetaTerm, judge: Judge) extends Constraint
+  case class TyRange(metaVar: MetaTerm, lower: Option[Judge], upper: Option[Judge]) extends Constraint {
     require(lower.isDefined || upper.isDefined)
   }
 }
 
-type Solutions = Map[UniqId, Constraint]
+type Substitutions = Map[UniqId, Judge]
+type Constraints = Vector[Constraint]
 
-object Solutions {
-  val Empty: Solutions = Map.empty
+object Substitutions {
+  val Empty: Substitutions = Map.empty
 }
 
-extension (subst: Solutions) {
-  @tailrec
+object Constraints {
+  val Empty: Constraints = Vector.empty
+}
+
+extension (subst: Substitutions) {
   def walk(term: MetaTerm): Judge = subst.get(term.uniqId) match {
-    case Some(Constraint.Is(clause)) => clause.wellTyped match {
-      case term: MetaTerm => subst.walk(term)
-      case _ => Judge(clause.wellTyped, clause.ty, clause.effects)
-    }
-    case Some(Constraint.TyRange(lower, upper)) => Judge(term, term.ty, term.effect) // TODO
+    case Some(judge) => judge
     case None => Judge(term, term.ty, term.effect)
   }
+
   def isDefined(term: MetaTerm): Boolean = subst.contains(term.uniqId)
-  def read(term: MetaTerm): Option[Constraint] = subst.get(term.uniqId) match {
-    case some@Some(Constraint.Is(Judge(meta2: MetaTerm, ty, effect))) => read(meta2).orElse(some)
-    case Some(x) => Some(x)
-    case None => None
-  }
-  
-  def update(id: UniqId, constraint: Constraint): Solutions = {
-    subst + (id -> constraint)
+
+  def update(id: UniqId, judge: Judge): Substitutions = {
+    require(!subst.contains(id))
+    subst + (id -> judge)
   }
 }
 
-case class TyckState(subst: Solutions = Solutions.Empty)
+extension (constraints: Constraints) {
+  def contains(meta: MetaTerm): Boolean = constraints.exists(_.contains(meta))
+}
+
+case class TyckState(subst: Substitutions = Substitutions.Empty, constraints: Constraints = Constraints.Empty)
 
 case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: Name): Option[CtxItem] = ctx.get(id)
