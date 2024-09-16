@@ -5,7 +5,6 @@ import chester.io._
 import chester.parser.InputStatus.*
 import readline.facade
 
-// not yet tested after updated to new bindings
 class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
   private var history: Vector[String] = Vector()
   private val historyFile = init.historyFile
