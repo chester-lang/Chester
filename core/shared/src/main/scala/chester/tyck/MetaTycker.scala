@@ -40,10 +40,7 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case _ => Vector()
     }.distinctBy(_.uniqId)
     
-    val relatedConstraints = tyck.getState.constraints.filter(c => 
-      metas.exists(meta => c.metas.contains(meta))
-    )
-    solveConstraints(metas, relatedConstraints)
+    solveConstraints(metas)
     
     val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
       val judge = zonkMeta(meta)
@@ -60,26 +57,35 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
 // TODO: rewrite
-  private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[Constraint]): Unit = {
-    val results = metas.map { meta =>
-      val metaConstraints = constraints.filter(_.metas.contains(meta))
-      val result = metaConstraints match {
-        case Vector() => Judge(AnyType0, Type0, NoEffect)
-        case Vector(Constraint.TyRange(_, lower, upper)) =>
-          upper.orElse(lower).getOrElse(Judge(AnyType0, Type0, NoEffect))
-        case _ =>
-          throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
-      }
-      (meta, result)
+  private def solveConstraints(metas: Vector[MetaTerm]): Unit = {
+    // First step: find related constraints and remove them from the state
+    val relatedConstraints = tyck.updateAndMap { state =>
+      val (related, remaining) = state.constraints.partition(c => 
+        c.metas.exists(meta => metas.contains(meta))
+      )
+      (state.copy(constraints = remaining), related)
     }
 
-    tyck.updateState { state =>
-      val newSubst = state.subst ++ results.map(r => r._1.uniqId -> r._2)
-      val solvedMetas = results.map(_._1).toSet
-      val remainingConstraints = state.constraints.filter { constraint =>
-        !constraint.metas.forall(solvedMetas.contains)
+    // Solve constraints
+    for (constraint <- relatedConstraints) {
+      constraint match {
+        case Constraint.TyRange(metaVar, lower, upper) =>
+          val solution = upper.orElse(lower).getOrElse(Judge(AnyType0, Type0, NoEffect))
+          tyck.updateSubst(metaVar.uniqId, solution)
+        case Constraint.Subtype(sub, sup) =>
+          (sub, sup) match {
+            case (m: MetaTerm, t) => tyck.updateSubst(m.uniqId, Judge(t, this.synthesizeTyTerm(t).ty, NoEffect))
+            case (t, m: MetaTerm) => tyck.updateSubst(m.uniqId, Judge(t, this.synthesizeTyTerm(t).ty, NoEffect))
+            case _ => // This case should never happen due to the Subtype constraint definition
+          }
       }
-      state.copy(subst = newSubst, constraints = remainingConstraints)
+    }
+
+    // Assign AnyType0 to unsolved metas
+    for (meta <- metas) {
+      if (!tyck.getState.subst.contains(meta.uniqId)) {
+        tyck.updateSubst(meta.uniqId, Judge(AnyType0, Type0, NoEffect))
+      }
     }
   }
 }
