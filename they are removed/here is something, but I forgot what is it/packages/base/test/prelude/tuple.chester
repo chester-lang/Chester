@@ -1,3 +1,0 @@
-module prelude
-
-tup0: Tuple2[Integer, Integer] = Tuple2(0, 0)

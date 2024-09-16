@@ -1,9 +1,0 @@
-@class Tuple2Int {
-  @define a: Integer
-  @define b: Integer
-}
-
-@class Tuple2[a: Type, b: [a] => Type] {
-  @define first: a
-  @define second: b[a]
-}

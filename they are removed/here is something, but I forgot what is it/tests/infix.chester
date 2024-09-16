@@ -1,3 +1,0 @@
-if_then_else_: [e: Effect](Integer, -> e Integer, -> e Integer) -> e Integer
-if_then_else_(1, x, _) = x
-if_then_else_(_, _, y) = y
