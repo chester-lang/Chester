@@ -19,13 +19,25 @@ def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
 }
 
 sealed trait Constraint {
-  def metaVar: MetaTerm
-  def contains(meta: MetaTerm): Boolean = metaVar == meta
+  def metas: Vector[MetaTerm]
 }
 
 object Constraint {
   case class TyRange(metaVar: MetaTerm, lower: Option[Judge], upper: Option[Judge]) extends Constraint {
     require(lower.isDefined || upper.isDefined)
+    def metas: Vector[MetaTerm] = Vector(metaVar)
+  }
+
+  case class Subtype(sub: Term, sup: Term) extends Constraint {
+    require(sub.isInstanceOf[MetaTerm] || sup.isInstanceOf[MetaTerm], 
+      "At least one of sub or sup must be a MetaTerm")
+
+    def metas: Vector[MetaTerm] = 
+      (sub, sup) match {
+        case (m: MetaTerm, _) => Vector(m)
+        case (_, m: MetaTerm) => Vector(m)
+        case _ => Vector.empty // This case should never happen due to the require check
+      }
   }
 }
 
@@ -55,7 +67,8 @@ extension (subst: Substitutions) {
 }
 
 extension (constraints: Constraints) {
-  def contains(meta: MetaTerm): Boolean = constraints.exists(_.contains(meta))
+  def contains(meta: MetaTerm): Boolean = 
+    constraints.exists(_.metas.contains(meta))
 }
 
 case class TyckState(
@@ -65,6 +78,12 @@ case class TyckState(
 )
 
 extension (tyck: Tyck) {
+  def addConstraint(constraint: Constraint): Unit = {
+    tyck.updateState { state =>
+      state.copy(constraints = state.constraints :+ constraint)
+    }
+  }
+
   def updateSubst(id: UniqId, judge: Judge): Unit = {
     // Update substitution
     tyck.updateState { state =>

@@ -40,7 +40,9 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case _ => Vector()
     }.distinctBy(_.uniqId)
     
-    val relatedConstraints = tyck.getState.constraints.filter(c => metas.exists(_.uniqId == c.metaVar.uniqId))
+    val relatedConstraints = tyck.getState.constraints.filter(c => 
+      metas.exists(meta => c.metas.contains(meta))
+    )
     solveConstraints(metas, relatedConstraints)
     
     val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
@@ -57,9 +59,10 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     Judge(wellTyped, ty, effects)
   }
 
+// TODO: rewrite
   private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[Constraint]): Unit = {
     val results = metas.map { meta =>
-      val metaConstraints = constraints.filter(_.metaVar == meta)
+      val metaConstraints = constraints.filter(_.metas.contains(meta))
       val result = metaConstraints match {
         case Vector() => Judge(AnyType0, Type0, NoEffect)
         case Vector(Constraint.TyRange(_, lower, upper)) =>
@@ -72,7 +75,10 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
     tyck.updateState { state =>
       val newSubst = state.subst ++ results.map(r => r._1.uniqId -> r._2)
-      val remainingConstraints = state.constraints.filterNot(c => metas.exists(_.uniqId == c.metaVar.uniqId))
+      val solvedMetas = results.map(_._1).toSet
+      val remainingConstraints = state.constraints.filter { constraint =>
+        !constraint.metas.forall(solvedMetas.contains)
+      }
       state.copy(subst = newSubst, constraints = remainingConstraints)
     }
   }
