@@ -16,7 +16,7 @@ private def tMacro(sc: Expr[StringContext])(using Quotes): Expr[T] = {
   '{
     new T {
       def t(args: Any*)(implicit lang: Language): String = {
-        $sc.s(args: _*)
+        $sc.s(args*)
       }
     } }
 }

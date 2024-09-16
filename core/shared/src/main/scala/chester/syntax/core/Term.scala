@@ -372,14 +372,14 @@ case class ObjectClauseValueTerm(key: Term, value: Term)derives ReadWriter {
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc): _*)
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc)*)
 }
 
 
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
 case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc): _*)
+    Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc)*)
 }
 
 sealed trait Builtin extends Term derives ReadWriter
@@ -397,7 +397,7 @@ case class ListType(ty: Term) extends Constructed with TypeTerm {
 case class Union(xs: Vector[Term]) extends TypeTerm {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs*)
 }
 
 
@@ -423,7 +423,7 @@ object Union {
 case class Intersection(xs: Vector[Term]) extends TypeTerm derives ReadWriter {
   require(xs.nonEmpty)
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs*)
 }
 
 object Intersection {
@@ -447,7 +447,7 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) =>
       Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
-    }.toSeq: _*)
+    }.toSeq*)
 
   def descentEffects(f: Effect => Effect): Effects =
     Effects(effects.map { case (effect, names) => f(effect) -> names })

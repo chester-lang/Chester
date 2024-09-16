@@ -229,7 +229,7 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Tuple = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms*)
 }
 
 case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
@@ -344,7 +344,7 @@ case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends 
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ListExpr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ", ")(terms: _*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ", ")(terms*)
 }
 
 case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends Expr {

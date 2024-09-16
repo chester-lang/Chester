@@ -30,6 +30,28 @@ val commonSettings = Seq(
   resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.mavenLocal,
   scalacOptions ++= Seq("-java-output-version", "8"),
+  // https://github.com/typelevel/sbt-tpolecat/commit/d4dd41451a9e9346cf8c0253018bc648f6527be3
+  scalacOptions ++=
+    Seq(
+      "-encoding",
+      "utf8",
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-language:experimental.macros",
+      "-language:higherKinds",
+      "-language:implicitConversions",
+      "-Xkind-projector",
+      "-Wvalue-discard",
+      "-Wnonunit-statement",
+      "-Wunused:implicits",
+      "-Wunused:explicits",
+      //"-Wunused:imports",
+      "-Wunused:locals",
+      "-Wunused:params",
+      "-Wunused:privates",
+    ),
+  scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % "1.0.0" % Test,
     "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
@@ -39,6 +61,11 @@ val commonSettings = Seq(
     "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
   ),
+)
+val commonVendorSettings = Seq(
+  scalaVersion := scala3Version,
+  scalacOptions ++= Seq("-java-output-version", "8"),
+  scalacOptions += "-nowarn",
 )
 val cpsSettings = Seq(
   autoCompilerPlugins := true,
@@ -82,7 +109,7 @@ lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
   .crossType(CrossType.Pure)
   .in(file("kiama-core"))
   .settings(
-    commonSettings
+    commonVendorSettings
   )
 
 // kiama fork from effekt - https://github.com/effekt-lang/kiama
@@ -90,7 +117,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
   .crossType(CrossType.Full)
   .in(file("effekt-kiama"))
   .settings(
-    commonSettings
+    commonVendorSettings
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
@@ -162,28 +189,28 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 
 lazy val typednode = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typednode"))
-  .settings(commonSettings)
+  .settings(commonVendorSettings)
   .jsSettings(
     Compile / packageSrc := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/srcs/node_sjs1_3-sources.jar"),
     Compile / packageBin := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/jars/node_sjs1_3.jar"),
   )
 lazy val typedstd = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typedstd"))
-  .settings(commonSettings)
+  .settings(commonVendorSettings)
   .jsSettings(
     Compile / packageSrc := file("js-typings/local/org.scalablytyped/std_sjs1_3/4.3-5d95db/srcs/std_sjs1_3-sources.jar"),
     Compile / packageBin := file("js-typings/local/org.scalablytyped/std_sjs1_3/4.3-5d95db/jars/std_sjs1_3.jar"),
   )
 lazy val typedundici = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typedundici"))
-  .settings(commonSettings)
+  .settings(commonVendorSettings)
   .jsSettings(
     Compile / packageSrc := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/srcs/undici-types_sjs1_3-sources.jar"),
     Compile / packageBin := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/jars/undici-types_sjs1_3.jar"),
   )
 lazy val typedxterm = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typedxterm"))
-  .settings(commonSettings)
+  .settings(commonVendorSettings)
   .jsSettings(
     Compile / packageSrc := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/srcs/xterm__xterm_sjs1_3-sources.jar"),
     Compile / packageBin := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/jars/xterm__xterm_sjs1_3.jar"),
@@ -194,7 +221,7 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
   // Remove comments to generate typings again
   //.jsEnablePlugins(ScalablyTypedConverterPlugin)
   .settings(
-    commonSettings,
+    commonVendorSettings,
   )
   .dependsOn(typednode, typedstd, typedundici, typedxterm)
   .jsSettings(
@@ -387,7 +414,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, up,
+    lsp, up, truffle,
     js)
   .settings(
     name := "ChesterRoot",

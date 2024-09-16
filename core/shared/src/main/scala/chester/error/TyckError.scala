@@ -63,7 +63,7 @@ sealed trait TyckProblem extends Problem derives ReadWriter {
         val locationHeader = Doc.text(t"Location") <>
           Doc.text(t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column + 1}]", Styling.BoldOn)
 
-        val codeBlock = Doc.group(Doc.concat(lines.map(_.end): _*))
+        val codeBlock = Doc.group(Doc.concat(lines.map(_.end)*))
 
         locationHeader <|> codeBlock
 
