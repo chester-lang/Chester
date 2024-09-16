@@ -49,7 +49,7 @@ implicit object DefaultIO extends IO[Id] {
     } else {
       Array(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
     }
-    val outputStream = Files.newOutputStream(path, options: _*)
+    val outputStream = Files.newOutputStream(path, options*)
     try {
       outputStream.write(content.getBytes(StandardCharsets.UTF_8))
     } finally {
