@@ -30,7 +30,7 @@ sealed trait MaybeCallTerm extends TermWithMeta derives ReadWriter {
   override def whnf: Boolean = false
 }
 
-case class CallingArg(value: Term, name: Option[Name] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
+case class CallingArgTerm(value: Term, name: Option[Name] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     if (name.isEmpty && !vararg) return value.toDoc
     if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
@@ -41,7 +41,7 @@ case class CallingArg(value: Term, name: Option[Name] = None, vararg: Boolean = 
   }
 }
 
-case class Calling(args: Vector[CallingArg], implicitly: Boolean = false) extends ToDoc derives ReadWriter {
+case class Calling(args: Vector[CallingArgTerm], implicitly: Boolean = false) extends ToDoc derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = {
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
@@ -62,14 +62,14 @@ case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None
 
 object FCallTerm {
   object call {
-    def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector.map(CallingArg(_)))))
+    def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector.map(CallingArgTerm(_)))))
 
     def unapplySeq(f: Term): Option[Seq[Term]] = f match {
       case FCallTerm(f, Seq(Calling(args, false)), _) if args.forall {
-        case CallingArg(_, None, false) => true
+        case CallingArgTerm(_, None, false) => true
         case _ => false
       } => Some(f +: args.map {
-        case CallingArg(value, _, _) => value
+        case CallingArgTerm(value, _, _) => value
       })
       case _ => None
     }

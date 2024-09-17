@@ -193,7 +193,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         }
       }
       case f: FunctionExpr => this.synthesizeFunction(f, effects)
-      case call: FunctionCall => this.synthesizeFunctionCall(call, effects)
+      case call: DesaltFunctionCall => this.synthesizeFunctionCall(call, effects)
 
       case _ =>
         val err = UnsupportedExpressionError(expr)
