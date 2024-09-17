@@ -17,22 +17,23 @@ object Imports {
   val Empty: Imports = Vector.empty
 }
 
-class Context(map: Map[Name, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
-  private val varMap: Map[UniqId, Name] = map.map { case (id, CtxItem(name, _)) => name.uniqId -> id }
+class Context(map: Map[Name, CtxItem], varMap: Map[UniqId, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
 
   def get(id: Name): Option[CtxItem] = map.get(id)
 
-  def getByVarId(varId: UniqId): Option[CtxItem] = varMap.get(varId).flatMap(get)
+  def getByVarId(varId: UniqId): Option[CtxItem] = varMap.get(varId)
   
   def extend(name: LocalVar): Context = {
     val id = name.id
     val item = CtxItem(name, JudgeNoEffect(name, name.ty))
-    new Context(map + (id -> item), imports, modules)
+    assert(!varMap.contains(name.uniqId))
+    new Context(map + (id -> item), varMap + (name.uniqId -> item), imports, modules)
   }
 }
 
 object Context {
-  def apply(map: Map[Name, CtxItem]): Context = new Context(map)
+  // TODO: fix varMap
+  private def apply(map: Map[Name, CtxItem]): Context = new Context(map, Map())
 
   def builtin: Context = Context(BuiltinCtx.builtinCtx)
 }

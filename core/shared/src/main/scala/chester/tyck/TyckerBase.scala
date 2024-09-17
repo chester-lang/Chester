@@ -5,6 +5,7 @@ import chester.resolve.SimpleDesalt
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
+import chester.tyck.core.CoreTycker
 import chester.utils.reuse
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
@@ -203,10 +204,12 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
+  
+  private val coreTycker = CoreTycker(localCtx, tyck.reporter)
 
   def synthesizeTyTerm(term: Term): JudgeNoEffect = {
     term match {
-      case _ => JudgeNoEffect(term, Typeω) // TODO
+      case _ => JudgeNoEffect(term, coreTycker.inferTyNoEffect(term)) // TODO
     }
   }
 
