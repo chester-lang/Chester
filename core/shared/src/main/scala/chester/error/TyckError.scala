@@ -195,3 +195,6 @@ case class EffectUnifyError(lhs: Effects, rhs: Judge) extends TyckError {
 case class UnexpectedTelescope(cause: MaybeTelescope) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected telescope"
 }
+case class NotAFunctionError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a function, but got ${cause}"
+}

@@ -78,21 +78,25 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
-
-  def checkCallingTelescope(f: FunctionType, telescope: Vector[MaybeTelescope], effects: Option[Effects]) = ???
+  
+  def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = ???
 
   def synthesizeFunctionCall(call: DesaltFunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
     function.ty match {
-      case fty: FunctionType => ???
+      case fty: FunctionType => 
+        synthesizeCall(function, fty, call.telescopes, effects)
       case i: Intersection => {
         val fs = i.xs.filter {
           case f: FunctionType => true
           case _ => false
         }
-        ???
+        tryAll(fs.map(fty => _.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects)))
       }
-      case _ => ???
+      case _ => 
+        val error = NotAFunctionError(call)
+        tyck.report(error)
+        Judge(ErrorTerm(error), ErrorType(error), NoEffect)
     }
   }
 
