@@ -81,7 +81,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
 
   def checkCallingTelescope(f: FunctionType, telescope: Vector[MaybeTelescope], effects: Option[Effects]) = ???
 
-  def synthesizeFunctionCall(call: FunctionCall, effects: Option[Effects]): Judge = {
+  def synthesizeFunctionCall(call: DesaltFunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
     function.ty match {
       case fty: FunctionType => ???
