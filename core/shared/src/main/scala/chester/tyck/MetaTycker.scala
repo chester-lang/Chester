@@ -13,7 +13,7 @@ import chester.syntax.core.*
 
 trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
 
-  def genTypeVariable(name: Option[Name] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): Term = {
+  def genTypeVariable(name: Option[Name] = None, ty: Option[Term] = None, meta: OptionTermMeta = None): MetaTerm = {
     val id = name.getOrElse("t")
     val varid = UniqId.generate
     MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)
@@ -74,6 +74,34 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       val newSubst = state.subst ++ results.map(r => r._1.uniqId -> r._2)
       val remainingConstraints = state.constraints.filterNot(c => metas.exists(_.uniqId == c.metaVar.uniqId))
       state.copy(subst = newSubst, constraints = remainingConstraints)
+    }
+  }
+
+  // TODO: clarify the implementation
+  def deferredTermOperation(term: Term, operation: Term => Term): Term = {
+    term match {
+      case meta: MetaTerm =>
+        val walked = walk(meta)
+        walked.wellTyped match {
+          case _: MetaTerm =>
+            val resultMeta = genTypeVariable(name = Some(s"${meta.description}_result"))
+            val action = DeferredAction(
+              dependsOn = Vector(meta),
+              affects = Vector(resultMeta),
+              computation = { tyck =>
+                val result = operation(tyck.getState.subst.walk(meta).wellTyped)
+                tyck.updateSubst(resultMeta.uniqId, Judge(result, Typeω, NoEffect))
+              }
+            )
+            tyck.updateState { state =>
+              state.copy(deferredActions = state.deferredActions :+ action)
+            }
+            resultMeta
+          case _ =>
+            operation(walked.wellTyped)
+        }
+      case _ =>
+        operation(term)
     }
   }
 }
