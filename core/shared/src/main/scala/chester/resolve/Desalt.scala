@@ -277,6 +277,15 @@ case object SimpleDesalt {
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case default => default
+    case FunctionCall(function, telescopes, meta) =>
+      val desugaredFunction = desugar(function)
+      val desugaredTelescopes = telescopes.map {
+        case t: Tuple => DesaltCallingTelescope(t.terms.map(term => CallingArg(expr = desugar(term))), meta = t.meta)
+        case other => 
+          reporter(UnexpectedTelescope(other))
+          DesaltCallingTelescope(Vector(CallingArg(expr = desugar(other))), meta = other.meta)
+      }
+      DesaltFunctionCall(desugaredFunction, desugaredTelescopes, meta)
   }
 }
 

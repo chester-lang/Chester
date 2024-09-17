@@ -275,6 +275,16 @@ object FunctionCall {
   def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = FunctionCall(function, Vector(telescope), meta)
 }
 
+case class DesaltFunctionCall(function: Expr, telescopes: Vector[DesaltCallingTelescope], meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def descent(operator: Expr => Expr): DesaltFunctionCall = thisOr {
+    DesaltFunctionCall(operator(function), telescopes.map(_.descent(operator)), meta)
+  }
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltFunctionCall = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group(function.toDoc <> telescopes.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty))
+}
+
 case class DotCall(expr: Expr, field: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr derives ReadWriter {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     DotCall(operator(expr), operator(field), telescope.map(_.descent(operator)), meta)

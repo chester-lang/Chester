@@ -191,3 +191,7 @@ case class EffectUnifyError(lhs: Effects, rhs: Judge) extends TyckError {
 
   override def cause: Term | Expr = rhs.wellTyped
 }
+
+case class UnexpectedTelescope(cause: MaybeTelescope) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected telescope"
+}
