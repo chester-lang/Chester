@@ -195,3 +195,39 @@ case class EffectUnifyError(lhs: Effects, rhs: Judge) extends TyckError {
 case class UnexpectedTelescope(cause: MaybeTelescope) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected telescope"
 }
+
+sealed trait FunctionCallError extends TyckError derives ReadWriter  {
+  def cause: Expr
+}
+
+object FunctionCallError {
+  case class DuplicateNamedArguments(cause: Expr) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: Duplicate named arguments"
+  }
+
+  case class NoMatchingParameter(cause: Expr, argName: String) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: No matching parameter for named argument: $argName"
+  }
+
+  case class MissingArgument(cause: Expr, paramName: String) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: Missing argument for parameter: $paramName"
+  }
+
+  case class UnmatchedArguments(cause: Expr, args: Vector[Expr]) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: Unmatched arguments: ${args.mkString(", ")}"
+  }
+
+  case class NoMatchingSignature(cause: Expr) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: No matching function signature found"
+  }
+
+  case class ExpectedFunctionType(cause: Expr, actualType: Term) extends FunctionCallError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = 
+      t"Function call error: Expected a function type, but got $actualType"
+  }
+}

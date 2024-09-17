@@ -570,3 +570,8 @@ case object ErasedTuple extends ErasedType
 case object ErasedObject extends ErasedType
 
 case object ErasedErasedType extends ErasedType
+
+type ErrorType = ErrorTerm
+object ErrorType {
+  def apply(error: TyckError): ErrorType = ErrorTerm(error)
+}
