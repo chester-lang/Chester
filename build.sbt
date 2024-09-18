@@ -347,6 +347,18 @@ lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
   )
 
+lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("site"))
+  .dependsOn(js, common, jsTypings)
+  .settings(
+    name := "site",
+    commonSettings
+  )
+  .jsSettings(
+    libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "2.1.1",
+  )
+
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("lsp"))
@@ -415,7 +427,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     common,
     cli,
     lsp, up, truffle,
-    js)
+    js, site)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
