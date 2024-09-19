@@ -54,7 +54,8 @@ jobs:
 
       - name: Replace basePath in Next.js config
         run: |
-          sed -i 's|basePath: "/",|basePath: "/chester",|' site/next.config.js
+          sed -i 's|basePath: "/",|basePath: "/chester",|' next.config.mjs
+        working-directory: ./site
 
       - name: Install dependencies
         run: npm ci
