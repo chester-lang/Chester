@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
-      <info organisation="org.scalablytyped" module="std_sjs1_3" revision="4.3-5d95db" status="release" publication="09092024055333">
+      <info organisation="org.scalablytyped" module="std_sjs1_3" revision="4.3-5d95db" status="release" publication="19092024075059">
         <description>
           std
         </description>

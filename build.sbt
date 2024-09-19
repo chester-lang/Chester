@@ -191,8 +191,8 @@ lazy val typednode = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
   .in(file("js-typings/typednode"))
   .settings(commonVendorSettings)
   .jsSettings(
-    Compile / packageSrc := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/srcs/node_sjs1_3-sources.jar"),
-    Compile / packageBin := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.3.0-fa071c/jars/node_sjs1_3.jar"),
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.5.5-6bc698/srcs/node_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/node_sjs1_3/22.5.5-6bc698/jars/node_sjs1_3.jar"),
   )
 lazy val typedstd = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typedstd"))
@@ -205,8 +205,8 @@ lazy val typedundici = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
   .in(file("js-typings/typedundici"))
   .settings(commonVendorSettings)
   .jsSettings(
-    Compile / packageSrc := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/srcs/undici-types_sjs1_3-sources.jar"),
-    Compile / packageBin := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.18.2-4cf613/jars/undici-types_sjs1_3.jar"),
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.19.8-4dee3c/srcs/undici-types_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/undici-types_sjs1_3/6.19.8-4dee3c/jars/undici-types_sjs1_3.jar"),
   )
 lazy val typedxterm = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .in(file("js-typings/typedxterm"))
@@ -214,6 +214,41 @@ lazy val typedxterm = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
   .jsSettings(
     Compile / packageSrc := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/srcs/xterm__xterm_sjs1_3-sources.jar"),
     Compile / packageBin := file("js-typings/local/org.scalablytyped/xterm__xterm_sjs1_3/5.5.0-951203/jars/xterm__xterm_sjs1_3.jar"),
+  )
+lazy val typedcsstype = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedcsstype"))
+  .settings(commonVendorSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/csstype_sjs1_3/3.1.3-3d3924/srcs/csstype_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/csstype_sjs1_3/3.1.3-3d3924/jars/csstype_sjs1_3.jar"),
+  )
+lazy val typednext = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typednext"))
+  .settings(commonVendorSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/next_sjs1_3/11.1.4-68204a/srcs/next_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/next_sjs1_3/11.1.4-68204a/jars/next_sjs1_3.jar"),
+  )
+lazy val typedproptypes = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedproptypes"))
+  .settings(commonVendorSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/prop-types_sjs1_3/15.7.13-49b294/srcs/prop-types_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/prop-types_sjs1_3/15.7.13-49b294/jars/prop-types_sjs1_3.jar"),
+  )
+lazy val typedreactdom = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedreactdom"))
+  .settings(commonVendorSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/react-dom_sjs1_3/18.3.0-d84423/srcs/react-dom_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/react-dom_sjs1_3/18.3.0-d84423/jars/react-dom_sjs1_3.jar"),
+  )
+lazy val typedreact = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .in(file("js-typings/typedreact"))
+  .settings(commonVendorSettings)
+  .jsSettings(
+    Compile / packageSrc := file("js-typings/local/org.scalablytyped/react_sjs1_3/18.3.7-ca07dd/srcs/react_sjs1_3-sources.jar"),
+    Compile / packageBin := file("js-typings/local/org.scalablytyped/react_sjs1_3/18.3.7-ca07dd/jars/react_sjs1_3.jar"),
   )
 lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -223,23 +258,31 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
   .settings(
     commonVendorSettings,
   )
-  .dependsOn(typednode, typedstd, typedundici, typedxterm)
+  .dependsOn(typednode, typedstd, typedundici, typedxterm, typedcsstype, typednext, typedproptypes, typedreactdom, typedreact)
   .jsSettings(
     resolvers += Resolver.file("local-ivy2", file("js-typings/local"))(Resolver.ivyStylePatterns),
-    libraryDependencies ++= Seq(
-      "org.scalablytyped" %%% "node" % "22.3.0-fa071c" % Compile,
-      "org.scalablytyped" %%% "std" % "4.3-5d95db" % Compile,
-      "org.scalablytyped" %%% "undici-types" % "6.18.2-4cf613" % Compile,
-      "org.scalablytyped" %%% "xterm__xterm" % "5.5.0-951203" % Compile,
-    ),
     libraryDependencies ++= Seq(
       "com.olvind" %%% "scalablytyped-runtime" % "2.4.2",
       "org.scala-js" %%% "scalajs-dom" % "2.3.0",
     ),
+    libraryDependencies ++= Seq(
+      "org.scalablytyped" %%% "node" % "22.5.5-6bc698" % Compile,
+      "org.scalablytyped" %%% "std" % "4.3-5d95db" % Compile,
+      "org.scalablytyped" %%% "undici-types" % "6.19.8-4dee3c" % Compile,
+      "org.scalablytyped" %%% "xterm__xterm" % "5.5.0-951203" % Compile,
+      "org.scalablytyped" %%% "csstype" % "3.1.3-3d3924" % Compile,
+      "org.scalablytyped" %%% "next" % "11.1.4-68204a" % Compile,
+      "org.scalablytyped" %%% "prop-types" % "15.7.13-49b294" % Compile,
+      "org.scalablytyped" %%% "react-dom" % "18.3.0-d84423" % Compile,
+      "org.scalablytyped" %%% "react" % "18.3.7-ca07dd" % Compile,
+    ),
     /*
     Compile / npmDependencies ++= Seq(
-      "@types/node" -> "22.3.0",
+      "@types/node" -> "22.5.5",
       "@xterm/xterm" -> "5.5.0",
+      "@types/react" -> "18.3.7",
+      "@types/react-dom" -> "18.3.0",
+      "next" -> "11.1.4", // next.js 14/12 breaks scalablytyped
     ),
     */
   )
@@ -336,7 +379,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   )
 
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
-  .crossType(CrossType.Full)
+  .crossType(CrossType.Pure)
   .in(file("js"))
   .dependsOn(common, jsTypings)
   .settings(
@@ -414,12 +457,18 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   )
 
 lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
     typednode,
     typedstd,
     typedundici,
     typedxterm,
+    typedcsstype,
+    typednext,
+    typedproptypes,
+    typedreactdom,
+    typedreact,
     kiamaCore,
     effektKiama,
     jsTypings,
