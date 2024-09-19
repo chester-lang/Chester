@@ -37,6 +37,7 @@ final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends Abstract
   def handler(data: String, unit: Unit): Unit = data match {
     case "\r" => {
       handleLine(command)
+      terminal.writeln("")
       command = ""
     }
     case "\u007F" => {
@@ -44,6 +45,9 @@ final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends Abstract
         terminal.write("\b \b")
         command = command.slice(0, command.length - 1)
       }
+    }
+    case "\n" => {
+      // ignore
     }
     case _ => {
       terminal.write(data)

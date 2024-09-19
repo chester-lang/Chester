@@ -378,22 +378,10 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
     scalaJSUseMainModuleInitializer := true
   )
 
-lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("js"))
-  .dependsOn(common, jsTypings)
-  .settings(
-    name := "js",
-    commonSettings
-  )
-  .jsSettings(
-    jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-  )
-
 lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("site"))
-  .dependsOn(js, common, jsTypings)
+  .dependsOn(common, jsTypings)
   .settings(
     name := "site",
     commonSettings
@@ -480,8 +468,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, up, truffle,
-    js, site)
+    lsp, up, truffle, site)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version

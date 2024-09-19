@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { XTerm } from "@pablo-lion/xterm-react";
+import { WebLinksAddon } from '@xterm/addon-web-links';
 import { startRepl } from "../generated/main.mjs";
 import "../types/main.d.ts";
 
@@ -11,7 +12,9 @@ export default function Home() {
 
   useEffect(() => {
     if (xtermRef.current) {
-      startRepl(xtermRef.current.terminal);
+      const terminal = xtermRef.current.terminal;
+      terminal.loadAddon(new WebLinksAddon());
+      startRepl(terminal);
     }
   }, []);
 
