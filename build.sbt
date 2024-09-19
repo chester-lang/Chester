@@ -399,6 +399,10 @@ lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
     commonSettings
   )
   .jsSettings(
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
+    },
     libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "2.1.1",
     libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.7.4",
   )

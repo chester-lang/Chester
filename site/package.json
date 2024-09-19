@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copy-js": "mkdir generated && cp .js/target/scala-3.5.0/site-fastopt/main.mjs .js/target/scala-3.5.0/site-fastopt/main.mjs.map generated/"
   },
   "dependencies": {
     "@pablo-lion/xterm-react": "^1.1.2",

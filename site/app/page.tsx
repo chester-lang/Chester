@@ -3,14 +3,15 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { XTerm } from "@pablo-lion/xterm-react";
+import { startRepl } from "../generated/main.mjs";
+import "../types/main.d.ts";
 
 export default function Home() {
   const xtermRef = useRef(null);
 
   useEffect(() => {
     if (xtermRef.current) {
-      xtermRef.current.terminal.writeln("Welcome to Chester REPL");
-      xtermRef.current.terminal.writeln("Type your Chester code below:");
+      startRepl(xtermRef.current.terminal);
     }
   }, []);
 
