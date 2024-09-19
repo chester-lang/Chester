@@ -23,12 +23,6 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        config.output.globalObject = 'this';
-      }
-      return config;
-    },
 };
 
 export default nextConfig;
