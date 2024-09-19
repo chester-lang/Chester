@@ -400,6 +400,7 @@ lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   )
   .jsSettings(
     libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "2.1.1",
+    libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.7.4",
   )
 
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
