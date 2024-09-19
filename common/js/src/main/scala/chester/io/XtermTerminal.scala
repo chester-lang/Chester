@@ -6,10 +6,7 @@ import typings.xtermXterm.mod
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
-final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends AbstractInTerminal[Future] {
-
-
-  def initHistory: Future[Seq[String]] = Future.successful(Vector())
+final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends InTerminalNoHistory[Future] {
 
   inline override def writeln(line: fansi.Str): Future[Unit] = {
     val promise = Promise[Unit]()
@@ -74,9 +71,7 @@ final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends Abstract
 
 case class XtermTerminal(terminal: mod.Terminal) extends Terminal[Future] {
   def runTerminal[T](init: TerminalInit, block: InTerminal[Future] ?=> Future[T]): Future[T] = {
-    val future =
-      block(using new InXterm(terminal, init))
-    future
+    block(using new InXterm(terminal, init))
   }
 
 }

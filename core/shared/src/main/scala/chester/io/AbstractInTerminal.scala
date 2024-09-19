@@ -4,6 +4,11 @@ import chester.parser.InputStatus.{Complete, Error, Incomplete}
 import chester.parser.ParserEngine
 import chester.repl.*
 
+abstract class InTerminalNoHistory[F[_]](using runner: Runner[F]) extends AbstractInTerminal[F] {
+
+  def initHistory: F[Seq[String]] = Runner.pure(Vector())
+
+}
 abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTerminal[F] {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
