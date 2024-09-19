@@ -3,17 +3,17 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { XTerm } from "@pablo-lion/xterm-react";
-import { WebLinksAddon } from '@xterm/addon-web-links';
 import { startRepl } from "../generated/main.mjs";
 import "../types/main.d.ts";
+import { Terminal } from '@xterm/xterm';
 
 export default function Home() {
-  const xtermRef = useRef(null);
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const xtermRef = useRef<any>(null);
 
   useEffect(() => {
     if (xtermRef.current) {
-      const terminal = xtermRef.current.terminal;
-      terminal.loadAddon(new WebLinksAddon());
+      const terminal = xtermRef.current.terminal as Terminal;
       startRepl(terminal);
     }
   }, []);
