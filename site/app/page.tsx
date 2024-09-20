@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { XTerm } from "@pablo-lion/xterm-react";
 import { startRepl, startReplPty, startReplReadline } from "../generated/main.js";
 import "../types/main.d.ts";
