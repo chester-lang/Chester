@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 final class InXtermPty(pty: Slave) extends InTerminalNoHistory[Future] {
   inline override def writeln(line: fansi.Str): Future[Unit] = {
     pty.write(line.render + "\n")
-    Future.successful(())
+    setTimeoutThen
   }
   override inline def readALine(prompt: fansi.Str): Future[String] = {
     val promise = Promise[String]()

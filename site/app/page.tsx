@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { XTerm } from "@pablo-lion/xterm-react";
-import { startRepl } from "../generated/main.mjs";
+import { startRepl, startReplPty } from "../generated/main.mjs";
 import "../types/main.d.ts";
 import { Terminal } from '@xterm/xterm';
 
@@ -12,10 +12,22 @@ export default function Home() {
   const xtermRef = useRef<any>(null);
 
   useEffect(() => {
-    if (xtermRef.current) {
-      const terminal = xtermRef.current.terminal as Terminal;
-      startRepl(terminal);
+    const initTerminal = async () => {
+      if (xtermRef.current) {
+        const terminal = xtermRef.current.terminal as Terminal;
+        if(false){
+          startRepl(terminal);
+        }else{
+          // https://stackoverflow.com/questions/66096260/why-am-i-getting-referenceerror-self-is-not-defined-when-i-import-a-client-side/66100185#66100185
+          // @ts-expect-error xterm-pty types are not recognized
+          const {openpty} = await import('xterm-pty');
+          const { master, slave } = openpty();
+          terminal.loadAddon(master);
+          startReplPty(slave);
+        }
+      }
     }
+    initTerminal();
   }, []);
 
   return (
