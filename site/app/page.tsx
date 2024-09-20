@@ -43,8 +43,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-6 w-full max-w-4xl">
         <Image
           className="dark:invert"
           src="chester-logo.svg"
@@ -54,7 +54,7 @@ export default function Home() {
           priority
         />
         <h1 className="text-2xl font-bold">Chester: A Programming Language</h1>
-        <div className="w-full h-96 bg-black rounded">
+        <div className="w-full h-[70vh] bg-black rounded">
           <XTerm ref={xtermRef} />
         </div>
       </main>
