@@ -7,6 +7,7 @@ import { startRepl, startReplPty, startReplReadline } from "../generated/main.js
 import "../types/main.d.ts";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
+import Header from './components/Header';
 
 export default function Home() {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,26 +44,21 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-6 w-full max-w-4xl">
-        <Image
-          className="dark:invert"
-          src="chester-logo.svg"
-          alt="Chester logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <h1 className="text-2xl font-bold">Chester: A Programming Language</h1>
-        <div className="w-full h-[70vh] bg-black rounded">
-          <XTerm ref={xtermRef} />
-        </div>
-      </main>
-      <footer className="row-start-3 flex items-center justify-center">
-        <p className="text-sm">
-          Chester: A Programming Language © {new Date().getFullYear()}
-        </p>
-      </footer>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex-grow grid grid-rows-[1fr_auto] items-center justify-items-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+        <main className="flex flex-col gap-6 w-full max-w-4xl">
+          <h1 className="text-2xl font-bold">Chester: A Programming Language</h1>
+          <div className="w-full h-[70vh] bg-black rounded">
+            <XTerm ref={xtermRef} />
+          </div>
+        </main>
+        <footer className="flex items-center justify-center">
+          <p className="text-sm">
+            Chester: A Programming Language © {new Date().getFullYear()}
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
