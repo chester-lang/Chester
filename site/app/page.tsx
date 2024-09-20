@@ -13,13 +13,19 @@ export default function Home() {
   const xtermRef = useRef<any>(null);
 
   useEffect(() => {
+    // https://stackoverflow.com/questions/66096260/why-am-i-getting-referenceerror-self-is-not-defined-when-i-import-a-client-side/66100185#66100185
     const initTerminal = async () => {
       if (xtermRef.current) {
         const terminal = xtermRef.current.terminal as Terminal;
+        const { WebLinksAddon } = await import('@xterm/addon-web-links');
+        terminal.loadAddon(new WebLinksAddon());
+        //const { FitAddon } = await import('@xterm/addon-fit');
+        //const fitAddon = new FitAddon();
+        //terminal.loadAddon(fitAddon);
+        //fitAddon.fit();
         if(false){
           startRepl(terminal);
         }else if(false){
-          // https://stackoverflow.com/questions/66096260/why-am-i-getting-referenceerror-self-is-not-defined-when-i-import-a-client-side/66100185#66100185
           // @ts-expect-error xterm-pty types are not recognized
           const {openpty} = await import('xterm-pty');
           const { master, slave } = openpty();
