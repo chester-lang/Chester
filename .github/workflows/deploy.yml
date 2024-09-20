@@ -75,7 +75,7 @@ jobs:
         working-directory: ./site
 
       - name: Build with sbt
-        run: sbt site/fastLinkJS
+        run: sbt site/fullLinkJS # site/fastLinkJS
 
       - name: Copy generated JS files
         run: npm run copy-js
