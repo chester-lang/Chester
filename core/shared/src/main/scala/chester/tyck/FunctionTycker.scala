@@ -86,12 +86,14 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     val functionTelescopes = fTy.telescope
     val callTelescopes = telescopes
 
-    def determineApplicationCase(): (ApplicationCase, ImplicitTelescopeInfo) = {
+    def determineApplicationCase(): (ApplicationCase, TelescopeMatchingInfo) = {
       var funcIndex = 0
       var callIndex = 0
+      var matchedTelescopes = Vector.empty[(Int, Int)]
       var skippedImplicits = Vector.empty[Int]
-      var providedImplicits = Vector.empty[Int]
-      boundary{
+      var providedImplicits = Vector.empty[(Int, Int)]
+      
+      boundary {
         while (funcIndex < functionTelescopes.length) {
           val funcTelescope = functionTelescopes(funcIndex)
           val callTelescope = if (callIndex < callTelescopes.length) Some(callTelescopes(callIndex)) else None
@@ -99,26 +101,28 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
           (funcTelescope.implicitly, callTelescope.map(_.implicitly)) match {
             case (false, Some(false)) =>
               // Explicit telescope in both function definition and call
+              matchedTelescopes :+= (funcIndex, callIndex)
               funcIndex += 1
               callIndex += 1
             case (false, Some(true)) =>
-              // Explicit telescope in function definition, but implicit or missing in call
+              // Explicit telescope in function definition, but implicit in call
               tyck.report(ExplicitTelescopeRequiredError(callTelescopes(callIndex)))
-              return (ApplicationCase.Invalid, ImplicitTelescopeInfo(Vector.empty, Vector.empty))
+              return (ApplicationCase.Invalid, TelescopeMatchingInfo(Vector.empty, Vector.empty, Vector.empty, Vector.empty, Vector.empty))
             case (false, None) =>
               // Partially application
               break()
             case (true, Some(true)) =>
               // Implicit telescope provided in the call
-              providedImplicits :+= funcIndex
+              providedImplicits :+= (funcIndex, callIndex)
               funcIndex += 1
               callIndex += 1
             case (true, Some(false)) =>
-              // Implicit telescope in function definition, not provided in call
-              skippedImplicits :+= funcIndex
+              // Implicit telescope in function definition, explicit in call (allowed)
+              matchedTelescopes :+= (funcIndex, callIndex)
               funcIndex += 1
+              callIndex += 1
             case (true, None) =>
-              if(funcIndex == functionTelescopes.length - 1) {
+              if (funcIndex == functionTelescopes.length - 1) {
                 // Implicit telescope in function definition, not provided in call, only allowed in the last telescope
                 skippedImplicits :+= funcIndex
                 funcIndex += 1
@@ -130,7 +134,16 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         }
       }
 
-      val implicitInfo = ImplicitTelescopeInfo(skippedImplicits, providedImplicits)
+      val remainingFuncTelescopes = (funcIndex until functionTelescopes.length).toVector
+      val extraCallTelescopes = (callIndex until callTelescopes.length).toVector
+
+      val matchingInfo = TelescopeMatchingInfo(
+        matchedTelescopes,
+        skippedImplicits,
+        providedImplicits,
+        remainingFuncTelescopes,
+        extraCallTelescopes
+      )
 
       val applicationCase = 
         if (funcIndex == functionTelescopes.length && callIndex == callTelescopes.length) {
@@ -143,10 +156,10 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
           ApplicationCase.Invalid
         }
 
-      (applicationCase, implicitInfo)
+      (applicationCase, matchingInfo)
     }
 
-    val (applicationCase, implicitInfo) = determineApplicationCase()
+    val (applicationCase, matchingInfo) = determineApplicationCase()
 
     applicationCase match {
       case ApplicationCase.PartiallyApplied =>
@@ -162,8 +175,6 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         // Error has already been reported, return an error term
         Judge(ErrorTerm(ExplicitTelescopeRequiredError(callTelescopes.head)), ErrorType(ExplicitTelescopeRequiredError(callTelescopes.head)), NoEffect)
     }
-
-    ???
   }
 
   def synthesizeFunctionCall(call: DesaltFunctionCall, effects: Option[Effects]): Judge = {
@@ -194,7 +205,10 @@ enum ApplicationCase {
   case Invalid
 }
 
-case class ImplicitTelescopeInfo(
-  skippedImplicits: Vector[Int],
-  providedImplicits: Vector[Int]
+case class TelescopeMatchingInfo(
+  matchedTelescopes: Vector[(Int, Int)],  // (funcIndex, callIndex) for matched telescopes
+  skippedImplicits: Vector[Int],          // funcIndex of skipped implicit telescopes
+  providedImplicits: Vector[(Int, Int)],  // (funcIndex, callIndex) of provided implicit telescopes
+  remainingFuncTelescopes: Vector[Int],   // funcIndex of remaining function telescopes (for partial application)
+  extraCallTelescopes: Vector[Int]        // callIndex of extra call telescopes (for over-application)
 )
