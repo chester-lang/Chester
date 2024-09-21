@@ -36,24 +36,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Pick and display a JDK version and distribution
-      id: pick-jdk
-      run: |
-        JDK_VERSION=8
-        if [[ "$RUNNER_OS" == "macOS" && "$RUNNER_ARCH" == "ARM64" ]]; then
-          JDK_VERSION=11
-        fi
-        JDK_DISTRIBUTION=temurin
-        echo "JDK_VERSION=$JDK_VERSION" >> $GITHUB_ENV
-        echo "JDK_DISTRIBUTION=$JDK_DISTRIBUTION" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Setup Java
-      uses: actions/setup-java@v4
+    - uses: graalvm/setup-graalvm@v1
       with:
-        distribution: ${{ env.JDK_DISTRIBUTION }}
-        java-version: ${{ env.JDK_VERSION }}
-        cache: sbt
+        java-version: '22'
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        native-image-job-reports: 'true'
+
+    - name: GraalVM Env
+      run: |
+        echo "NATIVE_IMAGE_INSTALLED=true" >> $GITHUB_ENV
+        echo "GRAALVM_INSTALLED=true" >> $GITHUB_ENV
 
     - uses: sbt/setup-sbt@v1
 
@@ -129,18 +122,6 @@ jobs:
       run: |
         sbt cliJS/fullLinkJS
         mv cli/js/target/scala-${{ env.SCALA_VERSION }}/cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
-
-    - uses: graalvm/setup-graalvm@v1
-      with:
-        java-version: '22'
-        distribution: 'graalvm'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        native-image-job-reports: 'true'
-
-    - name: GraalVM Env
-      run: |
-        echo "NATIVE_IMAGE_INSTALLED=true" >> $GITHUB_ENV
-        echo "GRAALVM_INSTALLED=true" >> $GITHUB_ENV
 
     - name: Build Native Image for LSP
       run: sbt lsp/nativeImage
