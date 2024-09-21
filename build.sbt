@@ -136,7 +136,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
     ),
   )
 
-// iron & iron-cats, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
+// iron & iron-cats & iron-upickle, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
 // removed RefinedTypeOpsSuite.scala because of compilation error
 lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
@@ -146,6 +146,7 @@ lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "com.lihaoyi" %%% "utest" % "0.8.4" % Test,
       "org.typelevel" %%% "kittens" % "3.4.0" % Test,
@@ -179,6 +180,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
+      "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -206,6 +208,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
+      "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
     ),
   )
 

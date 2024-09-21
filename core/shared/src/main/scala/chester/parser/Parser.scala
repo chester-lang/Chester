@@ -15,6 +15,12 @@ import scala.collection.immutable
 import scala.util.*
 import scala.scalajs.js.annotation.*
 import upickle.default.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
+
 
 case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {
   val fileName = sourceOffset.fileName
@@ -386,7 +392,7 @@ case class FilePath private (fileName: String) extends ParserSource {
   }
 }
 
-case class SourceOffset(source: ParserSource, linesOffset: Int = 0, posOffset: Int = 0)derives ReadWriter {
+case class SourceOffset(source: ParserSource, linesOffset: Int :| Positive0 = 0, posOffset: Int :| Positive0 = 0)derives ReadWriter {
   def fileName: String = source.fileName
 
   def readContent: Either[ParseError, String] = source.readContent

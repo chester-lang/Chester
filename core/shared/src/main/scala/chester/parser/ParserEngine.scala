@@ -9,8 +9,9 @@ import fastparse.NoWhitespace.*
 
 import java.lang.Character.{isDigit, isLetter}
 import scala.util.*
-
 import chester.parser.InputStatus.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
 
 
 sealed trait InputStatus
@@ -32,7 +33,7 @@ object ParserEngine {
     val linesOffset = history.init.map(x => x.count(_ == '\n') + 1).sum
     val posOffset = history.init.map(x => x.length + (if(useCRLF) 2 else 1)).sum
 
-    parseCompleteExpression(currentInput, linesOffset, posOffset)
+    parseCompleteExpression(currentInput, linesOffset.refineUnsafe, posOffset.refineUnsafe)
   }
 
   def checkInputStatus(currentInput: String): InputStatus = {
@@ -59,7 +60,7 @@ object ParserEngine {
     if (stack.nonEmpty) Incomplete else Complete
   }
 
-  private def parseCompleteExpression(input: String, linesOffset: Int, posOffset: Int): Either[ParseError, ParsedExpr] = {
+  private def parseCompleteExpression(input: String, linesOffset: Int :| Positive0, posOffset: Int :| Positive0): Either[ParseError, ParsedExpr] = {
     parse(input, p => new ParserInternal(SourceOffset(FileNameAndContent("repl", input), linesOffset = linesOffset, posOffset = posOffset))(p).exprEntrance) match {
       case Parsed.Success(expr, _) => Right(expr)
       case f: Parsed.Failure => Left(ParseError(f.msg, Pos.Zero))
