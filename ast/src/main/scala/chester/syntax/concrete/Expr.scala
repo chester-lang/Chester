@@ -1,6 +1,7 @@
 // TODO: Correctly implement toDoc. They are very broken
 package chester.syntax.concrete
 
+import cats.data.*
 import chester.doc.*
 import chester.error.*
 import chester.syntax.concrete.stmt.QualifiedID
@@ -255,9 +256,9 @@ object DefTelescope {
   def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): DefTelescope = DefTelescope(args.toVector, meta = meta)
 }
 
-case class FunctionCall private[syntax](function: Expr, telescopes: Vector[MaybeTelescope] :| MinLength1, meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class FunctionCall private[syntax](function: Expr, telescopes: NonEmptyVector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    new FunctionCall(operator(function), telescopes.map(_.descent(operator)).refineUnsafe, meta)
+    new FunctionCall(operator(function), telescopes.map(_.descent(operator)), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
@@ -266,13 +267,13 @@ case class FunctionCall private[syntax](function: Expr, telescopes: Vector[Maybe
 }
 
 object FunctionCall {
-  def calls(function: Expr, telescopes: Seq[MaybeTelescope] :| MinLength1): FunctionCall = {
-    return new FunctionCall(function, telescopes.toVector.refineUnsafe)
+  def calls(function: Expr, telescopes: NonEmptySeq[MaybeTelescope]): FunctionCall = {
+    return new FunctionCall(function, telescopes.toVector)
   }
 
-  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe)
+  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = new FunctionCall(function, NonEmptyVector.of(telescope))
 
-  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe, meta)
+  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = new FunctionCall(function, NonEmptyVector.of(telescope), meta)
 }
 
 case class DesaltFunctionCall(function: Expr, telescopes: Vector[DesaltCallingTelescope], meta: Option[ExprMeta] = None) extends DesaltExpr {
@@ -597,7 +598,7 @@ case class DefinedPattern(pattern: DesaltPattern) extends Defined {
   def bindings: Vector[Identifier] = pattern.bindings
 }
 
-case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope] :| MinLength1) extends Defined {
+case class DefinedFunction(id: Identifier, telescope: NonEmptyVector[MaybeTelescope]) extends Defined {
   def bindings: Vector[Identifier] = Vector(id)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))

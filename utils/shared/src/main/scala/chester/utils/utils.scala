@@ -23,6 +23,3 @@ case class MutBox[T](var value: T) {
   }
 }
 
-type MinLength1 = MinLength[1]
-
-// TODO: maybe add a conversion for MinLength1

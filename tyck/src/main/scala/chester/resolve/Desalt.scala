@@ -1,27 +1,25 @@
 package chester.resolve
 
+import cats.data.*
 import cats.implicits.*
 import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.tyck.*
-import chester.utils.reuse
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.constraint.collection.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
+import chester.utils.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
 
 case class DesugarInfo()
 
 private object DesaltCaseClauseMatch {
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DesaltCaseClause] = x match {
-    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) => 
+    case OpSeq(Vector(Identifier(Const.Case, _), pattern, Identifier(Const.Arrow2, _), returning), meta) =>
       Some(DesaltCaseClause(pattern, returning, meta))
-    case OpSeq(Vector(Identifier(Const.Case, _), _*), _) => 
+    case OpSeq(Vector(Identifier(Const.Case, _), _*), _) =>
       val error = ExpectCase(x)
       reporter(error)
       None
@@ -62,9 +60,9 @@ private object DesaltSimpleFunction {
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) => 
+        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) =>
           Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
-        case _ => 
+        case _ =>
           val error = ExpectLambda(x)
           reporter(error)
           Some(DesaltFailed(x, error, meta))
@@ -154,7 +152,7 @@ case object StmtDesalt {
       case identifier: Identifier =>
         val telescopes = xs.tail
         telescopes.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
-          DefinedFunction(identifier, telescopes.refineUnsafe)
+          DefinedFunction(identifier, NonEmptyVector.fromVectorUnsafe(telescopes))
         }
       case _ =>
         return None
@@ -280,7 +278,7 @@ case object SimpleDesalt {
         DesaltMatching(heads1, meta)
       }
     }
-    case b@Block(heads, tail, meta) => 
+    case b@Block(heads, tail, meta) =>
       reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
@@ -289,11 +287,11 @@ case object SimpleDesalt {
       val desugaredFunction = desugar(function)
       val desugaredTelescopes = telescopes.map {
         case t: Tuple => DesaltCallingTelescope(t.terms.map(term => CallingArg(expr = desugar(term))), meta = t.meta)
-        case other => 
+        case other =>
           reporter(UnexpectedTelescope(other))
           DesaltCallingTelescope(Vector(CallingArg(expr = desugar(other))), meta = other.meta)
       }
-      DesaltFunctionCall(desugaredFunction, desugaredTelescopes, meta)
+      DesaltFunctionCall(desugaredFunction, desugaredTelescopes.assumeNonEmpty, meta)
   }
 }
 
