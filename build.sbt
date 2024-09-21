@@ -147,8 +147,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     commonSettings,
     //cpsSettings,
     libraryDependencies ++= Seq(
-      "eu.timepit" %%% "refined" % "0.11.2",
-      "eu.timepit" %%% "refined-cats" % "0.11.2",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "upickle" % "4.0.1",
