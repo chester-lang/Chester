@@ -7,11 +7,19 @@ import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.core.CoreTycker
 import chester.utils.reuse
+import io.github.iltotore.iron.constraint.all.MinLength
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
-
 import scala.annotation.tailrec
 import scala.language.implicitConversions
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
 trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
@@ -96,8 +104,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case (NothingType, ty) => ty
       case (ty, NothingType) => ty
       case (ListType(ty1), ListType(ty2)) => ListType(common(ty1, ty2))
-      case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2)))
-      case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _)))
+      case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2)).refineUnsafe)
+      case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _)).refineUnsafe)
       case (ty1, ty2) =>
         Union.from(Vector(ty1, ty2))
     }
@@ -108,7 +116,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def effectFold(es: Seq[Effects]): Effects = {
-    Effects.merge(es)
+    Effects.merge(es.refineUnsafe)
   }
 
   def effectUnion(e1: Effects, e2: Effects): Effects = e1.merge(e2)
@@ -320,7 +328,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         def firstTry(x: Self): Judge = x.inheritBySynthesize(expr, ty, effects)
 
         val tries: Seq[Self => Judge] = xs.map(ty => (x: Self) => x.inheritBySynthesize(expr, ty, effects))
-        tryAll(firstTry +: tries)
+        tryAll((firstTry +: tries).refineUnsafe)
       }
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effects = effects))

@@ -10,6 +10,8 @@ import spire.math.Trilean.{True, Unknown}
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 import chester.syntax.core.*
+import io.github.iltotore.iron.autoRefine
+import io.github.iltotore.iron.refineUnsafe
 
 trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
 
@@ -86,7 +88,7 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           case _: MetaTerm =>
             val resultMeta = genTypeVariable(name = Some(s"${meta.description}_result"))
             val action = DeferredAction(
-              dependsOn = Vector(meta),
+              dependsOn = Vector(meta).refineUnsafe,
               affects = Vector(resultMeta),
               computation = { tyck =>
                 val result = operation(tyck.getState.subst.walk(meta).wellTyped)

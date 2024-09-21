@@ -2,17 +2,24 @@ package chester.tyck
 
 import chester.syntax.concrete.ExprMeta
 import chester.syntax.core.TermMeta
-
 import chester.error.*
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.reuse
+import io.github.iltotore.iron.constraint.all.MinLength
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
-
 import scala.annotation.tailrec
 import scala.language.implicitConversions
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
 def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
   meta.map(exprMeta => TermMeta(exprMeta.sourcePos))
@@ -129,8 +136,7 @@ trait TyckerTrait[Self <: TyckerTrait[Self]] {
     x.result
   }
 
-  final def tryAll[A](xs: Seq[Self => A]): A = {
-    require(xs.nonEmpty)
+  final def tryAll[A](xs: Seq[Self => A] :| MinLength[1]): A = {
     var firstTry: Option[TyckResult[TyckState, A]] = None
     for (x <- xs) {
       val result = tryOne(x)
@@ -154,11 +160,10 @@ case class Tycker(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends Tycke
 }
 
 case class DeferredAction(
-  dependsOn: Vector[MetaTerm],
+  dependsOn: Vector[MetaTerm] :| MinLength[1],
   affects: Vector[MetaTerm],
   computation: Tyck => Unit
 ) {
-  require(dependsOn.nonEmpty, "dependsOn must not be empty")
 }
 
 type DeferredActions = Vector[DeferredAction]

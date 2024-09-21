@@ -6,6 +6,14 @@ import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.tyck.*
 import chester.utils.reuse
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
 case class DesugarInfo()
 
@@ -146,7 +154,7 @@ case object StmtDesalt {
       case identifier: Identifier =>
         val telescopes = xs.tail
         telescopes.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
-          DefinedFunction(identifier, telescopes)
+          DefinedFunction(identifier, telescopes.refineUnsafe)
         }
       case _ =>
         return None

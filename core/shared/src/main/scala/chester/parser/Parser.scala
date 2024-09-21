@@ -29,8 +29,6 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
   // TODO: column offset for :t command in repl
   if (linesOffset != 0) require(posOffset != 0)
   if (posOffset != 0) require(linesOffset != 0)
-  require(posOffset >= 0)
-  require(linesOffset >= 0)
 
   def nEnd: P[Unit] = P("\n" | End)
 

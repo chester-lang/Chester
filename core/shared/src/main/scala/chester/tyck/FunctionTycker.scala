@@ -3,9 +3,16 @@ package chester.tyck
 import chester.error.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-
 import scala.util.boundary
 import scala.util.boundary.break
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
 trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
@@ -277,7 +284,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
           case f: FunctionType => true
           case _ => false
         }
-        tryAll(fs.map(fty => _.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects)))
+        tryAll(fs.map(fty => (self:Self)=>self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects)).refineUnsafe)
       }
       case _ => 
         val error = NotAFunctionError(call)

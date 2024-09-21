@@ -10,8 +10,14 @@ import chester.utils.{encodeString, reuse}
 import spire.math.Rational
 import upickle.default.*
 import chester.utils.impls.*
-import scala.collection.immutable.HashMap
+import io.github.iltotore.iron.constraint.collection.MinLength
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
+import scala.collection.immutable.HashMap
 import java.util.concurrent.atomic.AtomicInteger
 import scala.language.implicitConversions
 
@@ -332,9 +338,7 @@ case class MatchingClause()derives ReadWriter {
 
 }
 
-case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingClause], meta: OptionTermMeta = None) extends TermWithMeta {
-  require(clauses.nonEmpty, "Matching should have at least one clause")
-
+case class Matching(scope: ScopeId, ty: FunctionType, clauses: Vector[MatchingClause] :| MinLength[1], meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
 }
 
@@ -394,9 +398,7 @@ case class ListType(ty: Term) extends Constructed with TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("List") <> Docs.`(` <> ty <> Docs.`)`
 }
 
-case class Union(xs: Vector[Term]) extends TypeTerm {
-  require(xs.nonEmpty)
-
+case class Union(xs: Vector[Term] :| MinLength[1]) extends TypeTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs *)
 }
 
@@ -416,12 +418,11 @@ object Union {
       case x => Vector(x)
     }.distinct.filter(_ != NothingType)
     if (flattened.size == 1) return flattened.head
-    if (flattened.nonEmpty) new Union(flattened) else NothingType
+    if (flattened.nonEmpty) new Union(flattened.refineUnsafe) else NothingType
   }
 }
 
-case class Intersection(xs: Vector[Term]) extends TypeTerm derives ReadWriter {
-  require(xs.nonEmpty)
+case class Intersection(xs: Vector[Term] :| MinLength[1]) extends TypeTerm derives ReadWriter {
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs *)
 }
@@ -434,7 +435,7 @@ object Intersection {
       case x => Vector(x)
     }.distinct
     if (flattened.size == 1) return flattened.head
-    new Intersection(flattened)
+    new Intersection(flattened.refineUnsafe)
   }
 }
 
@@ -483,8 +484,7 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
 object Effects {
   val Empty: Effects = Effects(HashMap.empty)
 
-  def merge(xs: Seq[Effects]): Effects = {
-    require(xs.nonEmpty)
+  def merge(xs: Seq[Effects] :| MinLength[1]): Effects = {
     xs.reduce(_.merge(_))
   }
 

@@ -8,10 +8,19 @@ import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
-import chester.utils.{encodeString, reuse}
+import chester.utils.*
 import spire.math.Rational
 import upickle.default.*
 import chester.utils.impls.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
+
 
 enum CommentType derives ReadWriter {
   case OneLine
@@ -246,9 +255,9 @@ object DefTelescope {
   def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): DefTelescope = DefTelescope(args.toVector, meta = meta)
 }
 
-case class FunctionCall private[syntax](function: Expr, telescopes: Vector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class FunctionCall private[syntax](function: Expr, telescopes: Vector[MaybeTelescope] :| MinLength1, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    FunctionCall(operator(function), telescopes.map(_.descent(operator)), meta)
+    new FunctionCall(operator(function), telescopes.map(_.descent(operator)).refineUnsafe, meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
@@ -257,22 +266,20 @@ case class FunctionCall private[syntax](function: Expr, telescopes: Vector[Maybe
 }
 
 object FunctionCall {
-  def calls(function: Expr, telescopes: Seq[MaybeTelescope]): FunctionCall = {
-    require(telescopes.nonEmpty, "At least one telescope should be present")
-    return FunctionCall(function, telescopes.toVector)
+  def calls(function: Expr, telescopes: Seq[MaybeTelescope] :| MinLength1): FunctionCall = {
+    return new FunctionCall(function, telescopes.toVector.refineUnsafe)
   }
 
-  def apply(function: Expr, telescope: Vector[MaybeTelescope], meta: Option[ExprMeta] = None): FunctionCall = {
-    require(telescope.nonEmpty, "At least one telescope should be present")
+  def apply(function: Expr, telescope: Vector[MaybeTelescope] :| MinLength1, meta: Option[ExprMeta] = None): FunctionCall = {
     function match {
-      case FunctionCall(f, t, _) => new FunctionCall(f, t ++ telescope, meta)
+      case FunctionCall(f, t, _) => new FunctionCall(f, (t ++ telescope).refineUnsafe, meta)
       case f => new FunctionCall(f, telescope, meta)
     }
   }
 
-  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = FunctionCall(function, Vector(telescope))
+  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe)
 
-  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = FunctionCall(function, Vector(telescope), meta)
+  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe, meta)
 }
 
 case class DesaltFunctionCall(function: Expr, telescopes: Vector[DesaltCallingTelescope], meta: Option[ExprMeta] = None) extends DesaltExpr {
@@ -597,9 +604,7 @@ case class DefinedPattern(pattern: DesaltPattern) extends Defined {
   def bindings: Vector[Identifier] = pattern.bindings
 }
 
-case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope]) extends Defined {
-  require(telescope.nonEmpty)
-
+case class DefinedFunction(id: Identifier, telescope: Vector[MaybeTelescope] :| MinLength1) extends Defined {
   def bindings: Vector[Identifier] = Vector(id)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
