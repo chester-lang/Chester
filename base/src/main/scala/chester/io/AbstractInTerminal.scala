@@ -1,7 +1,6 @@
 package chester.io
 
 import chester.parser.InputStatus.{Complete, Error, Incomplete}
-import chester.parser.ParserEngine
 import chester.repl.*
 
 abstract class InTerminalNoHistory[F[_]](using runner: Runner[F]) extends AbstractInTerminal[F] {
@@ -46,7 +45,7 @@ abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTermi
           for {
             _ <- saveALine(line)
             result <-
-              ParserEngine.checkInputStatus(currentInputs) match {
+              info.checkInputStatus(currentInputs) match {
                 case Complete =>
                   history = history :+ currentInputs
                   val result = LineRead(currentInputs)

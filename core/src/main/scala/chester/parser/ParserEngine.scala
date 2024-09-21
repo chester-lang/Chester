@@ -14,18 +14,6 @@ import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.*
 
 
-sealed trait InputStatus
-
-object InputStatus {
-
-  case object Complete extends InputStatus
-
-  case object Incomplete extends InputStatus
-
-  case class Error(message: String) extends InputStatus
-
-}
-
 object ParserEngine {
 
   def parseInput(history: Seq[String], currentInput: String, useCRLF: Boolean = platformUseCRLF): Either[ParseError, ParsedExpr] = {

@@ -153,15 +153,14 @@ lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
     ),
   )
 
-lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+// split modules trying to increase incremental compilation speed
+lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
-  .in(file("core"))
+  .in(file("utils"))
   .dependsOn(kiamaCore)
   .settings(
-    name := "core",
-    assembly / assemblyJarName := "core.jar",
+    name := "utils",
     commonSettings,
-    //cpsSettings,
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "org.typelevel" %%% "cats-free" % "2.12.0",
@@ -211,6 +210,28 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
     ),
   )
+
+lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("base"))
+  .dependsOn(utils)
+  .settings(
+    name := "base",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core"))
+  .dependsOn(base)
+  .settings(
+    name := "core",
+    assembly / assemblyJarName := "core.jar",
+    commonSettings,
+    //cpsSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
 
 lazy val typednode = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .in(file("js-typings/typednode"))
@@ -541,6 +562,8 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     kiamaCore,
     effektKiama,
     jsTypings,
+    utils,
+    base,
     core,
     common,
     cli,
