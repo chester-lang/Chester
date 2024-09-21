@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 // https://stackoverflow.com/questions/65930789/how-does-next-js-basepath-works-for-images/76197261#76197261
-import chesterLogo from '../public/chester-logo.svg';
+import chesterLogo from '../../public/chester-logo.svg';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
