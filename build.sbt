@@ -176,6 +176,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
+    libraryDependencies += "org.scala-native" %%% "javalib" % "0.5.5",
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
