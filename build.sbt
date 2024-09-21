@@ -231,12 +231,22 @@ lazy val pretty = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   )
   .jvmSettings(commonJvmLibSettings)
 
-lazy val parserast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+lazy val parser = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
-  .in(file("parser-ast"))
-  .dependsOn(utils)
+  .in(file("parser"))
+  .dependsOn(utils, ast)
   .settings(
-    name := "parser-ast",
+    name := "parser",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+lazy val ast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("ast"))
+  .dependsOn(base, pretty)
+  .settings(
+    name := "ast",
     commonSettings,
   )
   .jvmSettings(commonJvmLibSettings)
@@ -254,7 +264,7 @@ lazy val defs = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
-  .dependsOn(base, parserast, defs, pretty)
+  .dependsOn(base, parser, ast, defs, pretty)
   .settings(
     name := "core",
     assembly / assemblyJarName := "core.jar",
@@ -593,7 +603,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effektKiama,
     jsTypings,
     utils,
-    base, parserast, defs, pretty,
+    base, parser, ast, defs, pretty,
     core,
     common,
     cli,

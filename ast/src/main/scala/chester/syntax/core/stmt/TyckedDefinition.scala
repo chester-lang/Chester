@@ -2,7 +2,6 @@ package chester.syntax.core.stmt
 
 import chester.syntax.{Name, QualifiedIDString}
 import chester.syntax.core._
-import chester.tyck._
 
 import scala.collection.immutable.HashMap
 
@@ -12,7 +11,7 @@ case class TyckedModule(id: QualifiedIDString, definitions: HashMap[Name, Tycked
 
 sealed trait TyckedDefinition {
   def meta: Option[TermMeta]
-  def ctx: LocalCtx = ???
+  //def ctx: LocalCtx = ???
 }
 
 sealed trait TyckedDefinitionNamed extends TyckedDefinition {
