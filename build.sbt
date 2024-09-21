@@ -138,7 +138,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
 
 // iron & iron-cats & iron-upickle, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
 // removed RefinedTypeOpsSuite.scala because of compilation error
-lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
+lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("iron-native"))
   .settings(
@@ -184,7 +184,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
-  .nativeConfigure(_.dependsOn(ironnative.native))
+  .nativeConfigure(_.dependsOn(ironNative.native))
   .nativeSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
@@ -586,7 +586,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
-    ironnative,
+    ironNative,
     typednode,
     typedstd,
     typedundici,
