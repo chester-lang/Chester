@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+// https://stackoverflow.com/questions/65930789/how-does-next-js-basepath-works-for-images/76197261#76197261
+import chesterLogo from '../public/chester-logo.svg';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,7 +11,7 @@ const Header = () => {
     <header className="flex flex-wrap items-center justify-between p-4 bg-gray-100 dark:bg-gray-800">
       <div className="flex items-center">
         <Image
-          src="/chester-logo.svg"
+          src={chesterLogo}
           alt="Chester logo"
           width={40}
           height={40}
