@@ -214,7 +214,6 @@ lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   .crossType(CrossType.Pure)
   .in(file("base"))
   .dependsOn(utils)
-  .dependsOn(kiamaCore)
   .settings(
     name := "base",
     commonSettings,
@@ -224,7 +223,8 @@ lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 lazy val pretty = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("pretty"))
-  .dependsOn(base)
+  .dependsOn(utils)
+  .dependsOn(kiamaCore)
   .settings(
     name := "pretty",
     commonSettings,
@@ -234,7 +234,7 @@ lazy val pretty = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
 lazy val parserast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("parser-ast"))
-  .dependsOn(base)
+  .dependsOn(utils)
   .settings(
     name := "parser-ast",
     commonSettings,
@@ -244,7 +244,7 @@ lazy val parserast = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
 lazy val defs = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("defs"))
-  .dependsOn(base)
+  .dependsOn(utils)
   .settings(
     name := "defs",
     commonSettings,
