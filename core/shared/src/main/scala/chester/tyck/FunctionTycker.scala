@@ -81,6 +81,8 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     //val result = Judge(Function(funcTy, body.wellTyped), funcTy, NoEffect)
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
+
+  def handleSingleTelescope(telescope: DefTelescope, calling: DesaltCallingTelescope) = ???
   
   def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = {
     val functionTelescopes = fTy.telescope
