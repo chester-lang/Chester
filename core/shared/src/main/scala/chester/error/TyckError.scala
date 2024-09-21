@@ -198,3 +198,7 @@ case class UnexpectedTelescope(cause: MaybeTelescope) extends TyckError {
 case class NotAFunctionError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a function, but got ${cause}"
 }
+
+case class ExplicitTelescopeRequiredError(cause: MaybeTelescope) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Explicit telescope required"
+}

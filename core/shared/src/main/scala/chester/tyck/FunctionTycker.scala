@@ -1,8 +1,11 @@
 package chester.tyck
 
-import chester.error._
-import chester.syntax.concrete._
-import chester.syntax.core._
+import chester.error.*
+import chester.syntax.concrete.*
+import chester.syntax.core.*
+
+import scala.util.boundary
+import scala.util.boundary.break
 
 trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
@@ -79,7 +82,89 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
   
-  def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = ???
+  def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = {
+    val functionTelescopes = fTy.telescope
+    val callTelescopes = telescopes
+
+    def determineApplicationCase(): (ApplicationCase, ImplicitTelescopeInfo) = {
+      var funcIndex = 0
+      var callIndex = 0
+      var skippedImplicits = Vector.empty[Int]
+      var providedImplicits = Vector.empty[Int]
+      boundary{
+        while (funcIndex < functionTelescopes.length) {
+          val funcTelescope = functionTelescopes(funcIndex)
+          val callTelescope = if (callIndex < callTelescopes.length) Some(callTelescopes(callIndex)) else None
+
+          (funcTelescope.implicitly, callTelescope.map(_.implicitly)) match {
+            case (false, Some(false)) =>
+              // Explicit telescope in both function definition and call
+              funcIndex += 1
+              callIndex += 1
+            case (false, Some(true)) =>
+              // Explicit telescope in function definition, but implicit or missing in call
+              tyck.report(ExplicitTelescopeRequiredError(callTelescopes(callIndex)))
+              return (ApplicationCase.Invalid, ImplicitTelescopeInfo(Vector.empty, Vector.empty))
+            case (false, None) =>
+              // Partially application
+              break()
+            case (true, Some(true)) =>
+              // Implicit telescope provided in the call
+              providedImplicits :+= funcIndex
+              funcIndex += 1
+              callIndex += 1
+            case (true, Some(false)) =>
+              // Implicit telescope in function definition, not provided in call
+              skippedImplicits :+= funcIndex
+              funcIndex += 1
+            case (true, None) =>
+              if(funcIndex == functionTelescopes.length - 1) {
+                // Implicit telescope in function definition, not provided in call, only allowed in the last telescope
+                skippedImplicits :+= funcIndex
+                funcIndex += 1
+              } else {
+                // Partially application
+                break()
+              }
+          }
+        }
+      }
+
+      val implicitInfo = ImplicitTelescopeInfo(skippedImplicits, providedImplicits)
+
+      val applicationCase = 
+        if (funcIndex == functionTelescopes.length && callIndex == callTelescopes.length) {
+          ApplicationCase.FullyApplied
+        } else if (funcIndex < functionTelescopes.length) {
+          ApplicationCase.PartiallyApplied
+        } else if (callIndex < callTelescopes.length) {
+          ApplicationCase.OverApplied
+        } else {
+          ApplicationCase.Invalid
+        }
+
+      (applicationCase, implicitInfo)
+    }
+
+    val (applicationCase, implicitInfo) = determineApplicationCase()
+
+    applicationCase match {
+      case ApplicationCase.PartiallyApplied =>
+        // TODO: Handle partial application
+        ???
+      case ApplicationCase.FullyApplied =>
+        // TODO: Handle full application
+        ???
+      case ApplicationCase.OverApplied =>
+        // TODO: Handle over-application (more arguments than expected)
+        ???
+      case ApplicationCase.Invalid =>
+        // Error has already been reported, return an error term
+        Judge(ErrorTerm(ExplicitTelescopeRequiredError(callTelescopes.head)), ErrorType(ExplicitTelescopeRequiredError(callTelescopes.head)), NoEffect)
+    }
+
+    ???
+  }
 
   def synthesizeFunctionCall(call: DesaltFunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
@@ -101,3 +186,15 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
   }
 
 }
+
+enum ApplicationCase {
+  case PartiallyApplied
+  case FullyApplied
+  case OverApplied
+  case Invalid
+}
+
+case class ImplicitTelescopeInfo(
+  skippedImplicits: Vector[Int],
+  providedImplicits: Vector[Int]
+)
