@@ -82,8 +82,96 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     this.cleanupFunction(Function(funcTy, body.wellTyped))
   }
 
-  def handleSingleTelescope(telescope: DefTelescope, calling: DesaltCallingTelescope) = ???
-  
+  // Definition of TelescopeMatchingResult
+  sealed trait TelescopeMatchingResult
+  object TelescopeMatchingResult {
+    case class Valid(matchedArgs: Vector[Option[CallingArg]]) extends TelescopeMatchingResult
+    case object Invalid extends TelescopeMatchingResult
+  }
+
+  // Written by AI, TODO - check
+  def handleSingleTelescope(
+    telescope: DefTelescope,
+    calling: DesaltCallingTelescope
+  ): TelescopeMatchingResult = {
+    val paramArgs = telescope.args
+    val callArgs = calling.args
+
+    // Mapping from parameter names to their positions
+    val paramNameToIndex = paramArgs.zipWithIndex.collect {
+      case (arg, idx) if arg.name.isInstanceOf[Identifier] => arg.getName -> idx
+    }.toMap
+
+    // Initialize structures for matching
+    val matchedArgs = new Array[Option[CallingArg]](paramArgs.length)
+    var varargIndex: Option[Int] = None
+
+    // Identify vararg parameter
+    for ((paramArg, idx) <- paramArgs.zipWithIndex) {
+      if (paramArg.vararg) {
+        if (varargIndex.isDefined) {
+          // Multiple varargs not supported
+          tyck.report(MultipleVarargsError(calling))
+          return TelescopeMatchingResult.Invalid
+        }
+        varargIndex = Some(idx)
+      }
+    }
+
+    // Handle positional arguments
+    var positionalIndex = 0
+    var callArgIndex = 0
+    while (callArgIndex < callArgs.length && positionalIndex < paramArgs.length) {
+      val callArg = callArgs(callArgIndex)
+      val paramArg = paramArgs(positionalIndex)
+
+      if (callArg.name.isEmpty) {
+        if (paramArg.vararg) {
+          // Collect all remaining positional arguments into vararg
+          val varargArgs = callArgs.drop(callArgIndex).filter(_.name.isEmpty)
+          matchedArgs(positionalIndex) = Some(CallingArg(expr = Tuple(varargArgs.map(_.expr)), vararg = true))
+          callArgIndex = callArgs.length
+          positionalIndex += 1
+        } else {
+          matchedArgs(positionalIndex) = Some(callArg)
+          callArgIndex += 1
+          positionalIndex += 1
+        }
+      } else {
+        // Named argument encountered, break to handle named arguments
+        callArgIndex += 1
+      }
+    }
+
+    // Handle named arguments
+    val namedArgs = callArgs.drop(callArgIndex).filter(_.name.isDefined)
+    for (callArg <- namedArgs) {
+      val argName = callArg.name.get.name
+      paramNameToIndex.get(argName) match {
+        case Some(idx) =>
+          if (matchedArgs(idx).isDefined) {
+            tyck.report(DuplicateArgumentError(null)) // FIX ME null
+            return TelescopeMatchingResult.Invalid
+          } else {
+            matchedArgs(idx) = Some(callArg)
+          }
+        case None =>
+          tyck.report(UnknownArgumentError(null)) // FIX ME null
+          return TelescopeMatchingResult.Invalid
+      }
+    }
+
+    // Check for missing required arguments
+    for ((paramArg, idx) <- paramArgs.zipWithIndex) {
+      if (matchedArgs(idx).isEmpty && paramArg.exprOrDefault.isEmpty && !paramArg.vararg) {
+        tyck.report(MissingArgumentError(null)) // FIX ME null
+        return TelescopeMatchingResult.Invalid
+      }
+    }
+
+    TelescopeMatchingResult.Valid(matchedArgs.toVector)
+  }
+
   def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = {
     val functionTelescopes = fTy.telescope
     val callTelescopes = telescopes

@@ -202,3 +202,16 @@ case class NotAFunctionError(cause: Expr) extends TyckError {
 case class ExplicitTelescopeRequiredError(cause: MaybeTelescope) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Explicit telescope required"
 }
+case class MultipleVarargsError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Multiple varargs not allowed"
+}
+case class DuplicateArgumentError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Duplicate argument"
+}
+
+case class UnknownArgumentError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unknown argument"
+}
+case class MissingArgumentError(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Missing argument"
+}
