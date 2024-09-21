@@ -2,9 +2,10 @@ package chester.parser
 
 import chester.parser.*
 import chester.syntax.concrete.*
+import chester.utils.ponyfill.Files
 import munit.FunSuite
 
-import java.nio.file.Files
+import java.nio.charset.StandardCharsets
 
 class FileParserTest extends FunSuite {
   val (testDir, inputFiles) = getInputFiles("parserTests")
@@ -28,7 +29,7 @@ class FileParserTest extends FunSuite {
             Files.write(expectedFile, actual.getBytes)
             println(s"Created expected file: $expectedFile")
           } else {
-            val expected = new String(Files.readAllBytes(expectedFile))
+            val expected = Files.readString(expectedFile, StandardCharsets.UTF_8)
             assertEquals(actual, expected)
           }
 

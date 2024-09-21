@@ -1,11 +1,14 @@
 package chester.tyck
 
 import chester.parser.*
-import chester.utils.doc._
+import chester.utils.doc.*
 import chester.syntax.concrete.*
 import munit.FunSuite
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Path
+import chester.utils.ponyfill.Files
+
+import java.nio.charset.StandardCharsets
 
 class FilesTyckTest extends FunSuite {
   val (testDir, inputFiles) = getInputFiles("tyckTests")
@@ -28,7 +31,7 @@ class FilesTyckTest extends FunSuite {
                 Files.write(expectedFile, actual.getBytes)
                 println(s"Created expected file: $expectedFile")
               } else {
-                val expected = new String(Files.readAllBytes(expectedFile), java.nio.charset.StandardCharsets.UTF_8)
+                val expected = Files.readString(expectedFile, StandardCharsets.UTF_8)
                 assertEquals(actual, expected)
               }
 
