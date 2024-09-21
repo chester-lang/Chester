@@ -153,6 +153,35 @@ lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
     ),
   )
 
+// commit 52b3692bdfe01ef6c645380b02595a9c60a9725b, core & util & platform & macros, main only, no tests
+// rewrite by scalac with 3.4-migration
+// needed project/GenProductTypes.scala
+lazy val genProductTypes = TaskKey[Seq[File]]("gen-product-types", "Generates several type classes for Tuple2-22.")
+lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(NativePlatform)
+  .crossType(CrossType.Full)
+  .in(file("spire-native"))
+  .settings(
+    scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
+    commonVendorSettings,
+    Compile / sourceGenerators += (Compile / genProductTypes).taskValue,
+    genProductTypes := {
+      val scalaSource = (Compile / sourceManaged).value
+      val s = streams.value
+      s.log.info("Generating spire/std/tuples.scala")
+      val algebraSource = ProductTypes.algebraProductTypes
+      val algebraFile = (scalaSource / "spire" / "std" / "tuples.scala").asFile
+      IO.write(algebraFile, algebraSource)
+
+      Seq[File](algebraFile)
+    }
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "algebra-laws" % "2.12.0",
+    )
+  )
+
+
 // split modules trying to increase incremental compilation speed
 lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -184,12 +213,12 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
-  .nativeConfigure(_.dependsOn(ironNative.native))
+  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native))
   .nativeSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
+      //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -586,7 +615,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
-    ironNative,
+    ironNative, spireNative,
     typednode,
     typedstd,
     typedundici,
