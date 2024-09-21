@@ -45,15 +45,15 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-grow grid grid-rows-[1fr_auto] items-center justify-items-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+      <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-6 w-full max-w-4xl">
-          <h1 className="text-2xl font-bold">Chester: A Programming Language</h1>
-          <div className="w-full h-[70vh] bg-black rounded">
+          <h1 className="text-2xl font-bold text-center">Chester: A Programming Language</h1>
+          <div className="w-full h-[50vh] sm:h-[70vh] bg-black rounded">
             <XTerm ref={xtermRef} />
           </div>
         </main>
-        <footer className="flex items-center justify-center">
-          <p className="text-sm">
+        <footer className="mt-auto">
+          <p className="text-sm text-center">
             Chester: A Programming Language © {new Date().getFullYear()}
           </p>
         </footer>
