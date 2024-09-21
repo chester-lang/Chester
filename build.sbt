@@ -162,6 +162,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "org.typelevel" %%% "spire" % "0.18.0",
+      "io.github.iltotore" %%% "iron" % "2.6.0",
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -187,6 +188,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "org.typelevel" %%% "spire" % "0.18.0",
+      "io.github.iltotore" %%% "iron" % "2.6.0",
     ),
   )
 
