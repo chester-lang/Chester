@@ -136,6 +136,21 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
     ),
   )
 
+// iron & iron-cats, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
+// removed RefinedTypeOpsSuite.scala because of compilation error
+lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("iron-native"))
+  .settings(
+    commonVendorSettings
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "com.lihaoyi" %%% "utest" % "0.8.4" % Test,
+      "org.typelevel" %%% "kittens" % "3.4.0" % Test,
+    ),
+  )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -163,11 +178,13 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
+      "io.github.iltotore" %%% "iron-cats" % "2.6.0",
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
+  .nativeConfigure(_.dependsOn(ironnative.native))
   .nativeSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
@@ -177,7 +194,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
-    libraryDependencies += "org.scala-native" %%% "javalib" % "0.5.5",
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
@@ -189,6 +205,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
+      "io.github.iltotore" %%% "iron-cats" % "2.6.0",
     ),
   )
 
@@ -505,6 +522,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
+    ironnative,
     typednode,
     typedstd,
     typedundici,
