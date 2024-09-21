@@ -270,13 +270,6 @@ object FunctionCall {
     return new FunctionCall(function, telescopes.toVector.refineUnsafe)
   }
 
-  def apply(function: Expr, telescope: Vector[MaybeTelescope] :| MinLength1, meta: Option[ExprMeta] = None): FunctionCall = {
-    function match {
-      case FunctionCall(f, t, _) => new FunctionCall(f, (t ++ telescope).refineUnsafe, meta)
-      case f => new FunctionCall(f, telescope, meta)
-    }
-  }
-
   def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe)
 
   def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = new FunctionCall(function, Vector(telescope).refineUnsafe, meta)

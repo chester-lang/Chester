@@ -157,7 +157,6 @@ lazy val ironnative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
 lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("utils"))
-  .dependsOn(kiamaCore)
   .settings(
     name := "utils",
     commonSettings,
@@ -215,8 +214,39 @@ lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   .crossType(CrossType.Pure)
   .in(file("base"))
   .dependsOn(utils)
+  .dependsOn(kiamaCore)
   .settings(
     name := "base",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+lazy val pretty = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("pretty"))
+  .dependsOn(base)
+  .settings(
+    name := "pretty",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+lazy val parserast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("parser-ast"))
+  .dependsOn(base)
+  .settings(
+    name := "parser-ast",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+lazy val defs = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("defs"))
+  .dependsOn(base)
+  .settings(
+    name := "defs",
     commonSettings,
   )
   .jvmSettings(commonJvmLibSettings)
@@ -224,7 +254,7 @@ lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
-  .dependsOn(base)
+  .dependsOn(base, parserast, defs, pretty)
   .settings(
     name := "core",
     assembly / assemblyJarName := "core.jar",
@@ -563,7 +593,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effektKiama,
     jsTypings,
     utils,
-    base,
+    base, parserast, defs, pretty,
     core,
     common,
     cli,
