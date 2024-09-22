@@ -1,5 +1,6 @@
 import org.scalajs.linker.interface.OutputPatterns
 import sbt.librarymanagement.InclExclRule
+
 import scala.scalanative.build.*
 
 val scala3Version = "3.5.0"
@@ -62,9 +63,9 @@ val commonSettings = Seq(
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
   ),
   // https://stackoverflow.com/questions/73822653/scala-2-artifact-in-scala-3-project-conflicting-cross-version-suffixes/73824811#73824811
-    excludeDependencies ++= Seq(
-      "org.scalacheck"% "scalacheck_native0.5_2.13",
-    ),
+  excludeDependencies ++= Seq(
+    "org.scalacheck" % "scalacheck_native0.5_2.13",
+  ),
 )
 val commonVendorSettings = Seq(
   scalaVersion := scala3Version,
@@ -226,7 +227,7 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "org.scalacheck"% "scalacheck_native0.5_2.13"%"1.18.0" % Compile,
+      "org.scalacheck" % "scalacheck_native0.5_2.13" % "1.18.0" % Compile,
     ),
   ).jsSettings(
     libraryDependencies ++= Seq(
