@@ -18,20 +18,20 @@ def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
   meta.map(exprMeta => TermMeta(exprMeta.sourcePos))
 }
 
-sealed trait Constraint {
+sealed trait MetaConstraint {
   def metaVar: MetaTerm
 
   def contains(meta: MetaTerm): Boolean = metaVar == meta
 }
 
-object Constraint {
-  case class TyRange(metaVar: MetaTerm, lower: Option[Judge], upper: Option[Judge]) extends Constraint {
+object MetaConstraint {
+  case class TyRange(metaVar: MetaTerm, lower: Option[Judge], upper: Option[Judge]) extends MetaConstraint {
     require(lower.isDefined || upper.isDefined)
   }
 }
 
 type Substitutions = Map[UniqId, Judge]
-type Constraints = Vector[Constraint]
+type Constraints = Vector[MetaConstraint]
 
 object Substitutions {
   val Empty: Substitutions = Map.empty

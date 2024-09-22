@@ -59,14 +59,14 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     Judge(wellTyped, ty, effects)
   }
 
-  private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[Constraint]): Unit = {
+  private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[MetaConstraint]): Unit = {
     val results = metas.map { meta =>
       val metaConstraints = constraints.collect {
-        case c @ Constraint.TyRange(`meta`, _, _) => c
+        case c @ MetaConstraint.TyRange(`meta`, _, _) => c
       }
 
       val (lowers, uppers) = metaConstraints.foldLeft((Vector.empty[Judge], Vector.empty[Judge])) {
-        case ((lowerAcc, upperAcc), Constraint.TyRange(_, lower, upper)) =>
+        case ((lowerAcc, upperAcc), MetaConstraint.TyRange(_, lower, upper)) =>
           (lowerAcc ++ lower.toVector, upperAcc ++ upper.toVector)
       }
 

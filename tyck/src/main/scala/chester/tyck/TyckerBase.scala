@@ -53,15 +53,15 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
       case (lhs, rhs: MetaTerm) if !isDefined(rhs) =>
-        addConstraint(Constraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
+        addConstraint(MetaConstraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
         lhs
       case (lhs: MetaTerm, rhs) if !isDefined(lhs) =>
-        addConstraint(Constraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
+        addConstraint(MetaConstraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
         rhs
       case (lhs: MetaTerm, rhs: MetaTerm) =>
         if (isDefined(rhs)) {
           if (!isDefined(lhs)) {
-            addConstraint(Constraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
+            addConstraint(MetaConstraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
             rhs
           } else {
             // Both lhs and rhs are defined, unify their solutions
@@ -69,7 +69,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           }
         } else {
           // Neither is defined, create a constraint linking them
-          addConstraint(Constraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
+          addConstraint(MetaConstraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
           lhs
         }
       case (AnyType(level), subType) => subType // TODO: level
@@ -342,7 +342,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def zonkCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.zonkMetas(check(expr, ty, effects))
   def zonkInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.zonkMetas(inherit(expr, ty, effects))
 
-  def addConstraint(constraint: Constraint): Unit = {
+  def addConstraint(constraint: MetaConstraint): Unit = {
     tyck.updateState { state =>
       state.copy(constraints = state.constraints :+ constraint)
     }
