@@ -11,7 +11,7 @@
 
 package kiama2.output
 
-import kiama2.output.PrettyPrinterTypes.Width
+import PrettyPrinterTypes.Width
 
 /**
  * The sides that an expression may appear on inside another expression
