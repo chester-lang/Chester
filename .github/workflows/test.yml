@@ -76,13 +76,6 @@ jobs:
         restore-keys: |
           sbt-${{ matrix.os }}-${{ env.JDK_DISTRIBUTION }}-${{ env.JDK_VERSION }}-
 
-    - name: Clone scala-graph and publishM2 (for Java8 and Scala Native)
-      run: |
-        git clone https://github.com/mio-19/scala-graph
-        cd scala-graph
-        git checkout 6381eb20c8595f5507410f4e2bfa9e27b8d88a30
-        sbt publishM2
-
     - name: SBT Clean
       run: sbt clean
       continue-on-error: true

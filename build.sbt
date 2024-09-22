@@ -3,6 +3,7 @@ import org.scalajs.linker.interface.OutputPatterns
 import scala.scalanative.build.*
 
 val scala3Version = "3.5.0"
+val scala2Version = "2.13.14"
 
 val graalVm = "graalvm-java22"
 val graalVersion = "22.0.2"
@@ -63,6 +64,11 @@ val commonSettings = Seq(
 )
 val commonVendorSettings = Seq(
   scalaVersion := scala3Version,
+  scalacOptions ++= Seq("-java-output-version", "8"),
+  scalacOptions += "-nowarn",
+)
+val scala2VendorSettings = Seq(
+  scalaVersion := scala2Version,
   scalacOptions ++= Seq("-java-output-version", "8"),
   scalacOptions += "-nowarn",
 )
@@ -182,6 +188,30 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
   )
   .jvmSettings(commonJvmLibSettings)
 
+// commit 9ee80c0d887acdcf700252a2ff66d08ced2472c5, core
+// add polyfill for java8 StringOpsForJava8 in ToString.Scala
+// EqHashMap & EqHashSet this() patched with () to compile with scala3
+// `protected[this] type Coll = CC[_, Nothing]` commented out
+// causing Scala3 compiler crashing
+// deleted MappingTypedSpec.scala from test because of compilation error
+// deleted scalax.collection.EditingSpec & scalax.time.MicroBenchmarkTest beacuse of failing
+lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("vendor/scala-graph"))
+  .settings(
+    scala2VendorSettings,
+    libraryDependencies ++= Seq(
+      "org.scalacheck" %% "scalacheck" % "1.18.0" % Compile
+    ),
+  libraryDependencies ++= Seq(
+    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
+    "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test,
+    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test,
+    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
+  ),
+  )
+  .jvmSettings(commonJvmLibSettings)
 
 // split modules trying to increase incremental compilation speed
 lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -203,10 +233,11 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "io.getkyo" %%% "kyo-tag" % "0.12.0",
     ),
   )
+  .jvmConfigure(_.dependsOn(scalaGraph.jvm))
   .jvmSettings(
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
+      //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
@@ -217,10 +248,10 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
-  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native))
+  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native, scalaGraph.native))
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
+      //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
       //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
     ),
@@ -619,7 +650,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
-    ironNative, spireNative,
+    ironNative, spireNative, scalaGraph,
     typednode,
     typedstd,
     typedundici,
