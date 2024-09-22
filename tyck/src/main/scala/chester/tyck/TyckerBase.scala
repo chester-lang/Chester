@@ -65,7 +65,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
             rhs
           } else {
             // Both lhs and rhs are defined, unify their solutions
-            unifyDefinedMetaTerms(lhs, rhs)
+            {
+              val lhsSolution = getSolution(lhs)
+              val rhsSolution = getSolution(rhs)
+              unifyTy(lhsSolution, rhsSolution)
+            }
           }
         } else {
           // Neither is defined, create a constraint linking them
@@ -346,12 +350,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     tyck.updateState { state =>
       state.copy(constraints = state.constraints :+ constraint)
     }
-  }
-
-  def unifyDefinedMetaTerms(lhs: MetaTerm, rhs: MetaTerm): Term = {
-    val lhsSolution = getSolution(lhs)
-    val rhsSolution = getSolution(rhs)
-    unifyTy(lhsSolution, rhsSolution)
   }
 
   def getSolution(meta: MetaTerm): Term = {
