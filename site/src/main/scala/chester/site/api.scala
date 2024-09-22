@@ -1,6 +1,6 @@
 package chester.site
 
-import chester.repl.{REPLEngine, TerminalInit}
+import chester.repl.{REPLEngine}
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.*
 import chester.utils.term.*
