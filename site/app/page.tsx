@@ -19,10 +19,10 @@ export default function Home() {
         const terminal = xtermRef.current.terminal as Terminal;
         const { WebLinksAddon } = await import('@xterm/addon-web-links');
         terminal.loadAddon(new WebLinksAddon());
-        //const { FitAddon } = await import('@xterm/addon-fit');
-        //const fitAddon = new FitAddon();
-        //terminal.loadAddon(fitAddon);
-        //fitAddon.fit();
+        const { FitAddon } = await import('@xterm/addon-fit');
+        const fitAddon = new FitAddon();
+        terminal.loadAddon(fitAddon);
+        fitAddon.fit();
         if(false){
           startRepl(terminal);
         }else if(false){
