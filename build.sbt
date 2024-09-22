@@ -61,6 +61,7 @@ val commonSettings = Seq(
     "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
   ),
+  // https://stackoverflow.com/questions/73822653/scala-2-artifact-in-scala-3-project-conflicting-cross-version-suffixes/73824811#73824811
     excludeDependencies ++= Seq(
       "org.scalacheck"% "scalacheck_native0.5_2.13",
     ),
