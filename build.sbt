@@ -228,6 +228,10 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
     libraryDependencies ++= Seq(
       "org.scalacheck"% "scalacheck_native0.5_2.13"%"1.18.0" % Compile,
     ),
+  ).jsSettings(
+    libraryDependencies ++= Seq(
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+    ),
   )
 // https://stackoverflow.com/questions/52224680/buildt-sbt-exclude-dependencies-from-dependson-submodule/52229391#52229391
 def excl(m: ModuleID): InclExclRule = InclExclRule(m.organization, m.name)
