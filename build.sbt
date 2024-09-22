@@ -1,5 +1,5 @@
 import org.scalajs.linker.interface.OutputPatterns
-
+import sbt.librarymanagement.InclExclRule
 import scala.scalanative.build.*
 
 val scala3Version = "3.5.0"
@@ -61,6 +61,9 @@ val commonSettings = Seq(
     "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
   ),
+    excludeDependencies ++= Seq(
+      "org.scalacheck"% "scalacheck_native0.5_2.13",
+    ),
 )
 val commonVendorSettings = Seq(
   scalaVersion := scala3Version,
@@ -201,12 +204,10 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
   .in(file("vendor/scala-graph"))
   .settings(
     scala2VendorSettings,
-    libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
-    ),
     scalacOptions ++= Seq(
       "-Ytasty-reader",
     ),
+    /*
   libraryDependencies ++= Seq(
     "org.scalatest" %%% "scalatest" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
     "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
@@ -214,9 +215,21 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
     "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test cross (CrossVersion.for2_13Use3),
     "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test cross (CrossVersion.for2_13Use3),
   ),
+  */
   )
   .jvmSettings(commonJvmLibSettings)
-
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+    ),
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq(
+      "org.scalacheck"% "scalacheck_native0.5_2.13"%"1.18.0" % Compile,
+    ),
+  )
+// https://stackoverflow.com/questions/52224680/buildt-sbt-exclude-dependencies-from-dependson-submodule/52229391#52229391
+def excl(m: ModuleID): InclExclRule = InclExclRule(m.organization, m.name)
 // split modules trying to increase incremental compilation speed
 lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -252,7 +265,6 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
-  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native, scalaGraph.native))
   .nativeSettings(
     libraryDependencies ++= Seq(
       //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
@@ -263,6 +275,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
+  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native, scalaGraph.native))
   .jsSettings(
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
