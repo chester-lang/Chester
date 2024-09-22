@@ -2,7 +2,7 @@ package chester.integrity
 
 import chester.parser.{FileNameAndContent, Parser}
 import chester.syntax.concrete.*
-import chester.syntax.core._
+import chester.syntax.core.*
 import chester.tyck.{ExprTycker, LocalCtx, TyckState}
 
 // Test that the binary is still performing well when compiled differently.

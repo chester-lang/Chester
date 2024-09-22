@@ -1,8 +1,9 @@
 package readline
 
 import readline.all.*
-import scala.scalanative.unsafe.*
+
 import scala.scalanative.libc.stdlib.free
+import scala.scalanative.unsafe.*
 
 @link("readline")
 object facade {

@@ -1,8 +1,8 @@
 package chester.cli
 
 import chester.integrity.IntegrityCheck
-import chester.utils.fileExists
 import chester.repl.spawnREPLEngine
+import chester.utils.fileExists
 import scopt.OParser
 
 object Main {
@@ -16,7 +16,7 @@ object Main {
 
     val builder = OParser.builder[Config]
     val parser = {
-      import builder._
+      import builder.*
       OParser.sequence(
         programName("chester"),
         head("Chester CLI Tool", "1.0"),

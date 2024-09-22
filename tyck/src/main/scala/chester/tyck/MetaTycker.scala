@@ -3,15 +3,13 @@ package chester.tyck
 import chester.error.*
 import chester.syntax.*
 import chester.syntax.concrete.*
-import chester.syntax.core.{HasUniqId, *}
+import chester.syntax.core.*
+import io.github.iltotore.iron.{autoRefine, refineUnsafe}
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
-import chester.syntax.core.*
-import io.github.iltotore.iron.autoRefine
-import io.github.iltotore.iron.refineUnsafe
 
 trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
 

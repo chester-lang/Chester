@@ -1,6 +1,6 @@
 package chester.parser.Parser
-import chester.parser._
 import chester.error.*
+import chester.parser.*
 import chester.syntax.IdentifierRules.*
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
@@ -11,8 +11,8 @@ import fastparse.NoWhitespace.*
 
 import java.nio.file.{Files, Paths}
 import scala.collection.immutable
+import scala.scalajs.js.annotation.*
 import scala.util.*
-import scala.scalajs.js.annotation._
 
 private def parseFromSource[T](source: ParserSource, parserFunc: ParserInternal => P[T], ignoreLocation: Boolean = false): Either[ParseError, T] = {
   source.readContent match {

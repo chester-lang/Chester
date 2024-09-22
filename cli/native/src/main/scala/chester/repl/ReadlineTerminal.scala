@@ -2,9 +2,8 @@ package chester.repl
 
 import cats.Id
 import chester.utils.io.*
-import chester.utils.term.*
 import chester.utils.term.InputStatus.*
-import chester.utils.term.TerminalInfo
+import chester.utils.term.*
 import readline.facade
 
 class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {

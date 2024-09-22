@@ -2,7 +2,6 @@ package chester.utils.io
 
 import chester.utils.io.*
 import chester.utils.term.*
-import chester.utils.term.TerminalInfo
 import typings.xtermXterm.mod
 
 import scala.concurrent.ExecutionContext.Implicits.global

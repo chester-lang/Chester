@@ -3,15 +3,15 @@ package chester.site
 import chester.repl.{REPLEngine, TerminalInit}
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.{DefaultRunner, XtermPty, XtermReadline, XtermTerminal}
-import typings.xtermXterm.mod.Terminal
 import typings.xtermPty.mod.Slave
-
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExportTopLevel
-import scala.scalajs.js.Thenable.Implicits.*
-import scala.scalajs.js.JSConverters.*
-import scala.concurrent.ExecutionContext.Implicits.global
 import typings.xtermReadline.mod.Readline
+import typings.xtermXterm.mod.Terminal
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.scalajs.js
+import scala.scalajs.js.JSConverters.*
+import scala.scalajs.js.Thenable.Implicits.*
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 @JSExportTopLevel("startRepl")
 def startRepl(terminal: Terminal): js.Promise[Unit] = {

@@ -1,9 +1,9 @@
 package chester.tyck.stmt
 
-import chester.resolve.MacroExpander
-import chester.syntax.concrete.{ResolvingModule, ResolvingModules}
 import chester.error.*
+import chester.resolve.MacroExpander
 import chester.syntax.QualifiedIDString
+import chester.syntax.concrete.{ResolvingModule, ResolvingModules}
 import chester.tyck.{Get, TyckState}
 
 import scala.concurrent.Promise

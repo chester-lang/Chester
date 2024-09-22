@@ -7,19 +7,16 @@ import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.core.CoreTycker
 import chester.utils.reuse
-import io.github.iltotore.iron.constraint.all.MinLength
-import spire.math.Trilean
-import spire.math.Trilean.{True, Unknown}
-import scala.annotation.tailrec
-import scala.language.implicitConversions
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.constraint.collection.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
+import spire.math.Trilean
+import spire.math.Trilean.{True, Unknown}
+
+import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter

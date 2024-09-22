@@ -1,8 +1,9 @@
 package linenoise
 
 import linenoise.all.*
-import scala.scalanative.unsafe.*
+
 import scala.scalanative.libc.*
+import scala.scalanative.unsafe.*
 import scala.util.Try
 
 object facade {

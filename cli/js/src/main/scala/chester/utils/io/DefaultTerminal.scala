@@ -2,7 +2,6 @@ package chester.utils.io
 
 import chester.utils.io.*
 import chester.utils.term.*
-import chester.utils.term.TerminalInfo
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

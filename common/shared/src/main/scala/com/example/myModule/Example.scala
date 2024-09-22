@@ -1,12 +1,12 @@
 package com.example.myModule
 
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
+import cps.*
+import cps.monads.{*, given}
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success}
-import cps.*                  // async, await
-import cps.monads.{*, given}  // support for built-in monads (i.e. Future)
+import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success}  // support for built-in monads (i.e. Future)
 
 object Example:
 

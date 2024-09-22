@@ -2,7 +2,6 @@ package chester.repl
 
 import chester.utils.io.*
 import chester.utils.term.*
-import chester.utils.term.TerminalInfo
 import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory

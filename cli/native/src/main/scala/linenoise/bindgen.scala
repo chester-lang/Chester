@@ -1,9 +1,9 @@
 package linenoise // sn-bindgen-x86_64-pc-linux --package linenoise --header linenoise.h --scala > ~/Downloads/linenoise.scala
 
+import _root_.scala.scalanative.*
+import _root_.scala.scalanative.libc.*
 import _root_.scala.scalanative.unsafe.*
 import _root_.scala.scalanative.unsigned.*
-import _root_.scala.scalanative.libc.*
-import _root_.scala.scalanative.*
 
 object aliases:
   import _root_.linenoise.aliases.*

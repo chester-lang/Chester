@@ -4,7 +4,6 @@ import cats.{Id, Monad}
 import chester.utils.io.*
 import chester.utils.term.*
 
-
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.annotation.tailrec

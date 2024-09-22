@@ -1,10 +1,9 @@
 package chester.utils.io
 
 import cats.Id
+import chester.repl.JLineTerminal
 import chester.utils.io.*
 import chester.utils.term.*
-import chester.repl.{JLineTerminal}
-import chester.utils.term.TerminalInfo
 
 class InTerm(terminal: JLineTerminal) extends InTerminal[Id] {
   inline def writeln(line: fansi.Str): Unit = println(line.render)

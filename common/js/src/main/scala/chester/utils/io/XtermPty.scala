@@ -8,10 +8,9 @@ import java.nio.charset.StandardCharsets
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExportTopLevel
-import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.JSConverters.*
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.scalajs.js.Thenable.Implicits.*
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 final class InXtermPty(pty: Slave) extends InTerminalNoHistory[Future] {
   inline override def writeln(line: fansi.Str): Future[Unit] = {

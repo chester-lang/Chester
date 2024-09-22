@@ -1,6 +1,6 @@
 package chester.utils.env
 
-import scala.sys.process._
+import scala.sys.process.*
 import scala.util.Try
 
 object WindowsNarratorChecker {

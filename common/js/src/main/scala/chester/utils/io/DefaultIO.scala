@@ -3,9 +3,9 @@ package chester.utils.io
 import cats.*
 import cats.free.*
 import cats.instances.future.*
+import typings.node.*
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
-import typings.node.*
 import typings.std.global.fetch
 
 import java.io.IOException

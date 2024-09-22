@@ -1,7 +1,7 @@
 package chester.doc.const
 
 import chester.doc.*
-import chester.utils.doc._
+import chester.utils.doc.*
 
 
 object Colors {

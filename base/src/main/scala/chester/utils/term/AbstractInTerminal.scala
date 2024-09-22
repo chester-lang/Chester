@@ -1,8 +1,7 @@
 package chester.utils.term
 
-import chester.utils.term.InputStatus.{Complete, Error, Incomplete}
 import chester.utils.io.*
-import chester.utils.term.*
+import chester.utils.term.InputStatus.{Complete, Error, Incomplete}
 
 abstract class InTerminalNoHistory[F[_]](using runner: Runner[F]) extends AbstractInTerminal[F] {
 

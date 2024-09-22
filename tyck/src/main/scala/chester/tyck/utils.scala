@@ -1,25 +1,20 @@
 package chester.tyck
 
-import chester.syntax.concrete.ExprMeta
-import chester.syntax.core.TermMeta
 import chester.error.*
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.reuse
-import io.github.iltotore.iron.constraint.all.MinLength
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.{MinLength, *}
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.upickle.given
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
+
 import scala.annotation.tailrec
 import scala.language.implicitConversions
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.constraint.collection.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.upickle.given
 
 def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
   meta.map(exprMeta => TermMeta(exprMeta.sourcePos))

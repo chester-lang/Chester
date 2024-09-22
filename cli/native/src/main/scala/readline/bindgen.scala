@@ -12,10 +12,10 @@ ALSO REPLACED macro with `macro`
  */
 package readline
 
+import _root_.scala.scalanative.*
+import _root_.scala.scalanative.libc.*
 import _root_.scala.scalanative.unsafe.*
 import _root_.scala.scalanative.unsigned.*
-import _root_.scala.scalanative.libc.*
-import _root_.scala.scalanative.*
 
 object predef:
   private[readline] trait CEnumU[T](using eq: T =:= UInt):
@@ -52,9 +52,9 @@ object enumerations:
       inline def is(b: undo_code): Boolean = (a & b) == b
 
 object aliases:
+  import _root_.readline.aliases.*
   import _root_.readline.enumerations.*
   import _root_.readline.predef.*
-  import _root_.readline.aliases.*
   import _root_.readline.structs.*
   type FILE = libc.stdio.FILE
   object FILE:
@@ -148,9 +148,9 @@ object aliases:
       inline def value: posix.sys.types.time_t = v
 
 object structs:
+  import _root_.readline.aliases.*
   import _root_.readline.enumerations.*
   import _root_.readline.predef.*
-  import _root_.readline.aliases.*
   import _root_.readline.structs.*
   /**
    * [bindgen] header: readline.h
@@ -491,9 +491,9 @@ object structs:
 
 @extern
 private[readline] object extern_functions:
+  import _root_.readline.aliases.*
   import _root_.readline.enumerations.*
   import _root_.readline.predef.*
-  import _root_.readline.aliases.*
   import _root_.readline.structs.*
   /**
    * [bindgen] header: readline.h
@@ -2067,9 +2067,9 @@ private[readline] object extern_functions:
 
 
 object functions:
+  import _root_.readline.aliases.*
   import _root_.readline.enumerations.*
   import _root_.readline.predef.*
-  import _root_.readline.aliases.*
   import _root_.readline.structs.*
   import extern_functions.*
   export extern_functions.*

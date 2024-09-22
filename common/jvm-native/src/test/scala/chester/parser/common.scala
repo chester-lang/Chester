@@ -1,10 +1,9 @@
 package chester.parser
 
-import java.nio.file.{Files, Path, Paths}
 import chester.syntax.concrete.*
 import munit.FunSuite
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 

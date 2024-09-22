@@ -9,17 +9,16 @@ import chester.utils.parse.*
 import chester.utils.{StringIndex, parserInputToLazyList}
 import fastparse.*
 import fastparse.NoWhitespace.*
+import upickle.default.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.upickle.given
 
 import java.nio.file.{Files, Paths}
 import scala.collection.immutable
-import scala.util.*
 import scala.scalajs.js.annotation.*
-import upickle.default.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.upickle.given
+import scala.util.*
 
 
 case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = false, defaultIndexer: Option[StringIndex] = None)(implicit p: P[?]) {

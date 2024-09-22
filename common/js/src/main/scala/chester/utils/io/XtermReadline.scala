@@ -2,18 +2,16 @@ package chester.utils.io
 
 import chester.utils.io.*
 import chester.utils.term.*
-import chester.utils.term.TerminalInfo
 import typings.std.global.setTimeout
-import typings.xtermXterm.mod as xterm
 import typings.xtermReadline.mod.Readline
+import typings.xtermXterm.mod as xterm
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExportTopLevel
-import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.JSConverters.*
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.scalajs.js.Thenable.Implicits.*
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 
 def setTimeoutThen: Future[Unit] = {

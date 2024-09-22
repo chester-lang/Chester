@@ -1,14 +1,13 @@
 package chester.tyck
 
 import chester.parser.*
-import chester.utils.doc.*
 import chester.syntax.concrete.*
+import chester.utils.doc.*
+import chester.utils.ponyfill.Files
 import munit.FunSuite
 
-import java.nio.file.Path
-import chester.utils.ponyfill.Files
-
 import java.nio.charset.StandardCharsets
+import java.nio.file.Path
 
 class FilesTyckTest extends FunSuite {
   val (testDir, inputFiles) = getInputFiles("tyckTests")

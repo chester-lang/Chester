@@ -11,7 +11,7 @@
 
 package kiama2.output
 
-import PrettyPrinterTypes.{LinkRange, LinkValue, Links, Width, emptyLinks}
+import kiama2.output.PrettyPrinterTypes.*
 import org.bitbucket.inkytonik.kiama.util.Trampolines.Done
 
 import scala.collection.immutable.Queue.empty as emptyDq
@@ -72,9 +72,10 @@ object PrettyPrinterTypes {
  */
 trait PrettyPrinterBase {
 
+  import PrettyPrinterTypes.{Indent, Links, Width}
   import org.bitbucket.inkytonik.kiama.relation.Bridge
   import org.bitbucket.inkytonik.kiama.util.StringOps.lines
-  import PrettyPrinterTypes.{Indent, Links, Width}
+
   import scala.collection.immutable.Seq
 
   /**
@@ -924,10 +925,11 @@ trait PrettyPrinter extends StringPrettyPrinter {
  */
 trait AbstractPrettyPrinter extends PrettyPrinterBase {
 
-  import org.bitbucket.inkytonik.kiama.util.Trampolines.{Done, More, step, Trampoline}
-  import PrettyPrinterTypes.{emptyLinks, Indent, LinkRange, Links, LinkValue, Width}
+  import PrettyPrinterTypes.{Indent, LinkRange, LinkValue, Links, Width, emptyLinks}
+  import org.bitbucket.inkytonik.kiama.util.Trampolines.{Done, More, Trampoline, step}
+
+  import scala.collection.immutable.Queue.empty as emptyDq
   import scala.collection.immutable.{Queue, Seq}
-  import scala.collection.immutable.Queue.{empty => emptyDq}
   import scala.collection.mutable.StringBuilder
 
   // Internal data types

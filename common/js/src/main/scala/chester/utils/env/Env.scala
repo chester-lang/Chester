@@ -1,7 +1,7 @@
 package chester.utils.env
 
-import typings.node.{osMod, processMod}
 import typings.node.processMod.global.NodeJS.Platform
+import typings.node.{osMod, processMod}
 
 val platform$getOS: OS = {
   val os = osMod.platform()
