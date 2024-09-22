@@ -104,7 +104,7 @@ case class UnifyFailedError(rhs: Term, lhs: Term) extends TyckError {
 }
 
 case class UnsupportedExpressionError(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported expression type"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported expression type ${cause.getClass.getName}"
 }
 
 case class IdentifierNotFoundError(cause: Expr) extends TyckError {
