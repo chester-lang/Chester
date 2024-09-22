@@ -194,12 +194,14 @@ val Typeω = Type(Levelω)
 
 case class Prop(level: Term) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(Prop(f(level)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(level)
 }
 
 // fibrant types
 case class FType(level: Term) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(FType(f(level)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("FType" <> Docs.`(`, Docs.`)`)(level)
 }
 
@@ -207,11 +209,13 @@ sealed trait LiteralTerm extends Term derives ReadWriter
 
 case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): IntTerm = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
 case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): IntegerTerm = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
@@ -235,64 +239,76 @@ sealed trait TypeTerm extends Term derives ReadWriter
 
 case object IntegerType extends TypeTerm {
   override def descent(f: Term => Term): IntegerType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer", ColorProfile.typeColor)
 }
 
 // int of 64 bits or more
 case object IntType extends TypeTerm {
   override def descent(f: Term => Term): IntType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int", ColorProfile.typeColor)
 }
 
 // unsigned int of 64 bits or more
 case object UIntType extends TypeTerm {
   override def descent(f: Term => Term): UIntType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt", ColorProfile.typeColor)
 }
 
 case object NaturalType extends TypeTerm {
   override def descent(f: Term => Term): NaturalType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural", ColorProfile.typeColor)
 }
 
 case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): RationalTerm = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
 case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): StringTerm = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"", ColorProfile.literalColor)
 }
 
 case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def descent(f: Term => Term): SymbolTerm = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value, ColorProfile.literalColor)
 }
 
 case object RationalType extends TypeTerm {
   override def descent(f: Term => Term): RationalType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational", ColorProfile.typeColor)
 }
 
 // float of 32 bits or more
 case object FloatType extends TypeTerm {
   override def descent(f: Term => Term): FloatType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float", ColorProfile.typeColor)
 }
 
 case object StringType extends TypeTerm {
   override def descent(f: Term => Term): StringType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String", ColorProfile.typeColor)
 }
 
 case object SymbolType extends TypeTerm {
   override def descent(f: Term => Term): SymbolType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol", ColorProfile.typeColor)
 }
 
 case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): AnyType = thisOr(copy(level = f(level)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any", ColorProfile.typeColor)
 }
 
@@ -300,6 +316,7 @@ val AnyType0 = AnyType(Level0)
 
 case object NothingType extends TypeTerm {
   override def descent(f: Term => Term): NothingType.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing", ColorProfile.typeColor)
 }
 
@@ -307,6 +324,7 @@ implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | Rat
 
 case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
   override def descent(f: Term => Term): LiteralType = copy(literal = literal.descent(f).asInstanceOf[IntegerTerm | SymbolTerm | StringTerm | RationalTerm])
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString, ColorProfile.typeColor)
 }
 
@@ -363,6 +381,7 @@ case class MatchingClause()derives ReadWriter {
 
 case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[MatchingClause], meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
+
   override def descent(f: Term => Term): Term = thisOr(copy(ty = ty.descent(f)))
 }
 
@@ -396,12 +415,14 @@ def TyToty: FunctionType = {
 
 case class ObjectClauseValueTerm(key: Term, value: Term)derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
+
   def descent(f: Term => Term): ObjectClauseValueTerm = (copy(key = f(key), value = f(value)))
 }
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc) *)
+
   override def descent(f: Term => Term): ObjectTerm = thisOr(copy(clauses = clauses.map(_.descent(f))))
 }
 
@@ -409,6 +430,7 @@ case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
 case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false) extends Term {
   override def descent(f: Term => Term): ObjectType = thisOr(copy(fieldTypes = fieldTypes.map(_.descent(f))))
+
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc) *)
 }
@@ -417,6 +439,7 @@ sealed trait Builtin extends Term derives ReadWriter
 
 case object ListF extends Builtin {
   override def descent(f: Term => Term): ListF.type = this
+
   override def toDoc(implicit options: PrettierOptions): Doc = "List"
 }
 
@@ -424,11 +447,13 @@ sealed trait Constructed extends Term derives ReadWriter
 
 case class ListType(ty: Term) extends Constructed with TypeTerm {
   override def descent(f: Term => Term): ListType = thisOr(copy(ty = f(ty)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("List") <> Docs.`(` <> ty <> Docs.`)`
 }
 
 case class Union(xs: NonEmptyVector[Term]) extends TypeTerm {
   override def descent(f: Term => Term): Union = thisOr(copy(xs = xs.map(f)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs *)
 }
 
@@ -454,6 +479,7 @@ object Union {
 
 case class Intersection(xs: NonEmptyVector[Term]) extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): Intersection = thisOr(copy(xs = xs.map(f)))
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs *)
 }
 
@@ -550,6 +576,7 @@ sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
 
 case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
+
   override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
 }
 
@@ -559,11 +586,13 @@ object LocalVar {
 
 case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
+
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
 }
 
 case class ErrorTerm(val error: TyckError) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
+
   override def descent(f: Term => Term): ErrorTerm = this
 }
 
@@ -571,6 +600,7 @@ def ErrorType(error: TyckError): ErrorTerm = ErrorTerm(error)
 
 case class MetaTerm(description: String, uniqId: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + uniqId)
+
   override def descent(f: Term => Term): MetaTerm = thisOr(copy(ty = f(ty)))
 }
 
@@ -588,6 +618,7 @@ case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMe
 
 case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc
+
   override def descent(f: Term => Term): BuiltinTerm = this
 }
 
