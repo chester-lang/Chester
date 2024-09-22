@@ -6,9 +6,12 @@ import { startRepl, startReplPty, startReplReadline } from "../generated/main.js
 import "../types/main.d.ts";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
-import Header from '../components/Header.tsx';
+import Header from '../components/Header';
+import './i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
+  const { t } = useTranslation();
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const xtermRef = useRef<any>(null);
 
@@ -47,14 +50,14 @@ export default function Home() {
       <Header />
       <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-6 w-full max-w-4xl">
-          <h1 className="text-2xl font-bold text-center">Chester: A Programming Language</h1>
+          <h1 className="text-2xl font-bold text-center">{t('home.title', 'Chester: A Programming Language')}</h1>
           <div className="w-full h-[50vh] sm:h-[70vh] bg-black rounded">
             <XTerm ref={xtermRef} />
           </div>
         </main>
         <footer className="mt-auto">
           <p className="text-sm text-center">
-            Chester: A Programming Language © {new Date().getFullYear()}
+            {t('home.footer', 'Chester: A Programming Language © {{year}}', { year: new Date().getFullYear() })}
           </p>
         </footer>
       </div>
