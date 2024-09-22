@@ -6,7 +6,7 @@ import { startRepl, startReplPty, startReplReadline } from "../generated/main.js
 import "../types/main.d.ts";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
-import Header from './components/Header';
+import Header from '../components/Header.tsx';
 
 export default function Home() {
   /* eslint-disable @typescript-eslint/no-explicit-any */
