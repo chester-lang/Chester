@@ -157,8 +157,8 @@ lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
 // rewrite by scalac with 3.4-migration
 // needed project/GenProductTypes.scala
 lazy val genProductTypes = TaskKey[Seq[File]]("gen-product-types", "Generates several type classes for Tuple2-22.")
-lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(NativePlatform)
-  .crossType(CrossType.Full)
+lazy val spireNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
+  .crossType(CrossType.Pure)
   .in(file("spire-native"))
   .settings(
     scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
@@ -180,7 +180,6 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
   )
   .nativeSettings(
   )
-  .jvmSettings(commonJvmLibSettings)
 
 
 // split modules trying to increase incremental compilation speed
