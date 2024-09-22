@@ -256,24 +256,14 @@ object DefTelescope {
   def of(args: Arg*)(implicit meta: Option[ExprMeta] = None): DefTelescope = DefTelescope(args.toVector, meta = meta)
 }
 
-case class FunctionCall private[syntax](function: Expr, telescopes: NonEmptyVector[MaybeTelescope], meta: Option[ExprMeta] = None) extends ParsedExpr {
+case class FunctionCall(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta] = None) extends ParsedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    new FunctionCall(operator(function), telescopes.map(_.descent(operator)), meta)
+    new FunctionCall(operator(function), telescope.descent(operator), meta)
   }
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): FunctionCall = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(function.toDoc <> telescopes.map(_.toDoc).reduceOption(_ <> _).getOrElse(Doc.empty))
-}
-
-object FunctionCall {
-  def calls(function: Expr, telescopes: NonEmptySeq[MaybeTelescope]): FunctionCall = {
-    return new FunctionCall(function, telescopes.toVector)
-  }
-
-  def apply(function: Expr, telescope: MaybeTelescope): FunctionCall = new FunctionCall(function, NonEmptyVector.of(telescope))
-
-  def apply(function: Expr, telescope: MaybeTelescope, meta: Option[ExprMeta]): FunctionCall = new FunctionCall(function, NonEmptyVector.of(telescope), meta)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(function.toDoc <> telescope.toDoc)
 }
 
 case class DesaltFunctionCall(function: Expr, telescopes: Vector[DesaltCallingTelescope], meta: Option[ExprMeta] = None) extends DesaltExpr {
