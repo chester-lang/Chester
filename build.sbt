@@ -201,14 +201,17 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
   .settings(
     scala2VendorSettings,
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.18.0" % Compile
+      "org.scalacheck" %% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+    ),
+    scalacOptions ++= Seq(
+      "-Ytasty-reader",
     ),
   libraryDependencies ++= Seq(
-    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
-    "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test,
-    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test,
-    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
-    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
+    "org.scalatest" %%% "scalatest" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
+    "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
+    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
+    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test cross (CrossVersion.for2_13Use3),
+    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test cross (CrossVersion.for2_13Use3),
   ),
   )
   .jvmSettings(commonJvmLibSettings)
