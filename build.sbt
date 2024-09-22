@@ -198,6 +198,9 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "com.lihaoyi" %%% "fastparse" % "3.1.0",
       "com.lihaoyi" %%% "scalatags" % "0.13.1",
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
+      "io.getkyo" %%% "kyo-prelude" % "0.12.0",
+      "io.getkyo" %%% "kyo-data" % "0.12.0",
+      "io.getkyo" %%% "kyo-tag" % "0.12.0",
     ),
   )
   .jvmSettings(
