@@ -202,7 +202,7 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
   .settings(
     scala2VendorSettings,
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
     ),
     scalacOptions ++= Seq(
       "-Ytasty-reader",
