@@ -195,6 +195,7 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
 // causing Scala3 compiler crashing
 // deleted MappingTypedSpec.scala from test because of compilation error
 // deleted scalax.collection.EditingSpec & scalax.time.MicroBenchmarkTest beacuse of failing
+// test moved to _test because of for2_13Use3 breaking the tests
 lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("vendor/scala-graph"))
