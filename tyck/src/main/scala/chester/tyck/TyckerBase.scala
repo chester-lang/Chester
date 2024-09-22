@@ -38,10 +38,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
   }
 
-  def unifyLevel(rhs: Term, lhs: Term): Term = {
-    rhs // TODO
-  }
-
   def isDefined(x: MetaTerm): Boolean = {
     val state = tyck.getState
     state.subst.isDefined(x) || state.constraints.contains(x)
