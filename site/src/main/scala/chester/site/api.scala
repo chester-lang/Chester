@@ -2,7 +2,8 @@ package chester.site
 
 import chester.repl.{REPLEngine, TerminalInit}
 import chester.utils.env.{BrowserEnv, Environment}
-import chester.utils.io.{DefaultRunner, XtermPty, XtermReadline, XtermTerminal}
+import chester.utils.io.*
+import chester.utils.term.*
 import typings.xtermPty.mod.Slave
 import typings.xtermReadline.mod.Readline
 import typings.xtermXterm.mod.Terminal
