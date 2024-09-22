@@ -7,18 +7,15 @@ import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.syntax.{Name, QualifiedIDString}
 import chester.utils.doc.*
-import spire.math.Rational
-import upickle.default.*
 import chester.utils.impls.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
 import chester.utils.*
+import spire.math.Rational
+import upickle.default.*
 
 import scala.collection.immutable.HashMap
-import java.util.concurrent.atomic.AtomicInteger
 import scala.language.implicitConversions
 
 case class TermMeta(sourcePos: Option[SourcePos])derives ReadWriter
@@ -45,6 +42,8 @@ case class CallingArgTerm(value: Term, name: Option[Name] = None, vararg: Boolea
     val varargDoc = if (vararg) Docs.`...` else Doc.empty
     group(nameDoc <+> valueDoc <+> varargDoc)
   }
+
+  def descent(f: Term => Term): CallingArgTerm = (copy(value = f(value)))
 }
 
 case class Calling(args: Vector[CallingArgTerm], implicitly: Boolean = false) extends ToDoc derives ReadWriter {
@@ -52,6 +51,8 @@ case class Calling(args: Vector[CallingArgTerm], implicitly: Boolean = false) ex
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
   }
+
+  def descent(f: Term => Term): Calling = copy(args = args.map(_.descent(f)))
 }
 
 case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None) extends MaybeCallTerm {
@@ -64,6 +65,8 @@ case class FCallTerm(f: Term, args: Vector[Calling], meta: OptionTermMeta = None
   override def whnf: Boolean = f match {
     case _ => false
   }
+
+  override def descent(op: Term => Term): FCallTerm = thisOr(copy(f = f.descent(op), args = args.map(_.descent(op))))
 }
 
 object FCallTerm {
@@ -297,7 +300,7 @@ case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, varar
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
   }
-  
+
   def name: Name = bind.id
 
   override def descent(f: Term => Term): ArgTerm = thisOr(copy(ty = f(ty), default = default.map(f)))
