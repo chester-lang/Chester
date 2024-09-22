@@ -8,6 +8,7 @@ import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
+import chester.utils.*
 
 import scala.util.boundary
 import scala.util.boundary.break
@@ -349,7 +350,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
           case f: FunctionType => true
           case _ => false
         }
-        tryAll(fs.map(fty => (self: Self) => self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects, call)).refineUnsafe)
+        tryAll(fs.map(fty => (self: Self) => self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects, call)).assumeNonEmpty)
       }
       case _ =>
         val error = NotAFunctionError(call)

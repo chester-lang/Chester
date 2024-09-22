@@ -1,6 +1,7 @@
 package chester.tyck
 
 import chester.error.*
+import cats.data.*
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
@@ -8,6 +9,7 @@ import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.MinLength
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
+import chester.utils.*
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -133,7 +135,7 @@ trait TyckerTrait[Self <: TyckerTrait[Self]] {
     x.result
   }
 
-  final def tryAll[A](xs: Seq[Self => A] :| MinLength[1]): A = {
+  final def tryAll[A](xs: NonEmptySeq[Self => A]): A = {
     var firstTry: Option[TyckResult[TyckState, A]] = None
     for (x <- xs) {
       val result = tryOne(x)

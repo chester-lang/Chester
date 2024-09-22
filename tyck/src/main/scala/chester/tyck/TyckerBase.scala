@@ -6,12 +6,11 @@ import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.core.CoreTycker
-import chester.utils.reuse
-import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
+import chester.utils.*
 import spire.math.Trilean
 import spire.math.Trilean.{True, Unknown}
 
@@ -40,7 +39,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def isDefined(x: MetaTerm): Boolean = {
     val state = tyck.getState
-    state.subst.isDefined(x) || state.constraints.contains(x)
+    state.subst.isDefined(x)
   }
 
   def linkTy(from: MetaTerm, to: Term): Unit = link(from, synthesizeTyTerm(to).toJudge)
@@ -53,24 +52,26 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val lhs1 = whnfNoEffect(lhs)
     if (rhs1 == lhs1) rhs1
     else (lhs1, rhs1) match {
-      // TODO: make this part a constraint, and move logic to solveConstraints
-      case (lhs, rhs: MetaTerm) if !isDefined(rhs) => {
-        linkTy(rhs, lhs)
+      case (lhs, rhs: MetaTerm) if !isDefined(rhs) =>
+        addConstraint(Constraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
         lhs
-      }
-      case (lhs: MetaTerm, rhs: MetaTerm) => {
+      case (lhs: MetaTerm, rhs) if !isDefined(lhs) =>
+        addConstraint(Constraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
+        rhs
+      case (lhs: MetaTerm, rhs: MetaTerm) =>
         if (isDefined(rhs)) {
           if (!isDefined(lhs)) {
-            linkTy(lhs, rhs)
+            addConstraint(Constraint.TyRange(lhs, lower = None, upper = Some(Judge(rhs, Typeω, NoEffect))))
             rhs
           } else {
-            ???
+            // Both lhs and rhs are defined, unify their solutions
+            unifyDefinedMetaTerms(lhs, rhs)
           }
         } else {
-          linkTy(rhs, lhs)
+          // Neither is defined, create a constraint linking them
+          addConstraint(Constraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
           lhs
         }
-      }
       case (AnyType(level), subType) => subType // TODO: level
       case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
       case (superType, Union(subTypes)) => Union.from(subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType)))
@@ -97,8 +98,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case (NothingType, ty) => ty
       case (ty, NothingType) => ty
       case (ListType(ty1), ListType(ty2)) => ListType(common(ty1, ty2))
-      case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2)).refineUnsafe)
-      case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _)).refineUnsafe)
+      case (Union(ts1), ty2) => Union(ts1.map(common(_, ty2)))
+      case (ty1, Union(ts2)) => Union(ts2.map(common(ty1, _)))
       case (ty1, ty2) =>
         Union.from(Vector(ty1, ty2))
     }
@@ -109,7 +110,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def effectFold(es: Seq[Effects]): Effects = {
-    Effects.merge(es.refineUnsafe)
+    Effects.merge(es.assumeNonEmpty)
   }
 
   def effectUnion(e1: Effects, e2: Effects): Effects = e1.merge(e2)
@@ -314,7 +315,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         def firstTry(x: Self): Judge = x.inheritBySynthesize(expr, ty, effects)
 
         val tries: Seq[Self => Judge] = xs.map(ty => (x: Self) => x.inheritBySynthesize(expr, ty, effects))
-        tryAll((firstTry +: tries).refineUnsafe)
+        tryAll((firstTry +: tries).assumeNonEmpty)
       }
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effects = effects))
@@ -341,6 +342,24 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def zonkCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.zonkMetas(check(expr, ty, effects))
   def zonkInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.zonkMetas(inherit(expr, ty, effects))
 
+  def addConstraint(constraint: Constraint): Unit = {
+    tyck.updateState { state =>
+      state.copy(constraints = state.constraints :+ constraint)
+    }
+  }
+
+  def unifyDefinedMetaTerms(lhs: MetaTerm, rhs: MetaTerm): Term = {
+    val lhsSolution = getSolution(lhs)
+    val rhsSolution = getSolution(rhs)
+    unifyTy(lhsSolution, rhsSolution)
+  }
+
+  def getSolution(meta: MetaTerm): Term = {
+    val judge = tyck.getState.subst.getOrElse(meta.uniqId, {
+      throw new IllegalStateException(s"MetaTerm ${meta.uniqId} not solved")
+    })
+    judge.wellTyped
+  }
 }
 
 object ExprTycker {

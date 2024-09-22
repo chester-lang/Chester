@@ -3,6 +3,7 @@ package chester.tyck
 import chester.syntax.*
 import chester.syntax.core.*
 import io.github.iltotore.iron.refineUnsafe
+import spire.math.Trilean
 
 import scala.language.implicitConversions
 
@@ -60,19 +61,40 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[Constraint]): Unit = {
     val results = metas.map { meta =>
-      val metaConstraints = constraints.filter(_.metaVar == meta)
-      val result = metaConstraints match {
-        case Vector() => Judge(AnyType0, Type0, NoEffect)
-        case Vector(Constraint.TyRange(_, lower, upper)) =>
-          upper.orElse(lower).getOrElse(Judge(AnyType0, Type0, NoEffect))
-        case _ =>
-          throw new UnsupportedOperationException("Multiple constraints for a single meta variable are not yet supported.")
+      val metaConstraints = constraints.collect {
+        case c @ Constraint.TyRange(`meta`, _, _) => c
       }
-      (meta, result)
+
+      val (lowers, uppers) = metaConstraints.foldLeft((Vector.empty[Judge], Vector.empty[Judge])) {
+        case ((lowerAcc, upperAcc), Constraint.TyRange(_, lower, upper)) =>
+          (lowerAcc ++ lower.toVector, upperAcc ++ upper.toVector)
+      }
+
+      val lowerBound = lowers.reduceOption { (a, b) =>
+        val commonTy = this.common(a.wellTyped, b.wellTyped)
+        Judge(commonTy, Typeω, NoEffect)
+      }
+
+      val upperBound = uppers.reduceOption { (a, b) =>
+        val unifiedTy = this.unifyTy(a.wellTyped, b.wellTyped)
+        Judge(unifiedTy, Typeω, NoEffect)
+      }
+
+      val solution = (lowerBound, upperBound) match {
+        case (Some(lower), Some(upper)) =>
+          // Ensure lower ≤ solution ≤ upper
+          val candidate = if (this.compareTy(lower.wellTyped, upper.wellTyped) == Trilean.True) lower.wellTyped else upper.wellTyped
+          Judge(candidate, Typeω, NoEffect)
+        case (Some(bound), None) => bound
+        case (None, Some(bound)) => bound
+        case (None, None) => Judge(AnyType0, Type0, NoEffect)
+      }
+
+      (meta, solution)
     }
 
     tyck.updateState { state =>
-      val newSubst = state.subst ++ results.map(r => r._1.uniqId -> r._2)
+      val newSubst = state.subst ++ results.map { case (meta, judge) => meta.uniqId -> judge }
       val remainingConstraints = state.constraints.filterNot(c => metas.exists(_.uniqId == c.metaVar.uniqId))
       state.copy(subst = newSubst, constraints = remainingConstraints)
     }
