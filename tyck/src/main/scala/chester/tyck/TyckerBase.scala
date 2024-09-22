@@ -271,7 +271,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def resolve(expr: Expr): Expr = {
-    val desugared = reuse(expr, SimpleDesalt.desugarUnwrap(expr))
+    reuse(expr, SimpleDesalt.desugarUnwrap(expr))
   }
 
   /** possibly apply an implicit conversion */
