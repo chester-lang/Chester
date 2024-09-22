@@ -263,9 +263,13 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val result = normalizeNoEffect(term)
     result match
       case term: MetaTerm => {
-        val walked = this.walk(term)
-        require(walked.effects == NoEffect)
-        whnfNoEffect(walked.wellTyped)
+        this.walkOption(term) match {
+          case Some(j@Judge(wellTyped, ty, effects)) => {
+            require(effects == NoEffect)
+            whnfNoEffect(wellTyped)
+          }
+          case None => term
+        }
       }
       case _ => result
   }

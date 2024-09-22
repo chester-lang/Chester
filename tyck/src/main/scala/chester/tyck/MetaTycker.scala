@@ -1,14 +1,9 @@
 package chester.tyck
 
-import chester.error.*
 import chester.syntax.*
-import chester.syntax.concrete.*
 import chester.syntax.core.*
-import io.github.iltotore.iron.{autoRefine, refineUnsafe}
-import spire.math.Trilean
-import spire.math.Trilean.{True, Unknown}
+import io.github.iltotore.iron.refineUnsafe
 
-import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
@@ -19,9 +14,15 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     MetaTerm(id, varid, ty.getOrElse(Typeω), meta = meta)
   }
 
-  def walk(term: MetaTerm): Judge = {
+  inline final def walk(term: MetaTerm): Judge = {
     val state = tyck.getState
     val result = state.subst.walk(term)
+    result
+  }
+
+  inline final def walkOption(term: MetaTerm): Option[Judge] = {
+    val state = tyck.getState
+    val result = state.subst.walkOption(term)
     result
   }
 
@@ -39,10 +40,10 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case meta: MetaTerm => Vector(meta)
       case _ => Vector()
     }.distinctBy(_.uniqId)
-    
+
     val relatedConstraints = tyck.getState.constraints.filter(c => metas.exists(_.uniqId == c.metaVar.uniqId))
     solveConstraints(metas, relatedConstraints)
-    
+
     val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
       val judge = zonkMeta(meta)
       meta -> judge.wellTyped

@@ -4,14 +4,10 @@ import chester.error.*
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.utils.reuse
 import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.{MinLength, *}
+import io.github.iltotore.iron.constraint.all.MinLength
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.upickle.given
-import spire.math.Trilean
-import spire.math.Trilean.{True, Unknown}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -22,6 +18,7 @@ def convertMeta(meta: Option[ExprMeta]): Option[TermMeta] = {
 
 sealed trait Constraint {
   def metaVar: MetaTerm
+
   def contains(meta: MetaTerm): Boolean = metaVar == meta
 }
 
@@ -43,9 +40,14 @@ object Constraints {
 }
 
 extension (subst: Substitutions) {
-  def walk(term: MetaTerm): Judge = subst.get(term.uniqId) match {
+  def walk(term: MetaTerm): Judge = walkOption(term) match {
     case Some(judge) => judge
     case None => Judge(term, term.ty, term.effect)
+  }
+  def walkOption(term: MetaTerm): Option[Judge] = subst.get(term.uniqId) match {
+    case s@Some(j@Judge(meta: MetaTerm, ty, effects)) => walkOption(meta).orElse(s)
+    case s@Some(j) => s
+    case None => None
   }
 
   def isDefined(term: MetaTerm): Boolean = subst.contains(term.uniqId)
@@ -61,10 +63,10 @@ extension (constraints: Constraints) {
 }
 
 case class TyckState(
-  subst: Substitutions = Substitutions.Empty, 
-  constraints: Constraints = Constraints.Empty,
-  deferredActions: DeferredActions = Vector.empty
-)
+                      subst: Substitutions = Substitutions.Empty,
+                      constraints: Constraints = Constraints.Empty,
+                      deferredActions: DeferredActions = Vector.empty
+                    )
 
 extension (tyck: Tyck) {
   def updateSubst(id: UniqId, judge: Judge): Unit = {
@@ -155,10 +157,10 @@ case class Tycker(localCtx: LocalCtx = LocalCtx.Empty, tyck: Tyck) extends Tycke
 }
 
 case class DeferredAction(
-  dependsOn: Vector[MetaTerm] :| MinLength[1],
-  affects: Vector[MetaTerm],
-  computation: Tyck => Unit
-) {
+                           dependsOn: Vector[MetaTerm] :| MinLength[1],
+                           affects: Vector[MetaTerm],
+                           computation: Tyck => Unit
+                         ) {
 }
 
 type DeferredActions = Vector[DeferredAction]
