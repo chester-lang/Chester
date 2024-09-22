@@ -173,13 +173,14 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
       IO.write(algebraFile, algebraSource)
 
       Seq[File](algebraFile)
-    }
-  )
-  .nativeSettings(
+    },
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "algebra-laws" % "2.12.0",
     )
   )
+  .nativeSettings(
+  )
+  .jvmSettings(commonJvmLibSettings)
 
 
 // split modules trying to increase incremental compilation speed
