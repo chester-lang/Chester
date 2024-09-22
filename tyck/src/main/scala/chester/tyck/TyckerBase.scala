@@ -265,7 +265,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case term: MetaTerm => {
         this.walkOption(term) match {
           case Some(j@Judge(wellTyped, ty, effects)) => {
-            require(effects == NoEffect)
+            require(effects.isEmpty)
             whnfNoEffect(wellTyped)
           }
           case None => term

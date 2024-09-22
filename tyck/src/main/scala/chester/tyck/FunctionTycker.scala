@@ -15,7 +15,7 @@ import scala.util.boundary.break
 trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
     val tyJudge = arg.ty.map(this.checkType)
-    assert(tyJudge.isEmpty || tyJudge.get.effects == NoEffect)
+    assert(tyJudge.isEmpty || tyJudge.get.effects.isEmpty)
     val ty = tyJudge.map(_.wellTyped)
     val ty1 = ty.getOrElse(this.genTypeVariable(name = Some(arg.getName + "_t")))
     val default = arg.exprOrDefault.map(this.inherit(_, ty1, effects))
@@ -79,7 +79,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     val WithCtxEffect(newCtx, defaultEff, args) = this.synthesizeTelescopes(f.telescope, effects, f)
     val checker = rec(newCtx)
     val resultTy = f.resultTy.map(checker.checkType)
-    assert(resultTy.isEmpty || resultTy.get.effects == NoEffect)
+    assert(resultTy.isEmpty || resultTy.get.effects.isEmpty)
     val body = checker.check(f.body, resultTy.map(_.wellTyped), effects)
     val finalEffects = effects.getOrElse(this.effectUnion(defaultEff, body.effects))
     val funcTy = FunctionType(telescope = args, resultTy = body.ty, finalEffects)

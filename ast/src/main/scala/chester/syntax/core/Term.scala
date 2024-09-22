@@ -478,9 +478,9 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
       acc.updated(effect, acc.getOrElse(effect, Vector.empty) ++ names)
     })
 
-  def isEmpty: Boolean = effects.isEmpty
+  def isEmpty: Boolean = (effects eq NoEffect.effects) || effects.isEmpty
 
-  def nonEmpty: Boolean = effects.nonEmpty
+  def nonEmpty: Boolean = (effects ne NoEffect.effects) || effects.nonEmpty
 }
 
 object Effects {
