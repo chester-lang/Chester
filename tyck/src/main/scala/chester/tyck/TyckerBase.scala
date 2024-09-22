@@ -271,18 +271,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def resolve(expr: Expr): Expr = {
-    val desugared = reuse(expr, SimpleDesalt.desugar(expr))
-    
-    @tailrec
-    def unwrap(e: Expr): Expr = e match {
-      case block: Block if block.heads.isEmpty && block.tail.isDefined => 
-        unwrap(block.tail.get)
-      case tuple: Tuple if tuple.terms.length == 1 => 
-        unwrap(tuple.terms.head)
-      case _ => e
-    }
-
-    unwrap(desugared)
+    val desugared = reuse(expr, SimpleDesalt.desugarUnwrap(expr))
   }
 
   /** possibly apply an implicit conversion */

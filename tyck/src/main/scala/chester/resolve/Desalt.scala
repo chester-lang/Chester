@@ -13,6 +13,8 @@ import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 
+import scala.annotation.tailrec
+
 case class DesugarInfo()
 
 private object DesaltCaseClauseMatch {
@@ -282,7 +284,6 @@ case object SimpleDesalt {
       reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
     case DesaltSimpleFunction(x) => x
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
-    case default => default
     case FunctionCall(function, telescopes, meta) =>
       val desugaredFunction = desugar(function)
       val desugaredTelescopes = Vector(telescopes).map {
@@ -295,7 +296,17 @@ case object SimpleDesalt {
         case DesaltFunctionCall(f, t, m) => DesaltFunctionCall(f, t ++ desugaredTelescopes, m)
         case _ => DesaltFunctionCall(desugaredFunction, desugaredTelescopes.assumeNonEmpty, meta)
       }
+    case default => default
   }
+  @tailrec
+  def unwrap(e: Expr): Expr = e match {
+    case block: Block if block.heads.isEmpty && block.tail.isDefined =>
+      unwrap(block.tail.get)
+    case tuple: Tuple if tuple.terms.length == 1 =>
+      unwrap(tuple.terms.head)
+    case _ => e
+  }
+  def desugarUnwrap(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = unwrap(desugar(expr))
 }
 
 case object OpSeqDesalt {
