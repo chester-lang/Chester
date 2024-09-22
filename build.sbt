@@ -107,7 +107,7 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
-  .in(file("kiama-core"))
+  .in(file("vendor/kiama-core"))
   .settings(
     commonVendorSettings
   )
@@ -116,7 +116,7 @@ lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
 // kiama fork from effekt - https://github.com/effekt-lang/kiama
 lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
-  .in(file("effekt-kiama"))
+  .in(file("vendor/effekt-kiama"))
   .settings(
     commonVendorSettings
   )
@@ -140,7 +140,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
 // removed RefinedTypeOpsSuite.scala because of compilation error
 lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
-  .in(file("iron-native"))
+  .in(file("vendor/iron-native"))
   .settings(
     commonVendorSettings
   )
@@ -159,7 +159,7 @@ lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
 lazy val genProductTypes = TaskKey[Seq[File]]("gen-product-types", "Generates several type classes for Tuple2-22.")
 lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Full)
-  .in(file("spire-native"))
+  .in(file("vendor/spire-native"))
   .settings(
     scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
     commonVendorSettings,
