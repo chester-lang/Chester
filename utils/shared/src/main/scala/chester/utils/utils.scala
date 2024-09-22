@@ -4,9 +4,15 @@ import fastparse.ParserInput
 import io.github.iltotore.iron.constraint.all.MinLength
 
 def encodeString(x: String): String = x.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
-
 def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
-  LazyList.iterate(0)(_ + pi.innerLength).takeWhile(pi.isReachable).map(pi.slice(_, pi.length))
+  LazyList.unfold(0) { index =>
+    if (pi.isReachable(index)) {
+      val nextIndex = index + 1
+      Some((pi.slice(index, nextIndex), nextIndex))
+    } else {
+      None
+    }
+  }
 }
 
 case class MutBox[T](var value: T) {
