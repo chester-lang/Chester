@@ -1,6 +1,7 @@
-package chester.repl
+package chester.utils.io
 
-import chester.io._
+import chester.utils.io.*
+import chester.utils.term.*
 import fansi.Str
 import typings.node.{processMod, readlineMod}
 

@@ -1,6 +1,7 @@
-package chester.io
+package chester.utils.io
 
-import chester.repl.TerminalInit
+import chester.utils.io.*
+import chester.utils.term.*
 import typings.xtermPty.mod.Slave
 
 import java.nio.charset.StandardCharsets

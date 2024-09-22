@@ -1,7 +1,9 @@
-package chester.io
+package chester.utils.io
 
 import cats.{Id, Monad}
-import chester.repl.TerminalInit
+import chester.utils.io.*
+import chester.utils.term.*
+
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}

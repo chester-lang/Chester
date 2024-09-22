@@ -1,4 +1,4 @@
-package chester.io
+package chester.utils.io
 
 trait PathOps[T] {
   def of(path: String): T

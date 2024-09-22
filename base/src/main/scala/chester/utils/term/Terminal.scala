@@ -1,6 +1,7 @@
-package chester.io
+package chester.utils.term
 
-import chester.repl.{ReadLineResult, TerminalInfo, TerminalInit}
+import chester.utils.io.*
+import chester.utils.term.*
 
 trait Terminal[F[_]] {
   def runTerminal[T](init: TerminalInit, block: InTerminal[F] ?=> F[T]): F[T]

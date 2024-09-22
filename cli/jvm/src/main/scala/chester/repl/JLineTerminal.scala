@@ -1,6 +1,8 @@
 package chester.repl
 
-import chester.parser.InputStatus.*
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.term.TerminalInfo
 import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
@@ -11,9 +13,9 @@ class JLineTerminal(init: TerminalInit) {
   private def createParser(info: TerminalInfo): org.jline.reader.Parser = new org.jline.reader.impl.DefaultParser() {
     override def parse(line: String, cursor: Int, context: org.jline.reader.Parser.ParseContext): org.jline.reader.ParsedLine = {
       info.checkInputStatus(line) match {
-        case Complete => super.parse(line, cursor, context)
-        case Incomplete => throw new org.jline.reader.EOFError(-1, cursor, "Incomplete input, missing matching bracket")
-        case Error(message) => super.parse(line, cursor, context)
+        case InputStatus.Complete => super.parse(line, cursor, context)
+        case InputStatus.Incomplete => throw new org.jline.reader.EOFError(-1, cursor, "Incomplete input, missing matching bracket")
+        case InputStatus.Error(message) => super.parse(line, cursor, context)
       }
     }
   }
@@ -42,13 +44,13 @@ class JLineTerminal(init: TerminalInit) {
         val status = chester.parser.ParserEngine.checkInputStatus(line)
 
         status match {
-          case Complete =>
+          case InputStatus.Complete =>
             val historySeq = (0 until history.size()).map(history.get(_).toString)
             result = LineRead(line)
             continue = false
-          case Incomplete =>
+          case InputStatus.Incomplete =>
             prompt = info.continuationPrompt
-          case Error(message) =>
+          case InputStatus.Error(message) =>
             result = StatusError(message)
             continue = false
         }

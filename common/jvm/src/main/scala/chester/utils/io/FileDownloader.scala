@@ -1,4 +1,4 @@
-package chester.io
+package chester.utils.io
 
 import java.io.IOException
 import java.net.URL

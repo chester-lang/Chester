@@ -1,5 +1,4 @@
-package chester.repl
-
+package chester.utils.term
 
 sealed trait ReadLineResult
 

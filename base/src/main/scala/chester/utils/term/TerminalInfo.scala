@@ -1,6 +1,8 @@
-package chester.repl
+package chester.utils.term
 
-import chester.parser.InputStatus
+import chester.utils.io.*
+import chester.utils.term.*
+
 import scala.concurrent.Future
 
 trait TerminalInfo {

@@ -9,7 +9,8 @@ import fastparse.NoWhitespace.*
 
 import java.lang.Character.{isDigit, isLetter}
 import scala.util.*
-import chester.parser.InputStatus.*
+import chester.utils.io.*
+import chester.utils.term.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.*
 
@@ -35,17 +36,17 @@ object ParserEngine {
         case '(' | '{' | '[' => stack.push(char)
         case ')' =>
           if (stack.isEmpty || stack.pop() != '(')
-            return Error(s"Unmatched closing parenthesis at position $index")
+            return InputStatus.Error(s"Unmatched closing parenthesis at position $index")
         case ']' =>
           if (stack.isEmpty || stack.pop() != '[')
-            return Error(s"Unmatched closing bracket at position $index")
+            return InputStatus.Error(s"Unmatched closing bracket at position $index")
         case '}' =>
           if (stack.isEmpty || stack.pop() != '{')
-            return Error(s"Unmatched closing brace at position $index")
+            return InputStatus.Error(s"Unmatched closing brace at position $index")
         case _ => // Ignore other characters
       }
     }
-    if (stack.nonEmpty) Incomplete else Complete
+    if (stack.nonEmpty) InputStatus.Incomplete else InputStatus.Complete
   }
 
   private def parseCompleteExpression(input: String, linesOffset: Int :| Positive0, posOffset: Int :| Positive0): Either[ParseError, ParsedExpr] = {

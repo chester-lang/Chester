@@ -1,6 +1,8 @@
-package chester.io
+package chester.utils.io
 
-import chester.repl.{ReadLineResult, TerminalInfo, TerminalInit}
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.term.TerminalInfo
 import typings.xtermXterm.mod
 
 import scala.concurrent.ExecutionContext.Implicits.global

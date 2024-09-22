@@ -1,7 +1,10 @@
-package chester.repl
+package chester.utils.term
 
 import cats.Id
-import chester.io.*
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.io.*
+import chester.utils.term.*
 import fansi.Str
 
 class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id]) extends AbstractInTerminal[Id] {

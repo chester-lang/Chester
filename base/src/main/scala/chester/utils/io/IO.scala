@@ -1,4 +1,4 @@
-package chester.io
+package chester.utils.io
 
 import cats.Monad
 

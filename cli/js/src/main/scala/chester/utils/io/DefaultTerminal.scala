@@ -1,6 +1,8 @@
-package chester.io
+package chester.utils.io
 
-import chester.repl.{NodejsSimpleTerminal, ReadLineResult, TerminalInfo, TerminalInit}
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.term.TerminalInfo
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

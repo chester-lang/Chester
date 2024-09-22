@@ -1,9 +1,8 @@
-package chester.io
+package chester.utils.io
 
 import cats.*
 import cats.free.*
 import cats.instances.future.*
-import chester.io.PathOpsString
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
 import typings.node.*

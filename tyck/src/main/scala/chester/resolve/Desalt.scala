@@ -6,12 +6,12 @@ import chester.error.*
 import chester.syntax.Const
 import chester.syntax.concrete.*
 import chester.tyck.*
-import chester.utils.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
+import chester.utils.*
 
 case class DesugarInfo()
 

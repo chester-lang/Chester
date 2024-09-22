@@ -1,8 +1,10 @@
 package chester.repl
 
 import cats.Id
-import chester.io._
-import chester.parser.InputStatus.*
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.term.InputStatus.*
+import chester.utils.term.TerminalInfo
 import linenoise.facade
 
 class LinenoiseTerminal(init: TerminalInit) extends InTerminal[Id] {

@@ -1,5 +1,7 @@
 package chester.up
-import chester.io._
+import chester.utils.io.*
+import chester.utils.term.*
+import chester.utils.io.{IO, Runner}
 import scopt.OParser
 
 object Main {

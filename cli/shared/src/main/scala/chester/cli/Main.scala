@@ -4,7 +4,6 @@ import chester.integrity.IntegrityCheck
 import chester.utils.fileExists
 import chester.repl.spawnREPLEngine
 import scopt.OParser
-import chester.io._
 
 object Main {
 

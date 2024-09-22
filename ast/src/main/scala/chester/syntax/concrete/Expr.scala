@@ -9,10 +9,7 @@ import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
-import chester.utils.*
-import spire.math.Rational
 import upickle.default.*
-import chester.utils.impls.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.constraint.collection.*
@@ -21,6 +18,9 @@ import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.upickle.given
+import chester.utils.*
+import spire.math.Rational
+import chester.utils.impls.*
 
 
 enum CommentType derives ReadWriter {
