@@ -297,6 +297,8 @@ case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, varar
     val varargDoc = if (vararg) Doc.text("...") else Doc.empty
     Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
   }
+  
+  def name: Name = bind.id
 
   override def descent(f: Term => Term): ArgTerm = thisOr(copy(ty = f(ty), default = default.map(f)))
 }

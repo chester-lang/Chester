@@ -3,16 +3,14 @@ package chester.tyck
 import chester.error.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import scala.util.boundary
-import scala.util.boundary.break
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.constraint.collection.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.collection.*
+import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
+
+import scala.util.boundary
+import scala.util.boundary.break
 
 trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   def synthesizeArg(arg: Arg, effects: Option[Effects], cause: Expr): WithCtxEffect[ArgTerm] = {
@@ -46,7 +44,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
   }
 
   def synthesizeTelescopes(telescopes: Vector[DefTelescope], effects: Option[Effects], cause: Expr): WithCtxEffect[Vector[TelescopeTerm]] = {
-    if(telescopes.isEmpty) return WithCtxEffect(this.localCtx, NoEffect, Vector.empty)
+    if (telescopes.isEmpty) return WithCtxEffect(this.localCtx, NoEffect, Vector.empty)
     var checker = this
     var results = Vector.empty[TelescopeTerm]
     var effect = NoEffect
@@ -91,22 +89,25 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
 
   // Definition of TelescopeMatchingResult
   sealed trait TelescopeMatchingResult
+
   object TelescopeMatchingResult {
     case class Valid(matchedArgs: Vector[Option[CallingArg]]) extends TelescopeMatchingResult
+
     case object Invalid extends TelescopeMatchingResult
   }
 
   // Written by AI, TODO - check
   def handleSingleTelescope(
-    telescope: DefTelescope,
-    calling: DesaltCallingTelescope
-  ): TelescopeMatchingResult = {
+                             telescope: TelescopeTerm,
+                             calling: DesaltCallingTelescope,
+                           cause: Expr,
+                           ): TelescopeMatchingResult = {
     val paramArgs = telescope.args
     val callArgs = calling.args
 
     // Mapping from parameter names to their positions
-    val paramNameToIndex = paramArgs.zipWithIndex.collect {
-      case (arg, idx) if arg.name.isInstanceOf[Identifier] => arg.getName -> idx
+    val paramNameToIndex = paramArgs.zipWithIndex.map {
+      case (arg, idx) => arg.bind.id -> idx
     }.toMap
 
     // Initialize structures for matching
@@ -136,7 +137,9 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         if (paramArg.vararg) {
           // Collect all remaining positional arguments into vararg
           val varargArgs = callArgs.drop(callArgIndex).filter(_.name.isEmpty)
-          matchedArgs(positionalIndex) = Some(CallingArg(expr = Tuple(varargArgs.map(_.expr)), vararg = true))
+          matchedArgs(positionalIndex) = Some(
+            CallingArg(expr = Tuple(varargArgs.map(_.expr)), vararg = true)
+          )
           callArgIndex = callArgs.length
           positionalIndex += 1
         } else {
@@ -157,21 +160,21 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
       paramNameToIndex.get(argName) match {
         case Some(idx) =>
           if (matchedArgs(idx).isDefined) {
-            tyck.report(DuplicateArgumentError(null)) // FIX ME null
+            tyck.report(DuplicateArgumentError(cause))
             return TelescopeMatchingResult.Invalid
           } else {
             matchedArgs(idx) = Some(callArg)
           }
         case None =>
-          tyck.report(UnknownArgumentError(null)) // FIX ME null
+          tyck.report(UnknownArgumentError(cause))
           return TelescopeMatchingResult.Invalid
       }
     }
 
     // Check for missing required arguments
     for ((paramArg, idx) <- paramArgs.zipWithIndex) {
-      if (matchedArgs(idx).isEmpty && paramArg.exprOrDefault.isEmpty && !paramArg.vararg) {
-        tyck.report(MissingArgumentError(null)) // FIX ME null
+      if (matchedArgs(idx).isEmpty && paramArg.default.isEmpty && !paramArg.vararg) {
+        tyck.report(MissingArgumentError(cause))
         return TelescopeMatchingResult.Invalid
       }
     }
@@ -179,7 +182,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     TelescopeMatchingResult.Valid(matchedArgs.toVector)
   }
 
-  def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects]): Judge = {
+  def synthesizeCall(function: Judge, fTy: FunctionType, telescopes: Vector[DesaltCallingTelescope], effects: Option[Effects], cause: Expr): Judge = {
     val functionTelescopes = fTy.telescope
     val callTelescopes = telescopes
 
@@ -189,7 +192,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
       var matchedTelescopes = Vector.empty[(Int, Int)]
       var skippedImplicits = Vector.empty[Int]
       var providedImplicits = Vector.empty[(Int, Int)]
-      
+
       boundary {
         while (funcIndex < functionTelescopes.length) {
           val funcTelescope = functionTelescopes(funcIndex)
@@ -242,7 +245,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         extraCallTelescopes
       )
 
-      val applicationCase = 
+      val applicationCase =
         if (funcIndex == functionTelescopes.length && callIndex == callTelescopes.length) {
           ApplicationCase.FullyApplied
         } else if (funcIndex < functionTelescopes.length) {
@@ -263,8 +266,7 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         // TODO: Handle partial application
         ???
       case ApplicationCase.FullyApplied =>
-        // TODO: Handle full application
-        ???
+        handleFullApplication(function, fTy, matchingInfo, callTelescopes, effects, cause)
       case ApplicationCase.OverApplied =>
         // TODO: Handle over-application (more arguments than expected)
         ???
@@ -274,19 +276,82 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     }
   }
 
+  def handleFullApplication(
+                             function: Judge,
+                             fTy: FunctionType,
+                             matchingInfo: TelescopeMatchingInfo,
+                             callTelescopes: Vector[DesaltCallingTelescope],
+                             effects: Option[Effects],
+                             cause: Expr
+                           ): Judge = {
+    // Initialize variables
+    var checker: Self = this
+    var combinedEffect = NoEffect
+
+    // A vector to collect Calling terms for each telescope
+    val callingTerms = matchingInfo.matchedTelescopes.map { case (funcIndex, callIndex) =>
+      val funcTelescope = fTy.telescope(funcIndex) // Now this is a TelescopeTerm
+      val callTelescope = callTelescopes(callIndex)
+
+      handleSingleTelescope(funcTelescope, callTelescope, cause) match {
+        case TelescopeMatchingResult.Valid(matchedArgs) =>
+          var argTerms = Vector.empty[CallingArgTerm]
+
+          // Process each argument in the telescope
+          for ((paramArg, maybeCallArg) <- funcTelescope.args.zip(matchedArgs)) {
+            val argResult = maybeCallArg match {
+              case Some(callArg) =>
+                // Type-check the call argument against the parameter type
+                val result = checker.inherit(callArg.expr, paramArg.ty, effects)
+                combinedEffect = checker.effectUnion(combinedEffect, result.effects)
+                CallingArgTerm(result.wellTyped, callArg.name.map(_.name), callArg.vararg)
+
+              case None =>
+                paramArg.default match {
+                  case Some(defaultExpr) =>
+                    // Use the default value if no argument is provided
+                    ???
+                  case None =>
+                    // Missing required argument; report error
+                    val error = MissingArgumentError(cause)
+                    tyck.report(error)
+                    return Judge(ErrorTerm(error), ErrorType(error), NoEffect)
+                }
+            }
+            // Update the context with the new variable if needed
+            checker = checker.rec(checker.localCtx.extend(paramArg.bind))
+            argTerms :+= argResult
+          }
+          // Build the Calling term for this telescope
+          Calling(argTerms, funcTelescope.implicitly)
+
+        case TelescopeMatchingResult.Invalid =>
+          // Matching failed; an error has already been reported
+          val error = InvalidTelescopeError(callTelescope)
+          tyck.report(error)
+          return Judge(ErrorTerm(error), ErrorType(error), NoEffect)
+      }
+    }
+
+    // Construct the full application term
+    val applicationTerm = FCallTerm(function.wellTyped, callingTerms)
+    // The result type is the function's result type
+    Judge(applicationTerm, fTy.resultTy, combinedEffect)
+  }
+
   def synthesizeFunctionCall(call: DesaltFunctionCall, effects: Option[Effects]): Judge = {
     val function = this.synthesize(call.function, effects)
     function.ty match {
-      case fty: FunctionType => 
-        synthesizeCall(function, fty, call.telescopes, effects)
+      case fty: FunctionType =>
+        synthesizeCall(function, fty, call.telescopes, effects, call)
       case i: Intersection => {
         val fs = i.xs.filter {
           case f: FunctionType => true
           case _ => false
         }
-        tryAll(fs.map(fty => (self:Self)=>self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects)).refineUnsafe)
+        tryAll(fs.map(fty => (self: Self) => self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects, call)).refineUnsafe)
       }
-      case _ => 
+      case _ =>
         val error = NotAFunctionError(call)
         tyck.report(error)
         Judge(ErrorTerm(error), ErrorType(error), NoEffect)
@@ -303,9 +368,9 @@ enum ApplicationCase {
 }
 
 case class TelescopeMatchingInfo(
-  matchedTelescopes: Vector[(Int, Int)],  // (funcIndex, callIndex) for matched telescopes
-  skippedImplicits: Vector[Int],          // funcIndex of skipped implicit telescopes
-  providedImplicits: Vector[(Int, Int)],  // (funcIndex, callIndex) of provided implicit telescopes
-  remainingFuncTelescopes: Vector[Int],   // funcIndex of remaining function telescopes (for partial application)
-  extraCallTelescopes: Vector[Int]        // callIndex of extra call telescopes (for over-application)
-)
+                                  matchedTelescopes: Vector[(Int, Int)], // (funcIndex, callIndex) for matched telescopes
+                                  skippedImplicits: Vector[Int], // funcIndex of skipped implicit telescopes
+                                  providedImplicits: Vector[(Int, Int)], // (funcIndex, callIndex) of provided implicit telescopes
+                                  remainingFuncTelescopes: Vector[Int], // funcIndex of remaining function telescopes (for partial application)
+                                  extraCallTelescopes: Vector[Int] // callIndex of extra call telescopes (for over-application)
+                                )
