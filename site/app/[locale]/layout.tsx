@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
 import { SUPPORTED_LOCALES } from '@/components/locales';
+import deepmerge from 'deepmerge';
 
 type Props = {
   children: ReactNode
@@ -20,12 +21,22 @@ export const metadata: Metadata = {
 }
 
 //function to get the translations
-async function getMessages(locale: string) {
+async function getMsg(locale: string) {
   try {
     return (await import(`../../messages/${locale}.json`)).default
   } catch (error) {
     notFound()
   }
+}
+async function getMessages(locale: string) {
+  let result = await getMsg(locale)
+  if(locale.startsWith('zh')){
+    result = deepmerge(deepmerge(await getMsg('zh-tw'), await getMsg('zh-sg')), result)
+  }
+  if(locale == 'en'){
+    return result
+  }
+  return deepmerge(await getMsg('en'), result)
 }
 
 //function to generate the routes for all the locales
