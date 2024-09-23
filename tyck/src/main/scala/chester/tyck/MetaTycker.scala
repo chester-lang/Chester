@@ -60,7 +60,18 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[MetaConstraint]): Unit = {
-    val results = metas.map { meta =>
+    // Partition metas into those with constraints and those without
+    val (metasWithConstraints, metasWithoutConstraints) = metas.partition { meta =>
+      constraints.exists {
+        case MetaConstraint.TyRange(`meta`, _, _) => true
+        case _                                    => false
+      }
+    }
+
+    // Process metas with constraints first
+    val orderedMetas = metasWithConstraints ++ metasWithoutConstraints
+
+    val results = orderedMetas.map { meta =>
       val metaConstraints = constraints.collect {
         case c @ MetaConstraint.TyRange(`meta`, _, _) => c
       }
@@ -87,7 +98,7 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           Judge(candidate, Typeω, NoEffect)
         case (Some(bound), None) => bound
         case (None, Some(bound)) => bound
-        case (None, None) => Judge(AnyType0, Type0, NoEffect)
+        case (None, None)        => Judge(AnyType0, Type0, NoEffect)
       }
 
       (meta, solution)
