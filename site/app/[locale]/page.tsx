@@ -51,11 +51,6 @@ export default function Home() {
             <XTerm ref={xtermRef} />
           </div>
         </main>
-        <footer className="mt-auto">
-          <p className="text-sm text-center">
-            {t('footer', { year: new Date().getFullYear() })}
-          </p>
-        </footer>
       </div>
     </div>
   );

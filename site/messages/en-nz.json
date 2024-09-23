@@ -4,7 +4,9 @@
         "description": "Chester: A Programming Language"
     },
     "Home": {
-        "title": "Chester: A Programming Language",
+        "title": "Chester: A Programming Language"
+    },
+    "Footer": {
         "footer": "Chester: A Programming Language © {year}"
     },
     "AboutPage": {

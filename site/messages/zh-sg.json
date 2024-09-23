@@ -4,7 +4,9 @@
         "description": "Chester：一种编程语言"
     },
     "Home": {
-        "title": "Chester：一种编程语言",
+        "title": "Chester：一种编程语言"
+    },
+    "Footer": {
         "footer": "Chester：一种编程语言 © {year}"
     },
     "AboutPage": {

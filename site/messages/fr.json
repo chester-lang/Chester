@@ -1,10 +1,12 @@
 {
     "Home": {
-        "title": "Chester: A Programming Language",
-        "footer": "Chester: A Programming Language © {year}"
+        "title": "Chester: A Programming Language"
     },
     "AboutPage": {
         "aboutText": "Ceci est un site statique complètement traduit."
+    },
+    "Footer": {
+        "footer": "Chester: A Programming Language © {year}"
     },
     "Header": {
         "home": "Accueil",

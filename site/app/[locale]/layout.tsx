@@ -3,6 +3,7 @@
 import '../globals.css'
 import type { Metadata } from 'next'
 import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
@@ -46,6 +47,7 @@ export default async function RootLayout({
           <div className='p-5'>
             {children}
           </div>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>

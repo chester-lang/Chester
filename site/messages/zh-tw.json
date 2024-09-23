@@ -1,6 +1,8 @@
 {
     "Home": {
-        "title": "Chester：一種程式設計語言",
+        "title": "Chester：一種程式設計語言"
+    },
+    "Footer": {
         "footer": "Chester：一種程式設計語言 © {year}"
     },
     "AboutPage": {
