@@ -16,7 +16,7 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {français} en {anglais} zh_tw {chinois traditionnel} zh_sg {chinois singapourien} other {inconnu}}"
+        "locale": "{locale, select, fr {français} en_nz {anglais} zh_tw {chinois traditionnel} zh_sg {chinois singapourien} other {inconnu}}"
     },
     "metadata": {
         "title": "Chester",

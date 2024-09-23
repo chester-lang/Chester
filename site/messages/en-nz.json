@@ -20,6 +20,6 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {French} en {English} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} other {Unknown}}"
+        "locale": "{locale, select, fr {French} en_nz {English (New Zealand)} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} other {Unknown}}"
     }
 }

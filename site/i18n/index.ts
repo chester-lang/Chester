@@ -14,11 +14,11 @@ export async function getMessages(locale: string) {
   if(locale.startsWith('zh')){
     result = deepmerge(deepmerge(await getMsg('zh-tw'), await getMsg('zh-sg')), result)
   }
-  if(locale == 'en'){
+  if(locale == 'en-nz'){
     return result
   }
-  return deepmerge(await getMsg('en'), result)
+  return deepmerge(await getMsg('en-nz'), result)
 }
 
-export const SUPPORTED_LOCALES = ['en', 'fr', 'zh-tw', 'zh-sg'] as const
+export const SUPPORTED_LOCALES = ['en-nz', 'fr', 'zh-tw', 'zh-sg'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
