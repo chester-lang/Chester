@@ -2,8 +2,8 @@
 
 'use client'
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from './navigation';
-import { SUPPORTED_LOCALES, SupportedLocale } from './locales';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { SUPPORTED_LOCALES, SupportedLocale } from '@/i18n';
 
 export default function LocaleSwitcher() {
     const t = useTranslations('LocaleSwitcher')

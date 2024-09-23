@@ -1,6 +1,6 @@
 // components/Header.tsx
 'use client'
-import { Link } from './navigation';
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl'

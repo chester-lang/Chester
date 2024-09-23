@@ -6,8 +6,9 @@ import Header from '@/components/Header'
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
-import { SUPPORTED_LOCALES } from '@/components/locales';
+import { SUPPORTED_LOCALES } from '@/i18n';
 import deepmerge from 'deepmerge';
+import { getMessages } from '@/i18n'
 
 type Props = {
   children: ReactNode
@@ -18,25 +19,6 @@ type Props = {
 export const metadata: Metadata = {
   title: "Chester",
   description: "Chester: A Programming Language",
-}
-
-//function to get the translations
-async function getMsg(locale: string) {
-  try {
-    return (await import(`../../messages/${locale}.json`)).default
-  } catch (error) {
-    notFound()
-  }
-}
-async function getMessages(locale: string) {
-  let result = await getMsg(locale)
-  if(locale.startsWith('zh')){
-    result = deepmerge(deepmerge(await getMsg('zh-tw'), await getMsg('zh-sg')), result)
-  }
-  if(locale == 'en'){
-    return result
-  }
-  return deepmerge(await getMsg('en'), result)
 }
 
 //function to generate the routes for all the locales
