@@ -20,5 +20,5 @@ export async function getMessages(locale: string) {
   return deepmerge(await getMsg('en-nz'), result)
 }
 
-export const SUPPORTED_LOCALES = ['en-nz', 'fr', 'zh-tw', 'zh-sg'] as const
+export const SUPPORTED_LOCALES = ['en-nz', 'fr', 'zh-tw', 'zh-sg', 'de'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]

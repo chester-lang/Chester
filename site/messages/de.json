@@ -1,0 +1,12 @@
+{
+    "GetStartedPage": {
+        "title": "Chester starten",
+        "introText": "Willkommen bei Chester! Folgen Sie diesen Schritten, um mit Ihrer neuen Programmiersprache zu beginnen."
+    },
+    "Home": {
+        "title": "Chester: Eine Programmiersprache"
+    },
+    "Footer": {
+        "footer": "Chester: Eine Programmiersprache © {year}"
+    }
+}

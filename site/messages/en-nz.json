@@ -9,9 +9,6 @@
     "Footer": {
         "footer": "Chester: A Programming Language © {year}"
     },
-    "AboutPage": {
-        "aboutText": "This is a fully translated static website"
-    },
     "Header": {
         "home": "Home",
         "download": "Download",
@@ -22,7 +19,7 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {French} en_nz {English (Aotearoa, New Zealand)} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} other {Unknown}}"
+        "locale": "{locale, select, fr {French} en_nz {English (Aotearoa, New Zealand)} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} de {German} other {Unknown}}"
     },
     "GetStartedPage": {
         "title": "Get Started with Chester",

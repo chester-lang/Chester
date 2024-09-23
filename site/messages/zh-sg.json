@@ -9,9 +9,6 @@
     "Footer": {
         "footer": "Chester：一种编程语言 © {year}"
     },
-    "AboutPage": {
-        "aboutText": "这是一个完全翻译的静态网站"
-    },
     "Header": {
         "home": "主页",
         "download": "下载",
@@ -22,7 +19,7 @@
         "menu": "菜单"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {法文} en_nz {新西兰英文} zh_tw {繁体中文} zh_sg {新加坡简体中文} other {未知}}"
+        "locale": "{locale, select, fr {法文} en_nz {新西兰英文} zh_tw {繁体中文} zh_sg {新加坡简体中文} de {德文} other {未知}}"
     },
     "GetStartedPage": {
         "title": "开始使用 Chester",

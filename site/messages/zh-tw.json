@@ -5,9 +5,6 @@
     "Footer": {
         "footer": "Chester：一種程式設計語言 © {year}"
     },
-    "AboutPage": {
-        "aboutText": "這是一個完全翻譯的靜態網站"
-    },
     "Header": {
         "home": "首頁",
         "download": "下載",
@@ -18,7 +15,7 @@
         "menu": "選單"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {法文} en_nz {英文} zh_tw {繁體中文} zh_sg {新加坡簡體中文} other {未知}}"
+        "locale": "{locale, select, fr {法文} en_nz {英文} zh_tw {繁體中文} zh_sg {新加坡簡體中文} de {德文} other {未知}}"
     },
     "metadata": {
         "title": "Chester",
