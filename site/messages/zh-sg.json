@@ -18,9 +18,6 @@
         "close": "关闭",
         "menu": "菜单"
     },
-    "LocaleSwitcher": {
-        "locale": "{locale, select, fr {法文} en_nz {新西兰英文} zh_tw {繁体中文} zh_sg {新加坡简体中文} de {德文} other {未知}}"
-    },
     "GetStartedPage": {
         "title": "开始使用 Chester",
         "introText": "欢迎使用 Chester！请按照以下步骤开始使用您的新编程语言。"

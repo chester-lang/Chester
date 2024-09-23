@@ -1,12 +1,11 @@
 // components/LocaleSwitcher.tsx
 
 'use client'
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { SUPPORTED_LOCALES, SupportedLocale } from '@/i18n';
+import { SUPPORTED_LOCALES, SupportedLocale, LOCALE_NAMES } from '@/i18n';
 
 export default function LocaleSwitcher() {
-    const t = useTranslations('LocaleSwitcher')
     const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
@@ -23,7 +22,7 @@ export default function LocaleSwitcher() {
         >
             {SUPPORTED_LOCALES.map((lang) => (
                 <option key={lang} value={lang}>
-                    {t('locale', { locale: lang.replace('-', '_') })}
+                    {LOCALE_NAMES[lang]}
                 </option>
             ))}
         </select>
