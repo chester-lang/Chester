@@ -17,7 +17,7 @@ object Imports {
   val Empty: Imports = Vector.empty
 }
 
-class Context(map: Map[Name, CtxItem], varMap: Map[UniqId, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
+case class Context(map: Map[Name, CtxItem], varMap: Map[UniqId, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
 
   def get(id: Name): Option[CtxItem] = map.get(id)
 

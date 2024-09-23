@@ -312,7 +312,7 @@ case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any", ColorProfile.typeColor)
 }
 
-val AnyType0 = AnyType(Level0)
+def AnyType0 = AnyType(Level0)
 
 case object NothingType extends TypeTerm {
   override def descent(f: Term => Term): NothingType.type = this
