@@ -2,8 +2,8 @@
 
 'use client'
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from 'next-intl/client';
-import { SUPPORTED_LOCALES } from './locales';
+import { usePathname, useRouter } from './navigation';
+import { SUPPORTED_LOCALES, SupportedLocale } from './locales';
 
 export default function LocaleSwitcher() {
     const t = useTranslations('LocaleSwitcher')
@@ -13,7 +13,7 @@ export default function LocaleSwitcher() {
 
     const onLocaleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newLocale = e.target.value;
-        router.replace(pathname, { locale: newLocale });
+        router.replace(pathname, { locale: newLocale as SupportedLocale });
     }
 
     return (
