@@ -6,6 +6,7 @@ import Header from '@/components/Header'
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { SUPPORTED_LOCALES } from '@/components/locales';
 
 type Props = {
   children: ReactNode
@@ -29,7 +30,7 @@ async function getMessages(locale: string) {
 
 //function to generate the routes for all the locales
 export async function generateStaticParams() {
-  return ['en', 'fr', 'zh-tw', 'zh-sg'].map((locale) => ({ locale }))
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }))
 }
 
 

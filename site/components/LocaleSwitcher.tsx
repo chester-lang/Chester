@@ -3,6 +3,7 @@
 'use client'
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next-intl/client';
+import { SUPPORTED_LOCALES } from './locales';
 
 export default function LocaleSwitcher() {
     const t = useTranslations('LocaleSwitcher')
@@ -20,7 +21,7 @@ export default function LocaleSwitcher() {
             defaultValue={locale}
             onChange={onLocaleChange}
         >
-            {['en', 'fr', 'zh-tw', 'zh-sg'].map((lang) => (
+            {SUPPORTED_LOCALES.map((lang) => (
                 <option key={lang} value={lang}>
                     {t('locale', { locale: lang.replace('-', '_') })}
                 </option>
