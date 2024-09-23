@@ -23,5 +23,9 @@
     "metadata": {
         "title": "Chester",
         "description": "Chester：一種程式設計語言"
+    },
+    "GetStartedPage": {
+        "title": "開始使用 Chester",
+        "introText": "歡迎使用 Chester！請按照以下步驟開始使用您的新程式設計語言。"
     }
 }

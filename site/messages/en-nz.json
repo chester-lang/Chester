@@ -23,5 +23,9 @@
     },
     "LocaleSwitcher": {
         "locale": "{locale, select, fr {French} en_nz {English (Aotearoa, New Zealand)} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} other {Unknown}}"
+    },
+    "GetStartedPage": {
+        "title": "Get Started with Chester",
+        "introText": "Welcome to Chester! Follow these steps to get started with your new programming language."
     }
 }
