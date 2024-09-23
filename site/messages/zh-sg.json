@@ -1,4 +1,8 @@
 {
+    "metadata": {
+        "title": "Chester",
+        "description": "Chester：一种编程语言"
+    },
     "Home": {
         "title": "Chester：一种编程语言",
         "footer": "Chester：一种编程语言 © {year}"

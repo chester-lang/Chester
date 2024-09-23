@@ -9,16 +9,20 @@ import { NextIntlClientProvider } from 'next-intl'
 import { SUPPORTED_LOCALES } from '@/i18n';
 import deepmerge from 'deepmerge';
 import { getMessages } from '@/i18n'
+import { createTranslator } from 'next-intl'
 
 type Props = {
   children: ReactNode
   params: { locale: string }
 }
 
+export async function generateMetadata({ params: { locale } }: Props): Promise<Metadata> {
+  const messages = await getMessages(locale)
 
-export const metadata: Metadata = {
-  title: "Chester",
-  description: "Chester: A Programming Language",
+  return {
+    title: messages.metadata.title,
+    description: messages.metadata.description,
+  }
 }
 
 //function to generate the routes for all the locales

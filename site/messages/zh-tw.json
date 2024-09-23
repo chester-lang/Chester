@@ -17,5 +17,9 @@
     },
     "LocaleSwitcher": {
         "locale": "{locale, select, fr {法文} en {英文} zh_tw {繁體中文} zh_sg {新加坡簡體中文} other {未知}}"
+    },
+    "metadata": {
+        "title": "Chester",
+        "description": "Chester：一種程式設計語言"
     }
 }
