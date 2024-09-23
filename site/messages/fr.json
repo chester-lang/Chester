@@ -1,0 +1,20 @@
+{
+    "HomePage": {
+        "helloWorld": "Bonjour tout le monde !"
+    },
+    "AboutPage": {
+        "aboutText": "Ceci est un site statique complètement traduit."
+    },
+    "Header": {
+        "home": "Accueil",
+        "download": "Télécharger",
+        "getStarted": "Commencer",
+        "playground": "Terrain de jeu",
+        "documentation": "Documentation",
+        "close": "Fermer",
+        "menu": "Menu"
+    },
+    "LocaleSwitcher": {
+        "locale": "{locale, select, fr {français} en {anglais} other {inconnu}}"
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "HomePage": {
+        "helloWorld": "Hello World !"
+    },
+    "AboutPage": {
+        "aboutText": "This is a fully translated static website"
+    },
+    "Header": {
+        "home": "Home",
+        "download": "Download",
+        "getStarted": "Get Started",
+        "playground": "Playground",
+        "documentation": "Documentation",
+        "close": "Close",
+        "menu": "Menu"
+    },
+    "LocaleSwitcher": {
+        "locale": "{locale, select, fr {French} en {English} other {Unknown}}"
+    }
+}
