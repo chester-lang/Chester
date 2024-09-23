@@ -1,5 +1,7 @@
 {
     "Home": {
+        "title": "Chester: A Programming Language",
+        "footer": "Chester: A Programming Language © {year}"
     },
     "AboutPage": {
         "aboutText": "This is a fully translated static website"

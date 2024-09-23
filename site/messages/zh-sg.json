@@ -1,5 +1,7 @@
 {
     "Home": {
+        "title": "Chester：一种编程语言",
+        "footer": "Chester：一种编程语言 © {year}"
     },
     "AboutPage": {
         "aboutText": "这是一个完全翻译的静态网站"

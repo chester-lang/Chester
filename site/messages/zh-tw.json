@@ -1,5 +1,7 @@
 {
     "Home": {
+        "title": "Chester：一種程式設計語言",
+        "footer": "Chester：一種程式設計語言 © {year}"
     },
     "AboutPage": {
         "aboutText": "這是一個完全翻譯的靜態網站"
