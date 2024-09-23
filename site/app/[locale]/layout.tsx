@@ -29,7 +29,7 @@ async function getMessages(locale: string) {
 
 //function to generate the routes for all the locales
 export async function generateStaticParams() {
-  return ['en', 'fr'].map((locale) => ({ locale }))
+  return ['en', 'fr', 'zh-tw', 'zh-sg'].map((locale) => ({ locale }))
 }
 
 

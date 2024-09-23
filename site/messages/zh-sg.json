@@ -1,0 +1,19 @@
+{
+    "Home": {
+    },
+    "AboutPage": {
+        "aboutText": "这是一个完全翻译的静态网站"
+    },
+    "Header": {
+        "home": "主页",
+        "download": "下载",
+        "getStarted": "开始使用",
+        "playground": "游乐场",
+        "documentation": "文档",
+        "close": "关闭",
+        "menu": "菜单"
+    },
+    "LocaleSwitcher": {
+        "locale": "{locale, select, fr {法文} en {英文} zh_tw {繁体中文} zh_sg {新加坡简体中文} other {未知}}"
+    }
+}

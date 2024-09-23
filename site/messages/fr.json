@@ -1,6 +1,5 @@
 {
-    "HomePage": {
-        "helloWorld": "Bonjour tout le monde !"
+    "Home": {
     },
     "AboutPage": {
         "aboutText": "Ceci est un site statique complètement traduit."
@@ -15,6 +14,6 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {français} en {anglais} other {inconnu}}"
+        "locale": "{locale, select, fr {français} en {anglais} zh_tw {chinois traditionnel} zh_sg {chinois singapourien} other {inconnu}}"
     }
 }

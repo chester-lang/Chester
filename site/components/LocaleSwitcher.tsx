@@ -20,9 +20,9 @@ export default function LocaleSwitcher() {
             defaultValue={locale}
             onChange={onLocaleChange}
         >
-            {['en', 'fr'].map((lang) => (
+            {['en', 'fr', 'zh-tw', 'zh-sg'].map((lang) => (
                 <option key={lang} value={lang}>
-                    {t('locale', { locale: lang })}
+                    {t('locale', { locale: lang.replace('-', '_') })}
                 </option>
             ))}
         </select>

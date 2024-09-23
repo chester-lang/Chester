@@ -1,6 +1,5 @@
 {
-    "HomePage": {
-        "helloWorld": "Hello World !"
+    "Home": {
     },
     "AboutPage": {
         "aboutText": "This is a fully translated static website"
@@ -15,6 +14,6 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {French} en {English} other {Unknown}}"
+        "locale": "{locale, select, fr {French} en {English} zh_tw {Traditional Chinese} zh_sg {Singaporean Chinese} other {Unknown}}"
     }
 }

@@ -1,0 +1,19 @@
+{
+    "Home": {
+    },
+    "AboutPage": {
+        "aboutText": "這是一個完全翻譯的靜態網站"
+    },
+    "Header": {
+        "home": "首頁",
+        "download": "下載",
+        "getStarted": "開始使用",
+        "playground": "遊樂場",
+        "documentation": "文檔",
+        "close": "關閉",
+        "menu": "選單"
+    },
+    "LocaleSwitcher": {
+        "locale": "{locale, select, fr {法文} en {英文} zh_tw {繁體中文} zh_sg {新加坡簡體中文} other {未知}}"
+    }
+}
