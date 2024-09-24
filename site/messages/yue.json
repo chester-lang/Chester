@@ -1,0 +1,35 @@
+{
+    "metadata": {
+        "title": "Chester",
+        "description": "Chester: 一個編程語言"
+    },
+    "Home": {
+        "title": "Chester: 一個編程語言"
+    },
+    "Footer": {
+        "footer": "Chester: 一個編程語言 © {year}"
+    },
+    "Header": {
+        "home": "主頁",
+        "download": "下載",
+        "getStarted": "開始",
+        "playground": "玩場",
+        "documentation": "說明書",
+        "close": "收埋",
+        "menu": "選單"
+    },
+    "GetStartedPage": {
+        "title": "開始用 Chester",
+        "introText": "歡迎嚟到 Chester！跟住呢幾個步驟嚟開始用你嘅新編程語言啦。"
+    },
+    "DownloadPage": {
+        "title": "下載 Chester",
+        "introText": "下載 Chester 適用於你嘅操作系統。",
+        "downloadFor": "下載 {platform} 版"
+    },
+    "PlaygroundPage": {
+        "title": "玩場",
+        "output": "結果",
+        "runCode": "執行"
+    }
+}
