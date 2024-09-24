@@ -1,0 +1,35 @@
+{
+    "metadata": {
+        "title": "チェスター",
+        "description": "チェスター: プログラミング言語"
+    },
+    "Home": {
+        "title": "チェスター: プログラミング言語"
+    },
+    "Footer": {
+        "footer": "チェスター: プログラミング言語 © {year}"
+    },
+    "Header": {
+        "home": "ホーム",
+        "download": "ダウンロード",
+        "getStarted": "はじめに",
+        "playground": "プレイグラウンド",
+        "documentation": "ドキュメント",
+        "close": "閉じる",
+        "menu": "メニュー"
+    },
+    "GetStartedPage": {
+        "title": "チェスターを始める",
+        "introText": "チェスターへようこそ！この新しいプログラミング言語を始めるための手順に従ってください。"
+    },
+    "DownloadPage": {
+        "title": "チェスターをダウンロード",
+        "introText": "お使いのオペレーティングシステム用のチェスターをダウンロードしてください。",
+        "downloadFor": "{platform}用のダウンロード"
+    },
+    "PlaygroundPage": {
+        "title": "プレイグラウンド",
+        "output": "出力",
+        "runCode": "実行"
+    }
+}

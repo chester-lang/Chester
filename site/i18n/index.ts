@@ -28,7 +28,10 @@ export const LOCALE_NAMES = {
   'zh-sg': '中文',
   'de': 'Deutsch',
   'mi': 'Māori',
-  'yue': '粵語'
+  'yue': '粵語',
+  'wzhu': '甌語',
+  'ja': '日本語',
+  'ko': '한국어'
 } as const;
 
 export const SUPPORTED_LOCALES = Object.keys(LOCALE_NAMES) as Array<keyof typeof LOCALE_NAMES>;

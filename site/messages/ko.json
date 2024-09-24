@@ -1,0 +1,35 @@
+{
+    "metadata": {
+        "title": "체스터",
+        "description": "체스터: 프로그래밍 언어"
+    },
+    "Home": {
+        "title": "체스터: 프로그래밍 언어"
+    },
+    "Footer": {
+        "footer": "체스터: 프로그래밍 언어 © {year}"
+    },
+    "Header": {
+        "home": "홈",
+        "download": "다운로드",
+        "getStarted": "시작하기",
+        "playground": "플레이그라운드",
+        "documentation": "문서",
+        "close": "닫기",
+        "menu": "메뉴"
+    },
+    "GetStartedPage": {
+        "title": "체스터 시작하기",
+        "introText": "체스터에 오신 것을 환영합니다! 새로운 프로그래밍 언어를 시작하려면 다음 단계를 따르세요."
+    },
+    "DownloadPage": {
+        "title": "체스터 다운로드",
+        "introText": "사용자의 운영 체제에 맞는 체스터를 다운로드하세요.",
+        "downloadFor": "{platform}용 다운로드"
+    },
+    "PlaygroundPage": {
+        "title": "플레이그라운드",
+        "output": "출력",
+        "runCode": "실행"
+    }
+}
