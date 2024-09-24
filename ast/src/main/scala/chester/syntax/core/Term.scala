@@ -376,14 +376,28 @@ object ScopeId {
   def generate: ScopeId = ScopeId(UniqId.generate)
 }
 
-case class Function(ty: FunctionType, body: Term, scope: Option[ScopeId] = None, meta: OptionTermMeta = None) extends TermWithMeta {
+case class Function(
+  ty: FunctionType,
+  body: Term,
+  scope: Option[ScopeId] = None,
+  meta: OptionTermMeta = None
+) extends TermWithMeta {
+
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val tyDoc = ty.toDoc
+    val paramsDoc = ty.telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
+    val effectsDoc = if (ty.effects.nonEmpty) {
+      Docs.`/` <+> ty.effects.toDoc
+    } else {
+      Doc.empty
+    }
     val bodyDoc = body.toDoc
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(tyDoc <+> bodyDoc)
+    group(paramsDoc <+> Docs.`=>` <+> bodyDoc <> effectsDoc)
   }
 
-  override def descent(f: Term => Term): Term = thisOr(copy(ty = ty.descent(f), body = f(body)))
+  override def descent(f: Term => Term): Term = thisOr(copy(
+    ty = ty.descent(f),
+    body = f(body)
+  ))
 }
 
 case class MatchingClause()derives ReadWriter {
@@ -401,7 +415,7 @@ case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
     val effectsDoc = if (effects.nonEmpty) {
-      Doc.empty <+> Docs.`/`  <+> effects.toDoc
+      Docs.`/` <+> effects.toDoc
     } else {
       Doc.empty
     }
