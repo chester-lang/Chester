@@ -652,7 +652,21 @@ case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Te
 
   override def descent(f: Term => Term): BuiltinTerm = this
 }
+case class TupleType(types: Vector[Term]) extends TypeTerm {
+  override def descent(f: Term => Term): TupleType = thisOr(copy(types = types.map(f)))
 
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    Doc.wrapperlist("Tuple" <> Docs.`[`, Docs.`]`, ",")(types *)
+  }
+}
+
+case class TupleTerm(values: Vector[Term]) extends Term {
+  override def descent(f: Term => Term): TupleTerm = thisOr(copy(values = values.map(f)))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, ",")(values *)
+  }
+}
 
 // TODO: tuple?
 val UnitType = ObjectType(Vector.empty)

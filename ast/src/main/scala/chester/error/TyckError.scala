@@ -222,3 +222,8 @@ case class ExpectParameterList(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
     t"Expected a parameter list, got ${cause}"
 }
+case class TupleArityMismatchError(provided: Int, expected: Int, cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Tuple arity mismatch: expected $expected elements but got $provided"
+
+}

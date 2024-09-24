@@ -6,15 +6,11 @@ import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.core.CoreTycker
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 import spire.math.Trilean
-import spire.math.Trilean.{True, Unknown, False}
+import spire.math.Trilean.{False, True, Unknown}
 
-import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
@@ -29,7 +25,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def compareTy(lhs: Term, rhs: Term): Trilean = {
     val superType1 = whnfNoEffect(lhs) // Supertype
-    val subType1 = whnfNoEffect(rhs)   // Subtype
+    val subType1 = whnfNoEffect(rhs) // Subtype
     if (subType1 == superType1) True
     else (superType1, subType1) match {
       case (AnyType(_), _) => True // AnyType is the top type
@@ -101,8 +97,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case (IntegerType, IntType) => IntType
       case (Type(levelSuper), Type(levelSub)) =>
         compareLevel(levelSuper, levelSub) match {
-          case True  => Type(levelSuper)
-          case False => 
+          case True => Type(levelSuper)
+          case False =>
             if (failed != null) failed else {
               val err = UnifyFailedError(rhs = rhs1, lhs = lhs1)
               tyck.report(err)
@@ -206,6 +202,16 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
     resolve(expr) match {
+      case Tuple(exprTerms, meta) =>
+        val checkedTerms: Vector[Judge] = exprTerms.map { term =>
+          synthesize(term, effects)
+        }
+        val types = checkedTerms.map(_.ty)
+        val tupleType = TupleType(types)
+        val effect = effectFold(checkedTerms.map(_.effects))
+        val wellTypedTerms = checkedTerms.map(_.wellTyped)
+        Judge(TupleTerm(wellTypedTerms), tupleType, effect)
+
       case IntegerLiteral(value, meta) =>
         Judge(AbstractIntTerm.from(value), IntegerType, NoEffect)
       case RationalLiteral(value, meta) =>
@@ -253,7 +259,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def checkType(expr: Expr): Judge = inherit(expr, Typeω)
-  
+
   private val coreTycker = CoreTycker(localCtx, tyck.reporter)
 
   def synthesizeTyTerm(term: Term): JudgeNoEffect = {
@@ -342,6 +348,19 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
     (expr1, ty1) match {
+      case (Tuple(exprTerms, meta), tupleType@TupleType(typeTerms)) =>
+        if (exprTerms.length != typeTerms.length) {
+          val err = TupleArityMismatchError(exprTerms.length, typeTerms.length, expr)
+          tyck.report(err)
+          Judge(ErrorTerm(err), ty, NoEffect)
+        } else {
+          val checkedTerms: Vector[Judge] = exprTerms.zip(typeTerms).map { case (exprTerm, expectedType) =>
+            inherit(exprTerm, expectedType)
+          }
+          val effect = effectFold(checkedTerms.map(_.effects))
+          val wellTypedTerms = checkedTerms.map(_.wellTyped)
+          Judge(TupleTerm(wellTypedTerms), ty, effect)
+        }
       case (IntegerLiteral(value, meta), IntType) => {
         if (value.isValidInt)
           Judge(IntTerm(value.toInt), IntType, NoEffect)
@@ -381,12 +400,13 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = ty match {
     case Some(ty) => inherit(expr, ty, effects)
     case None => {
-      val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effects, synthesize(expr, effects=effects))
+      val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effects, synthesize(expr, effects = effects))
       Judge(wellTypedExpr, exprType, exprEffect)
     }
   }
 
   def zonkCheck(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = this.zonkMetas(check(expr, ty, effects))
+
   def zonkInherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = this.zonkMetas(inherit(expr, ty, effects))
 
   def addConstraint(constraint: MetaConstraint): Unit = {
@@ -413,6 +433,6 @@ object ExprTycker {
   }
 
   def synthesize(expr: Expr, effects: Option[Effects] = None, state: TyckState = TyckState(), ctx: LocalCtx = LocalCtx.Empty): TyckResult[TyckState, Judge] = {
-    Tyck.run(Tycker(ctx, _).zonkCheck(expr, effects=effects))(state)
+    Tyck.run(Tycker(ctx, _).zonkCheck(expr, effects = effects))(state)
   }
 }
