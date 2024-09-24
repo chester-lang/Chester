@@ -26,5 +26,10 @@
         "title": "下载 Chester",
         "introText": "下载 Chester 以用于您的操作系统。",
         "downloadFor": "下载 {platform}"
+    },
+    "PlaygroundPage": {
+        "title": "游乐场",
+        "output": "输出",
+        "runCode": "运行"
     }
 }

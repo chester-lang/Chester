@@ -13,5 +13,10 @@
         "title": "Chester herunterladen",
         "introText": "Chester für Ihr Betriebssystem herunterladen.",
         "downloadFor": "Chester für {platform} herunterladen"
+    },
+    "PlaygroundPage": {
+        "title": "Playground",
+        "output": "Ausgabe",
+        "runCode": "Ausführen"
     }
 }

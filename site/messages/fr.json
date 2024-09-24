@@ -25,5 +25,10 @@
         "title": "Télécharger Chester",
         "introText": "Télécharger Chester pour votre système d'exploitation.",
         "downloadFor": "Télécharger pour {platform}"
+    },
+    "PlaygroundPage": {
+        "title": "Terrain de jeu",
+        "output": "Sortie",
+        "runCode": "Exécuter"
     }
 }
