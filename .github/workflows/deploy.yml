@@ -85,6 +85,20 @@ jobs:
         run: npm run build
         working-directory: ./site
 
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: 'latest'
+
+      - name: Build documentation
+        run: |
+          cd doc
+          mdbook build
+          cd ..
+
+      - name: Copy documentation to site output
+        run: cp -r doc/book site/out/doc
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
