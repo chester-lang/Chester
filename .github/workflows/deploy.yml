@@ -82,7 +82,7 @@ jobs:
         working-directory: ./site
 
       - name: Build with Next.js
-        run: npx --no-install next build
+        run: npm run build
         working-directory: ./site
 
       - name: Upload artifact
