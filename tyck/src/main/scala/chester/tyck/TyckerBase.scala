@@ -12,7 +12,7 @@ import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 import spire.math.Trilean
-import spire.math.Trilean.{True, Unknown}
+import spire.math.Trilean.{True, Unknown, False}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -27,12 +27,25 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
   }
 
-  def compareTy(rhs: Term, lhs: Term): Trilean = {
-    val subType1 = whnfNoEffect(rhs)
-    val superType1 = whnfNoEffect(lhs)
+  def compareTy(lhs: Term, rhs: Term): Trilean = {
+    val superType1 = whnfNoEffect(lhs) // Supertype
+    val subType1 = whnfNoEffect(rhs)   // Subtype
     if (subType1 == superType1) True
-    else (subType1, superType1) match {
-      case (subType, AnyType(level)) => True // TODO: level
+    else (superType1, subType1) match {
+      case (AnyType(_), _) => True // AnyType is the top type
+      case (Type(levelSuper), Type(levelSub)) =>
+        compareLevel(levelSuper, levelSub)
+      case _ => Unknown
+    }
+  }
+
+  def compareLevel(lhsLevel: Term, rhsLevel: Term): Trilean = {
+    (lhsLevel, rhsLevel) match {
+      case (LevelFinite(AbstractIntTerm(vSuper)), LevelFinite(AbstractIntTerm(vSub))) =>
+        if (vSub <= vSuper) True else False
+      case (Levelω, _) => True // Levelω is the top level; any level is a subtype of Levelω
+      case (_, Levelω) =>
+        if (lhsLevel == Levelω) True else False // Levelω is only a subtype of itself
       case _ => Unknown
     }
   }
@@ -82,6 +95,23 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case (Intersection(superTypes), subType) => Intersection.from(superTypes.map(x => unifyTy(rhs = subType, lhs = x)))
       case (superTypes, Intersection(subTypes)) => Intersection.from(subTypes.map(x => unifyTy(rhs = x, lhs = superTypes)))
       case (IntegerType, IntType) => IntType
+      case (Type(levelSuper), Type(levelSub)) =>
+        compareLevel(levelSuper, levelSub) match {
+          case True  => Type(levelSuper)
+          case False => 
+            if (failed != null) failed else {
+              val err = UnifyFailedError(rhs = rhs1, lhs = lhs1)
+              tyck.report(err)
+              new ErrorTerm(err)
+            }
+          case Unknown =>
+            // Handle unknown comparison, possibly by introducing a constraint or reporting an error
+            if (failed != null) failed else {
+              val err = UnifyFailedError(rhs = rhs1, lhs = lhs1)
+              tyck.report(err)
+              new ErrorTerm(err)
+            }
+        }
       case (superType, subType) =>
         if (failed != null) failed else {
           val err = UnifyFailedError(rhs = subType, lhs = superType)
@@ -125,14 +155,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       Levelω
     } else {
       levels.reduceLeft {
-        case (LevelFinite(AbstractIntTerm(max)), LevelFinite(AbstractIntTerm(n))) =>
-          LevelFinite(AbstractIntTerm.from(max.max(n)))
-        case (level, LevelFinite(v: LocalVar)) =>
-          // Handle LocalVar case appropriately
-          ???
-        case (level, _) =>
-          // Handle other cases or throw an error
-          ???
+        case (LevelFinite(AbstractIntTerm(v1)), LevelFinite(AbstractIntTerm(v2))) =>
+          LevelFinite(AbstractIntTerm.from(v1.max(v2)))
+        case (levelFinite: LevelFinite, _) =>
+          Levelω // If other level is not finite, result is Levelω
+        case (_, levelFinite: LevelFinite) =>
+          Levelω // If other level is not finite, result is Levelω
+        case _ =>
+          Levelω // Default to Levelω if levels are incomparable
       }
     }
   }
@@ -347,7 +377,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): Judge = ty match {
     case Some(ty) => inherit(expr, ty, effects)
     case None => {
-      val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effects, synthesize(expr, effects))
+      val Judge(wellTypedExpr, exprType, exprEffect) = this.unifyEff(effects, synthesize(expr, effects=effects))
       Judge(wellTypedExpr, exprType, exprEffect)
     }
   }
