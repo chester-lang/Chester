@@ -218,3 +218,7 @@ case class MissingArgumentError(cause: Expr) extends TyckError {
 case class InvalidTelescopeError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Invalid telescope"
 }
+case class ExpectParameterList(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Expected a parameter list, got ${cause}"
+}

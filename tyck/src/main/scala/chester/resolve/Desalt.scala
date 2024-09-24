@@ -31,8 +31,46 @@ private object DesaltCaseClauseMatch {
 
 private object MatchDeclarationTelescope {
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = x match {
-    case id: Identifier => Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
-    case _ => ???
+    case id: Identifier =>
+      // Single parameter without type
+      Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
+    case OpSeq(terms, _) if terms.nonEmpty =>
+      // Multiple parameters, possibly with types
+      val argsResult = terms.grouped(3).map {
+        case Vector(id: Identifier, Identifier(Const.`:`, _), ty) =>
+          Some(Arg(name = id, ty = Some(ty), meta = id.meta))
+        case Vector(id: Identifier) =>
+          Some(Arg(name = id, meta = id.meta))
+        case _ =>
+          reporter(ExpectParameterList(x))
+          None
+      }.toVector
+
+      if (argsResult.contains(None)) {
+        None
+      } else {
+        Some(DefTelescope(argsResult.flatten))
+      }
+    case Tuple(terms, _) =>
+      // Parameters enclosed in parentheses
+      val argsResult = terms.map {
+        case id: Identifier =>
+          Some(Arg(name = id, meta = id.meta))
+        case OpSeq(Vector(id: Identifier, Identifier(Const.`:`, _), ty), _) =>
+          Some(Arg(name = id, ty = Some(ty), meta = id.meta))
+        case _ =>
+          reporter(ExpectParameterList(x))
+          None
+      }
+
+      if (argsResult.contains(None)) {
+        None
+      } else {
+        Some(DefTelescope(argsResult.flatten.toVector))
+      }
+    case _ =>
+      reporter(ExpectParameterList(x))
+      None
   }
 }
 
@@ -50,11 +88,22 @@ private object DesaltSimpleFunction {
       assert(index >= 0)
       val before = xs.take(index)
       val after = xs.drop(index + 1)
-      (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(telescope), bodyExpr) =>
-          val body = opSeq(bodyExpr)
-          Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
-        case _ =>
+
+      val paramsExpr = before match {
+        case Vector(Tuple(terms, _)) => Vector(Tuple(terms))
+        case _ => before
+      }
+
+      paramsExpr.traverse(MatchDeclarationTelescope.unapply) match {
+        case Some(telescopes) =>
+          val telescopeArgs = telescopes.flatMap(_.args)
+          val body = opSeq(after)
+          Some(FunctionExpr(
+            telescope = Vector(DefTelescope(telescopeArgs)),
+            body = body,
+            meta = meta
+          ))
+        case None =>
           val error = ExpectLambda(x)
           reporter(error)
           Some(DesaltFailed(x, error, meta))
