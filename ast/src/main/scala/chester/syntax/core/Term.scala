@@ -385,13 +385,14 @@ case class Function(
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val paramsDoc = ty.telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
+    val returnTypeDoc = Docs.`:` <+> ty.resultTy.toDoc
     val effectsDoc = if (ty.effects.nonEmpty) {
       Docs.`/` <+> ty.effects.toDoc
     } else {
       Doc.empty
     }
     val bodyDoc = body.toDoc
-    group(paramsDoc <+> Docs.`=>` <+> bodyDoc <> effectsDoc)
+    group(paramsDoc <> returnTypeDoc <+> Docs.`=>` <+> bodyDoc <> effectsDoc)
   }
 
   override def descent(f: Term => Term): Term = thisOr(copy(
