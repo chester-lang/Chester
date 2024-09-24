@@ -1,0 +1,6 @@
+[book]
+authors = ["澪"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Chester Programming Language"
