@@ -92,12 +92,12 @@ jobs:
 
       - name: Build documentation
         run: |
-          cd doc
+          cd docs
           mdbook build
           cd ..
 
       - name: Copy documentation to site output
-        run: cp -r doc/book site/out/doc
+        run: cp -r docs/book site/out/docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

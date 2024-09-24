@@ -8,6 +8,7 @@ import LocaleSwitcher from './LocaleSwitcher';
 import ThemeToggle from './ThemeToggle';
 // https://stackoverflow.com/questions/65930789/how-does-next-js-basepath-works-for-images/76197261#76197261
 import chesterLogo from '../public/chester-logo.svg';
+import NextLink from 'next/link';
 
 export default function Header() {
     const t = useTranslations('Header')
@@ -39,7 +40,7 @@ export default function Header() {
                     <li><Link href="/download" className="hover:underline">{t('download')}</Link></li>
                     <li><Link href="/get-started" className="hover:underline">{t('getStarted')}</Link></li>
                     <li><Link href="/playground" className="hover:underline">{t('playground')}</Link></li>
-                    <li><Link href="/docs" className="hover:underline">{t('documentation')}</Link></li>
+                    <li><NextLink href="/docs" className="hover:underline">{t('documentation')}</NextLink></li>
                 </ul>
             </nav>
             <LocaleSwitcher />
