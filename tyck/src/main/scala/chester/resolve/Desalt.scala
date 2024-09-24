@@ -38,17 +38,6 @@ private object MatchDeclarationTelescope {
 
 def opSeq(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Expr = SimpleDesalt.desugar(OpSeq(xs.toVector))
 
-@scala.deprecated("use opSeq")
-private object SingleExpr {
-  def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Option[Expr] = {
-    Some(opSeq(xs))
-  }
-
-  object Expect {
-    def unapply(xs: Seq[Expr])(using reporter: Reporter[TyckProblem]): Some[Expr] = Some(opSeq(xs))
-  }
-}
-
 private object DesaltSimpleFunction {
   def predicate(x: Expr): Boolean = x match {
     case Identifier(Const.Arrow2, _) => true
@@ -62,7 +51,8 @@ private object DesaltSimpleFunction {
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(Vector(telescope*)), SingleExpr.Expect(body)) =>
+        case (Some(telescope), Seq(bodyExpr @ _*)) =>
+          val body = opSeq(bodyExpr)
           Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
         case _ =>
           val error = ExpectLambda(x)
@@ -74,57 +64,46 @@ private object DesaltSimpleFunction {
   }
 }
 
-// TODO: this implementation looks ugly
 private object ObjectDesalt {
   def desugarQualifiedName(qname: QualifiedName): Vector[String] = qname match {
     case Identifier(name, _) => Vector(name)
-    case DotCall(expr, field: Identifier, _, _) => desugarQualifiedName(expr.asInstanceOf[QualifiedName]) :+ field.name
+    case DotCall(expr: QualifiedName, field: Identifier, _, _) =>
+      desugarQualifiedName(expr) :+ field.name
     case _ => throw new IllegalArgumentException("Invalid QualifiedName structure")
   }
 
-  def desugarObjectExpr0(expr: ObjectExpr): ObjectExpr = {
-    def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
-      fields.foldLeft(base) {
-        case (acc, (Vector(k), v)) =>
-          val updatedClauses = acc.clauses :+ ObjectExprClause(Identifier(k), v)
-          acc.copy(clauses = updatedClauses)
-        case (acc, (Vector(k, ks@_*), v)) =>
-          val nestedExpr = acc.clauses.collectFirst {
-            case ObjectExprClause(id: Identifier, nestedObj: ObjectExpr) if id.name == k =>
-              nestedObj
-          } match {
-            case Some(existingNestedObj) =>
-              insertNested(Vector((ks.toVector, v)), existingNestedObj)
-            case None =>
-              insertNested(Vector((ks.toVector, v)), ObjectExpr(Vector.empty))
-          }
-          val updatedClauses = acc.clauses.filter {
-            case ObjectExprClause(id: Identifier, _) => id.name != k
-            case _ => true
-          } :+ ObjectExprClause(Identifier(k), nestedExpr)
-          acc.copy(clauses = updatedClauses)
-        case (acc, (Vector(), _)) => acc
-      }
+  def insertNested(fields: Vector[(Vector[String], Expr)], base: ObjectExpr): ObjectExpr = {
+    fields.foldLeft(base) {
+      case (acc, (Vector(k), v)) =>
+        acc.copy(clauses = acc.clauses :+ ObjectExprClause(Identifier(k), v))
+      case (acc, (Vector(k, ks @ _*), v)) =>
+        val nestedObj = acc.clauses.collectFirst {
+          case ObjectExprClause(id: Identifier, obj: ObjectExpr) if id.name == k => obj
+        }.getOrElse(ObjectExpr(Vector.empty))
+        val updatedNested = insertNested(Vector((ks.toVector, v)), nestedObj)
+        val updatedClauses = acc.clauses.filterNot {
+          case ObjectExprClause(id: Identifier, _) => id.name == k
+          case _ => false
+        } :+ ObjectExprClause(Identifier(k), updatedNested)
+        acc.copy(clauses = updatedClauses)
+      case (acc, _) => acc
     }
-
-    var moreClauses: Vector[ObjectExprClauseOnValue] = Vector()
-    val desugaredClauses = expr.clauses.flatMap {
-      case ObjectExprClause(qname, expr) => Some(desugarQualifiedName(qname), expr)
-      case clause: ObjectExprClauseOnValue => {
-        moreClauses = moreClauses :+ clause
-        None
-      }
-    }
-    expr.copy(clauses = insertNested(desugaredClauses, ObjectExpr(Vector.empty)).clauses ++ moreClauses)
   }
 
-  def desugarObjectExprStep2(expr: ObjectExpr): ObjectExpr = expr.copy(clauses = expr.clauses.map {
-    case clause: ObjectExprClauseOnValue => clause
-    case ObjectExprClause(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
-    case _ => throw new IllegalArgumentException("This is second step")
-  })
-
-  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = desugarObjectExprStep2(desugarObjectExpr0(expr))
+  def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
+    val (desugaredClauses, moreClauses) = expr.clauses.foldLeft((Vector.empty[(Vector[String], Expr)], Vector.empty[ObjectExprClauseOnValue])) {
+      case ((fields, others), ObjectExprClause(qname, value)) =>
+        (fields :+ (desugarQualifiedName(qname), value), others)
+      case ((fields, others), clause: ObjectExprClauseOnValue) =>
+        (fields, others :+ clause)
+    }
+    val nestedObject = insertNested(desugaredClauses, ObjectExpr(Vector.empty))
+    val updatedClauses = nestedObject.clauses ++ moreClauses.map {
+      case ObjectExprClauseOnValue(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
+      case clause => clause
+    }
+    expr.copy(clauses = updatedClauses)
+  }
 }
 
 case object PatternDesalt {
@@ -148,167 +127,113 @@ case object StmtDesalt {
   }
 
   def defined(xs: Vector[Expr])(using reporter: Reporter[TyckProblem]): Option[Defined] = {
-    if (xs.length < 1) return None
-    if (xs.length == 1) return PatternDesalt.desugar(xs.head).map(DefinedPattern(_))
-    xs.head match
+    if (xs.isEmpty) None
+    else if (xs.length == 1) PatternDesalt.desugar(xs.head).map(DefinedPattern)
+    else xs.head match {
       case identifier: Identifier =>
-        val telescopes = xs.tail
-        telescopes.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
+        xs.tail.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
           DefinedFunction(identifier, NonEmptyVector.fromVectorUnsafe(telescopes))
         }
-      case _ =>
-        return None
+      case _ => None
+    }
   }
 
   def letdef(decorations: Vector[Expr], kw: Identifier, xs: Vector[Expr], cause: Expr)(using reporter: Reporter[TyckProblem]): Stmt = {
-    val typeAnnotation = xs.indexWhere {
-      case Identifier(Const.`:`, meta) => true
-      case _ => false
-    }
-    val valueAnnotation = xs.indexWhere {
-      case Identifier(Const.`=`, meta) => true
-      case _ => false
-    }
+    val typeIdx = xs.indexWhere { case Identifier(Const.`:`, _) => true; case _ => false }
+    val valueIdx = xs.indexWhere { case Identifier(Const.`=`, _) => true; case _ => false }
     val kind = kw.name match {
       case Const.Let => LetDefType.Let
       case Const.Def => LetDefType.Def
-      case _ => unreachable(s"Unknown keyword ${kw.name}")
+      case name => unreachable(s"Unknown keyword ${name}")
     }
-    if (xs.length < 1) {
+
+    val (onExprs, typeExprs, valueExprs) = (typeIdx, valueIdx) match {
+      case (-1, -1) => (xs, Vector.empty[Expr], Vector.empty[Expr])
+      case (tIdx, -1) => (xs.take(tIdx), xs.drop(tIdx + 1), Vector.empty[Expr])
+      case (-1, vIdx) => (xs.take(vIdx), Vector.empty[Expr], xs.drop(vIdx + 1))
+      case (tIdx, vIdx) if tIdx < vIdx =>
+        (xs.take(tIdx), xs.slice(tIdx + 1, vIdx), xs.drop(vIdx + 1))
+      case _ =>
+        val error = ExpectLetDef(cause)
+        reporter(error)
+        return DesaltFailed(cause, error, cause.meta)
+    }
+
+    val on = defined(onExprs).getOrElse {
       val error = ExpectLetDef(cause)
       reporter(error)
       return DesaltFailed(cause, error, cause.meta)
     }
-    if (typeAnnotation == -1 && valueAnnotation == -1) {
-      val on = defined(xs).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      return LetDefStmt(kind, on, decorations = decorations, meta = cause.meta)
-    }
-    if (typeAnnotation != -1 && valueAnnotation == -1) {
-      val on = defined(xs.take(typeAnnotation)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      val typeExpr = SingleExpr.unapply(xs.drop(typeAnnotation + 1)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      return LetDefStmt(kind, on, ty = Some(typeExpr), decorations = decorations, meta = cause.meta)
-    }
-    if (typeAnnotation == -1 && valueAnnotation != -1) {
-      val on = defined(xs.take(valueAnnotation)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      return LetDefStmt(kind, on, body = Some(valueExpr), decorations = decorations, meta = cause.meta)
-    }
-    if (typeAnnotation != -1 && valueAnnotation != -1) {
-      if (typeAnnotation > valueAnnotation) {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      val on = defined(xs.take(typeAnnotation)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      val typeExpr = SingleExpr.unapply(xs.slice(typeAnnotation + 1, valueAnnotation)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      val valueExpr = SingleExpr.unapply(xs.drop(valueAnnotation + 1)).getOrElse {
-        val error = ExpectLetDef(cause)
-        reporter(error)
-        return DesaltFailed(cause, error, cause.meta)
-      }
-      return LetDefStmt(kind, on, ty = Some(typeExpr), body = Some(valueExpr), decorations = decorations, meta = cause.meta)
-    }
-    val error = ExpectLetDef(cause)
-    reporter(error)
-    DesaltFailed(cause, error, cause.meta)
+
+    val ty = if (typeExprs.nonEmpty) Some(opSeq(typeExprs)) else None
+    val body = if (valueExprs.nonEmpty) Some(opSeq(valueExprs)) else None
+    LetDefStmt(kind, on, ty, body, decorations, cause.meta)
   }
 
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Stmt] = x match {
-    case opseq@OpSeq(seq, meta) => {
-      val kw = seq.indexWhere {
-        case Identifier(id, meta) if Const.kw1.contains(id) => true
+    case opseq @ OpSeq(seq, meta) =>
+      seq.indexWhere {
+        case Identifier(id, _) if Const.kw1.contains(id) => true
         case _ => false
+      } match {
+        case -1 => None
+        case kwIdx =>
+          val kwId = seq(kwIdx).asInstanceOf[Identifier]
+          val beforeKw = seq.take(kwIdx)
+          val afterKw = seq.drop(kwIdx + 1)
+          if (!beforeKw.forall(_.isInstanceOf[Identifier])) None
+          else kwId.name match {
+            case Const.Let | Const.Def => Some(letdef(beforeKw, kwId, afterKw, opseq))
+            case other => unreachable(s"Unknown keyword ${other}")
+          }
       }
-      if (kw == -1) return None
-      val kwId = seq(kw).asInstanceOf[Identifier]
-      val beforeKw = seq.take(kw)
-      val afterKw = seq.drop(kw + 1)
-      val beforeKWIsAllIdentifier = beforeKw.forall {
-        case Identifier(_, _) => true
-        case _ => false
-      }
-      if (!beforeKWIsAllIdentifier) return None
-      kwId.name match {
-        case Const.Let | Const.Def => Some(letdef(beforeKw, kwId, afterKw, opseq))
-        case _ => unreachable(s"Unknown keyword ${kwId.name}")
-      }
-    }
     case _ => None
   }
 }
 
 case object SimpleDesalt {
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = expr.descentRecursive {
-    case OpSeq(xs, meta) if xs.length == 1 => xs.head
-    case DesaltCaseClauseMatch(x) => x
-    case b@Block(heads, tail, meta) if heads.exists(_.isInstanceOf[DesaltCaseClause]) || tail.exists(_.isInstanceOf[DesaltCaseClause]) => {
-      val seq: Vector[Expr] = heads ++ tail.toVector
-      if (seq.isEmpty || !seq.forall(_.isInstanceOf[DesaltCaseClause])) {
-        val error = ExpectFullCaseBlock(b)
+    case OpSeq(xs, _) if xs.length == 1 => xs.head
+    case clause @ DesaltCaseClauseMatch(x) => x
+    case block @ Block(heads, tail, _) if heads.exists(_.isInstanceOf[DesaltCaseClause]) ||
+      tail.exists(_.isInstanceOf[DesaltCaseClause]) =>
+      val clauses = (heads ++ tail.toVector).collect { case clause: DesaltCaseClause => clause }
+      if (clauses.length != heads.length + tail.size) {
+        val error = ExpectFullCaseBlock(block)
         reporter(error)
-        DesaltFailed(b, error, meta)
+        DesaltFailed(block, error, block.meta)
       } else {
-        val heads1: Vector[DesaltCaseClause] = seq.map(_.asInstanceOf[DesaltCaseClause])
-        DesaltMatching(heads1, meta)
+        DesaltMatching(clauses, block.meta)
       }
-    }
-    case b@Block(heads, tail, meta) =>
-      reuse(b, Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta))
-    case DesaltSimpleFunction(x) => x
+    case block @ Block(heads, tail, meta) =>
+      Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta)
+    case DesaltSimpleFunction(func) => func
     case obj: ObjectExpr => ObjectDesalt.desugarObjectExpr(obj)
     case FunctionCall(function, telescopes, meta) =>
       val desugaredFunction = desugar(function)
-      val desugaredTelescopes = Vector(telescopes).map {
-        case t: Tuple => DesaltCallingTelescope(t.terms.map(term => CallingArg(expr = desugar(term))), meta = t.meta)
+      val desugaredTelescopes = telescopes match {
+        case t: Tuple => Vector(DesaltCallingTelescope(t.terms.map(term => CallingArg(expr = desugar(term))), meta = t.meta))
         case other =>
           reporter(UnexpectedTelescope(other))
-          DesaltCallingTelescope(Vector(CallingArg(expr = desugar(other))), meta = other.meta)
+          Vector(DesaltCallingTelescope(Vector(CallingArg(expr = desugar(other))), meta = other.meta))
       }
       desugaredFunction match {
         case DesaltFunctionCall(f, t, m) => DesaltFunctionCall(f, t ++ desugaredTelescopes, m)
-        case _ => DesaltFunctionCall(desugaredFunction, desugaredTelescopes.assumeNonEmpty, meta)
+        case _ => DesaltFunctionCall(desugaredFunction, NonEmptyVector.fromVectorUnsafe(desugaredTelescopes), meta)
       }
     case default => default
   }
+
   @tailrec
   def unwrap(e: Expr): Expr = e match {
-    case block: Block if block.heads.isEmpty && block.tail.isDefined =>
-      unwrap(block.tail.get)
-    case tuple: Tuple if tuple.terms.length == 1 =>
-      unwrap(tuple.terms.head)
+    case Block(Vector(), Some(tail), _) => unwrap(tail)
+    case Tuple(Vector(term), _) => unwrap(term)
     case _ => e
   }
+
   def desugarUnwrap(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = unwrap(desugar(expr))
 }
-
 case object OpSeqDesalt {
   def desugar(expr: Expr): Expr = ???
 }
+
