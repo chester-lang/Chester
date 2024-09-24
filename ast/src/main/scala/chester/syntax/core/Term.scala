@@ -339,11 +339,9 @@ case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | Rational
 
 case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val patternDoc = bind.toDoc
-    val tyDoc = ty.toDoc
-    val defaultDoc = default.map(_.toDoc).getOrElse(Doc.empty)
-    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`:`)(patternDoc <+> tyDoc <+> defaultDoc <+> varargDoc)
+    val varargDoc = if (vararg) Docs.`...` else Doc.empty
+    val defaultDoc = default.map(d => Docs.`=` <+> d.toDoc).getOrElse(Doc.empty)
+    bind.toDoc <> varargDoc <> Docs.`:` <+> ty.toDoc <> defaultDoc
   }
 
   def name: Name = bind.id
@@ -361,8 +359,12 @@ object TelescopeTerm {
 
 case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
-    Docs.`(` <> argsDoc <> Docs.`)`
+    val argsDoc = args.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
+    if (implicitly) {
+      Docs.`[` <> argsDoc <> Docs.`]`
+    } else {
+      Docs.`(` <> argsDoc <> Docs.`)`
+    }
   }
 
   override def descent(f: Term => Term): TelescopeTerm = thisOr(copy(args = args.map(_.descent(f))))
@@ -397,9 +399,13 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[Ma
 // Note that effect and result can use variables from telescope
 case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val telescopeDoc = if (telescope.isEmpty) Doc.empty else telescope.map(_.toDoc).reduce(_ <+> _)
-    val resultDoc = resultTy.toDoc
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, Docs.`->`)(telescopeDoc <+?> (effects.nonEmpty, effects) <+> resultDoc)
+    val telescopeDoc = telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
+    val effectsDoc = if (effects.nonEmpty) {
+      Doc.empty <+> Docs.`/`  <+> effects.toDoc
+    } else {
+      Doc.empty
+    }
+    group(telescopeDoc <+> Docs.`->` <+> resultTy.toDoc <> effectsDoc)
   }
 
   override def descent(f: Term => Term): FunctionType = thisOr(copy(telescope = telescope.map(_.descent(f)), effects = effects.descent(f), resultTy = f(resultTy)))
@@ -505,15 +511,16 @@ object Intersection {
 }
 
 /** Effect needs to have reasonable equals and hashcode for simple comparison, whereas they are not requirements for other Terms */
-sealed trait Effect extends ToDoc derives ReadWriter
+sealed trait Effect extends ToDoc derives ReadWriter {
+  def name: String
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name)
+}
 
 implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalVar]]].bimap(_.effects, Effects(_))
 
 case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) extends AnyVal with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(effects.map { case (effect, names) =>
-      Doc.text(s"${effect.toDoc} -> ${names.map(_.toDoc).mkString(", ")}")
-    }.toSeq *)
+    effects.keys.map(_.toDoc).reduceLeftOption((a, b) => a <> Docs.`,` <+> b).getOrElse(Doc.empty)
 
   def descentEffects(f: Effect => Effect): Effects =
     Effects(effects.map { case (effect, names) => f(effect) -> names })
@@ -560,21 +567,21 @@ val NoEffect = Effects.Empty
 
 // may raise an exception
 case object ExceptionEffect extends Effect {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("PartialEffect")
+  val name = "Exception"
 }
 
 // may not terminate
 case object DivergeEffect extends Effect {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("DivergeEffect")
+  val name = "Diverge"
 }
 
 // whatever IO: console, file, network, ...
 case object IOEffect extends Effect {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("IOEffect")
+  val name = "IO"
 }
 
 case object STEffect extends Effect {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("STEffect")
+  val name = "ST"
 }
 
 sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
@@ -584,7 +591,7 @@ sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
 }
 
 case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
 
   override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
 }

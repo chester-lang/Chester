@@ -13,4 +13,7 @@ object Docs {
   def `->`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("to ") else Doc.text("->")
   def `:`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("is ") else Doc.text(":")
   def `...`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("ellipsis ") else Doc.text("...")
+  def `=`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("equals ") else Doc.text("=")
+  def `,`(implicit options: PrettierOptions): Doc = Doc.text(",")
+  def `/`(implicit options: PrettierOptions): Doc = if(ReplaceBracketsWithWord.get) Doc.text("slash ") else Doc.text("/")
 }
