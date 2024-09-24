@@ -31,3 +31,4 @@ export const LOCALE_NAMES = {
 
 export const SUPPORTED_LOCALES = Object.keys(LOCALE_NAMES) as Array<keyof typeof LOCALE_NAMES>;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+export const DEFAULT_LOCALE: SupportedLocale = 'en-nz';
