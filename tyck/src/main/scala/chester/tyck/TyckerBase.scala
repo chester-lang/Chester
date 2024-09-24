@@ -59,6 +59,10 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def link(from: MetaTerm, to: Judge): Unit = ???
 
+  def linkTyOn(meta: MetaTerm, ty: Term): Unit = {
+    tyck.updateSubst(meta.uniqId, Judge(ty, Typeω, NoEffect))
+  }
+
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(lhs: Term, rhs: Term, failed: => Term = null): Term = {
     val rhs1 = whnfNoEffect(rhs)

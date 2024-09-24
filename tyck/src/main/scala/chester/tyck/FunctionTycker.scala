@@ -352,6 +352,13 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
         }
         tryAll(fs.map(fty => (self: Self) => self.synthesizeCall(function, fty.asInstanceOf[FunctionType], call.telescopes, effects, call)).assumeNonEmpty)
       }
+      case meta: MetaTerm =>
+        // Handle the MetaTerm case by generating a fresh FunctionType
+        val fty = instantiateFunctionTypeFromMeta(meta, call.telescopes, effects, call)
+        // Link the meta variable to the generated FunctionType
+        this.linkTyOn(meta, fty)
+        // Proceed with function type synthesis
+        synthesizeCall(function, fty, call.telescopes, effects, call)
       case _ =>
         val error = NotAFunctionError(call)
         tyck.report(error)
@@ -359,6 +366,37 @@ trait FunctionTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker
     }
   }
 
+  def instantiateFunctionTypeFromMeta(
+  meta: MetaTerm,
+  telescopes: Vector[DesaltCallingTelescope],
+  effects: Option[Effects],
+  cause: Expr
+): FunctionType = {
+  // Generate meta variables for each argument in the telescopes
+  val argMetaTypes = telescopes.flatMap { telescope =>
+    telescope.args.map { _ =>
+      this.genTypeVariable(name = Some("arg"))
+    }
+  }
+
+  // Generate a meta variable for the return type
+  val returnTypeMeta = this.genTypeVariable(name = Some("ReturnType"))
+
+  // Create ArgTerms for the function's parameters
+  val argTerms = argMetaTypes.map { argType =>
+    val idVar = LocalVar.generate("param", argType)
+    ArgTerm(idVar, argType)
+  }
+
+  // Create TelescopeTerms
+  val telescopeTerms = Vector(TelescopeTerm(argTerms))
+
+  // Generate the function's effect (could be NoEffect or another meta variable)
+  val functionEffect = effects.getOrElse(NoEffect)
+
+  // Construct the FunctionType
+  FunctionType(telescope = telescopeTerms, resultTy = returnTypeMeta, effect = functionEffect)
+}
 }
 
 enum ApplicationCase {
