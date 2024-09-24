@@ -8,5 +8,10 @@
     },
     "Footer": {
         "footer": "Chester: Eine Programmiersprache © {year}"
+    },
+    "DownloadPage": {
+        "title": "Chester herunterladen",
+        "introText": "Chester für Ihr Betriebssystem herunterladen.",
+        "downloadFor": "Chester für {platform} herunterladen"
     }
 }

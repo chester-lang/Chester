@@ -21,5 +21,10 @@
     "GetStartedPage": {
         "title": "Get Started with Chester",
         "introText": "Welcome to Chester! Follow these steps to get started with your new programming language."
+    },
+    "DownloadPage": {
+        "title": "Download Chester",
+        "introText": "Download Chester for your operating system.",
+        "downloadFor": "Download for {platform}"
     }
 }

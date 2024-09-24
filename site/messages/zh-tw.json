@@ -21,5 +21,10 @@
     "GetStartedPage": {
         "title": "開始使用 Chester",
         "introText": "歡迎使用 Chester！請按照以下步驟開始使用您的新程式設計語言。"
+    },
+    "DownloadPage": {
+        "title": "下載 Chester",
+        "introText": "下載 Chester 以用於您的操作系統。",
+        "downloadFor": "下載 {platform}"
     }
 }

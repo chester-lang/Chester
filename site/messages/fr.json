@@ -20,5 +20,10 @@
     "metadata": {
         "title": "Chester",
         "description": "Chester : Un Langage de Programmation"
+    },
+    "DownloadPage": {
+        "title": "Télécharger Chester",
+        "introText": "Télécharger Chester pour votre système d'exploitation.",
+        "downloadFor": "Télécharger pour {platform}"
     }
 }
