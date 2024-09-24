@@ -23,20 +23,40 @@ export default function Home() {
         const fitAddon = new FitAddon();
         terminal.loadAddon(fitAddon);
         fitAddon.fit();
-        if (false) {
-          startRepl(terminal);
-        }else if(false){
-          // @ts-expect-error xterm-pty types are not recognized
-          const {openpty} = await import('xterm-pty');
-          const { master, slave } = openpty();
-          terminal.loadAddon(master);
-          startReplPty(slave);
-        } else {
-          const rl = new Readline();
-          terminal.loadAddon(rl);
-          startReplReadline(rl);
-        }
         terminal.focus();
+          const used: string = 'startReplReadline';
+            if (used === 'startRepl'){
+              while(true){
+                try{
+                  await startRepl(terminal);
+                }catch(e){
+                  console.log(e);
+                }
+              }
+            }else if(used === 'startReplPty'){
+              // @ts-expect-error xterm-pty types are not recognized
+              const {openpty} = await import('xterm-pty');
+              const { master, slave } = openpty();
+              terminal.loadAddon(master);
+              while(true){
+                try{
+                  await startReplPty(slave);
+                }catch(e){
+                  console.log(e);
+                }
+              }
+            } else if (used === 'startReplReadline') {
+              const rl = new Readline();
+              terminal.loadAddon(rl);
+              while(true){
+                try{
+                  await startReplReadline(rl);
+                }catch(e: any){
+                  console.log(e);
+                  rl.println(e.toString());
+                }
+              }
+            }
       }
     };
     initTerminal();
