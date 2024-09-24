@@ -90,10 +90,22 @@ jobs:
         with:
           mdbook-version: 'latest'
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Install mdbook-i18n-helpers
+        run: |
+          cargo install mdbook-i18n-helpers
+
       - name: Build documentation
         run: |
           cd docs
-          mdbook build
+          chmod +x dev.sh
+          ./dev.sh build-all
           cd ..
 
       - name: Copy documentation to site output

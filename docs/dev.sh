@@ -11,6 +11,7 @@ show_usage() {
     echo "  build [lang] Build the book for the specified language (or default if not specified)"
     echo "  serve [lang] Serve the book for the specified language (or default if not specified)"
     echo "  normalize   Normalize existing PO files"
+    echo "  build-all   Build the book for all languages"
 }
 
 # Function to extract messages
@@ -66,6 +67,21 @@ normalize_po_files() {
     echo "PO files normalized"
 }
 
+# Function to build the book for all languages
+build_all_languages() {
+    # Build the default (English) version
+    mdbook build
+
+    # Get all PO files and build for each language
+    for po_file in po/*.po; do
+        lang=$(basename "$po_file" .po)
+        MDBOOK_BOOK__LANGUAGE="$lang" mdbook build -d "book/$lang"
+        echo "Book built for $lang"
+    done
+
+    echo "All language versions built"
+}
+
 # Main script logic
 case "$1" in
     extract)
@@ -85,6 +101,9 @@ case "$1" in
         ;;
     normalize)
         normalize_po_files
+        ;;
+    build-all)
+        build_all_languages
         ;;
     *)
         show_usage
