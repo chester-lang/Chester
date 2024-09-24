@@ -45,13 +45,13 @@ private object DesaltSimpleFunction {
   }
 
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Expr] = x match {
-    case OpSeq(xs, meta) if xs.exists(predicate) => {
+    case OpSeq(xs, meta) if xs.exists(predicate) =>
       val index = xs.indexWhere(predicate)
       assert(index >= 0)
       val before = xs.take(index)
       val after = xs.drop(index + 1)
       (before.traverse(MatchDeclarationTelescope.unapply), after) match {
-        case (Some(telescope), Seq(bodyExpr @ _*)) =>
+        case (Some(telescope), bodyExpr) =>
           val body = opSeq(bodyExpr)
           Some(FunctionExpr(telescope = telescope.toVector, body = body, meta = meta))
         case _ =>
@@ -59,7 +59,6 @@ private object DesaltSimpleFunction {
           reporter(error)
           Some(DesaltFailed(x, error, meta))
       }
-    }
     case _ => None
   }
 }
@@ -76,11 +75,11 @@ private object ObjectDesalt {
     fields.foldLeft(base) {
       case (acc, (Vector(k), v)) =>
         acc.copy(clauses = acc.clauses :+ ObjectExprClause(Identifier(k), v))
-      case (acc, (Vector(k, ks @ _*), v)) =>
+      case (acc, (k +: ks, v)) =>
         val nestedObj = acc.clauses.collectFirst {
           case ObjectExprClause(id: Identifier, obj: ObjectExpr) if id.name == k => obj
         }.getOrElse(ObjectExpr(Vector.empty))
-        val updatedNested = insertNested(Vector((ks.toVector, v)), nestedObj)
+        val updatedNested = insertNested(Vector((ks, v)), nestedObj)
         val updatedClauses = acc.clauses.filterNot {
           case ObjectExprClause(id: Identifier, _) => id.name == k
           case _ => false
@@ -91,17 +90,21 @@ private object ObjectDesalt {
   }
 
   def desugarObjectExpr(expr: ObjectExpr): ObjectExpr = {
-    val (desugaredClauses, moreClauses) = expr.clauses.foldLeft((Vector.empty[(Vector[String], Expr)], Vector.empty[ObjectExprClauseOnValue])) {
+    val (desugaredFields, otherClauses) = expr.clauses.foldLeft((Vector.empty[(Vector[String], Expr)], Vector.empty[ObjectClause])) {
       case ((fields, others), ObjectExprClause(qname, value)) =>
         (fields :+ (desugarQualifiedName(qname), value), others)
-      case ((fields, others), clause: ObjectExprClauseOnValue) =>
+      case ((fields, others), clause) =>
         (fields, others :+ clause)
     }
-    val nestedObject = insertNested(desugaredClauses, ObjectExpr(Vector.empty))
-    val updatedClauses = nestedObject.clauses ++ moreClauses.map {
-      case ObjectExprClauseOnValue(key: Identifier, value) => ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
-      case clause => clause
+
+    val nestedObject = insertNested(desugaredFields, ObjectExpr(Vector.empty))
+
+    val updatedClauses = (nestedObject.clauses ++ otherClauses).map {
+      case ObjectExprClause(key: Identifier, value) =>
+        ObjectExprClauseOnValue(SymbolLiteral(key.name, key.meta), value)
+      case other: ObjectExprClauseOnValue => other
     }
+
     expr.copy(clauses = updatedClauses)
   }
 }
