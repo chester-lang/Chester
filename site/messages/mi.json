@@ -1,0 +1,35 @@
+{
+    "metadata": {
+        "title": "Chester",
+        "description": "Chester: He Reo Hōtaka"
+    },
+    "Home": {
+        "title": "Chester: He Reo Hōtaka"
+    },
+    "Footer": {
+        "footer": "Chester: He Reo Hōtaka © {year}"
+    },
+    "Header": {
+        "home": "Kāinga",
+        "download": "Tikiake",
+        "getStarted": "Tīmata",
+        "playground": "Papa Tākaro",
+        "documentation": "Tuhinga",
+        "close": "Katia",
+        "menu": "Rārangi Kai"
+    },
+    "GetStartedPage": {
+        "title": "Tīmata me Chester",
+        "introText": "Nau mai ki Chester! Whāia ēnei hipanga hei tīmatanga mō tōu reo hōtaka hou."
+    },
+    "DownloadPage": {
+        "title": "Tikiake Chester",
+        "introText": "Tikiake Chester mō tō punaha whakahaere.",
+        "downloadFor": "Tikiake mō {platform}"
+    },
+    "PlaygroundPage": {
+        "title": "Papa Tākaro",
+        "output": "Putanga",
+        "runCode": "Whakahaere"
+    }
+}
