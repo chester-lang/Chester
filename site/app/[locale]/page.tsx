@@ -64,8 +64,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
-      <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8">
-        <main className="flex flex-col gap-6 w-full max-w-4xl">
+      <div className="flex-grow flex flex-col items-center justify-start p-1 sm:p-2">
+        <main className="flex flex-col gap-2 w-full max-w-4xl mt-2 sm:mt-4">
           <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
           <div className="w-full h-[50vh] sm:h-[70vh] bg-black rounded">
             <XTerm ref={xtermRef} />
