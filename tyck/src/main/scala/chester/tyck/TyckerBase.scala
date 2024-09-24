@@ -119,12 +119,21 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def effectUnion(e1: Effects, e2: Effects): Effects = e1.merge(e2)
 
-  def collectLevel(xs: Seq[Term]): Term = {
-    require(xs.nonEmpty)
-    xs.reduceLeft {
-      case (Level(AbstractIntTerm(max)), Level(AbstractIntTerm(n))) => Level(AbstractIntTerm.from(max.max(n)))
-      case (max, Level(v: LocalVar)) => ??? // TODO: Handle them
-      case (max, _) => ??? // TODO
+  def collectLevel(levels: Seq[Term]): Term = {
+    require(levels.nonEmpty)
+    if (levels.contains(Levelω)) {
+      Levelω
+    } else {
+      levels.reduceLeft {
+        case (LevelFinite(AbstractIntTerm(max)), LevelFinite(AbstractIntTerm(n))) =>
+          LevelFinite(AbstractIntTerm.from(max.max(n)))
+        case (level, LevelFinite(v: LocalVar)) =>
+          // Handle LocalVar case appropriately
+          ???
+        case (level, _) =>
+          // Handle other cases or throw an error
+          ???
+      }
     }
   }
 

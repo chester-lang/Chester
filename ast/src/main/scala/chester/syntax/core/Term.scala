@@ -177,15 +177,24 @@ case object LevelType extends TypeTerm {
   override def descent(f: Term => Term): Term = this
 }
 
-case class Level(n: Term) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Level" + n)
+sealed trait Level extends Term derives ReadWriter
 
-  override def descent(f: Term => Term): Term = thisOr(Level(f(n)))
+case class LevelFinite(n: Term) extends Level {
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    Doc.text("Level(") <> n.toDoc <> Doc.text(")")
+
+  override def descent(f: Term => Term): LevelFinite =
+    thisOr(LevelFinite(f(n)))
 }
 
-val Levelω = Level(IntegerTerm(-11111)) // TODO
+case object Levelω extends Level {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Levelω")
 
-val Level0 = Level(IntegerTerm(0))
+  override def descent(f: Term => Term): Levelω.type = this
+}
+
+// Define Level0 using LevelFinite
+val Level0 = LevelFinite(IntegerTerm(0))
 
 val Type0 = Type(Level0)
 
