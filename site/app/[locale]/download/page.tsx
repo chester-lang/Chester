@@ -12,10 +12,10 @@ export default function DownloadPage() {
                     <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
                     <p className="text-center">{t('introText')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <DownloadButton platform="Windows" url='https://example.com/chester-windows.exe' />
-                        <DownloadButton platform="macOS" url='https://example.com/chester-macos.dmg' />
-                        <DownloadButton platform="Linux" url='https://example.com/chester-linux.tar.gz' />
-                        <DownloadButton platform="Source Code" url='https://github.com/chester-lang/chester' />
+                        <DownloadButton platform="Windows" url='https://github.com/chester-lang/chester/releases/download/snapshot-windows/chester.exe' architecture="x86_64" />
+                        <DownloadButton platform="macOS" url='https://github.com/chester-lang/chester/releases/download/snapshot-macos/chester' architecture="aarch64" />
+                        <DownloadButton platform="Linux" url='https://github.com/chester-lang/chester/releases/download/snapshot-linux/chester' architecture="x86_64" />
+                        <DownloadButton platform="Source Code" url='https://github.com/chester-lang/chester' architecture="N/A" />
                     </div>
                 </main>
             </div>
@@ -23,7 +23,7 @@ export default function DownloadPage() {
     );
 }
 
-function DownloadButton({ platform, url }: { platform: string, url: string }) {
+function DownloadButton({ platform, url, architecture }: { platform: string, url: string, architecture: string }) {
     const t = useTranslations('DownloadPage');
     return (
         <a
@@ -31,7 +31,7 @@ function DownloadButton({ platform, url }: { platform: string, url: string }) {
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded text-center"
             download
         >
-            {t('downloadFor', { platform })}
+            {t('downloadFor', { platform })} - {t('cliSingleFile')} ({architecture})
         </a>
     );
 }

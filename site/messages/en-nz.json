@@ -25,7 +25,8 @@
     "DownloadPage": {
         "title": "Download Chester",
         "introText": "Download Chester for your operating system.",
-        "downloadFor": "Download for {platform}"
+        "downloadFor": "Download for {platform}",
+        "cliSingleFile": "CLI Single File Executable"
     },
     "PlaygroundPage": {
         "title": "Playground",
