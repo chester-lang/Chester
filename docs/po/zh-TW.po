@@ -1,20 +1,84 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: The Chester Programming Language\n"
-"POT-Creation-Date: 2024-09-24T17:33:49+12:00\n"
+"POT-Creation-Date: 2024-09-24T18:16:10+12:00\n"
 "PO-Revision-Date: 2024-09-24 17:37+1200\n"
 "Last-Translator:  <email@address.com>\n"
 "Language-Team: Language zh-TW\n"
+"Language: zh-TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh-TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/SUMMARY.md:1
 msgid "Summary"
 msgstr ""
 
-#: src/SUMMARY.md:3 src/chapter_1.md:1
+#: src/SUMMARY.md:3
 msgid "Chapter 1"
+msgstr ""
+
+#: src/chapter_1.md:1
+msgid "Chapter 1: Introduction to Chester"
+msgstr ""
+
+#: src/chapter_1.md:3
+msgid ""
+"Welcome to the Chester Programming Language documentation! Chester is a "
+"modern, expressive language designed to combine the best features of "
+"functional and object-oriented programming paradigms."
+msgstr "Chester 是一種現代、表達力強的程式語言，結合了函數式和物件導向程式設計的優點。"
+
+#: src/chapter_1.md:5
+msgid "What is Chester?"
+msgstr "Chester 是什麼？"
+
+#: src/chapter_1.md:7
+msgid ""
+"Chester is a statically-typed language that aims to provide a balance "
+"between expressiveness and safety. It draws inspiration from languages like "
+"Scala, Haskell, and Rust, while introducing its own unique features."
+msgstr "Chester 是一種靜態類型語言，旨在提供表達力和安全性的平衡。它從像 Scala、Haskell 和 Rust 的語言中汲取靈感，同時引入了自己的獨特功能。"
+
+#: src/chapter_1.md:9
+msgid "Some key characteristics of Chester include:"
+msgstr "Chester 的一些關鍵特性包括："
+
+#: src/chapter_1.md:11
+msgid "Strong type system with type inference"
+msgstr "強大的類型系統和類型推斷"
+
+#: src/chapter_1.md:12
+msgid "Support for both functional and object-oriented programming styles"
+msgstr "支援函數式和物件導向程式設計風格"
+
+#: src/chapter_1.md:13
+msgid "Pattern matching and algebraic data types"
+msgstr "模式匹配和代數數據類型"
+
+#: src/chapter_1.md:14
+msgid "Effect system for managing side effects"
+msgstr "效果系統用於管理副作用"
+
+#: src/chapter_1.md:15
+msgid "Unicode support, allowing for expressive identifiers"
+msgstr "Unicode 支援，允許表達性識別符"
+
+#: src/chapter_1.md:17
+msgid "A Glimpse of Chester"
+msgstr "Chester 的一瞥"
+
+#: src/chapter_1.md:19
+msgid ""
+"Let's take a look at a simple Chester program to get a feel for the language:"
+msgstr "讓我們看看一個簡單的 Chester 程式來感受一下這種語言："
+
+#: src/chapter_1.md:21
+msgid ""
+"```chester\n"
+"module 😿😿;\n"
+"\n"
+"def me: String = \"インターネット・エンジェル\";\n"
+"```"
 msgstr ""

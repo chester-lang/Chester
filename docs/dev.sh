@@ -7,7 +7,7 @@ show_usage() {
     echo "Commands:"
     echo "  extract     Extract messages to POT file"
     echo "  init <lang> Initialize a new translation for the specified language"
-    echo "  update      Update existing translations"
+    echo "  update      Extract & update existing translations"
     echo "  build [lang] Build the book for the specified language (or default if not specified)"
     echo "  serve [lang] Serve the book for the specified language (or default if not specified)"
     echo "  normalize   Normalize existing PO files"
@@ -31,6 +31,7 @@ init_translation() {
 
 # Function to update existing translations
 update_translations() {
+    extract_messages
     for po_file in po/*.po; do
         msgmerge --update "$po_file" po/messages.pot
     done

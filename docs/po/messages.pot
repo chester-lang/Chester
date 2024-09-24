@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: The Chester Programming Language\n"
-"POT-Creation-Date: 2024-09-24T17:33:49+12:00\n"
+"POT-Creation-Date: 2024-09-24T18:16:10+12:00\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,71 @@ msgstr ""
 msgid "Summary"
 msgstr ""
 
-#: src/SUMMARY.md:3 src/chapter_1.md:1
+#: src/SUMMARY.md:3
 msgid "Chapter 1"
+msgstr ""
+
+#: src/chapter_1.md:1
+msgid "Chapter 1: Introduction to Chester"
+msgstr ""
+
+#: src/chapter_1.md:3
+msgid ""
+"Welcome to the Chester Programming Language documentation! Chester is a "
+"modern, expressive language designed to combine the best features of "
+"functional and object-oriented programming paradigms."
+msgstr ""
+
+#: src/chapter_1.md:5
+msgid "What is Chester?"
+msgstr ""
+
+#: src/chapter_1.md:7
+msgid ""
+"Chester is a statically-typed language that aims to provide a balance "
+"between expressiveness and safety. It draws inspiration from languages like "
+"Scala, Haskell, and Rust, while introducing its own unique features."
+msgstr ""
+
+#: src/chapter_1.md:9
+msgid "Some key characteristics of Chester include:"
+msgstr ""
+
+#: src/chapter_1.md:11
+msgid "Strong type system with type inference"
+msgstr ""
+
+#: src/chapter_1.md:12
+msgid "Support for both functional and object-oriented programming styles"
+msgstr ""
+
+#: src/chapter_1.md:13
+msgid "Pattern matching and algebraic data types"
+msgstr ""
+
+#: src/chapter_1.md:14
+msgid "Effect system for managing side effects"
+msgstr ""
+
+#: src/chapter_1.md:15
+msgid "Unicode support, allowing for expressive identifiers"
+msgstr ""
+
+#: src/chapter_1.md:17
+msgid "A Glimpse of Chester"
+msgstr ""
+
+#: src/chapter_1.md:19
+msgid ""
+"Let's take a look at a simple Chester program to get a feel for the language:"
+msgstr ""
+
+#: src/chapter_1.md:21
+msgid ""
+"```chester\n"
+"module 😿😿;\n"
+"\n"
+"def me: String = \"インターネット・エンジェル\";\n"
+"```"
 msgstr ""
 
