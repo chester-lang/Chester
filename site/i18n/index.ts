@@ -21,10 +21,10 @@ export async function getMessages(locale: string) {
 }
 
 export const LOCALE_NAMES = {
-  'en-nz': 'English (Aotearoa, New Zealand)',
+  'en-nz': 'English',
   'fr': 'Français',
   'zh-tw': '漢語',
-  'zh-sg': '中文 (新加坡)',
+  'zh-sg': '中文',
   'de': 'Deutsch'
 } as const;
 
