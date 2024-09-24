@@ -85,21 +85,23 @@ jobs:
         run: npm run build
         working-directory: ./site
 
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v2
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          mdbook-version: 'latest'
+          # Only save the cache on the main branch to avoid PRs filling
+          # up the cache.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          key: mdbook
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-
-      - name: Install mdbook-i18n-helpers
+      - name: Install Gettext
         run: |
-          cargo install mdbook-i18n-helpers
+          sudo apt update
+          sudo apt install gettext
+
+      - name: Install mdbook and mdbook-i18n-helpers
+        run: |
+          cargo install mdbook-i18n-helpers --locked --version 0.3.5
+          cargo install mdbook --locked --version 0.4.40
 
       - name: Build documentation
         run: |
