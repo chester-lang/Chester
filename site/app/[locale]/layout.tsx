@@ -31,8 +31,6 @@ export async function generateStaticParams() {
   return SUPPORTED_LOCALES.map((locale) => ({ locale }))
 }
 
-
-
 export default async function RootLayout({
   children,
   params: { locale },
@@ -41,10 +39,10 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className='bg-gray-100'>
+      <body className="bg-white text-black dark:bg-gray-900 dark:text-white">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Header />
-          <div className='p-5'>
+          <div className="p-5">
             {children}
           </div>
           <Footer />

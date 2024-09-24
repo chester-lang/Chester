@@ -6,10 +6,10 @@ import { startRepl, startReplPty, startReplReadline } from "../../generated/main
 import "../../types/main.d.ts";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
-import { useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
-  const t = useTranslations('Home')
+  const t = useTranslations('Home');
   const xtermRef = useRef<any>(null);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function Home() {
         const fitAddon = new FitAddon();
         terminal.loadAddon(fitAddon);
         fitAddon.fit();
-        if(false){
+        if (false) {
           startRepl(terminal);
         }else if(false){
           // @ts-expect-error xterm-pty types are not recognized
@@ -31,20 +31,20 @@ export default function Home() {
           const { master, slave } = openpty();
           terminal.loadAddon(master);
           startReplPty(slave);
-        }else{
+        } else {
           const rl = new Readline();
           terminal.loadAddon(rl);
           startReplReadline(rl);
         }
         terminal.focus();
       }
-    }
+    };
     initTerminal();
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+      <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8">
         <main className="flex flex-col gap-6 w-full max-w-4xl">
           <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
           <div className="w-full h-[50vh] sm:h-[70vh] bg-black rounded">
