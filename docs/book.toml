@@ -10,3 +10,9 @@ after = ["links"]
 
 [build]
 extra-watch-dirs = ["po"]
+
+[output.html]
+curly-quotes = true
+additional-css = [
+  "theme/css/language-picker.css",
+]
