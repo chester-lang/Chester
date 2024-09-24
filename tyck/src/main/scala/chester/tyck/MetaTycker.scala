@@ -36,20 +36,51 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
   }
 
-  def zonkMetas(term: Term): Term = {
-    val metas = term.mapFlatten {
-      case meta: MetaTerm => Vector(meta)
-      case _ => Vector()
-    }.distinctBy(_.uniqId)
+  def collectMetaTerms(term: Term): Set[MetaTerm] = {
+    var metas = Set.empty[MetaTerm]
 
+    def traverse(t: Term): Unit = t match {
+      case meta: MetaTerm =>
+        metas += meta
+      case _ =>
+        t.descent(x=>{
+          traverse(x)
+          x
+        })
+        ()
+    }
+
+    traverse(term)
+    metas
+  }
+
+  def zonkMetas(term: Term): Term = {
+    // Collect all MetaTerms in the term
+    val metas = collectMetaTerms(term).toVector.distinctBy(_.uniqId)
+
+    // Fetch constraints related to these MetaTerms
     val relatedConstraints = tyck.getState.constraints.filter(c => metas.exists(_.uniqId == c.metaVar.uniqId))
+
+    // Solve the constraints before substitution
     solveConstraints(metas, relatedConstraints)
 
-    val subst: Seq[(MetaTerm, Term)] = metas.map { meta =>
-      val judge = zonkMeta(meta)
-      meta -> judge.wellTyped
+    val subst = tyck.getState.subst
+
+    def substitute(term: Term, visited: Set[UniqId] = Set.empty): Term = term match {
+      case meta: MetaTerm =>
+        if (visited.contains(meta.uniqId)) {
+          // Prevent infinite recursion in case of cyclic substitutions
+          meta
+        } else {
+          subst.get(meta.uniqId) match {
+            case Some(judge) => substitute(judge.wellTyped, visited + meta.uniqId)
+            case None => meta
+          }
+        }
+      case _ => term.descent(subTerm => substitute(subTerm, visited))
     }
-    term.substitute(subst)
+
+    substitute(term)
   }
 
   def zonkMetas(judge: Judge): Judge = {
@@ -60,54 +91,62 @@ trait MetaTycker[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   private def solveConstraints(metas: Vector[MetaTerm], constraints: Vector[MetaConstraint]): Unit = {
-    // Partition metas into those with constraints and those without
-    val (metasWithConstraints, metasWithoutConstraints) = metas.partition { meta =>
-      constraints.exists {
-        case MetaConstraint.TyRange(`meta`, _, _) => true
-        case _                                    => false
+    val results = metas.map { meta =>
+      tyck.getState.subst.get(meta.uniqId) match {
+        case Some(existingJudge) =>
+          (meta, existingJudge)
+        case None =>
+          val metaConstraints = constraints.collect {
+            case c @ MetaConstraint.TyRange(`meta`, _, _) => c
+          }
+
+          val (lowers, uppers) = metaConstraints.foldLeft((Vector.empty[Judge], Vector.empty[Judge])) {
+            case ((lowerAcc, upperAcc), MetaConstraint.TyRange(_, lower, upper)) =>
+              (lowerAcc ++ lower.toVector, upperAcc ++ upper.toVector)
+          }
+
+          val solution = if (lowers.nonEmpty || uppers.nonEmpty) {
+            computeSolution(meta, lowers, uppers)
+          } else {
+            // Default to AnyType0 when no constraints or substitutions exist
+            Judge(AnyType0, Typeω, NoEffect)
+          }
+
+          (meta, solution)
       }
-    }
-
-    // Process metas with constraints first
-    val orderedMetas = metasWithConstraints ++ metasWithoutConstraints
-
-    val results = orderedMetas.map { meta =>
-      val metaConstraints = constraints.collect {
-        case c @ MetaConstraint.TyRange(`meta`, _, _) => c
-      }
-
-      val (lowers, uppers) = metaConstraints.foldLeft((Vector.empty[Judge], Vector.empty[Judge])) {
-        case ((lowerAcc, upperAcc), MetaConstraint.TyRange(_, lower, upper)) =>
-          (lowerAcc ++ lower.toVector, upperAcc ++ upper.toVector)
-      }
-
-      val lowerBound = lowers.reduceOption { (a, b) =>
-        val commonTy = this.common(a.wellTyped, b.wellTyped)
-        Judge(commonTy, Typeω, NoEffect)
-      }
-
-      val upperBound = uppers.reduceOption { (a, b) =>
-        val unifiedTy = this.unifyTy(a.wellTyped, b.wellTyped)
-        Judge(unifiedTy, Typeω, NoEffect)
-      }
-
-      val solution = (lowerBound, upperBound) match {
-        case (Some(lower), Some(upper)) =>
-          // Ensure lower ≤ solution ≤ upper
-          val candidate = if (this.compareTy(lower.wellTyped, upper.wellTyped) == Trilean.True) lower.wellTyped else upper.wellTyped
-          Judge(candidate, Typeω, NoEffect)
-        case (Some(bound), None) => bound
-        case (None, Some(bound)) => bound
-        case (None, None)        => Judge(AnyType0, Type0, NoEffect)
-      }
-
-      (meta, solution)
     }
 
     tyck.updateState { state =>
-      val newSubst = state.subst ++ results.map { case (meta, judge) => meta.uniqId -> judge }
+      val newSubst = state.subst ++ results.collect {
+        case (meta, judge) if judge.wellTyped != meta => meta.uniqId -> judge
+      }
       val remainingConstraints = state.constraints.filterNot(c => metas.exists(_.uniqId == c.metaVar.uniqId))
       state.copy(subst = newSubst, constraints = remainingConstraints)
+    }
+  }
+
+  def computeSolution(meta: MetaTerm, lowers: Vector[Judge], uppers: Vector[Judge]): Judge = {
+    (lowers, uppers) match {
+      case (Nil, Nil) =>
+        // No constraints; this case should not occur here
+        Judge(AnyType0, Typeω, NoEffect)
+      case _ =>
+        // Combine lower and upper bounds to find the best solution
+        val lowerType = lowers.map(_.wellTyped).reduceOption(this.common)
+        val upperType = uppers.map(_.wellTyped).headOption // TODO
+
+        (lowerType, upperType) match {
+          case (Some(lower), Some(upper)) =>
+            if (this.compareTy(lower, upper) == Trilean.True) {
+              Judge(lower, Typeω, NoEffect)
+            } else {
+              // If lower is not a subtype of upper, default to AnyType0
+              Judge(AnyType0, Typeω, NoEffect)
+            }
+          case (Some(ty), None) => Judge(ty, Typeω, NoEffect)
+          case (None, Some(ty)) => Judge(ty, Typeω, NoEffect)
+          case _ => Judge(AnyType0, Typeω, NoEffect)
+        }
     }
   }
 
