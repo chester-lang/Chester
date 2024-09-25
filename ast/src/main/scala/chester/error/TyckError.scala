@@ -236,3 +236,7 @@ case class MissingBodyError(cause: Identifier) extends TyckError {
   override def toDoc(implicit options: PrettierOptions): Doc =
     t"Missing body expression for '${cause.name}'"
 }
+
+case class UnsupportedTermError(cause: Term) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported term"
+}

@@ -481,7 +481,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   def synthesizeTyTerm(term: Term): JudgeNoEffect = {
     term match {
-      case _ => JudgeNoEffect(term, coreTycker.inferTyNoEffect(term)) // TODO
+      case _ => JudgeNoEffect(term, coreTycker.inferNoEffect(term)) // TODO
     }
   }
 

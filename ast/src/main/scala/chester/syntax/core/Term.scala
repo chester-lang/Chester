@@ -176,10 +176,12 @@ case class Type(level: Term) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(Type(f(level)))
 }
 
-case object LevelType extends TypeTerm {
+case object LevelType extends TypeTerm with WithType {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
 
   override def descent(f: Term => Term): Term = this
+
+  override def ty: Term = Type0
 }
 
 sealed trait Level extends Term derives ReadWriter
@@ -249,32 +251,45 @@ object NaturalTerm {
   def apply(value: BigInt): AbstractIntTerm = AbstractIntTerm.from(value)
 }
 
-sealed trait TypeTerm extends Term derives ReadWriter
+sealed trait TypeTerm extends Term derives ReadWriter {
+}
 
-case object IntegerType extends TypeTerm {
+sealed trait WithType extends Term derives ReadWriter {
+  def ty: Term
+}
+
+case object IntegerType extends TypeTerm with WithType {
   override def descent(f: Term => Term): IntegerType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 // int of 64 bits or more
-case object IntType extends TypeTerm {
+case object IntType extends TypeTerm with WithType {
   override def descent(f: Term => Term): IntType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 // unsigned int of 64 bits or more
-case object UIntType extends TypeTerm {
+case object UIntType extends TypeTerm with WithType {
   override def descent(f: Term => Term): UIntType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
-case object NaturalType extends TypeTerm {
+case object NaturalType extends TypeTerm with WithType {
   override def descent(f: Term => Term): NaturalType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
@@ -295,51 +310,65 @@ case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value, ColorProfile.literalColor)
 }
 
-case object RationalType extends TypeTerm {
+case object RationalType extends TypeTerm with WithType {
   override def descent(f: Term => Term): RationalType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 // float of 32 bits or more
-case object FloatType extends TypeTerm {
+case object FloatType extends TypeTerm with WithType {
   override def descent(f: Term => Term): FloatType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
-case object StringType extends TypeTerm {
+case object StringType extends TypeTerm with WithType {
   override def descent(f: Term => Term): StringType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
-case object SymbolType extends TypeTerm {
+case object SymbolType extends TypeTerm with WithType {
   override def descent(f: Term => Term): SymbolType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
-case class AnyType(level: Term) extends TypeTerm derives ReadWriter {
+case class AnyType(level: Term) extends TypeTerm  with WithType derives ReadWriter {
   override def descent(f: Term => Term): AnyType = thisOr(copy(level = f(level)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any", ColorProfile.typeColor)
+
+  override def ty: Term = Type(level)
 }
 
 def AnyType0 = AnyType(Level0)
 
-case object NothingType extends TypeTerm {
+case object NothingType extends TypeTerm with WithType {
   override def descent(f: Term => Term): NothingType.type = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing", ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
-case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm {
+case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm  with WithType {
   override def descent(f: Term => Term): LiteralType = copy(literal = literal.descent(f).asInstanceOf[IntegerTerm | SymbolTerm | StringTerm | RationalTerm])
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString, ColorProfile.typeColor)
+
+  override def ty: Term = Type0
 }
 
 case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
