@@ -112,6 +112,7 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
     _.withLTO(LTO.thin)
       .withMode(Mode.releaseFast)
       .withGC(GC.commix)
+      .withMultithreading(false) // for Termux
   }
 })
 
