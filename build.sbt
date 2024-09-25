@@ -117,7 +117,7 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   }
 })
 
-ThisBuild / nativeConfig ~= (if(supportNativeBuildForTermux) { _.withMultithreading(false) } else (x=>x))
+ThisBuild / nativeConfig ~= (if(supportNativeBuildForTermux) { _.withMultithreading(false).withGC(GC.immix) } else (x=>x))
 
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
