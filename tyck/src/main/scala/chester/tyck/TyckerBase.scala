@@ -279,6 +279,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     var checker = this
     var effect = NoEffect
     var localCtx = checker.localCtx
+    var stmts: Vector[StmtTerm] = Vector.empty
 
     // Update defBindings with actual types if needed
     for ((name, (tyOpt, varId, letDef)) <- defBindings) {
@@ -330,11 +331,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               }
 
               // Typecheck the body
-              val judge = bodyOpt match {
+              val body = bodyOpt match {
                 case Some(expr) =>
                   val judge = checker.inherit(expr, ty, effects)
                   effect = checker.effectUnion(effect, judge.effects)
-                  judge
+                  judge.wellTyped
                 case None =>
                   val err = MissingBodyError(Identifier(name))
                   tyck.report(err)
@@ -346,6 +347,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               val idVar = LocalVar(name, ty, varId)
               localCtx = localCtx.extend(idVar)
               checker = checker.copy(localCtx = localCtx)
+
+              stmts = stmts :+ LetStmtTerm(name, body, ty)
 
             case LetDefType.Def =>
               // Process def binding
@@ -368,11 +371,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               }
 
               // Typecheck the body
-              val judge = bodyOpt match {
+              val body = bodyOpt match {
                 case Some(expr) =>
                   val judge = checker.inherit(expr, ty, effects)
                   effect = checker.effectUnion(effect, judge.effects)
-                  judge
+                  judge.wellTyped
                 case None =>
                   val err = MissingBodyError(Identifier(name))
                   tyck.report(err)
@@ -386,11 +389,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
                 localCtx = localCtx.extend(idVar)
                 checker = checker.copy(localCtx = localCtx)
               }
+
+              stmts = stmts :+ DefStmtTerm(name, body, ty)
           }
 
         case ExprStmt(expr, _) =>
           val judge = checker.synthesize(expr, effects)
           effect = checker.effectUnion(effect, judge.effects)
+          stmts = stmts :+ ExprStmtTerm(judge.wellTyped)
 
         case _ => // Handle other statement types if needed
           ()
@@ -398,15 +404,17 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
 
     // Process the last expression in the block if it exists
-    block.tail match {
+    val (lastExpr, blockTy) = block.tail match {
       case Some(lastExpr) =>
         val judge = checker.synthesize(lastExpr, effects)
         effect = checker.effectUnion(effect, judge.effects)
-        Judge(judge.wellTyped, judge.ty, effect)
+        (judge.wellTyped, judge.ty)
       case None =>
-        // If no last expression, return Unit
-        Judge(UnitTerm, UnitType, effect)
+        (UnitTerm, UnitType)
     }
+
+    val blockTerm = BlockTerm(stmts, lastExpr)
+    Judge(blockTerm, blockTy, effect)
   }
 
   def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
