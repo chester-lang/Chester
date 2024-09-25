@@ -191,6 +191,45 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     Judge(objectTerm, objectType, combinedEffect)
   }
 
+  // Helper functions to collect all identifiers used in an expression
+  // TODO: correctly implement this. This is a naive implementation that collects all identifiers
+  def traverse(identifiers: collection.mutable.Set[Name], e: Expr): Unit = e match {
+    case Identifier(name, _) =>
+      identifiers += name
+    case FunctionExpr(telescope, resultTy, body, _, _) =>
+      telescope.foreach(_.args.foreach(arg => traverse(identifiers, arg.name)))
+      resultTy.foreach(_.inspect(traverse(identifiers,_)))
+      body.foreach(_.inspect(traverse(identifiers,_)))
+    case Block(heads, lastExpr, _) =>
+      heads.foreach {
+        case stmt: Stmt => traverseStmt(identifiers, stmt)
+        case expr: Expr => traverse(identifiers, expr)
+      }
+      lastExpr.foreach(_.inspect(traverse(identifiers,_)))
+    case _ =>
+      e.inspect(traverse(identifiers,_))
+  }
+  def traverseStmt(identifiers: collection.mutable.Set[Name], stmt: Stmt): Unit = stmt match {
+    case LetDefStmt(_, defined, tyOpt, bodyOpt, _, _) =>
+      defined.bindings.foreach(b => identifiers += b.name)
+      tyOpt.foreach(traverse(identifiers,_))
+      bodyOpt.foreach(traverse(identifiers,_))
+    case ExprStmt(expr, _) => traverse(identifiers,expr)
+    case _ => ()
+  }
+  def collectIdentifiers(expr: Expr): Set[Name] = {
+    val identifiers = collection.mutable.Set[Name]()
+  
+    traverse(identifiers, expr)
+    identifiers.toSet
+  }
+  def collectIdentifiersInStmt(stmt: Stmt): Set[Name] = stmt match {
+    case ExprStmt(expr, _) => collectIdentifiers(expr)
+    case LetDefStmt(_, _, tyOpt, bodyOpt, _, _) =>
+      tyOpt.map(collectIdentifiers).getOrElse(Set.empty) ++
+        bodyOpt.map(collectIdentifiers).getOrElse(Set.empty)
+    case _ => Set.empty
+  }
   def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
     // Convert expressions to ExprStmt and collect all statements
     val heads: Vector[Stmt] = block.heads.map {
@@ -203,49 +242,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     val usedNames = collection.mutable.Set[Name]()
     val allNames = collection.mutable.Set[Name]()
     var foundForwardReferences = false
-
-    // Helper function to collect all identifiers used in an expression
-    // TODO: correctly implement this. This is a naive implementation that collects all identifiers
-    def collectIdentifiers(expr: Expr): Set[Name] = {
-      val identifiers = collection.mutable.Set[Name]()
-
-      def traverse(e: Expr): Unit = e match {
-        case Identifier(name, _) =>
-          identifiers += name
-        case FunctionExpr(telescope, resultTy, body, _, _) =>
-          telescope.foreach(_.args.foreach(arg => traverse(arg.name)))
-          resultTy.foreach(_.inspect(traverse))
-          body.foreach(_.inspect(traverse))
-        case Block(heads, lastExpr, _) =>
-          heads.foreach {
-            case stmt: Stmt => traverseStmt(stmt)
-            case expr: Expr => traverse(expr)
-          }
-          lastExpr.foreach(_.inspect(traverse))
-        case _ =>
-          e.inspect(traverse)
-      }
-
-      def traverseStmt(stmt: Stmt): Unit = stmt match {
-        case LetDefStmt(_, defined, tyOpt, bodyOpt, _, _) =>
-          defined.bindings.foreach(b => identifiers += b.name)
-          tyOpt.foreach(traverse)
-          bodyOpt.foreach(traverse)
-        case ExprStmt(expr, _) => traverse(expr)
-        case _ => ()
-      }
-
-      traverse(expr)
-      identifiers.toSet
-    }
-
-    def collectIdentifiersInStmt(stmt: Stmt): Set[Name] = stmt match {
-      case ExprStmt(expr, _) => collectIdentifiers(expr)
-      case LetDefStmt(_, _, tyOpt, bodyOpt, _, _) =>
-        tyOpt.map(collectIdentifiers).getOrElse(Set.empty) ++
-          bodyOpt.map(collectIdentifiers).getOrElse(Set.empty)
-      case _ => Set.empty
-    }
 
     // Collect all defined names (to detect uses)
     for (stmt <- heads) {
