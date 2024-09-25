@@ -54,14 +54,16 @@ def render(doc: ToDoc, w: Width)(using options: PrettierOptions, printer: DocPri
 
 // TODO: this is broken, please fix
 def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(using options: PrettierOptions): Doc = group {
-  docs match {
-    case Seq() => (begin.toDoc <> end.toDoc)
-    case Seq(head) => (begin.toDoc <> head.toDoc <> end.toDoc)
-    case Seq(head, tail) => (begin.toDoc <> group(head.toDoc <> sep.toDoc) </> tail.toDoc <> end.toDoc)
-    case Seq(head, tail*) =>
-      val init = (head.toDoc <> sep.toDoc)
-      val last = tail.foldRight(end) { (doc, acc) => doc.toDoc <> sep.toDoc </> acc.toDoc }
-      (begin.toDoc <> init <> last.toDoc)
+  docs.toList match {
+    case Nil =>
+      begin.toDoc <> end.toDoc
+    case head :: Nil =>
+      begin.toDoc <> head.toDoc <> end.toDoc
+    case head :: tail =>
+      val content = tail.foldLeft(head.toDoc) { (acc, doc) =>
+        acc <> sep.toDoc </> doc.toDoc
+      }
+      begin.toDoc <> content <> end.toDoc
   }
 }
 
