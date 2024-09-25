@@ -50,6 +50,10 @@ object MetaFactory {
 
 sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
   def descent(operator: Expr => Expr): Expr = this
+  final def inspect(operator: Expr=>Unit): Expr = descent{x=>
+    operator(x)
+    x
+  }
 
   final def descentRecursive(operator: Expr => Expr): Expr = {
     operator(this.descent(_.descentRecursive(operator)))
