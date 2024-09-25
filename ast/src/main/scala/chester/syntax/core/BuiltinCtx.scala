@@ -17,48 +17,82 @@ object Imports {
   val Empty: Imports = Vector.empty
 }
 
-case class Context(map: Map[Name, CtxItem], varMap: Map[UniqId, CtxItem], imports: Imports = Imports.Empty, modules: ResolvingModules = ResolvingModules.Empty) {
+case class Context(
+  map: Map[Name, UniqId],
+  varMap: Map[UniqId, CtxItem],
+  imports: Imports = Imports.Empty,
+  modules: ResolvingModules = ResolvingModules.Empty
+) {
 
-  def get(id: Name): Option[CtxItem] = map.get(id)
+  def get(id: Name): Option[CtxItem] = {
+    map.get(id).flatMap(varMap.get)
+  }
 
   def getByVarId(varId: UniqId): Option[CtxItem] = varMap.get(varId)
-  
+
   def extend(name: LocalVar): Context = {
     val id = name.id
+    val varId = name.uniqId
     val item = CtxItem(name, JudgeNoEffect(name, name.ty))
-    assert(!varMap.contains(name.uniqId))
-    new Context(map + (id -> item), varMap + (name.uniqId -> item), imports, modules)
+    assert(!varMap.contains(varId))
+    new Context(
+      map + (id -> varId),
+      varMap + (varId -> item),
+      imports,
+      modules
+    )
   }
-  // extend or change
+
+  // Extend or update existing entry
   def extendOrSet(name: LocalVar): Context = {
     val id = name.id
+    val varId = name.uniqId
     val item = CtxItem(name, JudgeNoEffect(name, name.ty))
-    new Context(map + (id -> item), varMap + (name.uniqId -> item), imports, modules)
+    new Context(
+      map + (id -> varId),
+      varMap + (varId -> item),
+      imports,
+      modules
+    )
   }
 }
 
 object Context {
-  // TODO: fix varMap
-  private def apply(map: Map[Name, CtxItem]): Context = new Context(map, Map())
+  def apply(map: Map[Name, UniqId], varMap: Map[UniqId, CtxItem]): Context =
+    new Context(map, varMap)
 
-  def builtin: Context = Context(BuiltinCtx.builtinCtx)
+  def builtin: Context = {
+    val (map, varMap) = BuiltinCtx.builtinCtx
+    Context(map, varMap)
+  }
 }
 
 object BuiltinCtx {
-  def builtinItem(id: Name, value: Term, ty: Term): (Name, CtxItem) = {
+  def builtinItem(id: Name, value: Term, ty: Term): (Name, UniqId, CtxItem) = {
     val varId = UniqId.generate
     val name = ToplevelVarCall(QualifiedIDString.from(), id, ty, varId)
     val judge = JudgeNoEffect(value, ty)
-    (id, CtxItem(name, judge))
+    val item = CtxItem(name, judge)
+    (id, varId, item)
   }
 
-  val builtinCtx: Map[Name, CtxItem] = Map(
+  val builtinItems: Seq[(Name, UniqId, CtxItem)] = Seq(
     builtinItem("Int", IntType, Type0),
     builtinItem("Integer", IntegerType, Type0),
     builtinItem("Float", FloatType, Type0),
     builtinItem("Rational", RationalType, Type0),
     builtinItem("String", StringType, Type0),
     builtinItem("Symbol", SymbolType, Type0),
-    builtinItem("List", ListF, TyToty),
+    builtinItem("List", ListF, TyToty)
   )
+
+  val map: Map[Name, UniqId] = builtinItems.map {
+    case (id, varId, _) => id -> varId
+  }.toMap
+
+  val varMap: Map[UniqId, CtxItem] = builtinItems.map {
+    case (_, varId, item) => varId -> item
+  }.toMap
+
+  def builtinCtx: (Map[Name, UniqId], Map[UniqId, CtxItem]) = (map, varMap)
 }
