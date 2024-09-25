@@ -644,12 +644,31 @@ object MetaTerm {
   def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, UniqId.generate, ty)
 }
 
-sealed trait StmtTerm derives ReadWriter {
+sealed trait StmtTerm extends ToDoc derives ReadWriter {
+  def descent(f: Term => Term): StmtTerm = ???
+}
 
+case class LetStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
+  override def descent(f: Term => Term): StmtTerm = copy(value = f(value), ty = f(ty))
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    Doc.text(s"let $name: ") <> ty.toDoc <> Doc.text(s" = ") <> value.toDoc // TODO: fix this
+  }
+}
+
+case class DefStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
+  override def descent(f: Term => Term): StmtTerm = copy(value = f(value), ty = f(ty))
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    Doc.text(s"def $name: ") <> ty.toDoc <> Doc.text(s" = ") <> value.toDoc // TODO: fix this
+  }
+}
+
+case class ExprStmtTerm(expr: Term) extends StmtTerm {
+  override def descent(f: Term => Term): StmtTerm = copy(expr = f(expr))
+  override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
 }
 
 case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMeta = None) extends StmtTerm {
-
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("return") <+> value.toDoc
 }
 
 case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Term {
@@ -670,6 +689,16 @@ case class TupleTerm(values: Vector[Term]) extends Term {
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     Doc.wrapperlist(Docs.`(`, Docs.`)`, ",")(values *)
+  }
+}
+
+case class BlockTerm(stmts: Vector[StmtTerm], value: Term) extends Term {
+  override def descent(f: Term => Term): BlockTerm = thisOr(copy(stmts = stmts.map {
+    _.descent(f)
+  }, value = f(value)))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, ";")((stmts.map(_.toDoc) :+ value.toDoc) *)
   }
 }
 
