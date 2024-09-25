@@ -227,3 +227,12 @@ case class TupleArityMismatchError(provided: Int, expected: Int, cause: Expr) ex
     t"Tuple arity mismatch: expected $expected elements but got $provided"
 
 }
+case class MissingTypeAnnotationError(cause: Identifier) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    t"Missing type annotation for forward-referenced 'def' '${cause.name}'"
+}
+
+case class MissingBodyError(cause: Identifier) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    t"Missing body expression for '${cause.name}'"
+}
