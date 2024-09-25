@@ -104,6 +104,7 @@ case class LocalCtx(ctx: Context = Context.builtin) {
   def resolve(id: UniqId): Option[CtxItem] = ctx.getByVarId(id)
 
   def extend(name: LocalVar): LocalCtx = copy(ctx = ctx.extend(name))
+  def extendOrSet(name: LocalVar): LocalCtx = copy(ctx = ctx.extendOrSet(name))
 }
 
 object LocalCtx {

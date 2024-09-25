@@ -386,7 +386,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               if (tyAnnotationOpt.isEmpty) {
                 // Update the type in localCtx
                 val idVar = LocalVar(name, ty, varId)
-                localCtx = localCtx.extend(idVar)
+                localCtx = localCtx.extendOrSet(idVar)
                 checker = checker.copy(localCtx = localCtx)
               }
 

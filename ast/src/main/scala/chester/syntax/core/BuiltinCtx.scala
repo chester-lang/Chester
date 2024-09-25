@@ -29,6 +29,12 @@ case class Context(map: Map[Name, CtxItem], varMap: Map[UniqId, CtxItem], import
     assert(!varMap.contains(name.uniqId))
     new Context(map + (id -> item), varMap + (name.uniqId -> item), imports, modules)
   }
+  // extend or change
+  def extendOrSet(name: LocalVar): Context = {
+    val id = name.id
+    val item = CtxItem(name, JudgeNoEffect(name, name.ty))
+    new Context(map + (id -> item), varMap + (name.uniqId -> item), imports, modules)
+  }
 }
 
 object Context {
