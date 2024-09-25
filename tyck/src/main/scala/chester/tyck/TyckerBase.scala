@@ -214,14 +214,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           identifiers += name
         case FunctionExpr(telescope, resultTy, body, _, _) =>
           telescope.foreach(_.args.foreach(arg => traverse(arg.name)))
-          resultTy.map(_.inspect(traverse))
-          body.map(_.inspect(traverse))
+          resultTy.foreach(_.inspect(traverse))
+          body.foreach(_.inspect(traverse))
         case Block(heads, lastExpr, _) =>
           heads.foreach {
             case stmt: Stmt => traverseStmt(stmt)
             case expr: Expr => traverse(expr)
           }
-          lastExpr.map(_.inspect(traverse))
+          lastExpr.foreach(_.inspect(traverse))
         case _ =>
           e.inspect(traverse)
       }
