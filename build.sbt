@@ -104,6 +104,8 @@ ThisBuild / assemblyMergeStrategy := {
     oldStrategy(x)
 }
 
+val supportNativeBuildForTermux = true
+
 ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   case mac if mac.contains("mac") => { // mac has some bugs with optimizations
     _.withGC(GC.commix)
@@ -112,9 +114,10 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
     _.withLTO(LTO.thin)
       .withMode(Mode.releaseFast)
       .withGC(GC.commix)
-      .withMultithreading(false) // for Termux
   }
 })
+
+ThisBuild / nativeConfig ~= (if(supportNativeBuildForTermux) { _.withMultithreading(false) } else (x=>x))
 
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -521,6 +524,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     libraryDependencies ++= Seq(
       "com.lihaoyi" %% "os-lib" % "0.10.4",
     ),
+    scalacOptions ++= (if(supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
