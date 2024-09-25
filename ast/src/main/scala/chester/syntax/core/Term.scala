@@ -113,12 +113,17 @@ sealed trait Term extends ToDoc derives ReadWriter {
   final def descentRecursive(f: Term => Term): Term = thisOr {
     f(descent(_.descentRecursive(f)))
   }
+  
+  def inspect(f: Term => Unit): Unit = {
+    descent { x =>
+      f(x)
+      x
+    }
+    ()
+  }
 
   def foreach(f: Term => Unit): Unit = {
-    descent(term => {
-      term.foreach(f)
-      term
-    })
+    inspect(_.foreach(f))
     f(this)
   }
 
@@ -670,6 +675,7 @@ case class TupleTerm(values: Vector[Term]) extends Term {
 
 // TODO: tuple?
 val UnitType = ObjectType(Vector.empty)
+val UnitTerm = ObjectTerm(Vector.empty)
 
 sealed trait ErasedType extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): ErasedType = this

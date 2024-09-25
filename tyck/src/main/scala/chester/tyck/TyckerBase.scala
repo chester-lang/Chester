@@ -190,219 +190,229 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
     Judge(objectTerm, objectType, combinedEffect)
   }
-def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
-  // Convert expressions to ExprStmt and collect all statements
-  val heads: Vector[Stmt] = block.heads.map {
-    case stmt: Stmt => stmt
-    case expr => ExprStmt(expr, expr.meta)
-  }
 
-  // First pass: Collect all `def` bindings and detect forward references
-  val defBindings = collection.mutable.Map[Name, (Option[Term], UniqId, LetDefStmt)]()
-  val usedNames = collection.mutable.Set[Name]()
-  val allNames = collection.mutable.Set[Name]()
-  var foundForwardReferences = false
-
-  // Helper function to collect all identifiers used in an expression
-  // TODO: correctly implement this. This is a naive implementation that collects all identifiers
-  def collectIdentifiers(expr: Expr): Set[Name] = {
-    val identifiers = collection.mutable.Set[Name]()
-    def traverse(e: Expr): Unit = e match {
-      case Identifier(name, _) =>
-        identifiers += name
-      case FunctionExpr(telescope, resultTy, body, _, _) =>
-        telescope.foreach(_.args.foreach(arg => traverse(arg.name)))
-        resultTy.foreach(traverse)
-        body.map(traverse)
-      case Block(heads, lastExpr, _) =>
-        heads.foreach {
-          case stmt: Stmt => traverseStmt(stmt)
-          case expr: Expr => traverse(expr)
-        }
-        lastExpr.foreach(traverse)
-      case _ => //e.children.foreach(traverse)
-      e.inspect({ x=>
-        x.foreach(traverse)
-      })
+  def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
+    // Convert expressions to ExprStmt and collect all statements
+    val heads: Vector[Stmt] = block.heads.map {
+      case stmt: Stmt => stmt
+      case expr => ExprStmt(expr, expr.meta)
     }
-    def traverseStmt(stmt: Stmt): Unit = stmt match {
-      case LetDefStmt(_, defined, tyOpt, bodyOpt, _, _) =>
-        defined.bindings.foreach(identifiers += _.name)
-        tyOpt.foreach(traverse)
-        bodyOpt.foreach(traverse)
-      case ExprStmt(expr, _) => traverse(expr)
-      case _ => ()
+
+    // First pass: Collect all `def` bindings and detect forward references
+    val defBindings = collection.mutable.Map[Name, (Option[Term], UniqId, LetDefStmt)]()
+    val usedNames = collection.mutable.Set[Name]()
+    val allNames = collection.mutable.Set[Name]()
+    var foundForwardReferences = false
+
+    // Helper function to collect all identifiers used in an expression
+    // TODO: correctly implement this. This is a naive implementation that collects all identifiers
+    def collectIdentifiers(expr: Expr): Set[Name] = {
+      val identifiers = collection.mutable.Set[Name]()
+
+      def traverse(e: Expr): Unit = e match {
+        case Identifier(name, _) =>
+          identifiers += name
+        case FunctionExpr(telescope, resultTy, body, _, _) =>
+          telescope.foreach(_.args.foreach(arg => traverse(arg.name)))
+          resultTy.map(_.inspect(traverse))
+          body.map(_.inspect(traverse))
+        case Block(heads, lastExpr, _) =>
+          heads.foreach {
+            case stmt: Stmt => traverseStmt(stmt)
+            case expr: Expr => traverse(expr)
+          }
+          lastExpr.map(_.inspect(traverse))
+        case _ =>
+          e.inspect(traverse)
+      }
+
+      def traverseStmt(stmt: Stmt): Unit = stmt match {
+        case LetDefStmt(_, defined, tyOpt, bodyOpt, _, _) =>
+          defined.bindings.foreach(b => identifiers += b.name)
+          tyOpt.foreach(traverse)
+          bodyOpt.foreach(traverse)
+        case ExprStmt(expr, _) => traverse(expr)
+        case _ => ()
+      }
+
+      traverse(expr)
+      identifiers.toSet
     }
-    traverse(expr)
-    identifiers.toSet
-  }
 
-  // Collect all defined names (to detect uses)
-  for (stmt <- heads) {
-    stmt match {
-      case LetDefStmt(LetDefType.Def, defined, _, _, _, _) =>
-        val name = defined.bindings.headOption.map(_.name).getOrElse(Name("unknown"))
-        allNames += name
-      case _ => ()
+    def collectIdentifiersInStmt(stmt: Stmt): Set[Name] = stmt match {
+      case ExprStmt(expr, _) => collectIdentifiers(expr)
+      case LetDefStmt(_, _, tyOpt, bodyOpt, _, _) =>
+        tyOpt.map(collectIdentifiers).getOrElse(Set.empty) ++
+          bodyOpt.map(collectIdentifiers).getOrElse(Set.empty)
+      case _ => Set.empty
     }
-  }
 
-  // Analyze statements to find forward references
-  for ((stmt, index) <- heads.zipWithIndex) {
-    stmt match {
-      case letDef@LetDefStmt(LetDefType.Def, defined, tyOpt, _, _, _) =>
-        val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
-        val varId = UniqId.generate
-        defBindings(name) = (tyOpt.map(_ => null), varId, letDef) // Placeholder for ty
-
-        // Check if the def is used before its definition
-        val remainingStmts = heads.slice(index + 1, heads.length)
-        val usedInRemaining = remainingStmts.exists { stmt =>
-          collectIdentifiersInStmt(stmt).contains(name)
-        }
-
-        if (usedInRemaining) {
-          usedNames += name
-          foundForwardReferences = true
-        }
-      case _ => ()
+    // Collect all defined names (to detect uses)
+    for (stmt <- heads) {
+      stmt match {
+        case LetDefStmt(LetDefType.Def, defined, _, _, _, _) =>
+          val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
+          allNames += name
+        case _ => ()
+      }
     }
-  }
 
-  // Second pass: Process statements
-  var checker = this
-  var effect = NoEffect
-  var localCtx = checker.localCtx
+    // Analyze statements to find forward references
+    for ((stmt, index) <- heads.zipWithIndex) {
+      stmt match {
+        case letDef@LetDefStmt(LetDefType.Def, defined, tyOpt, _, _, _) =>
+          val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
+          val varId = UniqId.generate
+          defBindings(name) = (tyOpt.map(_ => null), varId, letDef) // Placeholder for ty
 
-  // Update defBindings with actual types if needed
-  for ((name, (tyOpt, varId, letDef)) <- defBindings) {
-    val ty = tyOpt match {
-      case Some(_) => // Type annotation exists
-        tyOpt
-      case None => // Type annotation missing
-        if (usedNames.contains(name)) {
-          // Forward referenced def without type annotation
-          val err = MissingTypeAnnotationError(Identifier(name))
-          tyck.report(err)
-          return Judge(ErrorTerm(err), UnitType, NoEffect)
-        } else {
-          None // Type will be inferred when processing the def body
-        }
+          // Check if the def is used before its definition
+          val remainingStmts = heads.slice(index + 1, heads.length)
+          val usedInRemaining = remainingStmts.exists { stmt =>
+            collectIdentifiersInStmt(stmt).contains(name)
+          }
+
+          if (usedInRemaining) {
+            usedNames += name
+            foundForwardReferences = true
+          }
+        case _ => ()
+      }
     }
-    // Add to local context with a placeholder type if necessary
-    val placeholderTy = ty.getOrElse(MetaTerm(UniqId.generate))
-    val idVar = LocalVar(name, placeholderTy, varId)
-    localCtx = localCtx.extend(idVar)
-    checker = checker.copy(localCtx = localCtx)
-    defBindings(name) = (ty, varId, letDef) // Update with actual type
-  }
 
-  // Process statements in order
-  for (stmt <- heads) {
-    stmt match {
-      case LetDefStmt(kind, defined, tyOpt, bodyOpt, _, _) =>
-        val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
+    // Second pass: Process statements
+    var checker = this
+    var effect = NoEffect
+    var localCtx = checker.localCtx
 
-        kind match {
-          case LetDefType.Let =>
-            // Process let binding
-            val ty = tyOpt match {
-              case Some(tyExpr) =>
-                val Judge(wellTypedTy, _, _) = checker.checkType(tyExpr)
-                wellTypedTy
-              case None =>
-                bodyOpt match {
-                  case Some(expr) =>
-                    val judge = checker.synthesize(expr, effects)
-                    effect = checker.effectUnion(effect, judge.effects)
-                    judge.ty
-                  case None =>
-                    val err = MissingTypeAnnotationError(Identifier(name))
-                    tyck.report(err)
-                    return Judge(ErrorTerm(err), UnitType, NoEffect)
-                }
-            }
+    // Update defBindings with actual types if needed
+    for ((name, (tyOpt, varId, letDef)) <- defBindings) {
+      val ty = tyOpt match {
+        case Some(_) => // Type annotation exists
+          tyOpt
+        case None => // Type annotation missing
+          if (usedNames.contains(name)) {
+            // Forward referenced def without type annotation
+            val err = MissingTypeAnnotationError(Identifier(name))
+            tyck.report(err)
+            return Judge(ErrorTerm(err), UnitType, NoEffect)
+          } else {
+            None // Type will be inferred when processing the def body
+          }
+      }
+      // Add to local context with a placeholder type if necessary
+      val placeholderTy = ty.getOrElse(this.genTypeVariable())
+      val idVar = LocalVar(name, placeholderTy, varId)
+      localCtx = localCtx.extend(idVar)
+      checker = checker.copy(localCtx = localCtx)
+      defBindings(name) = (ty, varId, letDef) // Update with actual type
+    }
 
-            // Typecheck the body
-            val judge = bodyOpt match {
-              case Some(expr) =>
-                val judge = checker.inherit(expr, ty, effects)
-                effect = checker.effectUnion(effect, judge.effects)
-                judge
-              case None =>
-                val err = MissingBodyError(Identifier(name))
-                tyck.report(err)
-                return Judge(ErrorTerm(err), UnitType, NoEffect)
-            }
+    // Process statements in order
+    for (stmt <- heads) {
+      stmt match {
+        case LetDefStmt(kind, defined, tyOpt, bodyOpt, _, _) =>
+          val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
 
-            // Update local context with new let binding
-            val varId = UniqId.generate
-            val idVar = LocalVar(name, ty, varId)
-            localCtx = localCtx.extend(idVar)
-            checker = checker.copy(localCtx = localCtx)
+          kind match {
+            case LetDefType.Let =>
+              // Process let binding
+              val ty = tyOpt match {
+                case Some(tyExpr) =>
+                  val Judge(wellTypedTy, _, _) = checker.checkType(tyExpr.asInstanceOf[Expr])
+                  wellTypedTy
+                case None =>
+                  bodyOpt match {
+                    case Some(expr) =>
+                      val judge = checker.synthesize(expr, effects)
+                      effect = checker.effectUnion(effect, judge.effects)
+                      judge.ty
+                    case None =>
+                      val err = MissingTypeAnnotationError(Identifier(name))
+                      tyck.report(err)
+                      return Judge(ErrorTerm(err), UnitType, NoEffect)
+                  }
+              }
 
-          case LetDefType.Def =>
-            // Process def binding
-            val (tyAnnotationOpt, varId, _) = defBindings(name)
-            val ty = tyAnnotationOpt match {
-              case Some(tyExpr) =>
-                val Judge(wellTypedTy, _, _) = checker.checkType(tyExpr)
-                wellTypedTy
-              case None =>
-                bodyOpt match {
-                  case Some(expr) =>
-                    val judge = checker.synthesize(expr, effects)
-                    effect = checker.effectUnion(effect, judge.effects)
-                    judge.ty
-                  case None =>
-                    val err = MissingTypeAnnotationError(Identifier(name))
-                    tyck.report(err)
-                    return Judge(ErrorTerm(err), UnitType, NoEffect)
-                }
-            }
+              // Typecheck the body
+              val judge = bodyOpt match {
+                case Some(expr) =>
+                  val judge = checker.inherit(expr, ty, effects)
+                  effect = checker.effectUnion(effect, judge.effects)
+                  judge
+                case None =>
+                  val err = MissingBodyError(Identifier(name))
+                  tyck.report(err)
+                  return Judge(ErrorTerm(err), UnitType, NoEffect)
+              }
 
-            // Typecheck the body
-            val judge = bodyOpt match {
-              case Some(expr) =>
-                val judge = checker.inherit(expr, ty, effects)
-                effect = checker.effectUnion(effect, judge.effects)
-                judge
-              case None =>
-                val err = MissingBodyError(Identifier(name))
-                tyck.report(err)
-                return Judge(ErrorTerm(err), UnitType, NoEffect)
-            }
-
-            // Update the substitution for the def's MetaTerm if needed
-            if (tyAnnotationOpt.isEmpty) {
-              // Update the type in localCtx
+              // Update local context with new let binding
+              val varId = UniqId.generate
               val idVar = LocalVar(name, ty, varId)
-              localCtx = localCtx.update(name, idVar)
+              localCtx = localCtx.extend(idVar)
               checker = checker.copy(localCtx = localCtx)
-            }
 
-        }
+            case LetDefType.Def =>
+              // Process def binding
+              val (tyAnnotationOpt, varId, _) = defBindings(name)
+              val ty = tyAnnotationOpt match {
+                case Some(tyExpr) =>
+                  val Judge(wellTypedTy, _, _) = checker.checkType(tyExpr.asInstanceOf[Expr])
+                  wellTypedTy
+                case None =>
+                  bodyOpt match {
+                    case Some(expr) =>
+                      val judge = checker.synthesize(expr, effects)
+                      effect = checker.effectUnion(effect, judge.effects)
+                      judge.ty
+                    case None =>
+                      val err = MissingTypeAnnotationError(Identifier(name))
+                      tyck.report(err)
+                      return Judge(ErrorTerm(err), UnitType, NoEffect)
+                  }
+              }
 
-      case ExprStmt(expr, _) =>
-        val judge = checker.synthesize(expr, effects)
+              // Typecheck the body
+              val judge = bodyOpt match {
+                case Some(expr) =>
+                  val judge = checker.inherit(expr, ty, effects)
+                  effect = checker.effectUnion(effect, judge.effects)
+                  judge
+                case None =>
+                  val err = MissingBodyError(Identifier(name))
+                  tyck.report(err)
+                  return Judge(ErrorTerm(err), UnitType, NoEffect)
+              }
+
+              // Update the substitution for the def's MetaTerm if needed
+              if (tyAnnotationOpt.isEmpty) {
+                // Update the type in localCtx
+                val idVar = LocalVar(name, ty, varId)
+                localCtx = localCtx.extend(idVar)
+                checker = checker.copy(localCtx = localCtx)
+              }
+          }
+
+        case ExprStmt(expr, _) =>
+          val judge = checker.synthesize(expr, effects)
+          effect = checker.effectUnion(effect, judge.effects)
+
+        case _ => // Handle other statement types if needed
+          ()
+      }
+    }
+
+    // Process the last expression in the block if it exists
+    block.tail match {
+      case Some(lastExpr) =>
+        val judge = checker.synthesize(lastExpr, effects)
         effect = checker.effectUnion(effect, judge.effects)
-
-      case _ => // Handle other statement types if needed
-        ()
+        Judge(judge.wellTyped, judge.ty, effect)
+      case None =>
+        // If no last expression, return Unit
+        Judge(UnitTerm, UnitType, effect)
     }
   }
 
-  // Process the last expression in the block if it exists
-  block.lastExpr match {
-    case Some(expr) =>
-      val judge = checker.synthesize(expr, effects)
-      effect = checker.effectUnion(effect, judge.effects)
-      Judge(judge.wellTyped, judge.ty, effect)
-    case None =>
-      // If no last expression, return Unit
-      Judge(UnitTerm, UnitType, effect)
-  }
-}
   def synthesize(expr: Expr, effects: Option[Effects]): Judge = {
     resolve(expr) match {
       case Tuple(exprTerms, meta) =>
