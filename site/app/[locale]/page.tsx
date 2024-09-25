@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { XTerm } from "@pablo-lion/xterm-react";
-import { startRepl, startReplPty, startReplReadline } from "../../generated/main.js";
-import "../../types/main.d.ts";
+import { startRepl, startReplPty, startReplReadline } from "@/scala/main";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
 import { useTranslations } from 'next-intl';

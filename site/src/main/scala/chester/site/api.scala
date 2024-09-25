@@ -1,6 +1,9 @@
 package chester.site
 
-import chester.repl.{REPLEngine}
+import chester.parser.{FileNameAndContent, Parser}
+import chester.repl.REPLEngine
+import chester.tyck.{ExprTycker, TyckResult}
+import chester.utils.doc.*
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.*
 import chester.utils.term.*
@@ -9,6 +12,7 @@ import typings.xtermReadline.mod.Readline
 import typings.xtermXterm.mod.Terminal
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.Thenable.Implicits.*
@@ -36,4 +40,23 @@ def startReplReadline(rl: Readline): js.Promise[Unit] = {
     implicit val env: Environment = BrowserEnv
     REPLEngine
   }).toJSPromise
+}
+
+def runFileFuture(content: String): Future[String] = {
+  Parser.parseTopLevel(FileNameAndContent("playground.chester", content)) match {
+    case Right(parsedBlock) =>
+      ExprTycker.synthesize(parsedBlock) match {
+        case TyckResult.Success(result, status, warnings) =>
+          Future.successful(StringPrinter.render(result.wellTyped)(using PrettierOptions.Default))
+        case TyckResult.Failure(errors, warnings, state, result) =>
+          Future.successful(s"Failed to type check file: $errors")
+      }
+    case Left(error) =>
+      Future.successful(error.message)
+  }
+}
+
+@JSExportTopLevel("runFile")
+def runFile(content: String): js.Promise[String] = {
+  runFileFuture(content).toJSPromise
 }

@@ -7,6 +7,7 @@ import * as monaco from 'monaco-editor';
 import { useDebouncedCallback } from 'use-debounce';
 import { deflate, inflate } from 'pako';
 import { encode as base64Encode, decode as base64Decode } from 'base64-arraybuffer';
+import { runFile } from "@/scala/main";
 
 export default function PlaygroundPage() {
     const t = useTranslations('PlaygroundPage');
@@ -83,11 +84,11 @@ export default function PlaygroundPage() {
     function runCode() {
         if (editorRef.current) {
             const code = editorRef.current.getValue();
-            // Here you would typically send the code to a backend for execution
-            // For now, we'll just display the code in the output area
             const outputElement = document.getElementById('output');
             if (outputElement) {
-                outputElement.textContent = `Running code:\n\n${code}`;
+                runFile(code).then((result) => {
+                    outputElement.textContent = result;
+                });
             }
         }
     }
