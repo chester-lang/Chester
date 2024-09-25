@@ -32,16 +32,7 @@ case class CoreTycker(localCtx: LocalCtx = LocalCtx.Empty, reporter: Reporter[Ty
       ObjectType(fieldTypes)
     case LocalVar(_, ty, _, _) =>
       ty
-    case FunctionType(telescope, resultTy, _, _, _) =>
-      val inferredTelescope = telescope.map { tele =>
-        val inferredArgs = tele.args.map { arg =>
-          val inferredType = inferNoEffect(arg.ty)
-          arg.copy(ty = inferredType)
-        }
-        tele.copy(args = inferredArgs)
-      }
-      val inferredResultTy = inferNoEffect(resultTy)
-      FunctionType(inferredTelescope, inferredResultTy, NoEffect)
+    case FunctionType(telescope, resultTy, _, _, _) => ???
     case _ =>
       reporter.apply(UnsupportedTermError(term))
       ErrorTerm(UnsupportedTermError(term))
