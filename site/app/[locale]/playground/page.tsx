@@ -14,7 +14,9 @@ export default function PlaygroundPage() {
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
     // State to hold the current code
-    const [code, setCode] = useState('// Write your Chester code here');
+    const [code, setCode] = useState(`// Write your Chester code here
+def x=0;
+x`);
 
     // Encode code to base64 and update the URL hash
     const updateUrlHash = (code: string) => {
