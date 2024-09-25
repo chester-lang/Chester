@@ -12,6 +12,7 @@ show_usage() {
     echo "  serve [lang] Serve the book for the specified language (or default if not specified)"
     echo "  normalize   Normalize existing PO files"
     echo "  build-all   Build the book for all languages"
+    echo "  summary     Generate summary for the book"
 }
 
 # Function to extract messages
@@ -82,6 +83,17 @@ build_all_languages() {
     echo "All language versions built"
 }
 
+# Function to generate summary
+generate_summary() {
+    if ! command -v mdbook-generate-summary &> /dev/null; then
+        echo "mdbook-generate-summary is not installed. Installing..."
+        cargo install mdbook-generate-summary --version 0.2.0
+    fi
+    rm -f src/SUMMARY.md
+    mdbook-generate-summary src
+    echo "Summary generated"
+}
+
 # Main script logic
 case "$1" in
     extract)
@@ -104,6 +116,9 @@ case "$1" in
         ;;
     build-all)
         build_all_languages
+        ;;
+    summary)
+        generate_summary
         ;;
     *)
         show_usage
