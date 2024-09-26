@@ -25,6 +25,7 @@ function playground_text(playground, hidden = true) {
         ]);
     }
 
+    if(false){ // patch
     var playgrounds = Array.from(document.querySelectorAll(".playground"));
     if (playgrounds.length > 0) {
         fetch_with_timeout("https://play.rust-lang.org/meta/crates", {
@@ -41,6 +42,7 @@ function playground_text(playground, hidden = true) {
             playgrounds.forEach(block => handle_crate_list_update(block, playground_crates));
         });
     }
+    } // patch
 
     function handle_crate_list_update(playground_block, playground_crates) {
         // update the play buttons after receiving the response
