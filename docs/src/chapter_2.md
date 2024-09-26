@@ -12,11 +12,13 @@ In Chester, `let` and `def` are used to declare bindings, but they differ in how
 
 **Example:**
 
-```chester
+```chester,playground,editable
 // Correct usage of 'let'
 let x = 5;
 let y = x + 2; // 'x' is defined before use
+```
 
+```chester,playground,editable
 // Incorrect usage of 'let'
 let y = x + 2; // Error: 'x' is not defined yet
 let x = 5;
@@ -30,12 +32,14 @@ let x = 5;
 
 **Example:**
 
-```chester
+```chester,playground,editable
 // Correct usage of 'def' with type annotation
 def y = square(5); // 'square' is used before its declaration
 
 def square(n: Int) = n * n; // Type annotation for 'n' is required
+```
 
+```chester,playground,editable
 // Incorrect usage of 'def' without type annotation
 def y = increment(5); // 'increment' is used before its declaration
 
