@@ -259,7 +259,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         case letDef@LetDefStmt(LetDefType.Def, defined, tyOpt, _, _, _) =>
           val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
           val varId = UniqId.generate
-          defBindings(name) = (tyOpt.map(_ => null), varId, letDef) // Placeholder for ty
+          val tyOptTerm = tyOpt.map(synthesize(_, Some(NoEffect)).wellTyped)
+          defBindings(name) = (tyOptTerm, varId, letDef)
 
           // Check if the def is used before its definition
           val remainingStmts = heads.slice(index + 1, heads.length)
@@ -357,8 +358,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               val (tyAnnotationOpt, varId, _) = defBindings(name)
               val ty = tyAnnotationOpt match {
                 case Some(tyExpr) =>
-                  val Judge(wellTypedTy, _, _) = checker.checkType(tyExpr.asInstanceOf[Expr])
-                  wellTypedTy
+                  tyExpr
                 case None =>
                   bodyOpt match {
                     case Some(expr) =>
