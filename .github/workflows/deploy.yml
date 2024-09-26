@@ -103,15 +103,15 @@ jobs:
           cargo install mdbook-i18n-helpers --locked --version 0.3.5
           cargo install mdbook --locked --version 0.4.40
 
+      - name: Build with sbt - docs
+        run: sbt docs/fullLinkJS
+
       - name: Build documentation
         run: |
           cd docs
           chmod +x dev.sh
           ./dev.sh build-all
           cd ..
-
-      - name: Build with sbt - docs
-        run: sbt docs/fullLinkJS
 
       - name: Copy documentation to site output
         run: cp -r docs/book site/out/docs

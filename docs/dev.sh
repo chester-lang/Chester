@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 <command>"
