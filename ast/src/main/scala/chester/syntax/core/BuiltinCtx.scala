@@ -20,6 +20,7 @@ object Imports {
 case class Context(
   map: Map[Name, UniqId],
   varMap: Map[UniqId, CtxItem],
+  knownMap: Map[UniqId, JudgeNoEffect],
   imports: Imports = Imports.Empty,
   modules: ResolvingModules = ResolvingModules.Empty
 ) {
@@ -30,6 +31,9 @@ case class Context(
 
   def getByVarId(varId: UniqId): Option[CtxItem] = varMap.get(varId)
 
+  // Retrieve known judgment by UniqId
+  def getKnownJudge(varId: UniqId): Option[JudgeNoEffect] = knownMap.get(varId)
+
   def extend(name: LocalVar): Context = {
     val id = name.id
     val varId = name.uniqId
@@ -38,6 +42,7 @@ case class Context(
     new Context(
       map + (id -> varId),
       varMap + (varId -> item),
+      knownMap,
       imports,
       modules
     )
@@ -51,6 +56,18 @@ case class Context(
     new Context(
       map + (id -> varId),
       varMap + (varId -> item),
+      knownMap,
+      imports,
+      modules
+    )
+  }
+
+  // Add a known judgment
+  def addKnownJudge(varId: UniqId, judge: JudgeNoEffect): Context = {
+    new Context(
+      map,
+      varMap,
+      knownMap + (varId -> judge),
       imports,
       modules
     )
@@ -58,25 +75,29 @@ case class Context(
 }
 
 object Context {
-  def apply(map: Map[Name, UniqId], varMap: Map[UniqId, CtxItem]): Context =
-    new Context(map, varMap)
+  def apply(
+    map: Map[Name, UniqId],
+    varMap: Map[UniqId, CtxItem],
+    knownMap: Map[UniqId, JudgeNoEffect]
+  ): Context =
+    new Context(map, varMap, knownMap)
 
   def builtin: Context = {
-    val (map, varMap) = BuiltinCtx.builtinCtx
-    Context(map, varMap)
+    val (map, varMap, knownMap) = BuiltinCtx.builtinCtx
+    Context(map, varMap, knownMap)
   }
 }
 
 object BuiltinCtx {
-  def builtinItem(id: Name, value: Term, ty: Term): (Name, UniqId, CtxItem) = {
+  def builtinItem(id: Name, value: Term, ty: Term): (Name, UniqId, CtxItem, JudgeNoEffect) = {
     val varId = UniqId.generate
     val name = ToplevelVarCall(QualifiedIDString.from(), id, ty, varId)
     val judge = JudgeNoEffect(value, ty)
     val item = CtxItem(name, judge)
-    (id, varId, item)
+    (id, varId, item, judge)
   }
 
-  val builtinItems: Seq[(Name, UniqId, CtxItem)] = Seq(
+  val builtinItems: Seq[(Name, UniqId, CtxItem, JudgeNoEffect)] = Seq(
     builtinItem("Int", IntType, Type0),
     builtinItem("Integer", IntegerType, Type0),
     builtinItem("Float", FloatType, Type0),
@@ -87,12 +108,16 @@ object BuiltinCtx {
   )
 
   val map: Map[Name, UniqId] = builtinItems.map {
-    case (id, varId, _) => id -> varId
+    case (id, varId, _, _) => id -> varId
   }.toMap
 
   val varMap: Map[UniqId, CtxItem] = builtinItems.map {
-    case (_, varId, item) => varId -> item
+    case (_, varId, item, _) => varId -> item
   }.toMap
 
-  def builtinCtx: (Map[Name, UniqId], Map[UniqId, CtxItem]) = (map, varMap)
+  val knownMap: Map[UniqId, JudgeNoEffect] = builtinItems.map {
+    case (_, varId, _, judge) => varId -> judge
+  }.toMap
+
+  def builtinCtx: (Map[Name, UniqId], Map[UniqId, CtxItem], Map[UniqId, JudgeNoEffect]) = (map, varMap, knownMap)
 }
