@@ -112,12 +112,30 @@ function playground_text(playground, hidden = true) {
 
         // patch start
         let text = playground_text(code_block);
-        result_block.innerText = "Running...";
+        result_block.innerHTML = "Running...";
         setTimeout(() => {
-            result_block.innerText = chesterRunFile(text);
+            try {
+                result_block.innerHTML = chesterRunFile(text);
+            } catch (e) {
+                result_block.innerHTML = "Error: " + e.message;
+                console.error(e);
+            }
         }, 0);
         // patch end
     }
+    // patch start
+    // Add <pre class="playground"> to playground codeblock
+    Array.from(document.querySelectorAll(".playground")).forEach((element) => {
+        let parent = element.parentNode;
+        let wrapper = document.createElement('pre');
+        wrapper.className = 'playground';
+        element.classList.remove('playground');
+        // set the wrapper as child (instead of the element)
+        parent.replaceChild(wrapper, element);
+        // set element as child of wrapper
+        wrapper.appendChild(element);
+    });
+    // patch end
 
     // Syntax highlighting Configuration
     hljs.configure({
@@ -135,7 +153,7 @@ function playground_text(playground, hidden = true) {
         // blocks or highlightjs will capture events
         code_nodes
             .filter(function (node) {return node.classList.contains("editable"); })
-            .forEach(function (block) { block.classList.remove('language-rust'); });
+            .forEach(function (block) { block.classList.remove('language-chester'); }); // patch
 
         code_nodes
             .filter(function (node) {return !node.classList.contains("editable"); })
