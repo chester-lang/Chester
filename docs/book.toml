@@ -16,3 +16,16 @@ curly-quotes = true
 additional-css = [
   "theme/css/language-picker.css",
 ]
+additional-js = [
+  "mode-example.js",
+  "editor.js",
+]
+
+[output.html.fold]
+enable = true
+level  = 1
+
+[output.html.playpen]
+editable = true
+editor = "ace"
+line-numbers = false
