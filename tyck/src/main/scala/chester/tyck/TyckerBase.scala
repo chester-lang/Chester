@@ -346,6 +346,8 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
               val varId = UniqId.generate
               val idVar = LocalVar(name, ty, varId)
               localCtx = localCtx.extend(idVar)
+              // Add the known judgment to knownMap
+              localCtx = localCtx.addKnownJudge(varId, JudgeNoEffect(body, ty))
               checker = checker.copy(localCtx = localCtx)
 
               stmts = stmts :+ LetStmtTerm(name, body, ty)
@@ -384,9 +386,10 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
               // Update the substitution for the def's MetaTerm if needed
               if (tyAnnotationOpt.isEmpty) {
-                // Update the type in localCtx
+                // Update the type in localCtx and add to knownMap
                 val idVar = LocalVar(name, ty, varId)
                 localCtx = localCtx.extendOrSet(idVar)
+                localCtx = localCtx.addKnownJudge(varId, JudgeNoEffect(body, ty))
                 checker = checker.copy(localCtx = localCtx)
               }
 

@@ -30,9 +30,10 @@ case class CoreTycker(localCtx: LocalCtx = LocalCtx.Empty, reporter: Reporter[Ty
           ObjectClauseValueTerm(key, valueType)
       }
       ObjectType(fieldTypes)
-    case LocalVar(_, ty, _, _) =>
-      ty
+    case lv:LocalVar =>
+      lv.ty
     case FunctionType(telescope, resultTy, _, _, _) => Typeω // TODO
+    case meta:MetaTerm => meta.ty
     case _ =>
       reporter.apply(UnsupportedTermError(term))
       ErrorTerm(UnsupportedTermError(term))
