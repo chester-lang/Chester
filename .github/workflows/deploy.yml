@@ -110,6 +110,9 @@ jobs:
           ./dev.sh build-all
           cd ..
 
+      - name: Build with sbt - docs
+        run: sbt docs/fullLinkJS
+
       - name: Copy documentation to site output
         run: cp -r docs/book site/out/docs
 

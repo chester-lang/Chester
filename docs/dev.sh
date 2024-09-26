@@ -40,13 +40,21 @@ update_translations() {
     echo "Translations updated"
 }
 
+CHESTER_JS_PATH="js/target/scala-3.5.0/docs-opt/main.js"
+copy_chester_js() {
+    cp "$CHESTER_JS_PATH" "$1/main.js"
+    cp "$CHESTER_JS_PATH.map" "$1/main.js.map"
+}
+
 # Function to build the book for a specific language or default
 build_book() {
     if [ -z "$1" ]; then
         mdbook build
+        copy_chester_js "book"
         echo "Book built with default language"
     else
         MDBOOK_BOOK__LANGUAGE="$1" mdbook build -d "book/$1"
+        copy_chester_js "book/$1"
         echo "Book built for $1"
     fi
 }
@@ -72,11 +80,13 @@ normalize_po_files() {
 build_all_languages() {
     # Build the default (English) version
     mdbook build
+    copy_chester_js "book"
 
     # Get all PO files and build for each language
     for po_file in po/*.po; do
         lang=$(basename "$po_file" .po)
         MDBOOK_BOOK__LANGUAGE="$lang" mdbook build -d "book/$lang"
+        copy_chester_js "book/$lang"
         echo "Book built for $lang"
     done
 

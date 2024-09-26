@@ -620,6 +620,17 @@ lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
     libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.7.4",
   )
 
+lazy val docs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Full)
+  .in(file("docs"))
+  .dependsOn(common)
+  .settings(
+    name := "docs",
+    commonSettings
+  ).jsSettings(
+
+  )
+
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("lsp"))
@@ -699,7 +710,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, up, truffle, site)
+    lsp, up, truffle, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version

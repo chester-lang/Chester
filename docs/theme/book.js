@@ -110,46 +110,13 @@ function playground_text(playground, hidden = true) {
             code_block.append(result_block);
         }
 
+        // patch start
         let text = playground_text(code_block);
-        let classes = code_block.querySelector('code').classList;
-        let edition = "2015";
-        if(classes.contains("edition2018")) {
-            edition = "2018";
-        } else if(classes.contains("edition2021")) {
-            edition = "2021";
-        }
-        var params = {
-            version: "stable",
-            optimize: "0",
-            code: text,
-            edition: edition
-        };
-
-        if (text.indexOf("#![feature") !== -1) {
-            params.version = "nightly";
-        }
-
         result_block.innerText = "Running...";
-
-        fetch_with_timeout("https://play.rust-lang.org/evaluate.json", {
-            headers: {
-                'Content-Type': "application/json",
-            },
-            method: 'POST',
-            mode: 'cors',
-            body: JSON.stringify(params)
-        })
-        .then(response => response.json())
-        .then(response => {
-            if (response.result.trim() === '') {
-                result_block.innerText = "No output";
-                result_block.classList.add("result-no-output");
-            } else {
-                result_block.innerText = response.result;
-                result_block.classList.remove("result-no-output");
-            }
-        })
-        .catch(error => result_block.innerText = "Playground Communication: " + error.message);
+        setTimeout(() => {
+            result_block.innerText = chesterRunFile(text);
+        }, 0);
+        // patch end
     }
 
     // Syntax highlighting Configuration
