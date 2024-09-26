@@ -649,7 +649,7 @@ object LocalVar {
   def generate(id: Name, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
 }
 
-case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall {
+case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))

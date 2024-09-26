@@ -58,7 +58,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def linkTyOn(meta: MetaTerm, ty: Term): Unit = {
     tyck.updateSubst(meta.uniqId, Judge(ty, Typeω, NoEffect))
   }
-
+   def resolveKnownTerm(term: Term): Term = term match {
+     case varCall: HasUniqId =>
+       localCtx.ctx.getKnownJudge(varCall.uniqId) match {
+         case Some(judge) => judge.wellTyped
+         case None        => varCall
+       }
+     case _ => term
+   }
   /** assume a subtype relationship and get a subtype back */
   def unifyTy(lhs: Term, rhs: Term, failed: => Term = null): Term = {
     val rhs1 = whnfNoEffect(rhs)
@@ -89,6 +96,13 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           addConstraint(MetaConstraint.TyRange(rhs, lower = Some(Judge(lhs, Typeω, NoEffect)), upper = None))
           lhs
         }
+
+      case (lhsVar: HasUniqId, _) =>
+        resolveAndUnify(lhsVar, rhs1, lhs, failed)
+
+      case (_, rhsVar: HasUniqId) =>
+        resolveAndUnify(rhsVar, lhs1, lhs, failed)
+
       case (AnyType(level), subType) => subType // TODO: level
       case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
       case (superType, Union(subTypes)) => Union.from(subTypes.map(rhs => unifyTy(rhs = rhs, lhs = superType)))
@@ -121,6 +135,31 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
   }
 
+  // TODO: rewrite this, it is not fully correct
+  def resolveAndUnify(varCall: HasUniqId & Term, other: Term, originalTerm: Term, failed: => Term): Term = {
+    localCtx.ctx.getKnownJudge(varCall.uniqId) match {
+      case Some(judge) =>
+        val resolvedTerm = judge.wellTyped
+        val result = unifyTy(resolvedTerm, other, failed = failed)
+        if (result.isInstanceOf[ErrorTerm]) {
+          result
+        } else {
+          originalTerm
+        }
+      case None =>
+        failedOrError(varCall, other, failed)
+    }
+  }
+
+  // TODO: rewrite this, it is not fully correct
+  def failedOrError(lhs: HasUniqId & Term, rhs: Term, failed: => Term): Term = {
+    if (failed != null) failed
+    else {
+      val err = UnifyFailedError(rhs = rhs, lhs = lhs)
+      tyck.report(err)
+      new ErrorTerm(err)
+    }
+  }
   def unifyTyOrNothingType(lhs: Term, rhs: Term): Term = unifyTy(rhs = rhs, lhs = lhs, failed = NothingType)
 
   /** get the most sub common super type */
