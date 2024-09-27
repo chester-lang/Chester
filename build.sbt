@@ -91,6 +91,21 @@ val graalvmSettings = Seq(
   nativeImageJvm := graalVm,
 )
 
+val baseDeps = Seq(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-free" % "2.12.0",
+      "com.lihaoyi" %%% "upickle" % "4.0.1",
+      "com.lihaoyi" %%% "fansi" % "0.5.0",
+      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "scalatags" % "0.13.1",
+      "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
+      "io.getkyo" %%% "kyo-prelude" % "0.12.0",
+      "io.getkyo" %%% "kyo-data" % "0.12.0",
+      "io.getkyo" %%% "kyo-tag" % "0.12.0",
+    ),
+)
+
 commonSettings
 
 ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.1-RC0")
@@ -248,18 +263,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
   .settings(
     name := "utils",
     commonSettings,
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-free" % "2.12.0",
-      "com.lihaoyi" %%% "upickle" % "4.0.1",
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
-      "com.lihaoyi" %%% "scalatags" % "0.13.1",
-      "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
-      "io.getkyo" %%% "kyo-prelude" % "0.12.0",
-      "io.getkyo" %%% "kyo-data" % "0.12.0",
-      "io.getkyo" %%% "kyo-tag" % "0.12.0",
-    ),
+    baseDeps,
   )
   .jvmConfigure(_.dependsOn(scalaGraph.jvm))
   .jvmSettings(
@@ -305,10 +309,10 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
 lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("base"))
-  .dependsOn(utils)
   .settings(
     name := "base",
     commonSettings,
+    baseDeps,
   )
   .jvmSettings(commonJvmLibSettings)
 
