@@ -45,8 +45,8 @@ def startReplReadline(rl: Readline): js.Promise[Unit] = {
 }
 
 
-def runFileFuture(content: String): Future[String] = {
-  implicit val options: PrettierOptions = PrettierOptions.Default.updated(LightMode, false)
+def runFileFuture(content: String, lightMode: Boolean): Future[String] = {
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(LightMode, lightMode)
   Parser.parseTopLevel(FileNameAndContent("playground.chester", content)) match {
     case Right(parsedBlock) =>
       ExprTycker.synthesize(parsedBlock) match {
@@ -61,6 +61,6 @@ def runFileFuture(content: String): Future[String] = {
 }
 
 @JSExportTopLevel("runFile")
-def runFile(content: String): js.Promise[String] = {
-  runFileFuture(content).toJSPromise
+def runFile(content: String, lightMode: Boolean): js.Promise[String] = {
+  runFileFuture(content, lightMode).toJSPromise
 }

@@ -12,11 +12,28 @@ import { runFile } from "@/scala/main";
 export default function PlaygroundPage() {
     const t = useTranslations('PlaygroundPage');
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+    const [lightMode, setLightMode] = useState(true);
 
     // State to hold the current code
     const [code, setCode] = useState(`// Write your Chester code here
 def x=0;
 x`);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            setLightMode(!e.matches);
+        };
+
+        // Set initial value
+        setLightMode(!mediaQuery.matches);
+
+        // Add listener for changes
+        mediaQuery.addEventListener('change', handleChange);
+
+        // Clean up
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
 
     // Encode code to base64 and update the URL hash
     const updateUrlHash = (code: string) => {
@@ -88,7 +105,9 @@ x`);
             const code = editorRef.current.getValue();
             const outputElement = document.getElementById('output');
             if (outputElement) {
-                runFile(code).then((result) => {
+                // currently, the editor is always in dark mode
+                const useLightMode = false; // lightMode
+                runFile(code, useLightMode).then((result) => {
                     outputElement.innerHTML = result;
                 });
             }
