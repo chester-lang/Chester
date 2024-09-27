@@ -4,8 +4,8 @@ package chester.syntax.concrete
 import cats.data.*
 import chester.doc.*
 import chester.error.*
+import chester.syntax.accociativity.Associativity
 import chester.syntax.concrete.stmt.QualifiedID
-import chester.syntax.concrete.stmt.accociativity.Associativity
 import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString, UnresolvedID}
 import chester.utils.doc.*
