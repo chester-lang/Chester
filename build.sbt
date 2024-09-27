@@ -6,9 +6,9 @@ import scala.scalanative.build.*
 val scala3Version = "3.5.0"
 val scala2Version = "2.13.14"
 
-val graalVm = "graalvm-java22"
-val graalVersion = "22.0.2"
-val graalvmVersion = "24.0.2"
+val graalVm = "graalvm-java23"
+val graalJdkVersion = "23.0.0"
+val graalvmVersion = "24.1.0"
 
 val nativeImageOption = Seq(
   "-H:-CheckToolchain",
@@ -86,7 +86,7 @@ val commonJvmLibSettings = Seq(
   scalacOptions ++= Seq("-java-output-version", "8"),
 )
 val graalvmSettings = Seq(
-  nativeImageVersion := graalVersion,
+  nativeImageVersion := graalJdkVersion,
   nativeImageOptions := nativeImageOption,
   nativeImageJvm := graalVm,
 )
