@@ -46,23 +46,25 @@ def resolveOpSeq(
 
   // Construct the precedence graph
   val precedenceGraph = constructPrecedenceGraph(opContext.groups)
+
   // Perform a topological sort of the precedence graph
   val topOrder = precedenceGraph.topologicalSort
 
   val groupPrecedence: Map[QualifiedIDString, Int] = topOrder match {
     case Right(order) =>
+      // Convert to LayeredTopologicalOrder to access layers
+      val layeredOrder = order.toLayered
       // Map each group to its precedence level
-      order.layers
-        .zipWithIndex
-        .flatMap { case (layer: Iterable[precedenceGraph.NodeT], index: Int) =>
-          layer.map { node: precedenceGraph.NodeT =>
-            node.value.name -> index
+      layeredOrder.iterator
+        .flatMap { case (index: Int, nodes: Iterable[precedenceGraph.NodeT]) =>
+          nodes.map { node: precedenceGraph.NodeT =>
+            node.outer.name -> index
           }
         }
         .toMap
     case Left(_) =>
       // If there's a cycle, report an error
-      reporter.report(TyckError.PrecedenceCycleDetected(precedenceGraph.nodes.map(_.value)))
+      reporter.apply(PrecedenceCycleDetected(precedenceGraph.nodes.map(_.outer)))
       Map.empty
   }
 
@@ -109,7 +111,7 @@ def resolveOpSeq(
     }
   }
 
-  // Parsing expression using a shunting-yard algorithm
+  // Shunting-yard algorithm adapted for operator precedence parsing
   def parseExpression(tokens: Vector[(Expr, Int, Associativity)]): Expr = {
     import scala.collection.mutable.Stack
 
@@ -120,25 +122,18 @@ def resolveOpSeq(
       token match {
         case id: Identifier =>
           opContext.resolveOperator(id.name) match {
-            case Some(opInfo) =>
-              // It's an operator
-              while (operators.nonEmpty && {
-                val (op2, prec2, assoc2) = operators.head
-                (assoc match {
-                  case Associativity.Left => prec <= prec2
-                  case Associativity.Right => prec < prec2
-                  case Associativity.None => prec < prec2
-                })
-              }) {
+            case Some(_) =>
+              // Operator
+              while (operators.nonEmpty && operators.top._2 <= prec) {
                 output.push(operators.pop()._1)
               }
               operators.push((token, prec, assoc))
             case None =>
-              // It's an operand
+              // Operand
               output.push(token)
           }
         case _ =>
-          // It's an operand
+          // Operand
           output.push(token)
       }
     }
@@ -200,10 +195,11 @@ def resolveOpSeq(
   val operatorGroups = tokens.collect {
     case (id: Identifier, _, _) =>
       opContext.resolveOperator(id.name) match {
-        case Some(op: OpWithGroup) => op.group
+        case Some(op: OpWithGroup) => Some(op.group)
         case _ => None
       }
-  }.collect { case group: PrecedenceGroup => group }
+  }.flatten
+
   // Verify that all operator groups are connected in the precedence graph
   for {
     group1 <- operatorGroups
@@ -217,7 +213,8 @@ def resolveOpSeq(
     // Check if no path exists between node1 and node2 in either direction
     if node1.pathTo(node2).isEmpty && node2.pathTo(node1).isEmpty
   } {
-    reporter.report(TyckError.UnconnectedPrecedenceGroups(group1, group2))
+    reporter.apply(UnconnectedPrecedenceGroups(group1, group2))
   }
+
   parseExpression(tokens)
 }
