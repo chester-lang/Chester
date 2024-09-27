@@ -4,6 +4,7 @@ import chester.parser.{FileNameAndContent, Parser}
 import chester.repl.REPLEngine
 import chester.tyck.{ExprTycker, TyckResult}
 import chester.utils.doc.*
+import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.*
 import chester.utils.term.*
@@ -47,7 +48,7 @@ def runFileFuture(content: String): Future[String] = {
     case Right(parsedBlock) =>
       ExprTycker.synthesize(parsedBlock) match {
         case TyckResult.Success(result, status, warnings) =>
-          Future.successful(StringPrinter.render(result.wellTyped)(using PrettierOptions.Default))
+          Future.successful(colorfulToHtml(ColorfulPrettyPrinter.render(result.wellTyped)(using PrettierOptions.Default)))
         case TyckResult.Failure(errors, warnings, state, result) =>
           Future.successful(s"Failed to type check file: $errors")
       }

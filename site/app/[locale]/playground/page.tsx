@@ -89,7 +89,7 @@ x`);
             const outputElement = document.getElementById('output');
             if (outputElement) {
                 runFile(code).then((result) => {
-                    outputElement.textContent = result;
+                    outputElement.innerHTML = result;
                 });
             }
         }
