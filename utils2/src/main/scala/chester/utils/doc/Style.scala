@@ -35,67 +35,67 @@ implicit inline def ForegroundToStyle(fg: Foreground): Style = fg.toStyle
 
 object Foreground {
   case object Black extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Black
+    override def toFansi: fansi.Attrs = fansi.Color.Black
   }
 
   case object Red extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Red
+    override def toFansi: fansi.Attrs = fansi.Color.Red
   }
 
   case object Green extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Green
+    override def toFansi: fansi.Attrs = fansi.Color.Green
   }
 
   case object Yellow extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Yellow
+    override def toFansi: fansi.Attrs = fansi.Color.Yellow
   }
 
   case object Blue extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Blue
+    override def toFansi: fansi.Attrs = fansi.Color.Blue
   }
 
   case object Magenta extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Magenta
+    override def toFansi: fansi.Attrs = fansi.Color.Magenta
   }
 
   case object Cyan extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.Cyan
+    override def toFansi: fansi.Attrs = fansi.Color.Cyan
   }
 
   case object LightGray extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightGray
+    override def toFansi: fansi.Attrs = fansi.Color.LightGray
   }
 
   case object DarkGray extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.DarkGray
+    override def toFansi: fansi.Attrs = fansi.Color.DarkGray
   }
 
   case object LightRed extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightRed
+    override def toFansi: fansi.Attrs = fansi.Color.LightRed
   }
 
   case object LightGreen extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightGreen
+    override def toFansi: fansi.Attrs = fansi.Color.LightGreen
   }
 
   case object LightYellow extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightYellow
+    override def toFansi: fansi.Attrs = fansi.Color.LightYellow
   }
 
   case object LightBlue extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightBlue
+    override def toFansi: fansi.Attrs = fansi.Color.LightBlue
   }
 
   case object LightMagenta extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightMagenta
+    override def toFansi: fansi.Attrs = fansi.Color.LightMagenta
   }
 
   case object LightCyan extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.LightCyan
+    override def toFansi: fansi.Attrs = fansi.Color.LightCyan
   }
 
   case object White extends Foreground {
-    def toFansi: fansi.Attrs = fansi.Color.White
+    override def toFansi: fansi.Attrs = fansi.Color.White
   }
 }
 
@@ -109,67 +109,67 @@ implicit inline def BackgroundToStyle(bg: Background): Style = bg.toStyle
 
 object Background {
   case object Black extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Black
+    override def toFansi: fansi.Attrs = fansi.Back.Black
   }
 
   case object Red extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Red
+    override def toFansi: fansi.Attrs = fansi.Back.Red
   }
 
   case object Green extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Green
+    override def toFansi: fansi.Attrs = fansi.Back.Green
   }
 
   case object Yellow extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Yellow
+    override def toFansi: fansi.Attrs = fansi.Back.Yellow
   }
 
   case object Blue extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Blue
+    override def toFansi: fansi.Attrs = fansi.Back.Blue
   }
 
   case object Magenta extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Magenta
+    override def toFansi: fansi.Attrs = fansi.Back.Magenta
   }
 
   case object Cyan extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.Cyan
+    override def toFansi: fansi.Attrs = fansi.Back.Cyan
   }
 
   case object LightGray extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightGray
+    override def toFansi: fansi.Attrs = fansi.Back.LightGray
   }
 
   case object DarkGray extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.DarkGray
+    override def toFansi: fansi.Attrs = fansi.Back.DarkGray
   }
 
   case object LightRed extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightRed
+    override def toFansi: fansi.Attrs = fansi.Back.LightRed
   }
 
   case object LightGreen extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightGreen
+    override def toFansi: fansi.Attrs = fansi.Back.LightGreen
   }
 
   case object LightYellow extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightYellow
+    override def toFansi: fansi.Attrs = fansi.Back.LightYellow
   }
 
   case object LightBlue extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightBlue
+    override def toFansi: fansi.Attrs = fansi.Back.LightBlue
   }
 
   case object LightMagenta extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightMagenta
+    override def toFansi: fansi.Attrs = fansi.Back.LightMagenta
   }
 
   case object LightCyan extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.LightCyan
+    override def toFansi: fansi.Attrs = fansi.Back.LightCyan
   }
 
   case object White extends Background {
-    def toFansi: fansi.Attrs = fansi.Back.White
+    override def toFansi: fansi.Attrs = fansi.Back.White
   }
 }
 
