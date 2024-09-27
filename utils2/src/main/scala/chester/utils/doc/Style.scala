@@ -1,8 +1,10 @@
 package chester.utils.doc
 
+import spire.math.Trilean
+
 import scala.language.implicitConversions
 
-case class Style(foreground: Option[Foreground] = None, background: Option[Background] = None, styling: Vector[Styling] = Vector.empty) {
+case class Style(foreground: Option[Foreground] = None, background: Option[Background] = None, styling: Stylings = Stylings.Empty) {
   def ++(other: Style): Style = {
     Style(
       foreground = other.foreground.orElse(foreground),
@@ -14,7 +16,7 @@ case class Style(foreground: Option[Foreground] = None, background: Option[Backg
   def toFansi: fansi.Attrs = {
     val fg = foreground.map(_.toFansi).getOrElse(fansi.Attrs.Empty)
     val bg = background.map(_.toFansi).getOrElse(fansi.Attrs.Empty)
-    val style = styling.map(_.toFansi).foldLeft(fansi.Attrs.Empty)(_ ++ _)
+    val style = styling.toFansi
     fg ++ bg ++ style
   }
 }
@@ -25,6 +27,7 @@ object Style {
 
 sealed trait Foreground {
   def toFansi: fansi.Attrs
+
   implicit final inline def toStyle: Style = Style(foreground = Some(this))
 }
 
@@ -98,6 +101,7 @@ object Foreground {
 
 sealed trait Background {
   def toFansi: fansi.Attrs
+
   implicit final inline def toStyle: Style = Style(background = Some(this))
 }
 
@@ -171,17 +175,55 @@ object Background {
 
 sealed trait Styling {
   def toFansi: fansi.Attrs
-  implicit final inline def toStyle: Style = Style(styling = Vector(this))
+
+  implicit final inline def toStyle: Style = Style(styling = applyOn())
+
+  def applyOn(x: Stylings = Stylings.Empty): Stylings
 }
 
 implicit inline def StylingToStyle(styling: Styling): Style = styling.toStyle
 
+object Stylings {
+  val Empty = Stylings()
+}
+
+case class Stylings
+(
+  bold: Trilean = Trilean.Unknown
+) {
+  private inline def field(t: Trilean, onTrue: Styling, onFalse: Styling): fansi.Attrs = t match {
+    case Trilean.True => onTrue.toFansi
+    case Trilean.False => onFalse.toFansi
+    case Trilean.Unknown => fansi.Attrs.Empty
+  }
+
+  def toFansi: fansi.Attrs = {
+    import Styling.*
+    var result = fansi.Attrs.Empty
+    result = result ++ field(bold, BoldOn, BoldOff)
+    result
+  }
+
+  private inline def m(a: Trilean, b: Trilean): Trilean = b match {
+    case Trilean.Unknown => a
+    case _ => b
+  }
+
+  def ++(other: Stylings): Stylings = Stylings(bold = m(bold, other.bold))
+
+  def isEmpty: Boolean = this == Stylings.Empty
+}
+
 object Styling {
   case object BoldOn extends Styling {
-    def toFansi: fansi.Attrs = fansi.Bold.On
+    override def toFansi: fansi.Attrs = fansi.Bold.On
+
+    override def applyOn(x: Stylings): Stylings = x.copy(bold = Trilean.True)
   }
 
   case object BoldOff extends Styling {
-    def toFansi: fansi.Attrs = fansi.Bold.Off
+    override def toFansi: fansi.Attrs = fansi.Bold.Off
+
+    override def applyOn(x: Stylings): Stylings = x.copy(bold = Trilean.False)
   }
 }

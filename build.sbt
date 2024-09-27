@@ -271,7 +271,6 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     libraryDependencies ++= Seq(
       //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
@@ -284,7 +283,6 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     libraryDependencies ++= Seq(
       //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -295,16 +293,41 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
-      "org.typelevel" %%% "spire" % "0.18.0",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
     ),
   )
 
+lazy val depSpire = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("vendor/depSpire"))
+  .settings(
+    name := "depSpire",
+    commonSettings,
+  )
+  .jvmSettings(
+    commonJvmLibSettings,
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire" % "0.18.0",
+    )
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq(
+      //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
+    )
+  )
+  .nativeConfigure(_.dependsOn(spireNative.native))
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire" % "0.18.0",
+    )
+  )
+
 lazy val utils2 = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("utils2"))
+  .dependsOn(depSpire)
   .settings(
     name := "utils2",
     commonSettings,
@@ -346,7 +369,7 @@ lazy val parser = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
 lazy val ast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("ast"))
-  .dependsOn(base, pretty)
+  .dependsOn(base, pretty, depSpire)
   .settings(
     name := "ast",
     commonSettings,
@@ -701,6 +724,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .aggregate(
     ironNative, spireNative, scalaGraph,
+    depSpire,
     typednode,
     typedstd,
     typedundici,
