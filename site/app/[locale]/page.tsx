@@ -25,9 +25,11 @@ export default function Home() {
         terminal.loadAddon(fitAddon);
         fitAddon.fit();
         terminal.focus();
-        const { SearchAddon } = await import('@xterm/addon-search');
-        const searchAddon = new SearchAddon();
-        terminal.loadAddon(searchAddon);
+        if(false){
+          const { SearchAddon } = await import('@xterm/addon-search');
+          const searchAddon = new SearchAddon();
+          terminal.loadAddon(searchAddon);
+        }
           const used: string = 'startReplReadline';
             if (used === 'startRepl'){
               while(true){
