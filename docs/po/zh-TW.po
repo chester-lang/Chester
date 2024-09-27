@@ -17,11 +17,11 @@ msgstr ""
 
 #: src/SUMMARY.md:2 src/chapter_1.md:1
 msgid "Chapter 1: Introduction to Chester"
-msgstr ""
+msgstr "第 1 章：Chester 介紹"
 
 #: src/SUMMARY.md:3 src/chapter_2.md:1
 msgid "Chapter 2: Statements"
-msgstr ""
+msgstr "第 2 章：語句"
 
 #: src/chapter_1.md:3
 msgid ""
