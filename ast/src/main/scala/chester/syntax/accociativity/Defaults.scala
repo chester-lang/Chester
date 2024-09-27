@@ -83,7 +83,9 @@ val defaultPrecedenceGroup = PrecedenceGroupCtx(Map(
   Names.LogicalOr.name -> logicalOrGroup
 ))
 
-case class PrecedenceGroupCtx(precedenceGroups: Map[Name, PrecedenceGroup])
+case class PrecedenceGroupCtx(precedenceGroups: Map[Name, PrecedenceGroup]) {
+  def groups: Seq[PrecedenceGroup] = precedenceGroups.values.toVector
+}
 
 object Names {
   val Multiplicative = QualifiedIDString.from("Multiplicative")
