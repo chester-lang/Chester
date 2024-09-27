@@ -889,9 +889,6 @@ trait PrettyPrinterBase {
    */
   def space: Doc =
     char(' ')
-
-
-  def useCRLF: Boolean = false
 }
 
 trait StringPrettyPrinter extends AbstractPrettyPrinter {
@@ -1133,7 +1130,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
                 if (h)
                   output(o, r - width, Text(repl))
                 else
-                  output(o, w - i, Text(if (useCRLF) "\r\n" else "\n" + " " * i))
+                  output(o, w - i, Text("\n" + " " * i))
             )
         scan(width, outLine)
     })
