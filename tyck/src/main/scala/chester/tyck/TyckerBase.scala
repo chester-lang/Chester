@@ -1,7 +1,7 @@
 package chester.tyck
 
 import chester.error.*
-import chester.resolve.SimpleDesalt
+import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
@@ -510,7 +510,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case f: FunctionExpr => this.synthesizeFunction(f, effects)
       case call: DesaltFunctionCall => this.synthesizeFunctionCall(call, effects)
 
-      case _ =>
+      case expr =>
         val err = UnsupportedExpressionError(expr)
         tyck.report(err)
         Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
@@ -584,7 +584,14 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
 
   def resolve(expr: Expr): Expr = {
-    reuse(expr, SimpleDesalt.desugarUnwrap(expr))
+    val result = SimpleDesalt.desugarUnwrap(expr) match {
+      case opseq: OpSeq => {
+        val result = resolveOpSeq(tyck.reporter, localCtx.ctx.operators, opseq)
+        result
+      }
+      case default => default
+    }
+    reuse(expr, result)
   }
 
   /** possibly apply an implicit conversion */

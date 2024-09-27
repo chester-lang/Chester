@@ -57,7 +57,7 @@ def resolveOpSeq(
       // Map each group to its precedence level
       layeredOrder.iterator
         .flatMap { case (index: Int, nodes: Iterable[precedenceGraph.NodeT]) =>
-          nodes.map { node: precedenceGraph.NodeT =>
+          nodes.map { (node: precedenceGraph.NodeT) =>
             node.outer.name -> index
           }
         }
