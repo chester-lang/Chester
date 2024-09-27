@@ -1,5 +1,6 @@
 package chester.syntax.core
 
+import chester.syntax.accociativity.OperatorsContext
 import chester.syntax.concrete.ResolvingModules
 import chester.syntax.{Name, QualifiedIDString}
 
@@ -22,7 +23,8 @@ case class Context(
   varMap: Map[UniqId, CtxItem],
   knownMap: Map[UniqId, JudgeNoEffect],
   imports: Imports = Imports.Empty,
-  modules: ResolvingModules = ResolvingModules.Empty
+  modules: ResolvingModules = ResolvingModules.Empty,
+  operators: OperatorsContext = OperatorsContext.Default
 ) {
 
   def get(id: Name): Option[CtxItem] = {

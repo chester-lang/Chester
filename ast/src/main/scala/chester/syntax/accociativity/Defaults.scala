@@ -13,6 +13,10 @@ case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx)
   def resolvePostfix(name: Name): Option[OpInfo] = opinfos.resolvePostfix(name)
 }
 
+object OperatorsContext {
+  val Default: OperatorsContext = OperatorsContext(defaultInfixDefitions, defaultPrecedenceGroup)
+}
+
 case class InfixDefitions(infix: Map[Name, OpInfo], other: Vector[OpInfo] = Vector.empty) {
   def resolveInfix(name: Name): Option[OpInfo] = infix.get(name)
 
