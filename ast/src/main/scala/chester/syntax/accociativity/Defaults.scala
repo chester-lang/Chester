@@ -1,22 +1,40 @@
 package chester.syntax.accociativity
 
 import chester.syntax.*
+import chester.syntax.accociativity.Associativity.*
 import chester.syntax.concrete.stmt.QualifiedID
 import upickle.default.*
 
-import Associativity.*
-
 case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx) {
-  def resolveOp(name: Name): Option[OpInfo] = opinfos.resolveOp(name)
+  def resolveInfix(name: Name): Option[OpInfo] = opinfos.resolveInfix(name)
+
+  def resolvePrefix(name: Name): Option[OpInfo] = opinfos.resolvePrefix(name)
+
+  def resolvePostfix(name: Name): Option[OpInfo] = opinfos.resolvePostfix(name)
 }
 
-case class InfixDefitions(opinfos: Map[Name, OpInfo])  {
-  def resolveOp(name: Name): Option[OpInfo] = opinfos.get(name)
+case class InfixDefitions(infix: Map[Name, OpInfo], other: Vector[OpInfo] = Vector.empty) {
+  def resolveInfix(name: Name): Option[OpInfo] = infix.get(name)
+
+  def resolvePrefix(name: Name): Option[OpInfo] = other.find {
+    case Prefix(`name`) => true
+    case _ => false
+  }
+
+  def resolvePostfix(name: Name): Option[OpInfo] = other.find {
+    case Postfix(`name`) => true
+    case _ => false
+  }
 }
-object InfixDefitions{
-    def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
-        InfixDefitions(opinfos.map(opinfo => opinfo.name -> opinfo).toMap)
+
+object InfixDefitions {
+  def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
+    val (infix, other) = opinfos.partition {
+      case Infix(name, _) => true
+      case _ => false
     }
+    InfixDefitions(infix.collect { case Infix(name, group) => name -> Infix(name, group) }.toMap, other)
+  }
 }
 
 val defaultInfixDefitions = InfixDefitions(Vector(
