@@ -5,12 +5,9 @@ import { useEffect, useState } from 'react';
 export default function ThemeToggle() {
   const [theme, setTheme] = useState('light');
 
-  // Check for saved theme or system preference on initial render
+  // Check for system preference on initial render
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark');
     }
   }, []);
@@ -22,8 +19,6 @@ export default function ThemeToggle() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    // Persist the theme preference
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -31,7 +26,10 @@ export default function ThemeToggle() {
   };
 
   return (
-    <button onClick={toggleTheme}>
+    <button
+      onClick={toggleTheme}
+      className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded"
+    >
       {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     </button>
   );

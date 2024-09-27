@@ -8,6 +8,7 @@ import LocaleSwitcher from './LocaleSwitcher';
 import chesterLogo from '../public/chester-logo.svg';
 import NextLink from 'next/link';
 import { useDocsUrl } from '@/i18n/localeUtils';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
     const t = useTranslations('Header')
@@ -41,6 +42,7 @@ export default function Header() {
                     <li><Link href="/playground" className="hover:underline">{t('playground')}</Link></li>
                     <li><NextLink href={useDocsUrl()} className="hover:underline">{t('documentation')}</NextLink></li>
                 </ul>
+                <ThemeToggle />
             </nav>
             <LocaleSwitcher />
         </header>

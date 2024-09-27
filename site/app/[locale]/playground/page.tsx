@@ -105,9 +105,7 @@ x`);
             const code = editorRef.current.getValue();
             const outputElement = document.getElementById('output');
             if (outputElement) {
-                // currently, the editor is always in dark mode
-                const useLightMode = false; // lightMode
-                runFile(code, useLightMode).then((result) => {
+                runFile(code, lightMode).then((result) => {
                     outputElement.innerHTML = result;
                 });
             }
@@ -128,7 +126,7 @@ x`);
                                 theme={lightMode ? 'vs-light' : 'vs-dark'}
                             />
                         </div>
-                        <div className="w-full md:w-1/2 bg-black text-white p-4 rounded">
+                        <div className="w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded">
                             <h2 className="text-xl font-bold mb-2">{t('output')}</h2>
                             <pre id="output" className="whitespace-pre-wrap"></pre>
                         </div>
