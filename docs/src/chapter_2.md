@@ -15,7 +15,7 @@ In Chester, `let` and `def` are used to declare bindings, but they differ in how
 ```chester,playground,editable
 // Correct usage of 'let'
 let x = 5;
-let y = x + 2; // 'x' is defined before use
+let y = x; // 'x' is defined before use
 ```
 
 ```chester,playground,editable
