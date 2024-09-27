@@ -11,6 +11,8 @@ import { SUPPORTED_LOCALES } from '@/i18n';
 import deepmerge from 'deepmerge';
 import { getMessages } from '@/i18n'
 import { createTranslator } from 'next-intl'
+import { ThemeProvider } from '@/components/ThemeContext';
+
 
 type Props = {
   children: ReactNode
@@ -41,11 +43,13 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className="bg-white text-black dark:bg-gray-900 dark:text-white">
         <NextIntlClientProvider locale={locale} messages={messages}>
+        <ThemeProvider>
           <Header />
           <div className="p-5">
             {children}
           </div>
           <Footer />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

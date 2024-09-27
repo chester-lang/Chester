@@ -8,137 +8,123 @@ import { useDebouncedCallback } from 'use-debounce';
 import { deflate, inflate } from 'pako';
 import { encode as base64Encode, decode as base64Decode } from 'base64-arraybuffer';
 import { runFile } from "@/scala/main";
+import { useTheme } from '@/components/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function PlaygroundPage() {
-    const t = useTranslations('PlaygroundPage');
-    const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-    const [lightMode, setLightMode] = useState(true);
+  const { theme } = useTheme();
+  const t = useTranslations('PlaygroundPage');
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-    // State to hold the current code
-    const [code, setCode] = useState(`// Write your Chester code here
+  // State to hold the current code
+  const [code, setCode] = useState(`// Write your Chester code here
 def x=0;
 x`);
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = (e: MediaQueryListEvent) => {
-            setLightMode(!e.matches);
-        };
+  // Encode code to base64 and update the URL hash
+  const updateUrlHash = (code: string) => {
+    if (typeof window !== 'undefined') {
+      const compressed = deflate(code);
+      const encodedCode = base64Encode(compressed.buffer);
+      window.location.hash = encodedCode;
+    }
+  };
 
-        // Set initial value
-        setLightMode(!mediaQuery.matches);
+  // Create a debounced version of updateUrlHash
+  const debouncedUpdateUrlHash = useDebouncedCallback((code: string) => {
+    updateUrlHash(code);
+  }, 500);
 
-        // Add listener for changes
-        mediaQuery.addEventListener('change', handleChange);
+  // Decode code from URL hash
+  const getCodeFromUrlHash = () => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      try {
+        const compressedBuffer = base64Decode(hash);
+        const compressed = new Uint8Array(compressedBuffer);
+        const decompressed = inflate(compressed, { to: 'string' });
+        return decompressed;
+      } catch (e) {
+        console.error('Error decompressing code from URL hash:', e);
+      }
+    }
+    return null;
+  };
 
-        // Clean up
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
+  // Update code state with the code from the URL hash on client-side
+  useEffect(() => {
+    const codeFromHash = getCodeFromUrlHash();
+    if (codeFromHash) {
+      setCode(codeFromHash);
+    }
+  }, []);
 
-    // Encode code to base64 and update the URL hash
-    const updateUrlHash = (code: string) => {
-        if (typeof window !== 'undefined') {
-            const compressed = deflate(code);
-            const encodedCode = base64Encode(compressed.buffer);
-            window.location.hash = encodedCode;
-        }
+  // Prevent scroll on hash change
+  useEffect(() => {
+    const preventScrollOnHashChange = () => {
+      window.scrollTo(0, 0);
     };
 
-    // Create a debounced version of updateUrlHash
-    const debouncedUpdateUrlHash = useDebouncedCallback((code: string) => {
-        updateUrlHash(code);
-    }, 500);
+    window.addEventListener('hashchange', preventScrollOnHashChange);
 
-    // Decode code from URL hash
-    const getCodeFromUrlHash = () => {
-        if (typeof window === 'undefined') {
-            return null;
-        }
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-            try {
-                const compressedBuffer = base64Decode(hash);
-                const compressed = new Uint8Array(compressedBuffer);
-                const decompressed = inflate(compressed, { to: 'string' });
-                return decompressed;
-            } catch (e) {
-                console.error('Error decompressing code from URL hash:', e);
-            }
-        }
-        return null;
+    return () => {
+      window.removeEventListener('hashchange', preventScrollOnHashChange);
     };
+  }, []);
 
-    // Update code state with the code from the URL hash on client-side
-    useEffect(() => {
-        const codeFromHash = getCodeFromUrlHash();
-        if (codeFromHash) {
-            setCode(codeFromHash);
-        }
-    }, []);
+  function handleEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
+    editorRef.current = editor;
+  }
 
-    // Prevent scroll on hash change
-    useEffect(() => {
-        const preventScrollOnHashChange = () => {
-            window.scrollTo(0, 0);
-        };
-
-        window.addEventListener('hashchange', preventScrollOnHashChange);
-
-        return () => {
-            window.removeEventListener('hashchange', preventScrollOnHashChange);
-        };
-    }, []);
-
-    function handleEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
-        editorRef.current = editor;
+  function handleEditorChange(value?: string) {
+    if (value !== undefined) {
+      setCode(value);
+      debouncedUpdateUrlHash(value);
     }
+  }
 
-    function handleEditorChange(value?: string) {
-        if (value !== undefined) {
-            setCode(value);
-            debouncedUpdateUrlHash(value);
-        }
+  function runCode() {
+    if (editorRef.current) {
+      const code = editorRef.current.getValue();
+      const outputElement = document.getElementById('output');
+      if (outputElement) {
+        runFile(code, theme === 'light').then((result) => {
+          outputElement.innerHTML = result;
+        });
+      }
     }
+  }
 
-    function runCode() {
-        if (editorRef.current) {
-            const code = editorRef.current.getValue();
-            const outputElement = document.getElementById('output');
-            if (outputElement) {
-                runFile(code, lightMode).then((result) => {
-                    outputElement.innerHTML = result;
-                });
-            }
-        }
-    }
-
-    return (
-        <div className="flex flex-col min-h-screen">
-            <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-                <main className="flex flex-col gap-6 w-full max-w-4xl">
-                    <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="w-full md:w-1/2">
-                            <MonacoEditor
-                                code={code}
-                                onMount={handleEditorDidMount}
-                                onChange={handleEditorChange}
-                                theme={lightMode ? 'vs-light' : 'vs-dark'}
-                            />
-                        </div>
-                        <div className="w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded">
-                            <h2 className="text-xl font-bold mb-2">{t('output')}</h2>
-                            <pre id="output" className="whitespace-pre-wrap"></pre>
-                        </div>
-                    </div>
-                    <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                        onClick={runCode}
-                    >
-                        {t('runCode')}
-                    </button>
-                </main>
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-grow flex flex-col items-center justify-center p-4 pb-8 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+        <main className="flex flex-col gap-6 w-full max-w-4xl">
+          <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="w-full md:w-1/2">
+              <MonacoEditor
+                code={code}
+                onMount={handleEditorDidMount}
+                onChange={handleEditorChange}
+                theme={theme === 'light' ? 'vs-light' : 'vs-dark'}
+              />
             </div>
-        </div>
-    );
+            <div className="w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded">
+              <h2 className="text-xl font-bold mb-2">{t('output')}</h2>
+              <pre id="output" className="whitespace-pre-wrap"></pre>
+            </div>
+          </div>
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            onClick={runCode}
+          >
+            {t('runCode')}
+          </button>
+        </main>
+      </div>
+    </div>
+  );
 }
