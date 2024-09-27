@@ -9,9 +9,11 @@ object Colors {
 }
 
 class ColorProfile {
-  def literalColor: Style = Foreground.Red
+  def literalColor(implicit options: PrettierOptions): Style =
+    if (LightMode.get) Foreground.Red else Foreground.LightRed
 
-  def typeColor: Style = Foreground.LightBlue
+  def typeColor(implicit options: PrettierOptions): Style =
+    if (LightMode.get) Foreground.Blue else Foreground.LightBlue
 }
 
 

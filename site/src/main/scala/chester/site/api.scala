@@ -1,5 +1,6 @@
 package chester.site
 
+import chester.doc.const.LightMode
 import chester.parser.{FileNameAndContent, Parser}
 import chester.repl.REPLEngine
 import chester.tyck.{ExprTycker, TyckResult}
@@ -43,12 +44,14 @@ def startReplReadline(rl: Readline): js.Promise[Unit] = {
   }).toJSPromise
 }
 
+
 def runFileFuture(content: String): Future[String] = {
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(LightMode, false)
   Parser.parseTopLevel(FileNameAndContent("playground.chester", content)) match {
     case Right(parsedBlock) =>
       ExprTycker.synthesize(parsedBlock) match {
         case TyckResult.Success(result, status, warnings) =>
-          Future.successful(colorfulToHtml(ColorfulPrettyPrinter.render(result.wellTyped)(using PrettierOptions.Default)))
+          Future.successful(colorfulToHtml(ColorfulPrettyPrinter.render(result.wellTyped)))
         case TyckResult.Failure(errors, warnings, state, result) =>
           Future.successful(s"Failed to type check file: $errors")
       }
