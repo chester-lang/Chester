@@ -18,6 +18,7 @@ enum Associativity derives ReadWriter {
 }
 
 trait OpInfo {
+  def name: Name
 }
 
 trait OpUnary extends OpInfo {
@@ -30,6 +31,7 @@ case class Postfix(name: Name) extends OpUnary
 
 case class Infix(name: Name, group: PrecedenceGroup = DefaultPrecedenceGroup) extends OpInfo
 
-case class Mixfix(name: Vector[Name], group: PrecedenceGroup = DefaultPrecedenceGroup) extends OpInfo
+case class Mixfix(names: Vector[Name], group: PrecedenceGroup = DefaultPrecedenceGroup) extends OpInfo {
+  def name: Name = ???
+}
 
-case class InfixDefitions(opinfos: Vector[OpInfo])

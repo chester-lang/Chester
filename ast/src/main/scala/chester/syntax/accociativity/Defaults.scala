@@ -6,6 +6,13 @@ import upickle.default.*
 
 import Associativity.*
 
+case class InfixDefitions(opinfos: Map[Name, OpInfo]) 
+object InfixDefitions{
+    def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
+        InfixDefitions(opinfos.map(opinfo => opinfo.name -> opinfo).toMap)
+    }
+}
+
 val defaultInfixDefitions = InfixDefitions(Vector(
   // Multiplicative Operators
   Infix(Name("*"), multiplicativeGroup),
