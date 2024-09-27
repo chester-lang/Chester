@@ -16,7 +16,7 @@ jobs:
         include:
           - os: ubuntu-20.04
             release_name: snapshot-linux
-          - os: windows-2019
+          - os: windows-2022
             release_name: snapshot-windows
           - os: macos-14
             release_name: snapshot-macos
