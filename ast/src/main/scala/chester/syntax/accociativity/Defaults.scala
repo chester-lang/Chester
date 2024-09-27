@@ -6,7 +6,13 @@ import upickle.default.*
 
 import Associativity.*
 
-case class InfixDefitions(opinfos: Map[Name, OpInfo]) 
+case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx) {
+  def resolveOp(name: Name): Option[OpInfo] = opinfos.resolveOp(name)
+}
+
+case class InfixDefitions(opinfos: Map[Name, OpInfo])  {
+  def resolveOp(name: Name): Option[OpInfo] = opinfos.get(name)
+}
 object InfixDefitions{
     def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
         InfixDefitions(opinfos.map(opinfo => opinfo.name -> opinfo).toMap)
