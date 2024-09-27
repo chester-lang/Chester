@@ -534,7 +534,7 @@ case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 }
 
 @deprecated("not used")
-sealed trait PrecedenceGroup
+sealed trait PrecedenceGroupExpr
 
 @deprecated("not used")
 case class PrecedenceGroupResolving(
@@ -542,7 +542,7 @@ case class PrecedenceGroupResolving(
                                      higherThan: Vector[UnresolvedID] = Vector(),
                                      lowerThan: Vector[UnresolvedID] = Vector(),
                                      associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
-                                   ) extends Stmt with PrecedenceGroup {
+                                   ) extends Stmt with PrecedenceGroupExpr {
   def getName: Option[Name] = Some(name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
@@ -566,7 +566,7 @@ case class PrecedenceGroupResolved(
                                     higherThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     lowerThan: Vector[PrecedenceGroupResolved] = Vector(),
                                     associativity: Associativity = Associativity.None, meta: Option[ExprMeta] = None
-                                  ) extends Stmt with PrecedenceGroup {
+                                  ) extends Stmt with PrecedenceGroupExpr {
   def getName: Option[Name] = Some(name.name)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {

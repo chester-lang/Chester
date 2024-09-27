@@ -9,7 +9,7 @@ case class PrecedenceGroup(
                             higherThan: Vector[PrecedenceGroup] = Vector(),
                             lowerThan: Vector[PrecedenceGroup] = Vector(),
                             associativity: Associativity = Associativity.None,
-                          )
+                          )  derives ReadWriter
 
 enum Associativity derives ReadWriter {
   case None

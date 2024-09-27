@@ -240,3 +240,32 @@ case class MissingBodyError(cause: Identifier) extends TyckError {
 case class UnsupportedTermError(cause: Term) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported term"
 }
+
+sealed trait OpInfoError extends TyckError derives ReadWriter {
+  override def cause: Term | Expr = EmptyExpr
+}
+
+import chester.syntax.accociativity
+  case class UndeterminedPrecedence(g1: accociativity.PrecedenceGroup, g2: accociativity.PrecedenceGroup) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Cannot determine precedence between groups '${g1.name}' and '${g2.name}'."
+  }
+
+  case class UnknownOperator(operator: Identifier) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unknown operator '${operator.name}'."
+  }
+
+  case class UnexpectedTokens(tokens: List[Expr]) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected tokens after parsing expression: $tokens"
+  }
+
+  case class ErrorMessage(msg: String) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = msg
+  }
+
+  case class PrecedenceCycleDetected(groups: Iterable[accociativity.PrecedenceGroup]) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Precedence cycle detected among groups: ${groups.map(_.name).mkString(" -> ")}"
+  }
+
+  case class UnknownPrecedenceGroup(g1: accociativity.PrecedenceGroup, g2: accociativity.PrecedenceGroup) extends OpInfoError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unknown precedence groups: '${g1.name}', '${g2.name}'."
+  }
