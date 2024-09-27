@@ -115,7 +115,11 @@ function playground_text(playground, hidden = true) {
         result_block.innerHTML = "Running...";
         setTimeout(() => {
             try {
-                result_block.innerHTML = chesterRunFile(text);
+                var html = document.querySelector('html');
+                var lightMode = !html.classList.contains('coal') && 
+                                !html.classList.contains('navy') && 
+                                !html.classList.contains('ayu');
+                result_block.innerHTML = chesterRunFile(text, lightMode);
             } catch (e) {
                 result_block.innerHTML = "Error: " + e.message;
                 console.error(e);
