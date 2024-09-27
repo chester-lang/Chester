@@ -125,6 +125,7 @@ x`);
                                 code={code}
                                 onMount={handleEditorDidMount}
                                 onChange={handleEditorChange}
+                                theme={lightMode ? 'vs-light' : 'vs-dark'}
                             />
                         </div>
                         <div className="w-full md:w-1/2 bg-black text-white p-4 rounded">

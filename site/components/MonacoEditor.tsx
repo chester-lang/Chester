@@ -6,15 +6,16 @@ interface MonacoEditorProps {
     code?: string;
     onChange?: OnChange;
     onMount?: OnMount;
+    theme: 'vs-dark' | 'vs-light';
 }
 
-export default function MonacoEditor({ code, onChange, onMount }: MonacoEditorProps) {
+export default function MonacoEditor({ code, onChange, onMount, theme }: MonacoEditorProps) {
     return (
         <Editor
             height="400px"
             defaultLanguage="javascript"
             value={code}
-            theme="vs-dark"
+            theme={theme}
             options={{
                 minimap: { enabled: false },
                 automaticLayout: true,
