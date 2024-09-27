@@ -3,8 +3,8 @@ import sbt.librarymanagement.InclExclRule
 
 import scala.scalanative.build.*
 
-val scala3Version = "3.5.0"
-val scala2Version = "2.13.14"
+val scala3Version = "3.5.1"
+val scala2Version = "2.13.15"
 
 val graalVm = "graalvm-java23"
 val graalJdkVersion = "23.0.0"
@@ -292,10 +292,6 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
   )
   .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native, scalaGraph.native))
   .jsSettings(
-    scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.ESModule)
-        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
-    },
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
       "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
@@ -305,6 +301,16 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
     ),
   )
+
+lazy val utils2 = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("utils2"))
+  .settings(
+    name := "utils2",
+    commonSettings,
+    baseDeps,
+  )
+  .jvmSettings(commonJvmLibSettings)
 
 lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -319,7 +325,7 @@ lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 lazy val pretty = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("pretty"))
-  .dependsOn(utils)
+  .dependsOn(utils, utils2)
   .dependsOn(kiamaCore)
   .settings(
     name := "pretty",
@@ -360,7 +366,7 @@ lazy val tyck = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
-  .dependsOn(base, parser, ast, pretty, tyck)
+  .dependsOn(base, parser, ast, pretty, tyck, utils2)
   .settings(
     name := "core",
     assembly / assemblyJarName := "core.jar",
@@ -710,7 +716,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     kiamaCore,
     effektKiama,
     jsTypings,
-    utils,
+    utils, utils2,
     base, parser, ast, pretty, tyck,
     core,
     common,
