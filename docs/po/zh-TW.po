@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: The Chester Programming Language\n"
-"POT-Creation-Date: 2024-09-24T18:16:10+12:00\n"
+"POT-Creation-Date: 2024-09-27T22:51:36+12:00\n"
 "PO-Revision-Date: 2024-09-24 17:37+1200\n"
 "Last-Translator:  <email@address.com>\n"
 "Language-Team: Language zh-TW\n"
@@ -12,15 +12,15 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/SUMMARY.md:1
-msgid "Summary"
+msgid "https://github.com/rust-lang-nursery/mdBook/issues/677"
 msgstr ""
 
-#: src/SUMMARY.md:3
-msgid "Chapter 1"
-msgstr ""
-
-#: src/chapter_1.md:1
+#: src/SUMMARY.md:2 src/chapter_1.md:1
 msgid "Chapter 1: Introduction to Chester"
+msgstr ""
+
+#: src/SUMMARY.md:3 src/chapter_2.md:1
+msgid "Chapter 2: Statements"
 msgstr ""
 
 #: src/chapter_1.md:3
@@ -28,7 +28,9 @@ msgid ""
 "Welcome to the Chester Programming Language documentation! Chester is a "
 "modern, expressive language designed to combine the best features of "
 "functional and object-oriented programming paradigms."
-msgstr "Chester 是一種現代、表達力強的程式語言，結合了函數式和物件導向程式設計的優點。"
+msgstr ""
+"Chester 是一種現代、表達力強的程式語言，結合了函數式和物件導向程式設計的優"
+"點。"
 
 #: src/chapter_1.md:5
 msgid "What is Chester?"
@@ -39,7 +41,9 @@ msgid ""
 "Chester is a statically-typed language that aims to provide a balance "
 "between expressiveness and safety. It draws inspiration from languages like "
 "Scala, Haskell, and Rust, while introducing its own unique features."
-msgstr "Chester 是一種靜態類型語言，旨在提供表達力和安全性的平衡。它從像 Scala、Haskell 和 Rust 的語言中汲取靈感，同時引入了自己的獨特功能。"
+msgstr ""
+"Chester 是一種靜態類型語言，旨在提供表達力和安全性的平衡。它從像 Scala、"
+"Haskell 和 Rust 的語言中汲取靈感，同時引入了自己的獨特功能。"
 
 #: src/chapter_1.md:9
 msgid "Some key characteristics of Chester include:"
@@ -81,4 +85,257 @@ msgid ""
 "\n"
 "def me: String = \"インターネット・エンジェル\";\n"
 "```"
+msgstr ""
+
+#: src/chapter_2.md:3
+msgid "Scope of `let` and `def`"
+msgstr "let 和 def 的範圍"
+
+#: src/chapter_2.md:5
+msgid ""
+"In Chester, `let` and `def` are used to declare bindings, but they differ in "
+"how they handle scoping and forward references. Understanding these "
+"differences is crucial for writing correct and efficient Chester programs."
+msgstr ""
+"在 Chester 中，let 和 def 用於宣告繫結，但它們在處理範圍和前向引用時有所不同。"
+"了解這些差異對於撰寫正確且高效的 Chester 程式至關重要。"
+
+#: src/chapter_2.md:7
+msgid "`let` Bindings"
+msgstr "let 繫結"
+
+#: src/chapter_2.md:9
+msgid ""
+"**Local Scope**: `let` bindings are only visible **after** their declaration "
+"within the current block."
+msgstr ""
+"**區域範圍**：let 繫結僅在宣告後在當前塊中可見。"
+
+#: src/chapter_2.md:10
+msgid ""
+"**No Forward References**: You cannot reference a `let` binding before it's "
+"declared."
+msgstr ""
+"**不允許前向引用**：你不能在宣告之前引用 let 繫結。"
+
+#: src/chapter_2.md:11
+msgid ""
+"**Type Inference**: If no type annotation is provided, the compiler infers "
+"the type from the binding's body."
+msgstr ""
+"**類型推斷**：如果沒有提供類型註解，編譯器會從繫結的主體推斷類型。"
+
+#: src/chapter_2.md:13 src/chapter_2.md:33
+msgid "**Example:**"
+msgstr ""
+"**範例**："
+
+#: src/chapter_2.md:15
+msgid ""
+"```chester,playground,editable\n"
+"// Correct usage of 'let'\n"
+"let x = 5;\n"
+"let y = x; // 'x' is defined before use\n"
+"```"
+msgstr ""
+"```chester,playground,editable\n"
+"// 正確使用 let\n"
+"let x = 5;\n"
+"let y = x; // 'x' 在使用前已定義\n"
+"```"
+
+#: src/chapter_2.md:21
+msgid ""
+"```chester,playground,editable\n"
+"// Incorrect usage of 'let'\n"
+"let y = x + 2; // Error: 'x' is not defined yet\n"
+"let x = 5;\n"
+"```"
+msgstr ""
+
+#: src/chapter_2.md:27
+msgid "`def` Bindings"
+msgstr ""
+
+#: src/chapter_2.md:29
+msgid ""
+"**Global Scope**: `def` bindings are visible throughout the entire block, "
+"even before their declaration."
+msgstr ""
+"**全域範圍**：def 繫結在整個塊中可見，甚至在宣告之前。"
+
+#: src/chapter_2.md:30
+msgid ""
+"**Allows Forward References**: You can reference a `def` binding before it's "
+"declared."
+msgstr ""
+"**允許前向引用**：你可以在宣告之前引用 def 繫結。"
+
+#: src/chapter_2.md:31
+msgid ""
+"**Type Annotation Required for Forward References**: If you use a `def` "
+"binding before its declaration, you must provide a type annotation."
+msgstr ""
+"**需要類型註解**：如果你在宣告之前使用 def 繫結，必須提供類型註解。"
+
+#: src/chapter_2.md:35
+msgid ""
+"```chester,playground,editable\n"
+"// Correct usage of 'def' with type annotation\n"
+"def y = square(5); // 'square' is used before its declaration\n"
+"\n"
+"def square(n: Int) = n * n; // Type annotation for 'n' is required\n"
+"```"
+msgstr ""
+"```chester,playground,editable\n"
+"// 正確使用 def 並提供類型註解\n"
+"def y = square(5); // 'square' 在使用前已宣告\n"
+"\n"
+"def square(n: Int) = n * n; // 需要類型註解\n"
+"```"
+
+#: src/chapter_2.md:42
+msgid ""
+"```chester,playground,editable\n"
+"// Incorrect usage of 'def' without type annotation\n"
+"def y = increment(5); // 'increment' is used before its declaration\n"
+"\n"
+"def increment(n) = n + 1; // Error: Missing type annotation for 'n'\n"
+"```"
+msgstr ""
+
+#: src/chapter_2.md:49
+msgid "Summary of Scoping Rules"
+msgstr ""
+
+#: src/chapter_2.md:51
+msgid "**`let` Bindings**:"
+msgstr ""
+
+#: src/chapter_2.md:52
+msgid "Visible only after their declaration within the current block."
+msgstr ""
+
+#: src/chapter_2.md:53
+msgid "Do **not** allow forward references."
+msgstr ""
+
+#: src/chapter_2.md:54
+msgid "Type annotations are optional if the type can be inferred."
+msgstr ""
+
+#: src/chapter_2.md:56
+msgid "**`def` Bindings**:"
+msgstr ""
+
+#: src/chapter_2.md:57
+msgid "Visible throughout the entire block."
+msgstr ""
+
+#: src/chapter_2.md:58
+msgid "Allow forward references."
+msgstr ""
+
+#: src/chapter_2.md:59
+msgid "Require type annotations when used before their declarations."
+msgstr ""
+
+#: src/chapter_2.md:61
+msgid "Compiler Behavior"
+msgstr ""
+
+#: src/chapter_2.md:63
+msgid ""
+"When processing a block, the Chester compiler handles `let` and `def` "
+"bindings differently to manage scope and type checking."
+msgstr ""
+
+#: src/chapter_2.md:65
+msgid "Processing `def` Bindings"
+msgstr ""
+
+#: src/chapter_2.md:67
+msgid "**Collection Phase**:"
+msgstr ""
+
+#: src/chapter_2.md:68
+msgid ""
+"The compiler collects all `def` bindings, noting their names, type "
+"annotations, and identifiers."
+msgstr ""
+
+#: src/chapter_2.md:69
+msgid "It tracks forward references to detect usages before declarations."
+msgstr ""
+
+#: src/chapter_2.md:71
+msgid "**Type Annotation Checks**:"
+msgstr ""
+
+#: src/chapter_2.md:72
+msgid ""
+"For forward-referenced `def` bindings without type annotations, the compiler "
+"reports a `MissingTypeAnnotationError`."
+msgstr ""
+
+#: src/chapter_2.md:74
+msgid "**Context Updates**:"
+msgstr ""
+
+#: src/chapter_2.md:75
+msgid ""
+"The compiler adds placeholders or inferred types to the context, allowing "
+"forward-referenced `def` bindings to be used."
+msgstr ""
+
+#: src/chapter_2.md:77
+msgid "Processing `let` Bindings"
+msgstr ""
+
+#: src/chapter_2.md:79
+msgid "**Sequential Processing**:"
+msgstr ""
+
+#: src/chapter_2.md:80
+msgid "`let` bindings are processed in order of their appearance."
+msgstr ""
+
+#: src/chapter_2.md:81
+msgid "Each `let` binding is added to the context **after** its declaration."
+msgstr ""
+
+#: src/chapter_2.md:82
+msgid "**No Forward References**:"
+msgstr ""
+
+#: src/chapter_2.md:83
+msgid "Referencing a `let` binding before its declaration results in an error."
+msgstr ""
+
+#: src/chapter_2.md:85
+msgid "Best Practices"
+msgstr ""
+
+#: src/chapter_2.md:87
+msgid ""
+"Use `let` when you don't need to reference the binding before its "
+"declaration."
+msgstr ""
+
+#: src/chapter_2.md:88
+msgid ""
+"Use `def` when you need forward references or are defining recursive "
+"functions."
+msgstr ""
+
+#: src/chapter_2.md:89
+msgid ""
+"Always provide type annotations for `def` bindings that are forward-"
+"referenced to avoid compilation errors."
+msgstr ""
+
+#: src/chapter_2.md:91
+msgid ""
+"By understanding these scoping rules, you can write more predictable and "
+"maintainable Chester code."
 msgstr ""
