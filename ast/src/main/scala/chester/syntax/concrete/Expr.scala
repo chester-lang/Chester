@@ -133,35 +133,34 @@ case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends Parse
   override def toDoc(implicit options: PrettierOptions): Doc = group(seq.map(_.toDoc).reduce(_ </> _))
 }
 
-// TODO: implement minimal parens
-case class Infix(op: Expr, left: Expr, right: Expr, meta: Option[ExprMeta] = None) extends Expr {
+case class InfixExpr(left: Expr, operator: Identifier, right: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Infix(operator(op), operator(left), operator(right), meta)
+    copy(left = left.descent(operator), right = right.descent(operator))
   }
 
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Infix = copy(meta = updater(meta))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): InfixExpr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(left.toDoc </> op.toDoc </> right.toDoc)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(left.toDoc <> operator.toDoc <> right.toDoc)
 }
 
-case class Prefix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
+case class PrefixExpr(operator: Identifier, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Prefix(operator(op), operator(operand), meta)
+    copy(operand = operand.descent(operator))
   }
 
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Prefix = copy(meta = updater(meta))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): PrefixExpr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(op.toDoc </> operand.toDoc)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(operator.toDoc <> operand.toDoc)
 }
 
-case class Postfix(op: Expr, operand: Expr, meta: Option[ExprMeta] = None) extends Expr {
+case class PostfixExpr(operand: Expr, operator: Identifier, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    Postfix(operator(op), operator(operand), meta)
+    copy(operand = operand.descent(operator))
   }
 
-  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Postfix = copy(meta = updater(meta))
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): PostfixExpr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = group(operand.toDoc </> op.toDoc)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(operand.toDoc <> operator.toDoc)
 }
 
 case class Block(heads: Vector[Expr], tail: Option[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr {

@@ -6,29 +6,32 @@ import chester.syntax.concrete.stmt.QualifiedID
 import upickle.default.*
 
 case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx) {
-  def resolveInfix(name: Name): Option[OpInfo] = opinfos.resolveInfix(name)
+  def resolveInfix(name: Name): Option[Infix] = opinfos.resolveInfix(name)
 
-  def resolvePrefix(name: Name): Option[OpInfo] = opinfos.resolvePrefix(name)
+  def resolvePrefix(name: Name): Option[Prefix] = opinfos.resolvePrefix(name)
 
-  def resolvePostfix(name: Name): Option[OpInfo] = opinfos.resolvePostfix(name)
+  def resolvePostfix(name: Name): Option[Postfix] = opinfos.resolvePostfix(name)
+
+  def resolveOperator(name: Name): Option[OpInfo] =
+    resolveInfix(name).orElse(resolvePrefix(name)).orElse(resolvePostfix(name))
 }
 
 object OperatorsContext {
   val Default: OperatorsContext = OperatorsContext(defaultInfixDefitions, defaultPrecedenceGroup)
 }
 
-case class InfixDefitions(infix: Map[Name, OpInfo], other: Vector[OpInfo] = Vector.empty) {
-  def resolveInfix(name: Name): Option[OpInfo] = infix.get(name)
+case class InfixDefitions(infix: Map[Name, Infix], other: Vector[Prefix|Postfix] = Vector.empty) {
+  def resolveInfix(name: Name): Option[Infix] = infix.get(name)
 
-  def resolvePrefix(name: Name): Option[OpInfo] = other.find {
+  def resolvePrefix(name: Name): Option[Prefix] = (other.find {
     case Prefix(`name`) => true
     case _ => false
-  }
+  }).asInstanceOf[Option[Prefix]]
 
-  def resolvePostfix(name: Name): Option[OpInfo] = other.find {
+  def resolvePostfix(name: Name): Option[Postfix] = (other.find {
     case Postfix(`name`) => true
     case _ => false
-  }
+  }).asInstanceOf[Option[Postfix]]
 }
 
 object InfixDefitions {
@@ -37,7 +40,7 @@ object InfixDefitions {
       case Infix(name, _) => true
       case _ => false
     }
-    InfixDefitions(infix.collect { case Infix(name, group) => name -> Infix(name, group) }.toMap, other)
+    InfixDefitions(infix.collect { case Infix(name, group) => name -> Infix(name, group) }.toMap, other.asInstanceOf[Vector[Prefix|Postfix]])
   }
 }
 
