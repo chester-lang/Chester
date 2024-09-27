@@ -6,10 +6,12 @@ import { startRepl, startReplPty, startReplReadline } from "@/scala/main";
 import { Terminal } from '@xterm/xterm';
 import { Readline } from "xterm-readline";
 import { useTranslations } from 'next-intl';
+import { useTheme } from '@/components/ThemeContext';
 
 export default function Home() {
   const t = useTranslations('Home');
   const xtermRef = useRef<any>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     // https://stackoverflow.com/questions/66096260/why-am-i-getting-referenceerror-self-is-not-defined-when-i-import-a-client-side/66100185#66100185
@@ -62,7 +64,47 @@ export default function Home() {
       }
     };
     initTerminal();
-  }, []);
+  }, [xtermRef]);
+
+  
+  useEffect(() => {
+    if (xtermRef.current) {
+      const terminal = xtermRef.current.terminal as Terminal;
+      // Apply theme to XTerm
+      if (theme === 'dark') {
+        terminal.options.theme = {};
+      } else if(theme === 'light') {
+        // Color source: https://github.com/microsoft/vscode/blob/main/extensions/theme-defaults/themes/light_plus.json
+        terminal.options.theme = {
+          background: '#ffffff',
+          foreground: '#333333',
+          cursor: '#333333',
+          cursorAccent: '#ffffff',
+          selectionBackground: '#add6ff',
+          //overviewRulerBorder: '#aaaaaa',
+          black: '#000000',
+          blue: '#0451a5',
+          brightBlack: '#666666',
+          brightBlue: '#0451a5',
+          brightCyan: '#0598bc',
+          brightGreen: '#14ce14',
+          brightMagenta: '#bc05bc',
+          brightRed: '#cd3131',
+          brightWhite: '#a5a5a5',
+          brightYellow: '#b5ba00',
+          cyan: '#0598bc',
+          green: '#00bc00',
+          magenta: '#bc05bc',
+          red: '#cd3131',
+          white: '#555555',
+          yellow: '#949800'
+        };
+      }
+      // Force a redraw of the terminal
+      terminal.refresh(0, terminal.rows - 1);
+
+    }
+  }, [theme, xtermRef]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
