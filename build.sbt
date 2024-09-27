@@ -288,7 +288,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
   )
-  .nativeConfigure(_.dependsOn(ironNative.native, spireNative.native, scalaGraph.native))
+  .nativeConfigure(_.dependsOn(ironNative.native, scalaGraph.native))
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
