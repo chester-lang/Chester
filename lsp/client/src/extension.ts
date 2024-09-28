@@ -11,6 +11,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  TransportKind,
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
@@ -21,10 +22,24 @@ export function activate(context: ExtensionContext) {
     path.join('server', 'chester-lsp.jar')
   );
 
-  // Server options
+  // Debug options for the server
+  const debugOptions = [
+    '-Xdebug',
+    '-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044',
+  ];
+
+  // Server options: run and debug modes
   const serverOptions: ServerOptions = {
-    command: 'java',
-    args: ['-jar', serverJar],
+    run: {
+      command: 'java',
+      args: ['-jar', serverJar],
+      transport: TransportKind.ipc,
+    },
+    debug: {
+      command: 'java',
+      args: [...debugOptions, '-jar', serverJar],
+      transport: TransportKind.ipc,
+    },
   };
 
   // Client options
@@ -44,6 +59,16 @@ export function activate(context: ExtensionContext) {
   );
 
   client.start();
+
+  client.onDidChangeState((event) => {
+    if (event.newState === 2) {
+      // Connection is now active
+    }
+  });
+
+  client.onReady().then(() => {
+    // Client is ready
+  });
 }
 
 export function deactivate(): Thenable<void> | undefined {

@@ -27,8 +27,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
     val capabilities = new ServerCapabilities()
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
-    // Add other capabilities here
-
+    capabilities.setCompletionProvider(new CompletionOptions())
+    capabilities.setHoverProvider(true)
+    // Declare other supported features
     CompletableFuture.completedFuture(new InitializeResult(capabilities))
   }
 
@@ -105,16 +106,16 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def hover(params: HoverParams): CompletableFuture[Hover] = {
     val position = params.getPosition
-    val textDocument = params.getTextDocument.getUri
-    val hoverInfo = provideHoverInfo(textDocument, position)
-    CompletableFuture.completedFuture(new Hover(hoverInfo))
+    val uri = params.getTextDocument.getUri
+    val contents = provideHoverInformation(uri, position)
+    CompletableFuture.completedFuture(new Hover(contents))
   }
 
-  private def provideHoverInfo(uri: String, position: Position): MarkupContent = {
-    // Implement logic to provide hover information based on the position
+  private def provideHoverInformation(uri: String, position: Position): MarkupContent = {
+    // Logic to fetch hover information based on position
     val content = new MarkupContent()
     content.setKind("markdown")
-    content.setValue("Example hover information")
+    content.setValue("Detailed information about the symbol at the cursor.")
     content
   }
 
