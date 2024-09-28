@@ -678,7 +678,7 @@ lazy val docs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
 
 lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
-  .in(file("lsp"))
+  .in(file("lsp/server"))
   .jvmEnablePlugins(NativeImagePlugin)
   .dependsOn(common)
   .settings(

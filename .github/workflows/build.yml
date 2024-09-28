@@ -136,7 +136,7 @@ jobs:
         path: |
           ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          ./lsp/server/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           ./target/chester
           ./target/chester-lsp
@@ -150,7 +150,7 @@ jobs:
         path: |
           ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar
           ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar
-          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
+          ./lsp/server/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
           ./target/chester.exe
           ./target/chester-lsp.exe
@@ -167,7 +167,7 @@ jobs:
         artifacts: |
           ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          ./lsp/server/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           ./target/chester,
           ./target/chester-lsp,
@@ -184,7 +184,7 @@ jobs:
         artifacts: |
           ./common/jvm/target/scala-${{ env.SCALA_VERSION }}/common.jar,
           ./cli/jvm/target/scala-${{ env.SCALA_VERSION }}/chester.jar,
-          ./lsp/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
+          ./lsp/server/.jvm/target/scala-${{ env.SCALA_VERSION }}/chester-lsp.jar,
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           ./target/chester.exe,
           ./target/chester-lsp.exe,
