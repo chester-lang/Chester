@@ -293,7 +293,7 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
     qualifiedNameOn(id) | Pass(id)
   }
 
-  def symbol: P[SymbolLiteral] = P(":" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
+  def symbol: P[SymbolLiteral] = P("'" ~ id).withMeta.map { case (name, meta) => SymbolLiteral(name, meta) }
 
   def objectClause0: P[ObjectClause] = (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace).map(ObjectExprClause)
 

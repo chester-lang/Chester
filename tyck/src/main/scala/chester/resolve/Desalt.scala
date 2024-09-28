@@ -277,9 +277,9 @@ case object SimpleDesalt {
   }
 
   @tailrec
-  def unwrap(e: Expr): Expr = e match {
-    case Block(Vector(), Some(tail), _) => unwrap(tail)
-    case Tuple(Vector(term), _) => unwrap(term)
+  private def unwrap(e: Expr)(using reporter: Reporter[TyckProblem]): Expr = e match {
+    case Block(Vector(), Some(tail), _) => unwrap(desugar(tail))
+    case Tuple(Vector(term), _) => unwrap(desugar(term))
     case _ => e
   }
 

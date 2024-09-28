@@ -343,7 +343,7 @@ case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends L
 case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("'"+ value)
 
   def toIdentifier: Identifier = Identifier(value, meta)
 }

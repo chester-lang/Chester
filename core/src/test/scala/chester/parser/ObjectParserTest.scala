@@ -30,7 +30,7 @@ class ObjectParserTest extends FunSuite {
   }
 
     test("parse object with single field 3") {
-      val input = "{ :a => 1}"
+      val input = "{ 'a => 1}"
       val expected = ObjectExpr(Vector(
         ObjectExprClauseOnValue(SymbolLiteral("a"), IntegerLiteral(1))
       ))
@@ -38,7 +38,7 @@ class ObjectParserTest extends FunSuite {
     }
 
   test("parse object with single field 4") {
-    val input = "{:a=>1}"
+    val input = "{'a=>1}"
     val expected = ObjectExpr(Vector(
       ObjectExprClauseOnValue(SymbolLiteral("a"), IntegerLiteral(1))
     ))
