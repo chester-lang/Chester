@@ -244,7 +244,7 @@ case object StmtDesalt {
 }
 
 case object SimpleDesalt {
-  def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = {
+  def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = expr match {
     case OpSeq(xs, _) if xs.length == 1 => xs.head
     case clause @ DesaltCaseClauseMatch(x) => x
     case block @ Block(heads, tail, _) if heads.exists(_.isInstanceOf[DesaltCaseClause]) ||
