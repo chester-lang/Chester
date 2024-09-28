@@ -1,6 +1,6 @@
 # chester-lang
 
-https://chester-lang.github.io/chester/
+https://www.the-lingo.org - note that the domain is subject to change
 
 It might look like?
 
