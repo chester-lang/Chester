@@ -978,8 +978,8 @@ Block(
                     )
                   )
                 ),
-                SymbolLiteral(
-                  value = "T",
+                Identifier(
+                  name = ":",
                   meta = Some(
                     value = ExprMeta(
                       sourcePos = Some(
@@ -991,6 +991,27 @@ Block(
                           ),
                           range = RangeInFile(
                             start = Pos(index = 193, line = 14, column = 23),
+                            end = Pos(index = 193, line = 14, column = 23)
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "T",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = 0
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = 194, line = 14, column = 24),
                             end = Pos(index = 194, line = 14, column = 24)
                           )
                         )
