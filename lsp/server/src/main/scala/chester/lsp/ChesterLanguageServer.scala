@@ -8,6 +8,10 @@ import chester.utils.StringIndex
 import fastparse.Parsed
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
+import scala.collection.mutable
+import org.eclipse.lsp4j.{SymbolInformation, WorkspaceSymbolParams}
+import java.util.concurrent.CompletableFuture
+import scala.jdk.CollectionConverters.*
 
 import java.util.concurrent.CompletableFuture
 import scala.compiletime.uninitialized
@@ -26,10 +30,14 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
     val capabilities = new ServerCapabilities()
-    capabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
-    capabilities.setCompletionProvider(new CompletionOptions())
+    capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
+    capabilities.setCompletionProvider(new CompletionOptions(false, List(".", ":").asJava))
     capabilities.setHoverProvider(true)
-    // Declare other supported features
+    capabilities.setDefinitionProvider(true)
+    capabilities.setReferencesProvider(true)
+    capabilities.setDocumentSymbolProvider(true)
+    capabilities.setWorkspaceSymbolProvider(true)
+    capabilities.setCodeActionProvider(true)
     CompletableFuture.completedFuture(new InitializeResult(capabilities))
   }
 
@@ -45,10 +53,21 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
-    val text = params.getContentChanges.get(0).getText
     val uri = params.getTextDocument.getUri
-    val diagnostics = parseAndGenerateDiagnostics(uri, text)
+    val changes = params.getContentChanges.asScala
+    
+    // Apply changes to the document
+    val updatedText = applyChanges(uri, changes)
+    
+    // Parse and generate diagnostics
+    val diagnostics = parseAndGenerateDiagnostics(uri, updatedText)
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
+  }
+
+  private def applyChanges(uri: String, changes: mutable.Buffer[TextDocumentContentChangeEvent]): String = {
+    // Implement logic to apply changes to the document
+    // For now, we'll just return the text of the last change
+    changes.lastOption.map(_.getText).getOrElse("")
   }
 
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
@@ -145,5 +164,51 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def didChangeWatchedFiles(params: DidChangeWatchedFilesParams): Unit = {
     // Handle watched files change event here
+  }
+
+  override def definition(params: DefinitionParams): CompletableFuture[Either[java.util.List[? <: Location], java.util.List[? <: LocationLink]]] = {
+    CompletableFuture.supplyAsync(() => {
+      // Implement definition lookup logic here
+      Either.forLeft(new java.util.ArrayList[Location]())
+    })
+  }
+
+  override def references(params: ReferenceParams): CompletableFuture[java.util.List[? <: Location]] = {
+    CompletableFuture.supplyAsync(() => {
+      // Implement references lookup logic here
+      new java.util.ArrayList[Location]()
+    })
+  }
+
+  override def documentSymbol(params: DocumentSymbolParams): CompletableFuture[java.util.List[Either[SymbolInformation, DocumentSymbol]]] = {
+    CompletableFuture.supplyAsync(() => {
+      // Implement document symbol lookup logic here
+      new java.util.ArrayList[Either[SymbolInformation, DocumentSymbol]]()
+    })
+  }
+
+  override def codeAction(params: CodeActionParams): CompletableFuture[java.util.List[Either[Command, CodeAction]]] = {
+    CompletableFuture.supplyAsync(() => {
+      // Implement code action logic here
+      new java.util.ArrayList[Either[Command, CodeAction]]()
+    })
+  }
+
+  private val workspaceSymbols = new mutable.HashMap[String, mutable.Set[SymbolInformation]]()
+
+  private def addWorkspaceSymbol(uri: String, symbol: SymbolInformation): Unit = {
+    workspaceSymbols.getOrElseUpdate(uri, mutable.Set.empty) += symbol
+  }
+
+  private def removeWorkspaceSymbols(uri: String): Unit = {
+    workspaceSymbols.remove(uri)
+  }
+
+  private def workspaceSymbol(params: WorkspaceSymbolParams): CompletableFuture[java.util.List[? <: SymbolInformation]] = {
+    CompletableFuture.supplyAsync(() => {
+      val query = params.getQuery.toLowerCase
+      val matchingSymbols = workspaceSymbols.values.flatten.filter(_.getName.toLowerCase.contains(query))
+      matchingSymbols.toList.asJava
+    })
   }
 }

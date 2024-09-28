@@ -17,10 +17,9 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-  // Path to the server JAR
-  const serverJar = context.asAbsolutePath(
-    path.join('server', 'chester-lsp.jar')
-  );
+  console.log('Chester Language Server is now active!');
+
+  const serverJar = context.asAbsolutePath(path.join('server', 'chester-lsp.jar'));
 
   // Debug options for the server
   const debugOptions = [
@@ -58,20 +57,31 @@ export function activate(context: ExtensionContext) {
     clientOptions
   );
 
-  client.start();
-
-  client.onDidChangeState((event) => {
-    if (event.newState === 2) {
-      // Connection is now active
-    }
+  client.onReady().then(() => {
+    console.log('Chester Language Server is ready');
+  }).catch((error) => {
+    console.error('Failed to start Chester Language Server', error);
+    window.showErrorMessage('Failed to start Chester Language Server. Check the console for more information.');
   });
 
-  client.onReady().then(() => {
-    // Client is ready
+  const disposable = client.start();
+  context.subscriptions.push(disposable);
+
+  client.onDidChangeState((event) => {
+    if (event.newState === 1) {
+      console.log('Chester Language Server is starting');
+    } else if (event.newState === 2) {
+      console.log('Chester Language Server connection is active');
+    } else if (event.newState === 3) {
+      console.log('Chester Language Server connection is closing');
+    } else if (event.newState === 4) {
+      console.log('Chester Language Server connection is closed');
+    }
   });
 }
 
 export function deactivate(): Thenable<void> | undefined {
+  console.log('Deactivating Chester Language Server');
   if (!client) {
     return undefined;
   }
