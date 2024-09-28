@@ -3,6 +3,7 @@ package chester.lsp
 import chester.error.*
 import chester.parser.*
 import chester.syntax.concrete.*
+import chester.tyck.{ExprTycker, TyckResult}
 import chester.utils.StringIndex
 import fastparse.Parsed
 import org.eclipse.lsp4j.*
@@ -11,6 +12,9 @@ import org.eclipse.lsp4j.services.*
 import java.util.concurrent.CompletableFuture
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
+import org.eclipse.lsp4j.jsonrpc.messages.Either
+
+import java.util.concurrent.CompletableFuture
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
 
@@ -47,15 +51,36 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
-    Parser.parseExpr(FileNameAndContent(fileName, text)) match {
-      case Right(_) =>
-        List() // No errors
+    Parser.parseTopLevel(FileNameAndContent(fileName, text)) match {
+      case Right(parsedBlock) =>
+        ExprTycker.synthesize(parsedBlock) match {
+          case TyckResult.Success(_, _, warnings) =>
+            // Optionally handle warnings here
+            List()
+          case TyckResult.Failure(errors, warnings, _, _) =>
+            errors.map { error =>
+              val range = error.location.map { pos =>
+                new Range(
+                  new Position(pos.range.start.line, pos.range.start.column),
+                  new Position(pos.range.end.line, pos.range.end.column)
+                )
+              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+
+              new Diagnostic(
+                range,
+                error.getMessage,
+                DiagnosticSeverity.Error,
+                "ChesterLanguageServer"
+              )
+            }.toList
+        }
       case Left(parseError) =>
+        val range = new Range(
+          new Position(parseError.index.line, parseError.index.column),
+          new Position(parseError.index.line, parseError.index.column)
+        )
         val diagnostic = new Diagnostic(
-          new Range(
-            new Position(parseError.index.line, parseError.index.column),
-            new Position(parseError.index.line, parseError.index.column)
-          ),
+          range,
           parseError.message,
           DiagnosticSeverity.Error,
           "ChesterLanguageServer"
@@ -64,9 +89,6 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  import org.eclipse.lsp4j.jsonrpc.messages.Either
-
-  import java.util.concurrent.CompletableFuture
 
   override def completion(params: CompletionParams): CompletableFuture[Either[java.util.List[CompletionItem], CompletionList]] = {
     val position = params.getPosition
