@@ -3,9 +3,7 @@ import * as vscode from 'vscode';
 import {
   workspace,
   ExtensionContext,
-  languages,
   window,
-  commands,
 } from 'vscode';
 import {
   LanguageClient,
@@ -16,7 +14,7 @@ import {
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
   console.log('Chester Language Server is now active!');
 
   const serverJar = context.asAbsolutePath(path.join('server', 'chester-lsp.jar'));
@@ -49,7 +47,7 @@ export function activate(context: ExtensionContext) {
     },
   };
 
-  // Create the language client and start the client
+  // Create the language client
   client = new LanguageClient(
     'chesterLanguageServer',
     'Chester Language Server',
@@ -57,15 +55,19 @@ export function activate(context: ExtensionContext) {
     clientOptions
   );
 
-  client.onReady().then(() => {
+  // Start the client and handle any errors
+  try {
+    await client.start();
     console.log('Chester Language Server is ready');
-  }).catch((error) => {
+  } catch (error) {
     console.error('Failed to start Chester Language Server', error);
-    window.showErrorMessage('Failed to start Chester Language Server. Check the console for more information.');
-  });
+    window.showErrorMessage(
+      'Failed to start Chester Language Server. Check the console for more information.'
+    );
+  }
 
-  const disposable = client.start();
-  context.subscriptions.push(disposable);
+  // Add the client to the subscriptions
+  context.subscriptions.push(client);
 
   client.onDidChangeState((event) => {
     if (event.newState === 1) {
