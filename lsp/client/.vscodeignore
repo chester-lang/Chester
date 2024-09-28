@@ -1,0 +1,19 @@
+# Exclude unnecessary files and directories
+**/*.map
+**/*.ts
+**/.vscode/**
+**/node_modules/**
+**/test/**
+**/*.git*
+**/*.md
+**/src/**
+
+# Exclude build-related files
+**/out/test/**
+**/out/**/*.map
+
+# Exclude the .gitignore file itself
+.vscodeignore
+
+# Include the server JAR file
+!server/chester-lsp.jar

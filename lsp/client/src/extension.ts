@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
 import {
   workspace,
   ExtensionContext,
@@ -9,77 +8,72 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind,
 } from 'vscode-languageclient/node';
+import util from 'node:util';
+import { exec as execCallback } from 'node:child_process';
 
+const exec = util.promisify(execCallback);
 let client: LanguageClient;
 
 export async function activate(context: ExtensionContext) {
   console.log('Chester Language Server is now active!');
 
-  const serverJar = context.asAbsolutePath(path.join('server', 'chester-lsp.jar'));
-
-  // Debug options for the server
-  const debugOptions = [
-    '-Xdebug',
-    '-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044',
-  ];
-
-  // Server options: run and debug modes
-  const serverOptions: ServerOptions = {
-    run: {
-      command: 'java',
-      args: ['-jar', serverJar],
-      transport: TransportKind.ipc,
-    },
-    debug: {
-      command: 'java',
-      args: [...debugOptions, '-jar', serverJar],
-      transport: TransportKind.ipc,
-    },
-  };
-
-  // Client options
-  const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: 'file', language: 'chester' }],
-    synchronize: {
-      fileEvents: workspace.createFileSystemWatcher('**/*.chester'),
-    },
-  };
-
-  // Create the language client
-  client = new LanguageClient(
-    'chesterLanguageServer',
-    'Chester Language Server',
-    serverOptions,
-    clientOptions
-  );
-
-  // Start the client and handle any errors
   try {
+    // Check if Java is available
+    await exec('java -version');
+
+    // Path to the server JAR inside the extension
+    const serverJar = context.asAbsolutePath(
+      path.join('server', 'chester-lsp.jar')
+    );
+
+    // Server options
+    const serverOptions: ServerOptions = {
+      run: {
+        command: 'java',
+        args: ['-jar', serverJar],
+      },
+      debug: {
+        command: 'java',
+        args: [
+          '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044',
+          '-jar',
+          serverJar,
+        ],
+      },
+    };
+
+    // Client options
+    const clientOptions: LanguageClientOptions = {
+      documentSelector: [{ scheme: 'file', language: 'chester' }],
+      synchronize: {
+        fileEvents: workspace.createFileSystemWatcher('**/*.chester'),
+      },
+    };
+
+    // Create the language client and start it
+    client = new LanguageClient(
+      'chesterLanguageServer',
+      'Chester Language Server',
+      serverOptions,
+      clientOptions
+    );
+
+    // Start the client and handle any errors
     await client.start();
     console.log('Chester Language Server is ready');
-  } catch (error) {
-    console.error('Failed to start Chester Language Server', error);
-    window.showErrorMessage(
-      'Failed to start Chester Language Server. Check the console for more information.'
-    );
-  }
-
-  // Add the client to the subscriptions
-  context.subscriptions.push(client);
-
-  client.onDidChangeState((event) => {
-    if (event.newState === 1) {
-      console.log('Chester Language Server is starting');
-    } else if (event.newState === 2) {
-      console.log('Chester Language Server connection is active');
-    } else if (event.newState === 3) {
-      console.log('Chester Language Server connection is closing');
-    } else if (event.newState === 4) {
-      console.log('Chester Language Server connection is closed');
+  } catch (error: any) {
+    if (error.code === 'ENOENT' || error.stderr?.includes('not found')) {
+      window.showErrorMessage(
+        'Java Runtime Environment is not installed. Please install Java to use the Chester Language Server.'
+      );
+    } else {
+      console.error('Failed to start Chester Language Server', error);
+      window.showErrorMessage(
+        'Failed to start Chester Language Server. Check the console for more information.'
+      );
     }
-  });
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {
