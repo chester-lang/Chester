@@ -70,6 +70,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
 
       - name: Replace basePath in Next.js config
+        if: false # not needed for now
         run: |
           sed -i 's|basePath: "",|basePath: "/chester",|' next.config.mjs
         working-directory: ./site
