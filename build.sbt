@@ -392,7 +392,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuf
   .dependsOn(base, parser, ast, pretty, tyck, utils2)
   .settings(
     name := "core",
-    assembly / assemblyJarName := "core.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-core.jar",
     commonSettings,
     //cpsSettings,
   )
@@ -544,7 +544,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   .dependsOn(jsTypings)
   .settings(
     name := "chester",
-    assembly / assemblyJarName := "common.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-common.jar",
     commonSettings,
   )
   .jvmSettings(
@@ -582,7 +582,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .settings(
     name := "cli",
     Compile / mainClass := Some("chester.cli.Main"),
-    assembly / assemblyJarName := "chester.jar",
+    assembly / assemblyOutputPath := file("target") / "chester.jar",
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0"
     ),
@@ -618,7 +618,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   .settings(
     name := "up",
     Compile / mainClass := Some("chester.up.Main"),
-    assembly / assemblyJarName := "chesterup.jar",
+    assembly / assemblyOutputPath := file("target") / "chesterup.jar",
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0"
     ),
@@ -685,7 +685,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
-    assembly / assemblyJarName := "chester-lsp.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-lsp.jar",
     nativeImageOutput := file("target") / "chester-lsp",
     commonSettings
   )
@@ -701,7 +701,7 @@ lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   // https://github.com/b-studios/scala-graal-truffle-example/blob/c2747a6eece156f878c5b934116aaa00a2cd6311/build.sbt
   .settings(
     name := "truffle",
-    assembly / assemblyJarName := "chester-truffle.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-truffle.jar",
     assembly / test := {},
     assembly / assemblyExcludedJars := {
       val cp = (assembly / fullClasspath).value
