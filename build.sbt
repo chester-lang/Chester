@@ -54,12 +54,12 @@ val commonSettings = Seq(
     ),
   scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
   libraryDependencies ++= Seq(
-    "org.scalameta" %%% "munit" % "1.0.0" % Test,
+    "org.scalameta" %%% "munit" % "1.0.2" % Test,
     "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
     "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test,
     "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test,
     "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
-    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.18.1" % Test,
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test,
   ),
   // https://stackoverflow.com/questions/73822653/scala-2-artifact-in-scala-3-project-conflicting-cross-version-suffixes/73824811#73824811
@@ -97,12 +97,12 @@ val baseDeps = Seq(
       "org.typelevel" %%% "cats-free" % "2.12.0",
       "com.lihaoyi" %%% "upickle" % "4.0.1",
       "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.0",
+      "com.lihaoyi" %%% "fastparse" % "3.1.1",
       "com.lihaoyi" %%% "scalatags" % "0.13.1",
       "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
-      "io.getkyo" %%% "kyo-prelude" % "0.12.0",
-      "io.getkyo" %%% "kyo-data" % "0.12.0",
-      "io.getkyo" %%% "kyo-tag" % "0.12.0",
+      "io.getkyo" %%% "kyo-prelude" % "0.12.1",
+      "io.getkyo" %%% "kyo-data" % "0.12.1",
+      "io.getkyo" %%% "kyo-tag" % "0.12.1",
     ),
 )
 
@@ -235,23 +235,23 @@ lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform).with
     "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
     "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
     "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test cross (CrossVersion.for2_13Use3),
-    "org.scalacheck" %%% "scalacheck" % "1.18.0" % Test cross (CrossVersion.for2_13Use3),
+    "org.scalacheck" %%% "scalacheck" % "1.18.1" % Test cross (CrossVersion.for2_13Use3),
   ),
   */
   )
   .jvmSettings(commonJvmLibSettings)
   .jvmSettings(
     libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+      "org.scalacheck" %%% "scalacheck" % "1.18.1" cross (CrossVersion.for2_13Use3),
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "org.scalacheck" % "scalacheck_native0.5_2.13" % "1.18.0" % Compile,
+      "org.scalacheck" % "scalacheck_native0.5_2.13" % "1.18.1" % Compile,
     ),
   ).jsSettings(
     libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % "1.18.0" cross (CrossVersion.for2_13Use3),
+      "org.scalacheck" %%% "scalacheck" % "1.18.1" cross (CrossVersion.for2_13Use3),
     ),
   )
 // https://stackoverflow.com/questions/52224680/buildt-sbt-exclude-dependencies-from-dependson-submodule/52229391#52229391
@@ -270,7 +270,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
       //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
+      "org.scalacheck" %%% "scalacheck" % "1.18.1", // for scala-graph
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
@@ -282,7 +282,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
   .nativeSettings(
     libraryDependencies ++= Seq(
       //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
+      "org.scalacheck" %%% "scalacheck" % "1.18.1", // for scala-graph
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
@@ -292,7 +292,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.0", // for scala-graph
+      "org.scalacheck" %%% "scalacheck" % "1.18.1", // for scala-graph
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
@@ -507,7 +507,7 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
     resolvers += Resolver.file("local-ivy2", file("js-typings/local"))(Resolver.ivyStylePatterns),
     libraryDependencies ++= Seq(
       "com.olvind" %%% "scalablytyped-runtime" % "2.4.2",
-      "org.scala-js" %%% "scalajs-dom" % "2.3.0",
+      "org.scala-js" %%% "scalajs-dom" % "2.8.0",
     ),
     libraryDependencies ++= Seq(
       "org.scalablytyped" %%% "node" % "22.5.5-6bc698" % Compile,
@@ -551,12 +551,12 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     commonJvmLibSettings,
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.4",
+      "com.lihaoyi" %% "os-lib" % "0.10.7",
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.4",
+      "com.lihaoyi" %% "os-lib" % "0.10.7",
     ),
     scalacOptions ++= (if(supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
@@ -593,7 +593,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     nativeImageOutput := file("target") / "chester",
     graalvmSettings,
     libraryDependencies ++= Seq(
-      "org.jline" % "jline" % "3.26.3",
+      "org.jline" % "jline" % "3.27.0",
     )
   )
   .jsSettings(
@@ -661,7 +661,7 @@ lazy val site = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
         .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
     },
     */
-    libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "2.1.1",
+    libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "2.1.2",
     libraryDependencies += "me.shadaj" %%% "slinky-core" % "0.7.4",
   )
 
