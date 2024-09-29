@@ -127,7 +127,6 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
   }
 
-  // TODO: lsp protocol used UTF-16 but we used unicode index
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
     Parser.parseTopLevel(FileNameAndContent(fileName, text)) match {
       case Right(parsedBlock) =>
