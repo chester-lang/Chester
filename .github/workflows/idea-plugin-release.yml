@@ -1,0 +1,59 @@
+name: Build and Release IDEA Plugin Snapshot
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'sbt'
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Cache sbt dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.coursier
+            ~/.cache/coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Build IDEA Plugin
+        working-directory: idea-plugin
+        run: sbt packageArtifactZip
+
+      - name: Upload IDEA Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: idea-plugin-snapshot
+          path: idea-plugin/target/*.zip
+
+      - name: Create or Update GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: 'idea-plugin-snapshot'
+          name: 'IDEA Plugin Snapshot'
+          allowUpdates: true
+          prerelease: true
+          artifacts: idea-plugin/target/*.zip
