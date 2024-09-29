@@ -1,0 +1,1241 @@
+Block(
+  heads = Vector(
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "matchingLambda",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
+                    end = Pos(index = WithUTF16(i = 13, utf16 = 13), line = 0, column = WithUTF16(i = 13, utf16 = 13))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 15, utf16 = 15), line = 0, column = WithUTF16(i = 15, utf16 = 15)),
+                    end = Pos(index = WithUTF16(i = 15, utf16 = 15), line = 0, column = WithUTF16(i = 15, utf16 = 15))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "case",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 21, utf16 = 21), line = 1, column = WithUTF16(i = 2, utf16 = 2)),
+                            end = Pos(index = WithUTF16(i = 24, utf16 = 24), line = 1, column = WithUTF16(i = 5, utf16 = 5))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                IntegerLiteral(
+                  value = 1,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 26, utf16 = 26), line = 1, column = WithUTF16(i = 7, utf16 = 7)),
+                            end = Pos(index = WithUTF16(i = 26, utf16 = 26), line = 1, column = WithUTF16(i = 7, utf16 = 7))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=>",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 28, utf16 = 28), line = 1, column = WithUTF16(i = 9, utf16 = 9)),
+                            end = Pos(index = WithUTF16(i = 29, utf16 = 29), line = 1, column = WithUTF16(i = 10, utf16 = 10))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                IntegerLiteral(
+                  value = 0,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 31, utf16 = 31), line = 1, column = WithUTF16(i = 12, utf16 = 12)),
+                            end = Pos(index = WithUTF16(i = 31, utf16 = 31), line = 1, column = WithUTF16(i = 12, utf16 = 12))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 21, utf16 = 21), line = 1, column = WithUTF16(i = 2, utf16 = 2)),
+                        end = Pos(index = WithUTF16(i = 24, utf16 = 24), line = 1, column = WithUTF16(i = 5, utf16 = 5))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            ),
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "case",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 36, utf16 = 36), line = 2, column = WithUTF16(i = 2, utf16 = 2)),
+                            end = Pos(index = WithUTF16(i = 39, utf16 = 39), line = 2, column = WithUTF16(i = 5, utf16 = 5))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                IntegerLiteral(
+                  value = 2,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 41, utf16 = 41), line = 2, column = WithUTF16(i = 7, utf16 = 7)),
+                            end = Pos(index = WithUTF16(i = 41, utf16 = 41), line = 2, column = WithUTF16(i = 7, utf16 = 7))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=>",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 43, utf16 = 43), line = 2, column = WithUTF16(i = 9, utf16 = 9)),
+                            end = Pos(index = WithUTF16(i = 44, utf16 = 44), line = 2, column = WithUTF16(i = 10, utf16 = 10))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                IntegerLiteral(
+                  value = 2,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(index = WithUTF16(i = 46, utf16 = 46), line = 2, column = WithUTF16(i = 12, utf16 = 12)),
+                            end = Pos(index = WithUTF16(i = 46, utf16 = 46), line = 2, column = WithUTF16(i = 12, utf16 = 12))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 36, utf16 = 36), line = 2, column = WithUTF16(i = 2, utf16 = 2)),
+                        end = Pos(index = WithUTF16(i = 39, utf16 = 39), line = 2, column = WithUTF16(i = 5, utf16 = 5))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = None,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 17, utf16 = 17), line = 0, column = WithUTF16(i = 17, utf16 = 17)),
+                    end = Pos(index = WithUTF16(i = 49, utf16 = 49), line = 3, column = WithUTF16(i = 0, utf16 = 0))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/lambda.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 13, utf16 = 13), line = 0, column = WithUTF16(i = 13, utf16 = 13))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "functionType",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 53, utf16 = 53), line = 5, column = WithUTF16(i = 0, utf16 = 0)),
+                    end = Pos(index = WithUTF16(i = 64, utf16 = 64), line = 5, column = WithUTF16(i = 11, utf16 = 11))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 66, utf16 = 66), line = 5, column = WithUTF16(i = 13, utf16 = 13)),
+                    end = Pos(index = WithUTF16(i = 66, utf16 = 66), line = 5, column = WithUTF16(i = 13, utf16 = 13))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Integer",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 68, utf16 = 68), line = 5, column = WithUTF16(i = 15, utf16 = 15)),
+                    end = Pos(index = WithUTF16(i = 74, utf16 = 74), line = 5, column = WithUTF16(i = 21, utf16 = 21))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=>",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 76, utf16 = 76), line = 5, column = WithUTF16(i = 23, utf16 = 23)),
+                    end = Pos(index = WithUTF16(i = 77, utf16 = 77), line = 5, column = WithUTF16(i = 24, utf16 = 24))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "Integer",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 79, utf16 = 79), line = 5, column = WithUTF16(i = 26, utf16 = 26)),
+                    end = Pos(index = WithUTF16(i = 85, utf16 = 85), line = 5, column = WithUTF16(i = 32, utf16 = 32))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/lambda.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 53, utf16 = 53), line = 5, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 64, utf16 = 64), line = 5, column = WithUTF16(i = 11, utf16 = 11))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "functionSimple",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 89, utf16 = 89), line = 7, column = WithUTF16(i = 0, utf16 = 0)),
+                    end = Pos(index = WithUTF16(i = 102, utf16 = 102), line = 7, column = WithUTF16(i = 13, utf16 = 13))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 104, utf16 = 104), line = 7, column = WithUTF16(i = 15, utf16 = 15)),
+                    end = Pos(index = WithUTF16(i = 104, utf16 = 104), line = 7, column = WithUTF16(i = 15, utf16 = 15))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "x",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 106, utf16 = 106), line = 7, column = WithUTF16(i = 17, utf16 = 17)),
+                    end = Pos(index = WithUTF16(i = 106, utf16 = 106), line = 7, column = WithUTF16(i = 17, utf16 = 17))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "->",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 108, utf16 = 108), line = 7, column = WithUTF16(i = 19, utf16 = 19)),
+                    end = Pos(index = WithUTF16(i = 109, utf16 = 109), line = 7, column = WithUTF16(i = 20, utf16 = 20))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "x",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 111, utf16 = 111), line = 7, column = WithUTF16(i = 22, utf16 = 22)),
+                    end = Pos(index = WithUTF16(i = 111, utf16 = 111), line = 7, column = WithUTF16(i = 22, utf16 = 22))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "+",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 113, utf16 = 113), line = 7, column = WithUTF16(i = 24, utf16 = 24)),
+                    end = Pos(index = WithUTF16(i = 113, utf16 = 113), line = 7, column = WithUTF16(i = 24, utf16 = 24))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        IntegerLiteral(
+          value = 1,
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 115, utf16 = 115), line = 7, column = WithUTF16(i = 26, utf16 = 26)),
+                    end = Pos(index = WithUTF16(i = 115, utf16 = 115), line = 7, column = WithUTF16(i = 26, utf16 = 26))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/lambda.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 89, utf16 = 89), line = 7, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 102, utf16 = 102), line = 7, column = WithUTF16(i = 13, utf16 = 13))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "blockingFunction",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 119, utf16 = 119), line = 9, column = WithUTF16(i = 0, utf16 = 0)),
+                    end = Pos(index = WithUTF16(i = 134, utf16 = 134), line = 9, column = WithUTF16(i = 15, utf16 = 15))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 136, utf16 = 136), line = 9, column = WithUTF16(i = 17, utf16 = 17)),
+                    end = Pos(index = WithUTF16(i = 136, utf16 = 136), line = 9, column = WithUTF16(i = 17, utf16 = 17))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Block(
+          heads = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "x",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 140, utf16 = 140),
+                              line = 9,
+                              column = WithUTF16(i = 21, utf16 = 21)
+                            ),
+                            end = Pos(index = WithUTF16(i = 140, utf16 = 140), line = 9, column = WithUTF16(i = 21, utf16 = 21))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "->",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 142, utf16 = 142),
+                              line = 9,
+                              column = WithUTF16(i = 23, utf16 = 23)
+                            ),
+                            end = Pos(index = WithUTF16(i = 143, utf16 = 143), line = 9, column = WithUTF16(i = 24, utf16 = 24))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "let",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 147, utf16 = 147),
+                              line = 10,
+                              column = WithUTF16(i = 2, utf16 = 2)
+                            ),
+                            end = Pos(index = WithUTF16(i = 149, utf16 = 149), line = 10, column = WithUTF16(i = 4, utf16 = 4))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "y",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 151, utf16 = 151),
+                              line = 10,
+                              column = WithUTF16(i = 6, utf16 = 6)
+                            ),
+                            end = Pos(index = WithUTF16(i = 151, utf16 = 151), line = 10, column = WithUTF16(i = 6, utf16 = 6))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "=",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 153, utf16 = 153),
+                              line = 10,
+                              column = WithUTF16(i = 8, utf16 = 8)
+                            ),
+                            end = Pos(index = WithUTF16(i = 153, utf16 = 153), line = 10, column = WithUTF16(i = 8, utf16 = 8))
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "x",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 155, utf16 = 155),
+                              line = 10,
+                              column = WithUTF16(i = 10, utf16 = 10)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 155, utf16 = 155),
+                              line = 10,
+                              column = WithUTF16(i = 10, utf16 = 10)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "+",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 157, utf16 = 157),
+                              line = 10,
+                              column = WithUTF16(i = 12, utf16 = 12)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 157, utf16 = 157),
+                              line = 10,
+                              column = WithUTF16(i = 12, utf16 = 12)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                IntegerLiteral(
+                  value = 1,
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 159, utf16 = 159),
+                              line = 10,
+                              column = WithUTF16(i = 14, utf16 = 14)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 159, utf16 = 159),
+                              line = 10,
+                              column = WithUTF16(i = 14, utf16 = 14)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 140, utf16 = 140), line = 9, column = WithUTF16(i = 21, utf16 = 21)),
+                        end = Pos(index = WithUTF16(i = 140, utf16 = 140), line = 9, column = WithUTF16(i = 21, utf16 = 21))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          tail = Some(
+            value = Identifier(
+              name = "y",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 164, utf16 = 164), line = 11, column = WithUTF16(i = 2, utf16 = 2)),
+                        end = Pos(index = WithUTF16(i = 164, utf16 = 164), line = 11, column = WithUTF16(i = 2, utf16 = 2))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 138, utf16 = 138), line = 9, column = WithUTF16(i = 19, utf16 = 19)),
+                    end = Pos(index = WithUTF16(i = 166, utf16 = 166), line = 12, column = WithUTF16(i = 0, utf16 = 0))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/lambda.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 119, utf16 = 119), line = 9, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 134, utf16 = 134), line = 9, column = WithUTF16(i = 15, utf16 = 15))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    ),
+    OpSeq(
+      seq = Vector(
+        Identifier(
+          name = "complexFunction",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 170, utf16 = 170), line = 14, column = WithUTF16(i = 0, utf16 = 0)),
+                    end = Pos(index = WithUTF16(i = 184, utf16 = 184), line = 14, column = WithUTF16(i = 14, utf16 = 14))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "=",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 186, utf16 = 186), line = 14, column = WithUTF16(i = 16, utf16 = 16)),
+                    end = Pos(index = WithUTF16(i = 186, utf16 = 186), line = 14, column = WithUTF16(i = 16, utf16 = 16))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        ListExpr(
+          terms = Vector(
+            Identifier(
+              name = "T",
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 189, utf16 = 189), line = 14, column = WithUTF16(i = 19, utf16 = 19)),
+                        end = Pos(index = WithUTF16(i = 189, utf16 = 189), line = 14, column = WithUTF16(i = 19, utf16 = 19))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 188, utf16 = 188), line = 14, column = WithUTF16(i = 18, utf16 = 18)),
+                    end = Pos(index = WithUTF16(i = 190, utf16 = 190), line = 14, column = WithUTF16(i = 20, utf16 = 20))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Tuple(
+          terms = Vector(
+            OpSeq(
+              seq = Vector(
+                Identifier(
+                  name = "x",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 192, utf16 = 192),
+                              line = 14,
+                              column = WithUTF16(i = 22, utf16 = 22)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 192, utf16 = 192),
+                              line = 14,
+                              column = WithUTF16(i = 22, utf16 = 22)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = ":",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 193, utf16 = 193),
+                              line = 14,
+                              column = WithUTF16(i = 23, utf16 = 23)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 193, utf16 = 193),
+                              line = 14,
+                              column = WithUTF16(i = 23, utf16 = 23)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                ),
+                Identifier(
+                  name = "T",
+                  meta = Some(
+                    value = ExprMeta(
+                      sourcePos = Some(
+                        value = SourcePos(
+                          source = SourceOffset(
+                            source = FilePath(fileName = "parserTests/lambda.chester"),
+                            linesOffset = 0,
+                            posOffset = WithUTF16(i = 0, utf16 = 0)
+                          ),
+                          range = RangeInFile(
+                            start = Pos(
+                              index = WithUTF16(i = 194, utf16 = 194),
+                              line = 14,
+                              column = WithUTF16(i = 24, utf16 = 24)
+                            ),
+                            end = Pos(
+                              index = WithUTF16(i = 194, utf16 = 194),
+                              line = 14,
+                              column = WithUTF16(i = 24, utf16 = 24)
+                            )
+                          )
+                        )
+                      ),
+                      commentInfo = None
+                    )
+                  )
+                )
+              ),
+              meta = Some(
+                value = ExprMeta(
+                  sourcePos = Some(
+                    value = SourcePos(
+                      source = SourceOffset(
+                        source = FilePath(fileName = "parserTests/lambda.chester"),
+                        linesOffset = 0,
+                        posOffset = WithUTF16(i = 0, utf16 = 0)
+                      ),
+                      range = RangeInFile(
+                        start = Pos(index = WithUTF16(i = 192, utf16 = 192), line = 14, column = WithUTF16(i = 22, utf16 = 22)),
+                        end = Pos(index = WithUTF16(i = 192, utf16 = 192), line = 14, column = WithUTF16(i = 22, utf16 = 22))
+                      )
+                    )
+                  ),
+                  commentInfo = None
+                )
+              )
+            )
+          ),
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 191, utf16 = 191), line = 14, column = WithUTF16(i = 21, utf16 = 21)),
+                    end = Pos(index = WithUTF16(i = 195, utf16 = 195), line = 14, column = WithUTF16(i = 25, utf16 = 25))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "->",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 196, utf16 = 196), line = 14, column = WithUTF16(i = 26, utf16 = 26)),
+                    end = Pos(index = WithUTF16(i = 197, utf16 = 197), line = 14, column = WithUTF16(i = 27, utf16 = 27))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        ),
+        Identifier(
+          name = "x",
+          meta = Some(
+            value = ExprMeta(
+              sourcePos = Some(
+                value = SourcePos(
+                  source = SourceOffset(
+                    source = FilePath(fileName = "parserTests/lambda.chester"),
+                    linesOffset = 0,
+                    posOffset = WithUTF16(i = 0, utf16 = 0)
+                  ),
+                  range = RangeInFile(
+                    start = Pos(index = WithUTF16(i = 198, utf16 = 198), line = 14, column = WithUTF16(i = 28, utf16 = 28)),
+                    end = Pos(index = WithUTF16(i = 198, utf16 = 198), line = 14, column = WithUTF16(i = 28, utf16 = 28))
+                  )
+                )
+              ),
+              commentInfo = None
+            )
+          )
+        )
+      ),
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/lambda.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 170, utf16 = 170), line = 14, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 184, utf16 = 184), line = 14, column = WithUTF16(i = 14, utf16 = 14))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    )
+  ),
+  tail = None,
+  meta = Some(
+    value = ExprMeta(
+      sourcePos = Some(
+        value = SourcePos(
+          source = SourceOffset(
+            source = FilePath(fileName = "parserTests/lambda.chester"),
+            linesOffset = 0,
+            posOffset = WithUTF16(i = 0, utf16 = 0)
+          ),
+          range = RangeInFile(
+            start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
+            end = Pos(index = WithUTF16(i = 199, utf16 = 199), line = 14, column = WithUTF16(i = 29, utf16 = 29))
+          )
+        )
+      ),
+      commentInfo = None
+    )
+  )
+)
