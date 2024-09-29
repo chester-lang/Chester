@@ -8,6 +8,12 @@ import chester.utils.parse.*
 import chester.utils.{StringIndex, parserInputToLazyList}
 import fastparse.*
 import fastparse.NoWhitespace.*
+import upickle.default.*
+import chester.error.*
+import chester.utils.WithUTF16
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 
 import java.nio.file.{Files, Paths}
 import scala.collection.immutable
@@ -21,8 +27,8 @@ private def parseFromSource[T](source: ParserSource, parserFunc: ParserInternal 
       parse(content, x => parserFunc(ParserInternal(SourceOffset(source), ignoreLocation = ignoreLocation, defaultIndexer = Some(indexer))(x))) match {
         case Parsed.Success(result, _) => Right(result)
         case Parsed.Failure(msg, index, extra) =>
-          val pos = indexer.charIndexToUnicodeLineAndColumn(index)
-          val p = Pos(indexer.charIndexToUnicodeIndex(index), pos.line, pos.column)
+          val pos = indexer.charIndexToLineAndColumnWithUTF16(index)
+          val p = Pos(indexer.charIndexToWithUTF16(index.refineUnsafe), pos.line, pos.column)
           Left(ParseError(s"Parsing failed: ${extra.trace().longMsg}", p))
       }
     case Left(error) => Left(error)

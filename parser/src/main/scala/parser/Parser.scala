@@ -1,15 +1,20 @@
 package chester.parser
 
+import upickle.default.*
+import chester.error.*
+import chester.utils.WithUTF16
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.upickle.given
 import chester.error.*
 import chester.syntax.IdentifierRules.*
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
 import chester.utils.doc.{Doc, PrettierOptions}
 import chester.utils.parse.*
-import chester.utils.{StringIndex, parserInputToLazyList}
+import chester.utils.{StringIndex, WithUTF16, parserInputToLazyList}
 import fastparse.*
 import fastparse.NoWhitespace.*
-import upickle.default.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.constraint.numeric.*
@@ -26,8 +31,8 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
   val linesOffset = sourceOffset.linesOffset
   val posOffset = sourceOffset.posOffset
   // TODO: column offset for :t command in repl
-  if (linesOffset != 0) require(posOffset != 0)
-  if (posOffset != 0) require(linesOffset != 0)
+  if (linesOffset != 0) require(posOffset.nonZero)
+  if (posOffset.nonZero) require(linesOffset != 0)
 
   def nEnd: P[Unit] = P("\n" | End)
 
@@ -65,20 +70,20 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
 
   def operatorId: P[String] = P((CharacterPred(operatorIdentifierFirst).rep(1) ~ CharacterPred(operatorIdentifierRest).rep).!)
 
-  def begin: P[Int] = Index
+  def begin: P[Int :| Positive0] = Index.map(_.refineUnsafe[Positive0]).asInstanceOf[P[Int :| Positive0]]
 
-  def end: P[Int] = Index
+  def end: P[Int :| Positive0] = Index.map(_.refineUnsafe[Positive0]).asInstanceOf[P[Int :| Positive0]]
 
   val indexer: StringIndex = defaultIndexer.getOrElse(StringIndex(p.input))
 
-  private def loc(begin: Int, end0: Int): Option[SourcePos] = {
+  private def loc(begin: Int :| Positive0, end0: Int :| Positive0): Option[SourcePos] = {
     if (ignoreLocation) return None
-    val start = indexer.charIndexToUnicodeLineAndColumn(begin)
-    val end = if (end0 == 0) 0 else end0 - 1
-    val endPos = indexer.charIndexToUnicodeLineAndColumn(end)
+    val start = indexer.charIndexToLineAndColumnWithUTF16(begin)
+    val end = (if (end0 == 0) 0 else end0 - 1).refineUnsafe[Positive0]
+    val endPos = indexer.charIndexToLineAndColumnWithUTF16(end)
     val range = RangeInFile(
-      Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),
-      Pos(posOffset + indexer.charIndexToUnicodeIndex(end), linesOffset + endPos.line, endPos.column))
+      Pos(posOffset + WithUTF16(indexer.charIndexToUnicodeIndex(begin),begin), (linesOffset + start.line).refineUnsafe, start.column),
+      Pos(posOffset + WithUTF16(indexer.charIndexToUnicodeIndex(end),end), (linesOffset + endPos.line).refineUnsafe, endPos.column))
     Some(SourcePos(sourceOffset, range))
   }
 

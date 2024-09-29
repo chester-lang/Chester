@@ -1,27 +1,31 @@
 package chester.error
 
 import chester.parser.SourceOffset
-import chester.utils.{encodeString, parserInputToLazyList}
+import chester.utils.{WithUTF16, encodeString, parserInputToLazyList}
 import fastparse.ParserInput
+import upickle.default.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.upickle.given
 
 import scala.annotation.tailrec
-import upickle.default.*
 
-case class Pos(index: Int, line: Int, column: Int)derives ReadWriter
+case class Pos(index: WithUTF16, line: Int :| Positive0, column: WithUTF16)derives ReadWriter
 
 object Pos {
-  lazy val Zero = Pos(0, 0, 0)
+  val Zero = Pos(WithUTF16.Zero, 0, WithUTF16.Zero)
 }
 
 case class RangeInFile(start: Pos, end: Pos)derives ReadWriter
 
 type AcceptedString = String | LazyList[String] | ParserInput
 
-case class FileContent(content: AcceptedString, lineOffset: Int, indexOffset: Int)
+case class FileContent(content: AcceptedString, lineOffset: Int, indexOffset: WithUTF16)
 
 object FileContent {
   @tailrec
-  private def convertToString0(fileContent: String | LazyList[String] | ParserInput): String = fileContent match {
+  private def convertToString0(fileContent: AcceptedString): String = fileContent match {
     case s: String => s
     case ll: LazyList[String] => ll.mkString
     case pi: ParserInput => convertToString0(parserInputToLazyList(pi))

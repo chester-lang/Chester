@@ -2,6 +2,7 @@ package chester.parser
 
 import upickle.default.*
 import chester.error.*
+import chester.utils.WithUTF16
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.upickle.given
@@ -52,7 +53,7 @@ case class FilePath private (fileName: String) extends ParserSource {
   }
 }
 
-case class SourceOffset(source: ParserSource, linesOffset: Int :| Positive0 = 0, posOffset: Int :| Positive0 = 0)derives ReadWriter {
+case class SourceOffset(source: ParserSource, linesOffset: Int :| Positive0 = 0, posOffset: WithUTF16 = WithUTF16.Zero)derives ReadWriter {
   def fileName: String = source.fileName
 
   def readContent: Either[ParseError, String] = source.readContent

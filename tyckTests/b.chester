@@ -1,2 +1,2 @@
-let a: Int = 0;
+let a: Integer = 0;
 def a1: Integer = 0;

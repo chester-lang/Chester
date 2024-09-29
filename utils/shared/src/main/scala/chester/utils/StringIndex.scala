@@ -1,8 +1,14 @@
 package chester.utils
 
 import fastparse.ParserInput
+import upickle.default.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.constraint.numeric.*
+import io.github.iltotore.iron.upickle.given
 
-case class LineAndColumn(val line: Int, val column: Int)
+case class LineAndColumn(val line: Int :| Positive0, val column: Int :| Positive0)
+case class LineAndColumnWithUTF16(line: Int :| Positive0, column: WithUTF16)
 
 case class StringIndex(val stringList: LazyList[String]) {
 
@@ -21,8 +27,10 @@ case class StringIndex(val stringList: LazyList[String]) {
 
     lineBreakIndices(stringList.flatten)
   }
+  
+  def charIndexToWithUTF16(charIndex: Int :| Positive0): WithUTF16 = WithUTF16(charIndexToUnicodeIndex(charIndex), charIndex)
 
-  def charIndexToUnicodeIndex(charIndex: Int): Int = {
+  def charIndexToUnicodeIndex(charIndex: Int :| Positive0): Int :| Positive0 = {
     var index = 0
     var unicodeIndex = 0
     val it = stringIterator
@@ -46,7 +54,7 @@ case class StringIndex(val stringList: LazyList[String]) {
         index += 1
       }
     }
-    unicodeIndex
+    unicodeIndex.refineUnsafe
   }
 
   def unicodeIndexToCharIndex(unicodeIndex: Int): Int = {
@@ -89,7 +97,14 @@ case class StringIndex(val stringList: LazyList[String]) {
       index += 1
     }
 
-    LineAndColumn(line, column)
+    LineAndColumn(line.refineUnsafe, column.refineUnsafe)
+  }
+  
+  def charIndexToLineAndColumnWithUTF16(charIndex: Int): LineAndColumnWithUTF16 = {
+    val utf16 = charIndexToCharLineAndColumn(charIndex)
+    val unicode = charIndexToUnicodeLineAndColumn(charIndex)
+    assert(utf16.line == unicode.line)
+    LineAndColumnWithUTF16(unicode.line, WithUTF16(unicode.column, utf16.column))
   }
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
@@ -123,7 +138,7 @@ case class StringIndex(val stringList: LazyList[String]) {
       index += 1
     }
 
-    LineAndColumn(line, column)
+    LineAndColumn(line.refineUnsafe, column.refineUnsafe)
   }
 
 }

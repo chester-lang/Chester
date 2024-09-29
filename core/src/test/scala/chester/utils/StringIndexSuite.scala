@@ -1,6 +1,7 @@
 package chester.utils
 
 import munit.FunSuite
+import _root_.io.github.iltotore.iron.*
 
 class StringIndexSuite extends FunSuite {
   test("charIndexToUnicodeIndex for simple characters") {
