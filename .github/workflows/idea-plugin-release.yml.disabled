@@ -1,3 +1,4 @@
+# Disabled. It works locally, but not on GitHub Actions.
 name: Build and Release IDEA Plugin Snapshot
 
 on:
