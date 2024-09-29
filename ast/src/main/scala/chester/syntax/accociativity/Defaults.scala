@@ -11,9 +11,6 @@ case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx)
   def resolvePrefix(name: Name): Option[Prefix] = opinfos.resolvePrefix(name)
 
   def resolvePostfix(name: Name): Option[Postfix] = opinfos.resolvePostfix(name)
-
-  def resolveOperator(name: Name): Option[OpInfo] =
-    resolveInfix(name).orElse(resolvePrefix(name)).orElse(resolvePostfix(name))
 }
 
 object OperatorsContext {

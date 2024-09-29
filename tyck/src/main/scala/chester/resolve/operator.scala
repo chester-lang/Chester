@@ -116,7 +116,7 @@ def parseTokens(
         val precedence = precedences.min
         val associativity = associativities.head
 
-        TokenInfo(id, precedence, associativity, possibleOpTypes)
+        TokenInfo(id, precedence, associativity, possibleOpTypes, possibleOps)
       } else {
         reporter.apply(UnknownOperator(id))
         TokenInfo(id, Int.MaxValue, Associativity.None, Set(OpType.Operand))
@@ -225,7 +225,8 @@ case class TokenInfo(
                       expr: Expr,
                       precedence: Int,
                       associativity: Associativity,
-                      possibleOpTypes: Set[OpType]
+                      possibleOpTypes: Set[OpType],
+                      opInfos: Seq[(OpInfo, OpType)] = Seq.empty
                     )
 
 def resolveOpSeq(
@@ -260,14 +261,12 @@ def resolveOpSeq(
 
   val tokens = parseTokens(opSeq.seq, opContext, groupPrecedence, reporter)
 
-  // Check for operators with unconnected precedence groups
-  val operatorGroups = tokens.collect {
-    case TokenInfo(id: Identifier, _, _, _) =>
-      opContext.resolveOperator(id.name) match {
-        case Some(op: OpWithGroup) => Some(op.group)
-        case _ => None
-      }
-  }.flatten
+  // Collect operator groups from tokens
+  val operatorGroups = tokens.flatMap { tokenInfo =>
+    tokenInfo.opInfos.collect {
+      case (op: OpWithGroup, _) => op.group
+    }
+  }
 
   // Verify that all operator groups are connected in the precedence graph
   for {
