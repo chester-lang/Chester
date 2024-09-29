@@ -128,6 +128,20 @@ jobs:
       run: find . -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
       continue-on-error: true
 
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        cache: ''
+
+    - name: Install Node.js dependencies
+      working-directory: lsp/client
+      run: npm install
+
+    - name: Build VSCode Extension
+      working-directory: lsp/client
+      run: npm run package
+
     - name: Upload Unix Artifacts
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
@@ -141,6 +155,7 @@ jobs:
           ./target/chester
           ./target/chester-lsp
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+          ./lsp/client/chester-language-support-0.0.1.vsix
 
     - name: Upload Windows Artifacts
       if: runner.os == 'Windows'
@@ -155,6 +170,7 @@ jobs:
           ./target/chester.exe
           ./target/chester-lsp.exe
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+          ./lsp/client/chester-language-support-0.0.1.vsix
 
     - name: Create or Update GitHub Release for Unix
       if: runner.os != 'Windows'
@@ -171,7 +187,8 @@ jobs:
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           ./target/chester,
           ./target/chester-lsp,
-          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out,
+          ./lsp/client/chester-language-support-0.0.1.vsix
 
     - name: Create or Update GitHub Release for Windows
       if: runner.os == 'Windows'
@@ -188,4 +205,5 @@ jobs:
           ./cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js,
           ./target/chester.exe,
           ./target/chester-lsp.exe,
-          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
+          ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe,
+          ./lsp/client/chester-language-support-0.0.1.vsix
