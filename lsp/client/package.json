@@ -4,6 +4,10 @@
   "description": "Provides language support for Chester",
   "version": "0.0.1",
   "publisher": "your-publisher-name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/chester-language-support.git"
+  },
   "engines": {
     "vscode": "^1.93.0"
   },
@@ -52,9 +56,5 @@
   },
   "dependencies": {
     "vscode-languageclient": "^8.1.0"
-  },
-  "files": [
-    "out/**/*",
-    "server/**/*"
-  ]
+  }
 }
