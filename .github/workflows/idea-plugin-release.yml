@@ -39,6 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sbt-
 
+      - name: Build IDEA Plugin - buildIntellijOptionsIndex
+        working-directory: idea-plugin
+        run: sbt buildIntellijOptionsIndex
+
       - name: Build IDEA Plugin
         working-directory: idea-plugin
         run: sbt packageArtifactZip
