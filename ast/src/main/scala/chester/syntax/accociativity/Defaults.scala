@@ -6,29 +6,24 @@ import chester.syntax.concrete.stmt.QualifiedID
 import upickle.default.*
 
 case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx) {
-  def resolveInfix(name: Name): Option[Infix] = opinfos.resolveInfix(name)
-
-  def resolvePrefix(name: Name): Option[Prefix] = opinfos.resolvePrefix(name)
-
-  def resolvePostfix(name: Name): Option[Postfix] = opinfos.resolvePostfix(name)
+  def resolveInfix(name: Name): Option[Infix]       = opinfos.resolveInfix(name)
+  def resolvePrefix(name: Name): Option[Prefix]     = opinfos.resolvePrefix(name)
+  def resolvePostfix(name: Name): Option[Postfix]   = opinfos.resolvePostfix(name)
 }
 
 object OperatorsContext {
-  val Default: OperatorsContext = OperatorsContext(defaultInfixDefitions, defaultPrecedenceGroup)
+  val Default: OperatorsContext = OperatorsContext(
+    new DefaultInfixDefinitions(),
+    defaultPrecedenceGroup
+  )
 }
 
-case class InfixDefitions(infix: Map[Name, Infix], other: Vector[Prefix|Postfix] = Vector.empty) {
-  def resolveInfix(name: Name): Option[Infix] = infix.get(name)
+trait InfixDefitions {
+  def resolveInfix(name: Name): Option[Infix]
+  def resolvePrefix(name: Name): Option[Prefix]
+  def resolvePostfix(name: Name): Option[Postfix]
 
-  def resolvePrefix(name: Name): Option[Prefix] = (other.find {
-    case Prefix(`name`) => true
-    case _ => false
-  }).asInstanceOf[Option[Prefix]]
-
-  def resolvePostfix(name: Name): Option[Postfix] = (other.find {
-    case Postfix(`name`) => true
-    case _ => false
-  }).asInstanceOf[Option[Postfix]]
+  def addOpInfo(opInfo: OpInfo): InfixDefitions
 }
 
 object InfixDefitions {
@@ -37,40 +32,88 @@ object InfixDefitions {
       case Infix(name, _) => true
       case _ => false
     }
-    InfixDefitions(infix.collect { case Infix(name, group) => name -> Infix(name, group) }.toMap, other.asInstanceOf[Vector[Prefix|Postfix]])
+    val (prefix, other2) = other.partition {
+      case Prefix(name) => true
+      case _ => false
+    }
+    val (postfix, other3) = other2.partition {
+      case Postfix(name) => true
+      case _ => false
+    }
+    if(other3.nonEmpty) {
+      throw new IllegalArgumentException(s"Unknown operator type: ${other3.head}")
+    }
+    DefaultInfixDefinitions(infix.collect { case i@Infix(name, group) => name -> i }.toMap, prefix.collect { case p@Prefix(name) => name -> p }.toMap, postfix.collect { case p@Postfix(name) => name -> p }.toMap)
   }
 }
 
-val defaultInfixDefitions = InfixDefitions(Vector(
-  // Multiplicative Operators
-  Infix(Name("*"), multiplicativeGroup),
-  Infix(Name("/"), multiplicativeGroup),
-  Infix(Name("%"), multiplicativeGroup),
+case class DefaultInfixDefinitions(
+  infixOperators: Map[Name, Infix] = Map.empty,
+  prefixOperators: Map[Name, Prefix] = Map.empty,
+  postfixOperators: Map[Name, Postfix] = Map.empty
+) extends InfixDefitions {
 
-  // Additive Operators
-  Infix(Name("+"), additiveGroup),
-  Infix(Name("-"), additiveGroup),
+  // Map from operator symbols to their corresponding precedence groups
+  private val operatorGroups: Map[Char, PrecedenceGroup] = Map(
+    // Multiplicative Operators
+    '*' -> multiplicativeGroup,
+    '/' -> multiplicativeGroup,
+    '%' -> multiplicativeGroup,
 
-  // Range Operator
-  Infix(Name(":"), rangeGroup),
+    // Additive Operators
+    '+' -> additiveGroup,
+    '-' -> additiveGroup,
 
-  // Relational Operators
-  Infix(Name("<"), relationalGroup),
-  Infix(Name(">"), relationalGroup),
+    // Range Operator
+    ':' -> rangeGroup,
 
-  // Equality Operators
-  Infix(Name("="), equalityGroup),
-  Infix(Name("!"), equalityGroup),
+    // Relational Operators
+    '<' -> relationalGroup,
+    '>' -> relationalGroup,
 
-  // Logical AND Operator
-  Infix(Name("&"), logicalAndGroup),
+    // Equality Operators
+    '=' -> equalityGroup,
+    '!' -> equalityGroup,
 
-  // Logical XOR Operator
-  Infix(Name("^"), logicalXorGroup),
+    // Logical AND Operator
+    '&' -> logicalAndGroup,
 
-  // Logical OR Operator
-  Infix(Name("|"), logicalOrGroup)
-))
+    // Logical XOR Operator
+    '^' -> logicalXorGroup,
+
+    // Logical OR Operator
+    '|' -> logicalOrGroup
+  )
+
+  override def addOpInfo(opInfo: OpInfo): InfixDefitions = opInfo match {
+    case infix: Infix =>
+      copy(infixOperators = infixOperators + (infix.name -> infix))
+    case prefix: Prefix =>
+      copy(prefixOperators = prefixOperators + (prefix.name -> prefix))
+    case postfix: Postfix =>
+      copy(postfixOperators = postfixOperators + (postfix.name -> postfix))
+    case _ => ???
+  }
+  override def resolveInfix(name: Name): Option[Infix] = {
+    // Get the first character of the operator name
+    val firstCharOption = name.headOption
+
+    firstCharOption.flatMap { firstChar =>
+      // Find the precedence group based on the first character
+      operatorGroups.get(firstChar).map { group =>
+        Infix(name, group)
+      }
+    }
+  } .orElse(infixOperators.get(name))
+
+  override def resolvePrefix(name: Name): Option[Prefix] = {
+    prefixOperators.get(name)
+  }
+
+  override def resolvePostfix(name: Name): Option[Postfix] = {
+    postfixOperators.get(name)
+  }
+}
 
 val defaultPrecedenceGroup = PrecedenceGroupCtx(Map(
   Names.Multiplicative.name -> multiplicativeGroup,
