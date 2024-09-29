@@ -14,7 +14,7 @@ enum Associativity derives ReadWriter {
   case None
   case Left
   case Right
-  case Chain
+  case Chain // TODO
 }
 
 sealed trait OpInfo {
