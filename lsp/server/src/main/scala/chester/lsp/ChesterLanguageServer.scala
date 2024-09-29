@@ -25,6 +25,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   private var client: LanguageClient = uninitialized
 
+  // Store documents' content
+  private val documents = mutable.HashMap[String, String]()
+
   def connect(client: LanguageClient): Unit = {
     this.client = client
     println("Language client connected to the server")
@@ -50,8 +53,12 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
     println(s"Document opened: ${params.getTextDocument.getUri}")
-    val text = params.getTextDocument.getText
     val uri = params.getTextDocument.getUri
+    val text = params.getTextDocument.getText
+
+    // Store the document content
+    documents(uri) = text
+
     val diagnostics = parseAndGenerateDiagnostics(uri, text)
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
@@ -59,20 +66,65 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
     println(s"Document changed: ${params.getTextDocument.getUri}")
     val uri = params.getTextDocument.getUri
-    val changes = params.getContentChanges.asScala
-    
-    // Apply changes to the document
+    val changes = params.getContentChanges.asScala.toSeq
+
     val updatedText = applyChanges(uri, changes)
-    
-    // Parse and generate diagnostics
+
     val diagnostics = parseAndGenerateDiagnostics(uri, updatedText)
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
 
-  private def applyChanges(uri: String, changes: mutable.Buffer[TextDocumentContentChangeEvent]): String = {
-    // Implement logic to apply changes to the document
-    // For now, we'll just return the text of the last change
-    changes.lastOption.map(_.getText).getOrElse("")
+  private def applyChanges(uri: String, changes: Seq[TextDocumentContentChangeEvent]): String = {
+    val currentText = documents.getOrElse(uri, "")
+
+    val updatedText = changes.foldLeft(currentText) { (text, change) =>
+      if (change.getRange == null) {
+        // The change is the new full content
+        change.getText
+      } else {
+        // Apply incremental change
+        val startOffset = getOffset(text, change.getRange.getStart)
+        val endOffset = getOffset(text, change.getRange.getEnd)
+        text.substring(0, startOffset) + change.getText + text.substring(endOffset)
+      }
+    }
+
+    documents(uri) = updatedText
+    updatedText
+  }
+
+  private def getOffset(text: String, position: Position): Int = {
+    var offset = 0
+    var line = 0
+    var charIndex = 0
+
+    while (offset < text.length && line < position.getLine) {
+      if (text.charAt(offset) == '\n') {
+        line += 1
+      }
+      offset += 1
+    }
+
+    while (offset < text.length && charIndex < position.getCharacter) {
+      if (text.charAt(offset) == '\n') {
+        // Shouldn't happen, but safeguard
+        return offset
+      }
+      offset += 1
+      charIndex += 1
+    }
+
+    offset
+  }
+
+  override def didClose(params: DidCloseTextDocumentParams): Unit = {
+    val uri = params.getTextDocument.getUri
+
+    // Remove the document from the store
+    documents.remove(uri)
+
+    // Clear diagnostics for the closed document
+    client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
   }
 
   private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
@@ -154,10 +206,6 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   // TextDocumentService methods
-  override def didClose(params: DidCloseTextDocumentParams): Unit = {
-    // Handle text document close event here
-  }
-
   override def didSave(params: DidSaveTextDocumentParams): Unit = {
     // Handle text document save event here
   }
