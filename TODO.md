@@ -3,3 +3,7 @@
 ## parse a.b.{x,t}
 
 `import a.b.{x,y};`
+
+## prompt
+
+create a concise prompt introducing the language so that large langiage model can read and write chester
