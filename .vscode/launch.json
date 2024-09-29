@@ -10,8 +10,7 @@
           "--extensionDevelopmentPath=${workspaceFolder}/lsp/client"
         ],
         "outFiles": [
-          "${workspaceFolder}/lsp/client/out/**/*.js",
-          "${workspaceFolder}/lsp/server/out/**/*.js"
+          "${workspaceFolder}/lsp/client/out/**/*.js"
         ],
         "preLaunchTask": {
           "type": "npm",
@@ -22,15 +21,11 @@
       },
       {
         "name": "Attach to Chester Language Server",
-        "type": "node",
+        "type": "java",
         "request": "attach",
+        "hostName": "localhost",
         "port": 1044,
-        "address": "localhost",
-        "restart": false,
-        "sourceMaps": true,
-        "outFiles": [
-          "${workspaceFolder}/lsp/server/out/**/*.js"
-        ]
+        "preLaunchTask": "buildServer"
       }
     ]
   }
