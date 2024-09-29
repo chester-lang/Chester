@@ -19,6 +19,7 @@ import scala.jdk.CollectionConverters.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
 import java.util.concurrent.CompletableFuture
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
 
@@ -26,9 +27,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   def connect(client: LanguageClient): Unit = {
     this.client = client
+    println("Language client connected to the server")
   }
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
+    println(s"Initializing with params: $params")
     val capabilities = new ServerCapabilities()
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
     capabilities.setCompletionProvider(new CompletionOptions(false, List(".", ":").asJava))
@@ -46,6 +49,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   override def getWorkspaceService: WorkspaceService = this
 
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
+    println(s"Document opened: ${params.getTextDocument.getUri}")
     val text = params.getTextDocument.getText
     val uri = params.getTextDocument.getUri
     val diagnostics = parseAndGenerateDiagnostics(uri, text)
@@ -53,6 +57,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
+    println(s"Document changed: ${params.getTextDocument.getUri}")
     val uri = params.getTextDocument.getUri
     val changes = params.getContentChanges.asScala
     

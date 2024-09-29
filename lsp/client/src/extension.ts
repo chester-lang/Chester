@@ -77,7 +77,7 @@ export async function activate(context: ExtensionContext) {
       console.log(`Server process exited with code ${code}, signal ${signal}`);
     });
 
-    // Optionally wait for the server to start
+    // Wait for the server to start
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Server options to connect to the server started above
