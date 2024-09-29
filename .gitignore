@@ -19,7 +19,7 @@ local.sbt
 .bsp
 
 # VS Code
-.vscode/
+.vscode/*
 
 # Metals
 .bloop/

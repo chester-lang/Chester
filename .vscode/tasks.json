@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build",
+        "type": "npm",
+        "script": "build",
+        "path": "lsp/client",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "watch",
+        "type": "npm",
+        "script": "watch",
+        "path": "lsp/client",
+        "problemMatcher": [],
+        "isBackground": true,
+        "group": "build"
+      }
+    ]
+  }

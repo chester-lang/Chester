@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "extensionHost",
+        "request": "launch",
+        "name": "Launch Chester Extension",
+        "runtimeExecutable": "${execPath}",
+        "args": [
+          "--extensionDevelopmentPath=${workspaceFolder}/lsp/client"
+        ],
+        "outFiles": [
+          "${workspaceFolder}/lsp/client/out/**/*.js",
+          "${workspaceFolder}/lsp/server/out/**/*.js"
+        ],
+        "preLaunchTask": {
+          "type": "npm",
+          "script": "build",
+          "path": "${workspaceFolder}/lsp/client"
+        },
+        "autoAttachChildProcesses": true
+      },
+      {
+        "name": "Attach to Chester Language Server",
+        "type": "node",
+        "request": "attach",
+        "port": 1044,
+        "address": "localhost",
+        "restart": false,
+        "sourceMaps": true,
+        "outFiles": [
+          "${workspaceFolder}/lsp/server/out/**/*.js"
+        ]
+      }
+    ]
+  }
