@@ -13,18 +13,9 @@
         }
       },
       {
-        "label": "watch",
-        "type": "npm",
-        "script": "watch",
-        "path": "lsp/client",
-        "problemMatcher": [],
-        "isBackground": true,
-        "group": "build"
-      },
-      {
         "label": "buildServer",
         "type": "shell",
-        "command": "sbt lsp/assembly",
+        "command": "sbt assembly",
         "group": "build",
         "presentation": {
           "reveal": "always"
