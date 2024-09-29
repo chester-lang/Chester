@@ -682,23 +682,25 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("lsp/server"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .enablePlugins(SbtProguard)
+  //.enablePlugins(SbtProguard)
   .dependsOn(common)
   .settings(
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
-    assembly / assemblyOutputPath := file("target") / "chester-lsp-assembly.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-lsp.jar",
     nativeImageOutput := file("target") / "chester-lsp",
     commonSettings,
+    // proguard is breaking the build
+    /*
     // https://stackoverflow.com/questions/39655207/how-to-obfuscate-fat-scala-jar-with-proguard-and-sbt/39663793#39663793
     // Proguard settings
     Proguard / proguardOptions ++= Seq(
       "-dontoptimize",
       "-keepattributes *Annotation*",
       "-keep public class * { public static void main(java.lang.String[]); }",
-      "-keep public class chester.** { *; }",
-      "-dontnote", "-dontwarn", "-ignorewarnings"
+      "-keep public class chester.**,org.eclipse.lsp4j.** { *; }",
+      "-dontnote", "-dontwarn", //"-ignorewarnings"
     ),
     Proguard / proguardVersion := "7.5.0",
     Proguard / proguard / javaOptions := Seq("-Xmx4G"),
@@ -708,6 +710,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     Proguard / proguardMerge := false,
     Proguard / proguard := (Proguard / proguard).dependsOn(assembly).value,
     Proguard / artifactPath := file("target") / "chester-lsp.jar",
+    */
   )
   .jvmSettings(
     graalvmSettings,
