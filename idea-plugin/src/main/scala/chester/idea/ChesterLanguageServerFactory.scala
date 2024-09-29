@@ -11,6 +11,6 @@ class ChesterLanguageServerFactory extends LanguageServerFactory {
   }
 
   override def createLanguageClient(project: Project): LanguageClientImpl = {
-    new LanguageClientImpl(project)
+    new ChesterLanguageClient(project)
   }
 }

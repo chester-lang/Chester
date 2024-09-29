@@ -1,10 +1,10 @@
 <idea-plugin>
-    <id>me.and.co.my.awesome.framework</id>
-    <name>My Awesome Framework</name>
-    <version>0.0.1-SNAPSHOT</version>
-    <vendor>Me and Co</vendor>
+    <id>chester.language.plugin</id>
+    <name>Chester Language Support</name>
+    <version>1.0.0</version>
+    <vendor>Your Name or Organization</vendor>
 
-    <description>A new plugin for IntelliJ platform written in Scala and built with SBT</description>
+    <description>Provides language support for the Chester programming language.</description>
 
     <idea-version since-build="231.0"/>
 
@@ -84,7 +84,7 @@
                   language="Chester"
                   description="Chester language file"
                   extensions="chester"
-                  icon="/path/to/icon.png"/>
+                  icon="/icons/chester-icon.png"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

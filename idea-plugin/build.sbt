@@ -1,13 +1,13 @@
 import org.jetbrains.sbtidea.Keys._
 
-lazy val myAwesomeFramework =
+lazy val chesterPlugin =
   project.in(file("."))
     .enablePlugins(SbtIdeaPlugin)
     .settings(
-      name := "MyAwesomeFramework",
-      version := "0.0.1-SNAPSHOT",
+      name := "ChesterLanguageSupport",
+      version := "1.0.0",
       scalaVersion := "3.5.1",
-      ThisBuild / intellijPluginName := "My Awesome Framework",
+      ThisBuild / intellijPluginName := "Chester Language Support",
       ThisBuild / intellijBuild      := "242.23339.11",
       ThisBuild / intellijPlatform   := IntelliJPlatform.IdeaCommunity,
       Global    / intellijAttachSources := true,
