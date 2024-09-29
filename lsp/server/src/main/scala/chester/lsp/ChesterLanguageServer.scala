@@ -139,8 +139,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
             errors.map { error =>
               val range = error.location.map { pos =>
                 new Range(
-                  new Position(pos.range.start.line, pos.range.start.column),
-                  new Position(pos.range.end.line, pos.range.end.column)
+                  new Position(pos.range.start.line, pos.range.start.column.utf16),
+                  new Position(pos.range.end.line, pos.range.end.column.utf16)
                 )
               }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
 
@@ -154,8 +154,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         }
       case Left(parseError) =>
         val range = new Range(
-          new Position(parseError.index.line, parseError.index.column),
-          new Position(parseError.index.line, parseError.index.column)
+          new Position(parseError.index.line, parseError.index.column.utf16),
+          new Position(parseError.index.line, parseError.index.column.utf16)
         )
         val diagnostic = new Diagnostic(
           range,
