@@ -74,7 +74,7 @@ case class ParserInternal(sourceOffset: SourceOffset, ignoreLocation: Boolean = 
   private def loc(begin: Int, end0: Int): Option[SourcePos] = {
     if (ignoreLocation) return None
     val start = indexer.charIndexToUnicodeLineAndColumn(begin)
-    val end = end0 - 1
+    val end = if (end0 == 0) 0 else end0 - 1
     val endPos = indexer.charIndexToUnicodeLineAndColumn(end)
     val range = RangeInFile(
       Pos(posOffset + indexer.charIndexToUnicodeIndex(begin), linesOffset + start.line, start.column),

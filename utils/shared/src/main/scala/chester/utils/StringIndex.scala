@@ -93,7 +93,7 @@ case class StringIndex(val stringList: LazyList[String]) {
   }
 
   def charIndexToUnicodeLineAndColumn(charIndex: Int): LineAndColumn = {
-    if (charIndex < 0) throw new IllegalArgumentException("Index out of bounds (negative)")
+    if (charIndex < 0) throw new IllegalArgumentException(s"Index out of bounds (negative) $charIndex")
 
     var line = 0
     var column = 0
