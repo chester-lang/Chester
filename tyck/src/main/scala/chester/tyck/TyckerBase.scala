@@ -619,53 +619,60 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   def inherit(expr: Expr, ty: Term, effects: Option[Effects] = None): Judge = {
     val expr1: Expr = (resolve(expr))
     val ty1: Term = whnfNoEffect(ty)
-    (expr1, ty1) match {
+    val ty2: Term = ty1 match {
+      case i: HasUniqId => localCtx.ctx.getKnownJudge(i.uniqId) match {
+        case Some(judge) => judge.wellTyped
+        case None => ty1
+      }
+      case _ => ty1
+    }
+    (expr1, ty2) match {
       case (Tuple(exprTerms, meta), tupleType@TupleType(typeTerms)) =>
         if (exprTerms.length != typeTerms.length) {
           val err = TupleArityMismatchError(exprTerms.length, typeTerms.length, expr)
           tyck.report(err)
-          Judge(ErrorTerm(err), ty, NoEffect)
+          Judge(ErrorTerm(err), ty1, NoEffect)
         } else {
           val checkedTerms: Vector[Judge] = exprTerms.zip(typeTerms).map { case (exprTerm, expectedType) =>
             inherit(exprTerm, expectedType)
           }
           val effect = effectFold(checkedTerms.map(_.effects))
           val wellTypedTerms = checkedTerms.map(_.wellTyped)
-          Judge(TupleTerm(wellTypedTerms), ty, effect)
+          Judge(TupleTerm(wellTypedTerms), ty1, effect)
         }
       case (IntegerLiteral(value, meta), IntType) => {
         if (value.isValidInt)
-          Judge(IntTerm(value.toInt), IntType, NoEffect)
+          Judge(IntTerm(value.toInt), ty1, NoEffect)
         else {
           tyck.report(InvalidIntError(expr))
-          Judge(IntegerTerm(value.toInt), IntType, NoEffect)
+          Judge(IntegerTerm(value.toInt), ty1, NoEffect)
         }
       }
       case (IntegerLiteral(value, meta), NaturalType) => {
         if (value > 0)
-          Judge(NaturalTerm(value), NaturalType, NoEffect)
+          Judge(NaturalTerm(value), ty1, NoEffect)
         else {
           tyck.report(InvalidNaturalError(expr))
-          Judge(IntegerTerm(value.toInt), NaturalType, NoEffect)
+          Judge(IntegerTerm(value.toInt), ty1, NoEffect)
         }
       }
       case (expr, ty@Union(xs)) => {
-        def firstTry(x: Self): Judge = x.inheritBySynthesize(expr, ty, effects)
+        def firstTry(x: Self): Judge = x.inheritBySynthesize(expr, ty1, effects)
 
         val tries: Seq[Self => Judge] = xs.map(ty => (x: Self) => x.inheritBySynthesize(expr, ty, effects))
         tryAll((firstTry +: tries).assumeNonEmpty)
       }
       case (objExpr: ObjectExpr, ObjectType(fieldTypes, _)) =>
         val EffectWith(inheritedEffect, inheritedFields) = (inheritObjectFields(clauses = objExpr.clauses, fieldTypes = fieldTypes, effects = effects))
-        Judge(ObjectTerm(inheritedFields), ty, inheritedEffect)
+        Judge(ObjectTerm(inheritedFields), ty1, inheritedEffect)
       case (ListExpr(terms, meta), lstTy@ListType(ty)) =>
         val checkedTerms: Vector[EffectWith[Term]] = terms.map { term =>
           val Judge(wellTypedTerm, termType, termEffect) = (inherit(term, ty, effects))
           EffectWith(termEffect, wellTypedTerm)
         }
         val effect1 = effectFold(checkedTerms.map(_.effect))
-        Judge(ListTerm(checkedTerms.map(_.value)), lstTy, effect1)
-      case (expr, ty) => inheritBySynthesize(expr, ty, effects)
+        Judge(ListTerm(checkedTerms.map(_.value)), ty1, effect1)
+      case (expr, ty) => inheritBySynthesize(expr, ty1, effects)
     }
   }
 
