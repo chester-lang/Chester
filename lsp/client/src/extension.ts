@@ -8,9 +8,11 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  StreamInfo
 } from 'vscode-languageclient/node';
 import util from 'node:util';
 import { exec as execCallback } from 'node:child_process';
+import * as net from 'net';
 
 const exec = util.promisify(execCallback);
 let client: LanguageClient;
@@ -50,22 +52,18 @@ export async function activate(context: ExtensionContext) {
         `Language server JAR not found at ${serverJar}. Please ensure the server is built correctly.`
       );
       return;
+    } else {
+      console.log(`Language server JAR found at ${serverJar}`);
     }
 
     // Server options
-    const serverOptions: ServerOptions = {
-      run: {
-        command: 'java',
-        args: ['-jar', serverJar],
-      },
-      debug: {
-        command: 'java',
-        args: [
-          '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044',
-          '-jar',
-          serverJar,
-        ],
-      },
+    const serverOptions = () => {
+      const socket = net.connect({ port: 1044 });
+      const result: StreamInfo = {
+        reader: socket,
+        writer: socket,
+      };
+      return Promise.resolve(result);
     };
 
     // Client options
