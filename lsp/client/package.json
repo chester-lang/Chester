@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "your-publisher-name",
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.93.0"
   },
   "categories": [
     "Programming Languages"
@@ -30,17 +30,16 @@
     ]
   },
   "scripts": {
-    "build": "pnpm run compile && pnpm run copy-server",
+    "build": "npm run compile && npm run copy-server",
     "compile": "tsc -p ./",
     "copy-server": "cp ../../target/chester-lsp.jar ./server/chester-lsp.jar",
-    "package": "pnpm run build && vsce package",
-    "pretest": "pnpm run compile",
+    "package": "npm run build && vsce package",
+    "pretest": "npm run compile",
     "test": "node ./out/test/runTest.js",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.8",
     "@types/node": "^18.19.54",
     "@types/vscode": "^1.93.0",
