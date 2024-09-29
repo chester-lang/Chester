@@ -92,18 +92,18 @@ val graalvmSettings = Seq(
 )
 
 val baseDeps = Seq(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-free" % "2.12.0",
-      "com.lihaoyi" %%% "upickle" % "4.0.1",
-      "com.lihaoyi" %%% "fansi" % "0.5.0",
-      "com.lihaoyi" %%% "fastparse" % "3.1.1",
-      "com.lihaoyi" %%% "scalatags" % "0.13.1",
-      "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
-      "io.getkyo" %%% "kyo-prelude" % "0.12.1",
-      "io.getkyo" %%% "kyo-data" % "0.12.1",
-      "io.getkyo" %%% "kyo-tag" % "0.12.1",
-    ),
+  libraryDependencies ++= Seq(
+    "org.typelevel" %%% "cats-core" % "2.12.0",
+    "org.typelevel" %%% "cats-free" % "2.12.0",
+    "com.lihaoyi" %%% "upickle" % "4.0.1",
+    "com.lihaoyi" %%% "fansi" % "0.5.0",
+    "com.lihaoyi" %%% "fastparse" % "3.1.1",
+    "com.lihaoyi" %%% "scalatags" % "0.13.1",
+    "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
+    "io.getkyo" %%% "kyo-prelude" % "0.12.1",
+    "io.getkyo" %%% "kyo-data" % "0.12.1",
+    "io.getkyo" %%% "kyo-tag" % "0.12.1",
+  ),
 )
 
 commonSettings
@@ -132,7 +132,9 @@ ThisBuild / nativeConfig ~= (System.getProperty("os.name").toLowerCase match {
   }
 })
 
-ThisBuild / nativeConfig ~= (if(supportNativeBuildForTermux) { _.withMultithreading(false).withGC(GC.immix) } else (x=>x))
+ThisBuild / nativeConfig ~= (if (supportNativeBuildForTermux) {
+  _.withMultithreading(false).withGC(GC.immix)
+} else (x => x))
 
 // original kiama-core
 lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
@@ -558,7 +560,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     libraryDependencies ++= Seq(
       "com.lihaoyi" %% "os-lib" % "0.10.7",
     ),
-    scalacOptions ++= (if(supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
+    scalacOptions ++= (if (supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
@@ -680,14 +682,32 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("lsp/server"))
   .jvmEnablePlugins(NativeImagePlugin)
+  .enablePlugins(SbtProguard)
   .dependsOn(common)
   .settings(
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
-    assembly / assemblyOutputPath := file("target") / "chester-lsp.jar",
+    assembly / assemblyOutputPath := file("target") / "chester-lsp-assembly.jar",
     nativeImageOutput := file("target") / "chester-lsp",
-    commonSettings
+    commonSettings,
+    // https://stackoverflow.com/questions/39655207/how-to-obfuscate-fat-scala-jar-with-proguard-and-sbt/39663793#39663793
+    // Proguard settings
+    Proguard / proguardOptions ++= Seq(
+      "-dontoptimize",
+      "-keepattributes *Annotation*",
+      "-keep public class * { public static void main(java.lang.String[]); }",
+      "-keep public class chester.** { *; }",
+      "-dontnote", "-dontwarn", "-ignorewarnings"
+    ),
+    Proguard / proguardVersion := "7.5.0",
+    Proguard / proguard / javaOptions := Seq("-Xmx4G"),
+    Proguard / proguardInputs := Seq((assembly / assemblyOutputPath).value),
+    Proguard / proguardLibraries := (Proguard / proguard / javaHome).value.toSeq,
+    Proguard / proguardInputFilter := (_ => None),
+    Proguard / proguardMerge := false,
+    Proguard / proguard := (Proguard / proguard).dependsOn(assembly).value,
+    Proguard / artifactPath := file("target") / "chester-lsp.jar",
   )
   .jvmSettings(
     graalvmSettings,

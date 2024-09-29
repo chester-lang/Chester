@@ -97,7 +97,7 @@ jobs:
       run: sbt cli/assembly
 
     - name: Build LSP JAR with SBT
-      run: sbt lsp/assembly
+      run: sbt lsp/proguard
 
     - name: Build CLI Native Executable
       run: sbt cliNative/nativeLink
