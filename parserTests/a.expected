@@ -1,0 +1,44 @@
+Block(
+  heads = Vector(),
+  tail = Some(
+    value = IntegerLiteral(
+      value = 0,
+      meta = Some(
+        value = ExprMeta(
+          sourcePos = Some(
+            value = SourcePos(
+              source = SourceOffset(
+                source = FilePath(fileName = "parserTests/a.chester"),
+                linesOffset = 0,
+                posOffset = WithUTF16(i = 0, utf16 = 0)
+              ),
+              range = RangeInFile(
+                start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
+                end = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0))
+              )
+            )
+          ),
+          commentInfo = None
+        )
+      )
+    )
+  ),
+  meta = Some(
+    value = ExprMeta(
+      sourcePos = Some(
+        value = SourcePos(
+          source = SourceOffset(
+            source = FilePath(fileName = "parserTests/a.chester"),
+            linesOffset = 0,
+            posOffset = WithUTF16(i = 0, utf16 = 0)
+          ),
+          range = RangeInFile(
+            start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
+            end = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0))
+          )
+        )
+      ),
+      commentInfo = None
+    )
+  )
+)
