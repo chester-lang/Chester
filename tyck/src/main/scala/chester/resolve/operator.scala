@@ -41,10 +41,10 @@ def constructPrecedenceGraph(ctx: PrecedenceGroupCtx): Graph[PrecedenceGroup, Di
 }
 
 def precedenceOf(
-    opInfo: OpInfo,
-    groupPrecedence: Map[QualifiedIDString, Int],
-    reporter: Reporter[TyckError]
-): Int = {
+                  opInfo: OpInfo,
+                  groupPrecedence: Map[QualifiedIDString, Int],
+                  reporter: Reporter[TyckError]
+                ): Int = {
   opInfo match {
     case op: OpWithGroup =>
       val groupName = op.group.name
@@ -62,117 +62,177 @@ def precedenceOf(
 def associativityOf(opInfo: OpInfo): Associativity = {
   opInfo match {
     case op: OpWithGroup => op.group.associativity
-    case _               => Associativity.None
+    case _ => Associativity.None
+  }
+}
+
+def determineOpType(
+                     tokenInfo: TokenInfo,
+                     prevToken: Option[TokenInfo],
+                     nextToken: Option[TokenInfo]
+                   ): OpType = {
+  val isPrevOperand = prevToken.exists(_.possibleOpTypes.contains(OpType.Operand))
+  val isNextOperand = nextToken.exists(_.possibleOpTypes.contains(OpType.Operand))
+
+  val possibleTypes = tokenInfo.possibleOpTypes
+
+  if (possibleTypes.contains(OpType.Infix) && isPrevOperand && isNextOperand) {
+    OpType.Infix
+  } else if (possibleTypes.contains(OpType.Prefix) && !isPrevOperand && isNextOperand) {
+    OpType.Prefix
+  } else if (possibleTypes.contains(OpType.Postfix) && isPrevOperand && !isNextOperand) {
+    OpType.Postfix
+  } else if (possibleTypes.contains(OpType.Operand)) {
+    OpType.Operand
+  } else {
+    // Default to Operand if unable to determine
+    OpType.Operand
   }
 }
 
 def parseTokens(
-    seq: Vector[Expr],
-    opContext: OperatorsContext,
-    groupPrecedence: Map[QualifiedIDString, Int],
-    reporter: Reporter[TyckError]
-): Vector[(Expr, Int, Associativity)] = {
+                 seq: Vector[Expr],
+                 opContext: OperatorsContext,
+                 groupPrecedence: Map[QualifiedIDString, Int],
+                 reporter: Reporter[TyckError]
+               ): Vector[TokenInfo] = {
   seq.map {
-    case id @ Identifier(name, _) =>
-      opContext.resolveOperator(name) match {
-        case Some(opInfo) =>
-          val precedence    = precedenceOf(opInfo, groupPrecedence, reporter)
-          val associativity = associativityOf(opInfo)
-          (id, precedence, associativity)
-        case None =>
-          reporter.apply(UnknownOperator(id))
-          (id, Int.MaxValue, Associativity.None)
+    case id@Identifier(name, _) =>
+      val possibleOps = Seq(
+        opContext.resolveInfix(name).map(op => (op, OpType.Infix)),
+        opContext.resolvePrefix(name).map(op => (op, OpType.Prefix)),
+        opContext.resolvePostfix(name).map(op => (op, OpType.Postfix))
+      ).flatten
+
+      if (possibleOps.nonEmpty) {
+        val possibleOpTypes = possibleOps.map(_._2).toSet
+        val precedences = possibleOps.map { case (opInfo, _) =>
+          precedenceOf(opInfo, groupPrecedence, reporter)
+        }
+        val associativities = possibleOps.map { case (opInfo, _) =>
+          associativityOf(opInfo)
+        }
+        // For simplicity, take the lowest precedence and the first associativity
+        val precedence = precedences.min
+        val associativity = associativities.head
+
+        TokenInfo(id, precedence, associativity, possibleOpTypes)
+      } else {
+        reporter.apply(UnknownOperator(id))
+        TokenInfo(id, Int.MaxValue, Associativity.None, Set(OpType.Operand))
       }
     case expr =>
-      // Operands have lowest precedence
-      (expr, Int.MaxValue, Associativity.None)
+      TokenInfo(expr, Int.MaxValue, Associativity.None, Set(OpType.Operand))
   }
 }
-
 def buildExpr(
-               stack: mutable.Stack[Expr],
+               stack: mutable.Stack[TokenInfo],
                opContext: OperatorsContext,
                reporter: Reporter[TyckError]
-): Expr = {
+             ): Expr = {
   if (stack.isEmpty) {
     reporter.apply(UnexpectedTokens(Nil))
     Identifier("error")
   } else {
-    val expr = stack.pop()
-    expr match {
-      case id @ Identifier(name, _) =>
-        opContext.resolveOperator(name) match {
-          case Some(opInfo) =>
-            opInfo match {
-              case _: Infix =>
-                val right = buildExpr(stack, opContext, reporter)
-                val left  = buildExpr(stack, opContext, reporter)
-                InfixExpr(left, id, right, expr.meta)
-              case _: Prefix =>
-                val operand = buildExpr(stack, opContext, reporter)
-                PrefixExpr(id, operand, expr.meta)
-              case _: Postfix =>
-                val operand = buildExpr(stack, opContext, reporter)
-                PostfixExpr(operand, id, expr.meta)
-              case _ =>
-                reporter.apply(UnknownOperator(id))
-                id
-            }
-          case None =>
-            reporter.apply(UnknownOperator(id))
-            id
-        }
-      case other =>
-        other
+    val tokenInfo = stack.pop()
+    val expr = tokenInfo.expr
+    val opType = tokenInfo.possibleOpTypes.headOption.getOrElse(OpType.Operand)
+
+    opType match {
+      case OpType.Infix =>
+        val right = buildExpr(stack, opContext, reporter)
+        val left = buildExpr(stack, opContext, reporter)
+        InfixExpr(left, expr.asInstanceOf[Identifier], right, expr.meta)
+      case OpType.Prefix =>
+        val operand = buildExpr(stack, opContext, reporter)
+        PrefixExpr(expr.asInstanceOf[Identifier], operand, expr.meta)
+      case OpType.Postfix =>
+        val operand = buildExpr(stack, opContext, reporter)
+        PostfixExpr(operand, expr.asInstanceOf[Identifier], expr.meta)
+      case OpType.Operand =>
+        expr
     }
   }
 }
-
+def shouldPopOperator(
+                       topOperator: TokenInfo,
+                       currentPrec: Int,
+                       currentAssoc: Associativity
+                     ): Boolean = {
+  val topPrec = topOperator.precedence
+  if (currentAssoc == Associativity.Left) {
+    topPrec <= currentPrec
+  } else {
+    topPrec < currentPrec
+  }
+}
 def parseExpression(
-    tokens: Vector[(Expr, Int, Associativity)],
-    opContext: OperatorsContext,
-    reporter: Reporter[TyckError]
-): Expr = {
-  val output    = mutable.Stack[Expr]()
-  val operators = mutable.Stack[(Expr, Int, Associativity)]()
+                     tokens: Vector[TokenInfo],
+                     opContext: OperatorsContext,
+                     reporter: Reporter[TyckError]
+                   ): Expr = {
+  val output = mutable.Stack[TokenInfo]()
+  val operators = mutable.Stack[TokenInfo]()
 
-  tokens.foreach { case (token, prec, assoc) =>
-    token match {
-      case id: Identifier =>
-        opContext.resolveOperator(id.name) match {
-          case Some(_) =>
-            // Operator
-            while (operators.nonEmpty && operators.top._2 <= prec) {
-              output.push(operators.pop()._1)
-            }
-            operators.push((token, prec, assoc))
-          case None =>
-            // Operand
-            output.push(token)
+  tokens.zipWithIndex.foreach { case (tokenInfo, index) =>
+    val prevToken = if (index > 0) Some(tokens(index - 1)) else None
+    val nextToken = if (index < tokens.length - 1) Some(tokens(index + 1)) else None
+
+    val opType = determineOpType(tokenInfo, prevToken, nextToken)
+    val tokenInfoWithType = tokenInfo.copy(possibleOpTypes = Set(opType))
+    opType match {
+      case OpType.Operand =>
+        output.push(tokenInfoWithType)
+      case OpType.Prefix | OpType.Postfix | OpType.Infix =>
+        while (
+          operators.nonEmpty && shouldPopOperator(
+            operators.top,
+            tokenInfo.precedence,
+            tokenInfo.associativity
+          )
+        ) {
+          output.push(operators.pop())
         }
+        operators.push(tokenInfoWithType)
       case _ =>
-        // Operand
-        output.push(token)
+        reporter.apply(UnknownOperator(tokenInfo.expr))
     }
   }
-
   while (operators.nonEmpty) {
-    output.push(operators.pop()._1)
+    output.push(operators.pop())
   }
 
   val expr = buildExpr(output, opContext, reporter)
-  // Check if there are any unprocessed tokens
   if (output.nonEmpty) {
-    reporter.apply(UnexpectedTokens(output.toList))
+    reporter.apply(UnexpectedTokens(output.map(_.expr).toList))
   }
   expr
 }
 
+sealed trait OpType
+
+object OpType {
+  case object Infix extends OpType
+
+  case object Prefix extends OpType
+
+  case object Postfix extends OpType
+
+  case object Operand extends OpType
+}
+
+case class TokenInfo(
+                      expr: Expr,
+                      precedence: Int,
+                      associativity: Associativity,
+                      possibleOpTypes: Set[OpType]
+                    )
+
 def resolveOpSeq(
-    reporter: Reporter[TyckError],
-    opContext: OperatorsContext,
-    opSeq: OpSeq
-): Expr = {
+                  reporter: Reporter[TyckError],
+                  opContext: OperatorsContext,
+                  opSeq: OpSeq
+                ): Expr = {
 
   // Construct the precedence graph
   val precedenceGraph = constructPrecedenceGraph(opContext.groups)
@@ -202,10 +262,10 @@ def resolveOpSeq(
 
   // Check for operators with unconnected precedence groups
   val operatorGroups = tokens.collect {
-    case (id: Identifier, _, _) =>
+    case TokenInfo(id: Identifier, _, _, _) =>
       opContext.resolveOperator(id.name) match {
         case Some(op: OpWithGroup) => Some(op.group)
-        case _                     => None
+        case _ => None
       }
   }.flatten
 

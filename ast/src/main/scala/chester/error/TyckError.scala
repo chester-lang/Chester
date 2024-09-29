@@ -247,9 +247,9 @@ sealed trait OpInfoError extends TyckError derives ReadWriter {
   override def cause: Term | Expr = EmptyExpr
 }
 
-case class UnknownOperator(operator: Identifier) extends OpInfoError {
+case class UnknownOperator(override val cause: Expr) extends OpInfoError {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    t"Unknown operator '${operator.name}'."
+    t"Unknown operator."
 }
 
 case class PrecedenceCycleDetected(groups: Iterable[PrecedenceGroup]) extends OpInfoError {
