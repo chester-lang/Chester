@@ -8,14 +8,15 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  StreamInfo
+  StreamInfo,
 } from 'vscode-languageclient/node';
 import util from 'node:util';
-import { exec as execCallback } from 'node:child_process';
+import { exec as execCallback, spawn } from 'child_process';
 import * as net from 'net';
 
 const exec = util.promisify(execCallback);
 let client: LanguageClient;
+let serverProcess: any;
 
 export async function activate(context: ExtensionContext) {
   console.log('Chester Language Server is now active!');
@@ -56,7 +57,30 @@ export async function activate(context: ExtensionContext) {
       console.log(`Language server JAR found at ${serverJar}`);
     }
 
-    // Server options
+    // Start the server process
+    serverProcess = spawn('java', ['-jar', serverJar, '1044']);
+
+    // Listen to server output
+    serverProcess.stdout.on('data', (data: Buffer) => {
+      console.log(`Server STDOUT: ${data.toString()}`);
+    });
+
+    serverProcess.stderr.on('data', (data: Buffer) => {
+      console.error(`Server STDERR: ${data.toString()}`);
+    });
+
+    serverProcess.on('error', (error: Error) => {
+      console.error('Server process error:', error);
+    });
+
+    serverProcess.on('exit', (code: number, signal: string) => {
+      console.log(`Server process exited with code ${code}, signal ${signal}`);
+    });
+
+    // Optionally wait for the server to start
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Server options to connect to the server started above
     const serverOptions = () => {
       const socket = net.connect({ port: 1044 });
       const result: StreamInfo = {
@@ -95,6 +119,9 @@ export async function activate(context: ExtensionContext) {
 
 export function deactivate(): Thenable<void> | undefined {
   console.log('Deactivating Chester Language Server');
+  if (serverProcess) {
+    serverProcess.kill();
+  }
   if (!client) {
     return undefined;
   }
