@@ -10,6 +10,8 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.properties</depends>
+    <!-- Add the LSP4IJ dependency -->
+    <depends>com.redhat.devtools.lsp4ij</depends>
 
     <resource-bundle>messages.SamplePluginBundle</resource-bundle>
 
@@ -28,6 +30,65 @@
         <notificationGroup displayType="BALLOON" id="My Plugin Notification" />
         <toolWindow factoryClass="org.jetbrains.scala.samples.ui.MyToolWindowFactory" id="MyToolWindow" anchor="bottom"/>
         <completion.contributor implementationClass="org.jetbrains.scala.samples.completion.SimpleCompletionContributor" language="Properties"/>
+    </extensions>
+
+    <!-- LSP4IJ Extension Points -->
+    <extensions defaultExtensionNs="com.redhat.devtools.lsp4ij">
+        <!-- Define your language server -->
+        <server id="chesterLspServer"
+                name="Chester LSP Server"
+                factoryClass="chester.idea.ChesterLanguageServerFactory">
+            <description><![CDATA[
+            Chester Language Server
+            ]]>
+            </description>
+        </server>
+
+        <!-- Map your language to the server -->
+        <languageMapping language="Chester"
+                         serverId="chesterLspServer"
+                         languageId="chester"/>
+    </extensions>
+
+    <!-- Folding support -->
+    <extensions defaultExtensionNs="com.intellij">
+        <lang.foldingBuilder language="Chester"
+                             implementationClass="com.redhat.devtools.lsp4ij.features.foldingRange.LSPFoldingRangeBuilder"
+                             order="first"/>
+    </extensions>
+
+    <!-- Signature help -->
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.parameterInfo
+                language="Chester"
+                implementationClass="com.redhat.devtools.lsp4ij.features.signatureHelp.LSPParameterInfoHandler"/>
+    </extensions>
+
+    <!-- Document symbol -->
+    <extensions defaultExtensionNs="com.intellij">
+        <lang.psiStructureViewFactory
+                language="Chester"
+                implementationClass="com.redhat.devtools.lsp4ij.features.documentSymbol.LSPDocumentSymbolStructureViewFactory"/>
+    </extensions>
+
+    <!-- Semantic Tokens Colors Provider -->
+    <extensions defaultExtensionNs="com.redhat.devtools.lsp4ij">
+        <semanticTokensColorsProvider
+                        serverId="chesterLspServer"
+                        class="chester.idea.ChesterSemanticTokensColorsProvider" />
+    </extensions>
+
+    <!-- File Type Extension -->
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Chester File"
+                  language="Chester"
+                  description="Chester language file"
+                  extensions="chester"
+                  icon="/path/to/icon.png"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileTypeFactory implementation="chester.idea.ChesterFileTypeFactory"/>
     </extensions>
 
 </idea-plugin>
