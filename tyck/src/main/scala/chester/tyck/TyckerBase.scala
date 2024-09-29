@@ -101,7 +101,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         resolveAndUnify(lhsVar, rhs1, lhs, failed)
 
       case (_, rhsVar: HasUniqId) =>
-        resolveAndUnify(rhsVar, lhs1, lhs, failed)
+        resolveAndUnify(rhsVar, lhs1, rhs, failed)
 
       case (AnyType(level), subType) => subType // TODO: level
       case (Union(superTypes), subType) => Union.from(superTypes.map(x => unifyTyOrNothingType(rhs = subType, lhs = x)))
