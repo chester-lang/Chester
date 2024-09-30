@@ -1,7 +1,21 @@
 import createNextIntlPlugin from 'next-intl/plugin';
- 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
 const withNextIntl = createNextIntlPlugin('./app/request.ts');
 
+// Get the directory path of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const from = path.join(__dirname, '..', 'resources', 'favicon.ico');
+const to = path.join(__dirname, 'app', 'favicon.ico');
+if (fs.existsSync(from)) {
+    fs.copyFileSync(from, to);
+    console.log('Favicon copied successfully');
+} else {
+    console.warn('Favicon not found in resources directory');
+}
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     /**
