@@ -11,17 +11,12 @@ import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
 
 import scala.collection.mutable
-import org.eclipse.lsp4j.{SymbolInformation, WorkspaceSymbolParams}
-
-import java.util.concurrent.CompletableFuture
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.jdk.CollectionConverters.*
 import scala.compiletime.uninitialized
-import org.eclipse.lsp4j.jsonrpc.messages.Either
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.iltotore.iron.*
-import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.concurrent.CompletableFuture
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.{List => JList}
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
@@ -190,7 +185,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  override def completion(params: CompletionParams): CompletableFuture[Either[java.util.List[CompletionItem], CompletionList]] = {
+  override def completion(params: CompletionParams): CompletableFuture[Either[JList[CompletionItem], CompletionList]] = {
     val position = params.getPosition
     val textDocument = params.getTextDocument.getUri
     val completions = provideCompletions(textDocument, position)
@@ -257,17 +252,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         // Calculate the character index in the text
         val lineStartOffset = getLineStartOffset(text, line)
         val charIndexUtf16 = lineStartOffset + utf16Column
-
-        // Convert UTF-16 index to codepoint index
         val codepointIndex = stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
 
-        // Get Line and Column with UTF-16
-        val lineAndColumn = stringIndex.charIndexToLineAndColumnWithUTF16(charIndexUtf16)
+        // Create WithUTF16 instance
+        val withUTF16 = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe)
 
         val pos = Pos(
-          index = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe),
-          line = lineAndColumn.line,
-          column = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe)
+          index = withUTF16,
+          line = line.refineUnsafe,
+          column = withUTF16
         )
         val range = RangeInFile(start = pos, end = pos)
 
@@ -292,7 +285,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def definition(
       params: DefinitionParams
-  ): CompletableFuture[Either[java.util.List[Location], java.util.List[LocationLink]]] = {
+  ): CompletableFuture[Either[JList[? <: Location], JList[? <: LocationLink]]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -319,7 +312,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                     symbolInfo.definitionPos.fileName,
                     rangeFromSourcePos(symbolInfo.definitionPos)
                   )
-                  Either.forLeft(java.util.Collections.singletonList(location))
+                  val locations = java.util.Collections.singletonList(location)
+                  Either.forLeft(locations)
                 case None =>
                   Either.forLeft(java.util.Collections.emptyList())
               }
@@ -333,7 +327,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  override def references(params: ReferenceParams): CompletableFuture[java.util.List[Location]] = {
+  override def references(params: ReferenceParams): CompletableFuture[JList[? <: Location]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -373,14 +367,18 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  override def documentSymbol(params: DocumentSymbolParams): CompletableFuture[java.util.List[Either[SymbolInformation, DocumentSymbol]]] = {
+  override def documentSymbol(
+      params: DocumentSymbolParams
+  ): CompletableFuture[JList[Either[SymbolInformation, DocumentSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement document symbol lookup logic here
       new java.util.ArrayList[Either[SymbolInformation, DocumentSymbol]]()
     })
   }
 
-  override def codeAction(params: CodeActionParams): CompletableFuture[java.util.List[Either[Command, CodeAction]]] = {
+  override def codeAction(
+      params: CodeActionParams
+  ): CompletableFuture[JList[Either[Command, CodeAction]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement code action logic here
       new java.util.ArrayList[Either[Command, CodeAction]]()
@@ -391,7 +389,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     tyckState.positionToScopePath.getOrElse(position, List.empty)
   }
 
-  override def symbol(params: WorkspaceSymbolParams): CompletableFuture[java.util.List[SymbolInformation]] = {
+  override def symbol(
+      params: WorkspaceSymbolParams
+  ): CompletableFuture[Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
       val allSymbols = documents.synchronized {
@@ -402,7 +402,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         symbol.name.toString.toLowerCase.contains(query)
       }.map(tyckSymbolToLSP)
 
-      matchingSymbols.asJava
+      Either.forLeft(matchingSymbols.asJava)
     })
   }
 
