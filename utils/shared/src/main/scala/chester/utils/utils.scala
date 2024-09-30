@@ -10,14 +10,9 @@ def encodeString(x: String): String = x
   .replace("\r", "\\r")
   .replace("\"", "\\\"")
 def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
-  LazyList.unfold(0) { index =>
-    if (pi.isReachable(index)) {
-      val nextIndex = index + 1
-      Some((pi.slice(index, nextIndex), nextIndex))
-    } else {
-      None
-    }
-  }
+  LazyList.from(0)
+    .takeWhile(pi.isReachable)
+    .map(index => pi.slice(index, index + 1))
 }
 
 case class MutBox[T](var value: T) {
