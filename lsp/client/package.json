@@ -6,7 +6,8 @@
   "publisher": "your-publisher-name",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/chester-language-support.git"
+    "url": "https://github.com/chester-lang/chester.git",
+    "directory": "lsp/client"
   },
   "engines": {
     "vscode": "^1.93.0"
