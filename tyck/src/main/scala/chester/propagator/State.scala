@@ -23,6 +23,10 @@ case class MutableCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   }
 }
 
+case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
+  override def read: Option[T] = Some(value)
+}
+
 sealed trait Propagator[Ability] extends HasUniqId {
   def affectingCells: Set[UniqIdOf[Cell[?]]]
 
