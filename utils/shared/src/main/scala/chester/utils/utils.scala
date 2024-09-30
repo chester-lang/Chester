@@ -3,7 +3,12 @@ package chester.utils
 import fastparse.ParserInput
 import io.github.iltotore.iron.constraint.all.MinLength
 
-def encodeString(x: String): String = x.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
+def encodeString(x: String): String = x
+  .replace("\\", "\\\\")
+  .replace("\n", "\\n")
+  .replace("\t", "\\t")
+  .replace("\r", "\\r")
+  .replace("\"", "\\\"")
 def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
   LazyList.unfold(0) { index =>
     if (pi.isReachable(index)) {

@@ -1,10 +1,11 @@
 package chester.utils.doc
 
 import spire.math.Trilean
-
+import upickle.default.*
+import chester.utils.impls.*
 import scala.language.implicitConversions
 
-case class Style(foreground: Option[Foreground] = None, background: Option[Background] = None, styling: Stylings = Stylings.Empty) {
+case class Style(foreground: Option[Foreground] = None, background: Option[Background] = None, styling: Stylings = Stylings.Empty) derives ReadWriter  {
   def ++(other: Style): Style = {
     Style(
       foreground = other.foreground.orElse(foreground),
@@ -25,7 +26,7 @@ object Style {
   val Empty: Style = Style()
 }
 
-sealed trait Foreground {
+sealed trait Foreground  derives ReadWriter {
   def toFansi: fansi.Attrs
 
   implicit final inline def toStyle: Style = Style(foreground = Some(this))
@@ -99,7 +100,7 @@ object Foreground {
   }
 }
 
-sealed trait Background {
+sealed trait Background derives ReadWriter {
   def toFansi: fansi.Attrs
 
   implicit final inline def toStyle: Style = Style(background = Some(this))
@@ -173,7 +174,7 @@ object Background {
   }
 }
 
-sealed trait Styling {
+sealed trait Styling derives ReadWriter {
   def toFansi: fansi.Attrs
 
   implicit final inline def toStyle: Style = Style(styling = applyOn())
@@ -190,7 +191,7 @@ object Stylings {
 case class Stylings
 (
   bold: Trilean = Trilean.Unknown
-) {
+)   derives ReadWriter {
   private inline def field(t: Trilean, onTrue: Styling, onFalse: Styling): fansi.Attrs = t match {
     case Trilean.True => onTrue.toFansi
     case Trilean.False => onFalse.toFansi

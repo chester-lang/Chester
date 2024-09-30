@@ -2,6 +2,7 @@ package chester.utils.doc
 
 import kiama2.output.*
 import kiama2.output.PrettyPrinterTypes.Width
+import upickle.default.*
 
 import scala.annotation.targetName
 import scala.language.implicitConversions
@@ -12,7 +13,7 @@ implicit object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinte
 
 }
 
-sealed trait Doc extends ToDoc {
+sealed trait Doc extends ToDoc derives ReadWriter {
   final inline implicit def getDoc(using printer: DocPrinter): printer.Doc = printer.toParenDoc(printToExpr)
 
   def printToExpr(using printer: DocPrinter): printer.Expr
