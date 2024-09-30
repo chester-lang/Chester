@@ -276,6 +276,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     case _ => Set.empty
   }
   def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
+    val scopeId = UniqId.generate
+    var checker = this.copy(localCtx = this.localCtx.enterScope(scopeId))
+
     // Convert expressions to ExprStmt and collect all statements
     val heads: Vector[Stmt] = block.heads.map {
       case stmt: Stmt => stmt
@@ -322,7 +325,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
 
     // Second pass: Process statements
-    var checker = this
     var effect = NoEffect
     var localCtx = checker.localCtx
     var stmts: Vector[StmtTerm] = Vector.empty
@@ -348,6 +350,21 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       localCtx = localCtx.extend(idVar)
       checker = checker.copy(localCtx = localCtx)
       defBindings(name) = (ty, varId, letDef) // Update with actual type
+
+      // **New code to record symbol definitions**
+      letDef.meta.flatMap(_.sourcePos).foreach { position =>
+        val symbolInfo = SymbolInformation(
+          uniqId = varId,
+          name = name,
+          definitionPos = position,
+          scopePath = localCtx.scopePath
+        )
+        
+        tyck.updateState { state =>
+          val updatedSymbols = state.symbols + symbolInfo
+          state.copy(symbols = updatedSymbols)
+        }
+      }
     }
 
     // Process statements in order
@@ -502,17 +519,29 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         tyck.report(err)
         Judge(new ErrorTerm(err), UnitType, NoEffect)
       }
-      case Identifier(id, meta) => {
-        val resolved = localCtx.resolve(id)
-        resolved match {
+      case Identifier(id, meta) =>
+        localCtx.resolve(id) match {
           case Some(CtxItem(name, JudgeNoEffect(wellTyped, ty))) =>
+            // **New code to record symbol references**
+            meta.flatMap(_.sourcePos).foreach { position =>
+              tyck.updateState { state =>
+                val updatedSymbols = state.symbols.map { sym =>
+                  if (sym.uniqId == name.uniqId && sym.scopePath == localCtx.scopePath) {
+                    sym.copy(references = sym.references + position)
+                  } else {
+                    sym
+                  }
+                }
+                state.copy(symbols = updatedSymbols)
+              }
+            }
+            // Proceed with existing logic
             Judge(name, ty, NoEffect)
           case None =>
             val err = IdentifierNotFoundError(expr)
             tyck.report(err)
             Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
         }
-      }
       case f: FunctionExpr => this.synthesizeFunction(f, effects)
       case call: DesaltFunctionCall => this.synthesizeFunctionCall(call, effects)
 

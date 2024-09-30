@@ -633,9 +633,7 @@ case object STEffect extends Effect {
   val name = "ST"
 }
 
-sealed trait MaybeVarCall extends MaybeCallTerm derives ReadWriter {
-  def uniqId: UniqId
-
+sealed trait MaybeVarCall extends MaybeCallTerm with HasUniqId derives ReadWriter {
   def id: Name
 }
 

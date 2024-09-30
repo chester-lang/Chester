@@ -65,10 +65,11 @@ extension (constraints: Constraints) {
 }
 
 case class TyckState(
-                      subst: Substitutions = Substitutions.Empty,
-                      constraints: Constraints = Constraints.Empty,
-                      deferredActions: DeferredActions = Vector.empty
-                    )
+  subst: Substitutions = Substitutions.Empty,
+  constraints: Constraints = Constraints.Empty,
+  deferredActions: DeferredActions = Vector.empty,
+  symbols: SymbolTable = Set.empty
+)
 
 extension (tyck: Tyck) {
   def updateSubst(id: UniqId, judge: Judge): Unit = {
@@ -98,7 +99,10 @@ extension (tyck: Tyck) {
   }
 }
 
-case class LocalCtx(ctx: Context = Context.builtin) {
+case class LocalCtx(
+  ctx: Context = Context.builtin,
+  scopePath: List[UniqId] = List.empty // Stack of scope identifiers
+) {
   def resolve(id: Name): Option[CtxItem] = ctx.get(id)
 
   def resolve(id: UniqId): Option[CtxItem] = ctx.getByVarId(id)
@@ -111,6 +115,8 @@ case class LocalCtx(ctx: Context = Context.builtin) {
   def addKnownJudge(varId: UniqId, judge: JudgeNoEffect): LocalCtx = {
     copy(ctx = ctx.addKnownJudge(varId, judge))
   }
+
+  def enterScope(scopeId: UniqId): LocalCtx = copy(scopePath = scopeId :: scopePath)
 }
 
 object LocalCtx {
