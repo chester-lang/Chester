@@ -155,7 +155,7 @@ jobs:
           ./target/chester
           ./target/chester-lsp
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out
-          ./lsp/client/chester-language-support-0.0.1.vsix
+          ./lsp/client/chester-language-support-*.vsix
 
     - name: Upload Windows Artifacts
       if: runner.os == 'Windows'
@@ -170,7 +170,7 @@ jobs:
           ./target/chester.exe
           ./target/chester-lsp.exe
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
-          ./lsp/client/chester-language-support-0.0.1.vsix
+          ./lsp/client/chester-language-support-*.vsix
 
     - name: Create or Update GitHub Release for Unix
       if: runner.os != 'Windows'
@@ -188,7 +188,7 @@ jobs:
           ./target/chester,
           ./target/chester-lsp,
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out,
-          ./lsp/client/chester-language-support-0.0.1.vsix
+          ./lsp/client/chester-language-support-*.vsix
 
     - name: Create or Update GitHub Release for Windows
       if: runner.os == 'Windows'
@@ -206,4 +206,4 @@ jobs:
           ./target/chester.exe,
           ./target/chester-lsp.exe,
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe,
-          ./lsp/client/chester-language-support-0.0.1.vsix
+          ./lsp/client/chester-language-support-*.vsix
