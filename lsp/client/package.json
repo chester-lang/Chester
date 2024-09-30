@@ -32,7 +32,18 @@
         ],
         "configuration": "./language-configuration.json"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Chester Language Support Configuration",
+      "properties": {
+        "chester.java.home": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the path to the Java home directory used by the Chester Language Server. If not specified, the 'java' command from the system PATH will be used."
+        }
+      }
+    }
   },
   "scripts": {
     "build": "npm run compile && npm run copy-server",
