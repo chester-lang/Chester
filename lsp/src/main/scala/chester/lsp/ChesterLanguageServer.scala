@@ -4,8 +4,8 @@ import chester.error.*
 import chester.parser.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.tyck.{ExprTycker, TyckResult, TyckState}
-import chester.utils.StringIndex
+import chester.tyck.{ExprTycker, TyckResult, TyckState, TyckSymbol}
+import chester.utils.{StringIndex, WithUTF16}
 import fastparse.Parsed
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
@@ -15,13 +15,14 @@ import org.eclipse.lsp4j.{SymbolInformation, WorkspaceSymbolParams}
 
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters.*
-import java.util.concurrent.CompletableFuture
 import scala.compiletime.uninitialized
-import scala.jdk.CollectionConverters.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
-import java.util.concurrent.CompletableFuture
 import scala.concurrent.ExecutionContext.Implicits.global
+import io.github.iltotore.iron.*
+import org.eclipse.lsp4j.jsonrpc.messages.Either
+import java.util.concurrent.CompletableFuture
+import java.util.{List => JList}
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
 
@@ -113,27 +114,20 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def getOffset(text: String, position: Position): Int = {
-    var offset = 0
-    var line = 0
-    var charIndex = 0
+    val stringIndex = StringIndex(text)
+    val line = position.getLine
+    val utf16Column = position.getCharacter
 
-    while (offset < text.length && line < position.getLine) {
-      if (text.charAt(offset) == '\n') {
-        line += 1
-      }
-      offset += 1
-    }
+    val lineStartOffset = getLineStartOffset(text, line)
+    val charIndexUtf16 = lineStartOffset + utf16Column
 
-    while (offset < text.length && charIndex < position.getCharacter) {
-      if (text.charAt(offset) == '\n') {
-        // Shouldn't happen, but safeguard
-        return offset
-      }
-      offset += 1
-      charIndex += 1
-    }
+    charIndexUtf16
+  }
 
-    offset
+  private def getLineStartOffset(text: String, lineNumber: Int): Int = {
+    val lines = text.split('\n')
+    val safeLineNumber = lineNumber.min(lines.length - 1).max(0)
+    lines.take(safeLineNumber).map(_.length + 1).sum // +1 for '\n' character
   }
 
   override def didClose(params: DidCloseTextDocumentParams): Unit = {
@@ -163,10 +157,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           case TyckResult.Failure(errors, warnings, _, _) =>
             errors.map { error =>
               val range = error.location.map { pos =>
-                new Range(
-                  new Position(pos.range.start.line, pos.range.start.column.utf16),
-                  new Position(pos.range.end.line, pos.range.end.column.utf16)
-                )
+                rangeFromSourcePos(pos)
               }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
 
               new Diagnostic(
@@ -251,27 +242,57 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     // Handle watched files change event here
   }
 
-  private def sourcePosFromLSP(uri: String, position: Position): SourcePos = {
-    val line = position.getLine
-    val character = position.getCharacter
-    SourcePos(
-      uri = uri,
-      range = SourceRange(
-        start = SourceLocation(line, character),
-        end = SourceLocation(line, character + 1)
-      )
-    )
+  private def sourcePosFromLSP(uri: String, position: Position): Option[SourcePos] = {
+    documents.synchronized {
+      documents.get(uri)
+    } match {
+      case Some(document) =>
+        val text = document.content
+        val stringIndex = StringIndex(text)
+
+        // LSP positions are in UTF-16 code units
+        val line = position.getLine
+        val utf16Column = position.getCharacter
+
+        // Calculate the character index in the text
+        val lineStartOffset = getLineStartOffset(text, line)
+        val charIndexUtf16 = lineStartOffset + utf16Column
+
+        // Convert UTF-16 index to codepoint index
+        val codepointIndex = stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
+
+        // Get Line and Column with UTF-16
+        val lineAndColumn = stringIndex.charIndexToLineAndColumnWithUTF16(charIndexUtf16)
+
+        val pos = Pos(
+          index = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe),
+          line = lineAndColumn.line,
+          column = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe)
+        )
+        val range = RangeInFile(start = pos, end = pos)
+
+        val source = SourceOffset(FileNameAndContent(uri, text))
+        Some(SourcePos(source, range))
+
+      case None =>
+        None
+    }
   }
 
   private def rangeFromSourcePos(sourcePos: SourcePos): Range = {
-    val start = new Position(sourcePos.range.start.line, sourcePos.range.start.column.utf16)
-    val end = new Position(sourcePos.range.end.line, sourcePos.range.end.column.utf16)
+    val startLine = sourcePos.range.start.line
+    val startCharacter = sourcePos.range.start.column.utf16
+    val endLine = sourcePos.range.end.line
+    val endCharacter = sourcePos.range.end.column.utf16
+
+    val start = new Position(startLine, startCharacter)
+    val end = new Position(endLine, endCharacter)
     new Range(start, end)
   }
 
   override def definition(
-                           params: DefinitionParams
-                         ): CompletableFuture[Either[java.util.List[Location], java.util.List[LocationLink]]] = {
+      params: DefinitionParams
+  ): CompletableFuture[Either[java.util.List[Location], java.util.List[LocationLink]]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -282,20 +303,26 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
       documentOpt match {
         case Some(document) =>
-          val sourcePos = sourcePosFromLSP(uri, position)
-          val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
+          sourcePosFromLSP(uri, position) match {
+            case Some(sourcePos) =>
+              val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
 
-          val symbolOpt = document.symbols.find { sym =>
-            sym.scopePath == scopePath && (sym.definitionPos == sourcePos || sym.references.contains(sourcePos))
-          }
+              val symbolOpt = document.symbols.find { sym =>
+                sym.scopePath == scopePath && (
+                  sym.definitionPos == sourcePos || sym.references.contains(sourcePos)
+                )
+              }
 
-          symbolOpt match {
-            case Some(symbolInfo) =>
-              val location = new Location(
-                symbolInfo.definitionPos.uri,
-                rangeFromSourcePos(symbolInfo.definitionPos)
-              )
-              Either.forLeft(java.util.Collections.singletonList(location))
+              symbolOpt match {
+                case Some(symbolInfo) =>
+                  val location = new Location(
+                    symbolInfo.definitionPos.fileName,
+                    rangeFromSourcePos(symbolInfo.definitionPos)
+                  )
+                  Either.forLeft(java.util.Collections.singletonList(location))
+                case None =>
+                  Either.forLeft(java.util.Collections.emptyList())
+              }
             case None =>
               Either.forLeft(java.util.Collections.emptyList())
           }
@@ -317,19 +344,25 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
       documentOpt match {
         case Some(document) =>
-          val sourcePos = sourcePosFromLSP(uri, position)
-          val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
+          sourcePosFromLSP(uri, position) match {
+            case Some(sourcePos) =>
+              val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
 
-          val symbolOpt = document.symbols.find { sym =>
-            sym.scopePath == scopePath && (sym.definitionPos == sourcePos || sym.references.contains(sourcePos))
-          }
-
-          symbolOpt match {
-            case Some(symbolInfo) =>
-              val locations = (symbolInfo.references + symbolInfo.definitionPos).map { refPos =>
-                new Location(refPos.uri, rangeFromSourcePos(refPos))
+              val symbolOpt = document.symbols.find { sym =>
+                sym.scopePath == scopePath && (
+                  sym.definitionPos == sourcePos || sym.references.contains(sourcePos)
+                )
               }
-              new java.util.ArrayList(locations.toList.asJava)
+
+              symbolOpt match {
+                case Some(symbolInfo) =>
+                  val locations = (symbolInfo.references + symbolInfo.definitionPos).map { refPos =>
+                    new Location(refPos.fileName, rangeFromSourcePos(refPos))
+                  }
+                  new java.util.ArrayList(locations.toList.asJava)
+                case None =>
+                  java.util.Collections.emptyList()
+              }
             case None =>
               java.util.Collections.emptyList()
           }
@@ -371,6 +404,18 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
       matchingSymbols.asJava
     })
+  }
+
+  private def tyckSymbolToLSP(symbol: TyckSymbol): SymbolInformation = {
+    val location = new Location(
+      symbol.definitionPos.fileName,
+      rangeFromSourcePos(symbol.definitionPos)
+    )
+    new SymbolInformation(
+      symbol.name.toString,
+      SymbolKind.Variable,
+      location
+    )
   }
 }
 
