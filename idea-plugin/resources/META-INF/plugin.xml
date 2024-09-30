@@ -84,11 +84,8 @@
                   language="Chester"
                   description="Chester language file"
                   extensions="chester"
-                  icon="/icons/chester-icon.png"/>
-    </extensions>
-
-    <extensions defaultExtensionNs="com.intellij">
-        <fileTypeFactory implementation="chester.idea.ChesterFileTypeFactory"/>
+                  icon="/icons/chester-icon.png"
+                  implementationClass="chester.idea.ChesterFileType"/>
     </extensions>
 
 </idea-plugin>
