@@ -301,15 +301,9 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     ),
   )
 
-lazy val depSpire = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("vendor/depSpire"))
-  .settings(
-    name := "depSpire",
-    commonSettings,
-  )
-  .jvmSettings(
-    commonJvmLibSettings,
+
+def useSpire(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
+  project.jvmSettings(
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "spire" % "0.18.0",
     )
@@ -326,16 +320,15 @@ lazy val depSpire = crossProject(JSPlatform, JVMPlatform, NativePlatform).withou
     )
   )
 
-lazy val utils2 = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+lazy val utils2 = useSpire(crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("utils2"))
-  .dependsOn(depSpire)
   .settings(
     name := "utils2",
     commonSettings,
     baseDeps,
   )
-  .jvmSettings(commonJvmLibSettings)
+  .jvmSettings(commonJvmLibSettings))
 
 lazy val base = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -368,20 +361,20 @@ lazy val parser = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   )
   .jvmSettings(commonJvmLibSettings)
 
-lazy val ast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+lazy val ast = useSpire(crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("ast"))
-  .dependsOn(base, pretty, depSpire)
+  .dependsOn(base, pretty)
   .settings(
     name := "ast",
     commonSettings,
   )
-  .jvmSettings(commonJvmLibSettings)
+  .jvmSettings(commonJvmLibSettings))
 
 lazy val err = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("err"))
-  .dependsOn(base, parser, ast, pretty, utils2)
+  .dependsOn(ast)
   .settings(
     name := "err",
     commonSettings,
@@ -768,7 +761,6 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .aggregate(
     ironNative, spireNative, scalaGraph,
-    depSpire,
     typednode,
     typedstd,
     typedundici,
