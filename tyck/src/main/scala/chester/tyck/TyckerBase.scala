@@ -392,7 +392,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           val name = defined.bindings.headOption.map(_.name).getOrElse {
             throw new IllegalArgumentException("Unexpected let definition, maybe not desalted")
           }
-          val (tyOptTerm, varId, _) = defBindings(name)
 
           // Record the scope path for this definition
           meta.flatMap(_.sourcePos).foreach { position =>
