@@ -51,6 +51,7 @@ val commonSettings = Seq(
       "-Wunused:locals",
       "-Wunused:params",
       "-Wunused:privates",
+      "-experimental",
     ),
   scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
   libraryDependencies ++= Seq(
