@@ -289,7 +289,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
   }
   def synthesizeBlock(block: Block, effects: Option[Effects]): Judge = {
     val scopeId = UniqId.generate
-    var checker = this.copy(localCtx = this.localCtx.enterScope(scopeId))
 
     // Convert expressions to ExprStmt and collect all statements
     val heads: Vector[Stmt] = block.heads.map {
@@ -338,18 +337,11 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
             val symbolInfo = TyckSymbol(
               uniqId = varId,
               name = name,
-              definitionPos = position,
-              scopePath = checker.localCtx.scopePath
+              definitionPos = position
             )
             tyck.updateState { state =>
               val updatedSymbols = state.symbols + symbolInfo
               state.copy(symbols = updatedSymbols)
-            }
-
-            // Also, record the mapping from positions to scope paths
-            tyck.updateState { state =>
-              val updatedMapping = state.positionToScopePath + (position -> checker.localCtx.scopePath)
-              state.copy(positionToScopePath = updatedMapping)
             }
           }
         case _ => ()
@@ -357,6 +349,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
 
     // Second pass: Process statements
+    var checker = this
     var effect = NoEffect
     var localCtx = checker.localCtx
     var stmts: Vector[StmtTerm] = Vector.empty
@@ -391,14 +384,6 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
         case letDef@LetDefStmt(kind, defined, tyOpt, bodyOpt, meta, _) =>
           val name = defined.bindings.headOption.map(_.name).getOrElse {
             throw new IllegalArgumentException("Unexpected let definition, maybe not desalted")
-          }
-
-          // Record the scope path for this definition
-          meta.flatMap(_.sourcePos).foreach { position =>
-            tyck.updateState { state =>
-              val updatedMapping = state.positionToScopePath + (position -> localCtx.scopePath)
-              state.copy(positionToScopePath = updatedMapping)
-            }
           }
 
           kind match {
@@ -554,7 +539,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
             meta.flatMap(_.sourcePos).foreach { position =>
               tyck.updateState { state =>
                 val updatedSymbols = state.symbols.map { sym =>
-                  if (sym.uniqId == name.uniqId && sym.scopePath == localCtx.scopePath) {
+                  if (sym.uniqId == name.uniqId) {
                     sym.copy(references = sym.references + position)
                   } else {
                     sym

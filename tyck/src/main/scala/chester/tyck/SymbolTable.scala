@@ -8,7 +8,6 @@ case class TyckSymbol(
   uniqId: UniqId,
   name: Name,
   definitionPos: SourcePos,
-  scopePath: List[UniqId],
   references: Set[SourcePos] = Set.empty
 )
 

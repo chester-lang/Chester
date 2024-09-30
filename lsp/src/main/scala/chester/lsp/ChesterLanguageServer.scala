@@ -297,8 +297,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def definition(
-      params: DefinitionParams
-  ): CompletableFuture[Either[JList[? <: Location], JList[? <: LocationLink]]] = {
+                           params: DefinitionParams
+                         ): CompletableFuture[Either[JList[? <: Location], JList[? <: LocationLink]]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -311,14 +311,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         case Some(document) =>
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
-              val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
-
               val symbolOpt = document.symbols.find { sym =>
-                sym.scopePath == scopePath && (
-                  sym.definitionPos == sourcePos || sym.references.contains(sourcePos)
-                )
+                positionsEqual(sym.definitionPos, sourcePos) || sym.references.exists(ref => positionsEqual(ref, sourcePos))
               }
-
               symbolOpt match {
                 case Some(symbolInfo) =>
                   val location = new Location(
@@ -340,6 +335,14 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
+  private def positionsEqual(pos1: SourcePos, pos2: SourcePos): Boolean = {
+    pos1.source.fileName == pos2.source.fileName &&
+      pos1.range.start.line == pos2.range.start.line &&
+      pos1.range.start.column.utf16 == pos2.range.start.column.utf16 &&
+      pos1.range.end.line == pos2.range.end.line &&
+      pos1.range.end.column.utf16 == pos2.range.end.column.utf16
+  }
+
   override def references(params: ReferenceParams): CompletableFuture[JList[? <: Location]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
@@ -353,14 +356,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         case Some(document) =>
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
-              val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
-
               val symbolOpt = document.symbols.find { sym =>
-                sym.scopePath == scopePath && (
-                  sym.definitionPos == sourcePos || sym.references.contains(sourcePos)
-                )
+                positionsEqual(sym.definitionPos, sourcePos) || sym.references.exists(ref => positionsEqual(ref, sourcePos))
               }
-
               symbolOpt match {
                 case Some(symbolInfo) =>
                   val locations = (symbolInfo.references + symbolInfo.definitionPos).map { refPos =>
@@ -381,8 +379,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def documentSymbol(
-      params: DocumentSymbolParams
-  ): CompletableFuture[JList[Either[SymbolInformation, DocumentSymbol]]] = {
+                               params: DocumentSymbolParams
+                             ): CompletableFuture[JList[Either[SymbolInformation, DocumentSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement document symbol lookup logic here
       new java.util.ArrayList[Either[SymbolInformation, DocumentSymbol]]()
@@ -390,21 +388,17 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def codeAction(
-      params: CodeActionParams
-  ): CompletableFuture[JList[Either[Command, CodeAction]]] = {
+                           params: CodeActionParams
+                         ): CompletableFuture[JList[Either[Command, CodeAction]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement code action logic here
       new java.util.ArrayList[Either[Command, CodeAction]]()
     })
   }
 
-  private def getScopePathAtPosition(tyckState: TyckState, position: SourcePos): List[UniqId] = {
-    tyckState.positionToScopePath.getOrElse(position, List.empty)
-  }
-
   override def symbol(
-      params: WorkspaceSymbolParams
-  ): CompletableFuture[Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]] = {
+                       params: WorkspaceSymbolParams
+                     ): CompletableFuture[Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
       val allSymbols = documents.synchronized {
@@ -433,7 +427,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 }
 
 case class DocumentInfo(
-  content: String,
-  tyckResult: TyckResult[TyckState, Judge],
-  symbols: Set[TyckSymbol]
-)
+                         content: String,
+                         tyckResult: TyckResult[TyckState, Judge],
+                         symbols: Set[TyckSymbol]
+                       )

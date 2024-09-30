@@ -69,7 +69,6 @@ case class TyckState(
   constraints: Constraints = Constraints.Empty,
   deferredActions: DeferredActions = Vector.empty,
   symbols: SymbolTable = Set.empty,
-  positionToScopePath: Map[SourcePos, List[UniqId]] = Map.empty
 )
 
 extension (tyck: Tyck) {
@@ -102,7 +101,6 @@ extension (tyck: Tyck) {
 
 case class LocalCtx(
   ctx: Context = Context.builtin,
-  scopePath: List[UniqId] = List.empty // Stack of scope identifiers
 ) {
   def resolve(id: Name): Option[CtxItem] = ctx.get(id)
 
@@ -116,8 +114,6 @@ case class LocalCtx(
   def addKnownJudge(varId: UniqId, judge: JudgeNoEffect): LocalCtx = {
     copy(ctx = ctx.addKnownJudge(varId, judge))
   }
-
-  def enterScope(scopeId: UniqId): LocalCtx = copy(scopePath = scopeId :: scopePath)
 }
 
 object LocalCtx {
