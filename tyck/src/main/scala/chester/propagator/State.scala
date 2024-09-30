@@ -1,18 +1,40 @@
 package chester.propagator
 
-import chester.syntax.core.{HasUniqId, UniqId}
+import chester.syntax.core.{HasUniqId, UniqId, UniqIdOf}
 
 sealed trait Cell[+T] extends HasUniqId {
-  def value: Option[T]
+  def read: Option[T]
 }
 
-sealed trait Propagator extends HasUniqId {
-  def affectingCells: Set[UniqId]
-  def run(state: CellsState): (cells: CellsState, finished: Boolean)
+case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
+  override def read: Option[T] = value
+
+  def fill(newValue: T): OnceCell[T] = {
+    require(value.isEmpty)
+    copy(value = Some(newValue))
+  }
 }
 
-type CellsState = Map[UniqId, Cell[?]]
+sealed trait Propagator[Ability] extends HasUniqId {
+  def affectingCells: Set[UniqIdOf[Cell[?]]]
 
-case class State(cells: CellsState) {
+  /**
+   * @return true if the propagator finished its work
+   */
+  def run(state: CellsStateAbility, more: Ability): Boolean
+}
+
+trait CellsStateAbility {
+  def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = ???
+
+  def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = ???
+}
+
+type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
+type DiffCellsState = CellsState
+type PropagatorsState[Ability] = Map[UniqIdOf[Propagator[Ability]], Propagator[Ability]]
+type AffectingMap[Ability] = Map[UniqIdOf[Cell[?]], Set[UniqIdOf[Propagator[Ability]]]]
+
+case class State[Ability](cells: CellsState, propagators: PropagatorsState[Ability], affectingMap: AffectingMap[Ability]) {
 
 }
