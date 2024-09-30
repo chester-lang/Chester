@@ -35,6 +35,8 @@ sealed trait Propagator[Ability] extends HasUniqId {
    * @return true if the propagator finished its work
    */
   def run(state: CellsStateAbility, more: Ability): Boolean
+
+  def zonk(state: CellsStateAbility, more: Ability): Unit
 }
 
 trait CellsStateAbility {
@@ -44,7 +46,6 @@ trait CellsStateAbility {
 }
 
 type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
-type DiffCellsState = CellsState
 type PropagatorsState[Ability] = Map[UniqIdOf[Propagator[Ability]], Propagator[Ability]]
 type AffectingMap[Ability] = Map[UniqIdOf[Cell[?]], Set[UniqIdOf[Propagator[Ability]]]]
 
