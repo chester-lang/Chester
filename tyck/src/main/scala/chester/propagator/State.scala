@@ -28,7 +28,8 @@ case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
 }
 
 sealed trait Propagator[Ability] extends HasUniqId {
-  def affectingCells: Set[UniqIdOf[Cell[?]]]
+  def readingCells: Set[UniqIdOf[Cell[?]]]
+  def writingCells: Set[UniqIdOf[Cell[?]]]
 
   /**
    * @return true if the propagator finished its work
