@@ -73,7 +73,7 @@ export async function activate(context: ExtensionContext) {
     }
 
     // Start the server process using the configured Java executable
-    serverProcess = spawn(`"${javaExecutable}"`, ['-jar', serverJar, '1044']);
+    serverProcess = spawn(javaExecutable, ['-jar', serverJar, '1044']);
 
     // Listen to server output
     serverProcess.stdout.on('data', (data: Buffer) => {
