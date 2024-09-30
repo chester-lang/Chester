@@ -109,14 +109,27 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def getOffset(text: String, position: Position): Int = {
-    val stringIndex = StringIndex(text)
-    val line = position.getLine
-    val utf16Column = position.getCharacter
+    var offset = 0
+    var line = 0
+    var charIndex = 0
 
-    val lineStartOffset = getLineStartOffset(text, line)
-    val charIndexUtf16 = lineStartOffset + utf16Column
+    while (offset < text.length && line < position.getLine) {
+      if (text.charAt(offset) == '\n') {
+        line += 1
+      }
+      offset += 1
+    }
 
-    charIndexUtf16
+    while (offset < text.length && charIndex < position.getCharacter) {
+      if (text.charAt(offset) == '\n') {
+        // Shouldn't happen, but safeguard
+        return offset
+      }
+      offset += 1
+      charIndex += 1
+    }
+
+    offset
   }
 
   private def getLineStartOffset(text: String, lineNumber: Int): Int = {
