@@ -15,6 +15,14 @@ case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   }
 }
 
+case class MutableCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
+  override def read: Option[T] = value
+
+  def update(newValue: T): MutableCell[T] = {
+    copy(value = Some(newValue))
+  }
+}
+
 sealed trait Propagator[Ability] extends HasUniqId {
   def affectingCells: Set[UniqIdOf[Cell[?]]]
 
