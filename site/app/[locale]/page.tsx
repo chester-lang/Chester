@@ -113,9 +113,7 @@ export default function Home() {
       <div className="flex-grow flex flex-col items-center justify-start p-1 sm:p-2">
         <main className="flex flex-col gap-2 w-full max-w-4xl mt-2 sm:mt-4">
           <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
-          <div className="w-full h-[50vh] sm:h-[70vh] bg-black rounded">
             <XTerm ref={xtermRef} />
-          </div>
         </main>
       </div>
     </div>
