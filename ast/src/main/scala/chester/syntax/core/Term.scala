@@ -653,10 +653,16 @@ case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
 }
 
-case class ErrorTerm(val error: TyckError) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = error.toDoc
+// TODO: Doc support
+case class ErrorTerm(val describe: String) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = describe
 
   override def descent(f: Term => Term): ErrorTerm = this
+}
+
+object ErrorTerm {
+  def apply(error: Problem): ErrorTerm = new ErrorTerm(error.toString)
+  def apply(error: String): ErrorTerm = new ErrorTerm(error)
 }
 
 def ErrorType(error: TyckError): ErrorTerm = ErrorTerm(error)

@@ -12,6 +12,7 @@ import spire.math.Trilean
 import spire.math.Trilean.{False, True, Unknown}
 
 import scala.language.implicitConversions
+import scala.collection.mutable
 
 trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Self] & MetaTycker[Self]] extends TyckerTrait[Self] {
   implicit val reporter1: Reporter[TyckProblem] = tyck.reporter
@@ -116,21 +117,21 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
             if (failed != null) failed else {
               val err = UnifyFailedError(rhs = rhs1, lhs = lhs1)
               tyck.report(err)
-              new ErrorTerm(err)
+               ErrorTerm(err)
             }
           case Unknown =>
             // Handle unknown comparison, possibly by introducing a constraint or reporting an error
             if (failed != null) failed else {
               val err = UnifyFailedError(rhs = rhs1, lhs = lhs1)
               tyck.report(err)
-              new ErrorTerm(err)
+              ErrorTerm(err)
             }
         }
       case (superType, subType) =>
         if (failed != null) failed else {
           val err = UnifyFailedError(rhs = subType, lhs = superType)
           tyck.report(err)
-          new ErrorTerm(err)
+          ErrorTerm(err)
         }
     }
   }
@@ -162,7 +163,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     else {
       val err = UnifyFailedError(lhs = lhs, rhs = rhs)
       tyck.report(err)
-      new ErrorTerm(err)
+      ErrorTerm(err)
     }
   }
 
@@ -238,21 +239,32 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
 
   // Helper functions to collect all identifiers used in an expression
   // TODO: correctly implement this. This is a naive implementation that collects all identifiers
+  // Overloaded traverse function for Name
+  def traverse(identifiers: collection.mutable.Set[Name], name: Name): Unit = {
+    identifiers += name
+  }
+
+  // Original traverse function for Expr
   def traverse(identifiers: collection.mutable.Set[Name], e: Expr): Unit = e match {
     case Identifier(name, _) =>
       identifiers += name
     case FunctionExpr(telescope, resultTy, body, _, _) =>
-      telescope.foreach(_.args.foreach(arg => traverse(identifiers, arg.name)))
-      resultTy.foreach(_.inspect(traverse(identifiers,_)))
-      body.foreach(_.inspect(traverse(identifiers,_)))
+      telescope.foreach { tele =>
+        tele.args.foreach { arg =>
+          traverse(identifiers, arg.name)
+          arg.ty.foreach(traverse(identifiers, _)) // Traverse argument type annotations
+        }
+      }
+      resultTy.foreach(traverse(identifiers, _)) // Traverse result type annotation
+      body.foreach(traverse(identifiers, _))     // Traverse function body
     case Block(heads, lastExpr, _) =>
       heads.foreach {
         case stmt: Stmt => traverseStmt(identifiers, stmt)
         case expr: Expr => traverse(identifiers, expr)
       }
-      lastExpr.foreach(_.inspect(traverse(identifiers,_)))
+      lastExpr.foreach(traverse(identifiers, _))
     case _ =>
-      e.inspect(traverse(identifiers,_))
+      e.inspect(traverse(identifiers, _))
   }
   def traverseStmt(identifiers: collection.mutable.Set[Name], stmt: Stmt): Unit = stmt match {
     case LetDefStmt(_, defined, tyOpt, bodyOpt, _, _) =>
@@ -286,9 +298,9 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     }
 
     // First pass: Collect all `def` bindings and detect forward references
-    val defBindings = collection.mutable.Map[Name, (Option[Term], UniqId, LetDefStmt)]()
-    val usedNames = collection.mutable.Set[Name]()
-    val allNames = collection.mutable.Set[Name]()
+    val defBindings = mutable.Map[Name, (Option[Term], UniqId, LetDefStmt)]()
+    val usedNames = mutable.Set[Name]()
+    val allNames = mutable.Set[Name]()
     var foundForwardReferences = false
 
     // Collect all defined names (to detect uses)
@@ -304,7 +316,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
     // Analyze statements to find forward references
     for ((stmt, index) <- heads.zipWithIndex) {
       stmt match {
-        case letDef@LetDefStmt(LetDefType.Def, defined, tyOpt, _, _, _) =>
+        case letDef@LetDefStmt(LetDefType.Def, defined, tyOpt, _, meta, _) =>
           val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
           val varId = UniqId.generate
           val tyOptTerm = tyOpt.map(synthesize(_, Some(NoEffect)).wellTyped)
@@ -319,6 +331,26 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           if (usedInRemaining) {
             usedNames += name
             foundForwardReferences = true
+          }
+
+          // **Updated code to record symbol definitions**
+          meta.flatMap(_.sourcePos).foreach { position =>
+            val symbolInfo = TyckSymbol(
+              uniqId = varId,
+              name = name,
+              definitionPos = position,
+              scopePath = checker.localCtx.scopePath
+            )
+            tyck.updateState { state =>
+              val updatedSymbols = state.symbols + symbolInfo
+              state.copy(symbols = updatedSymbols)
+            }
+
+            // Also, record the mapping from positions to scope paths
+            tyck.updateState { state =>
+              val updatedMapping = state.positionToScopePath + (position -> checker.localCtx.scopePath)
+              state.copy(positionToScopePath = updatedMapping)
+            }
           }
         case _ => ()
       }
@@ -351,27 +383,24 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       checker = checker.copy(localCtx = localCtx)
       defBindings(name) = (ty, varId, letDef) // Update with actual type
 
-      // **New code to record symbol definitions**
-      letDef.meta.flatMap(_.sourcePos).foreach { position =>
-        val symbolInfo = SymbolInformation(
-          uniqId = varId,
-          name = name,
-          definitionPos = position,
-          scopePath = localCtx.scopePath
-        )
-        
-        tyck.updateState { state =>
-          val updatedSymbols = state.symbols + symbolInfo
-          state.copy(symbols = updatedSymbols)
-        }
-      }
     }
 
     // Process statements in order
     for (stmt <- heads) {
       stmt match {
-        case LetDefStmt(kind, defined, tyOpt, bodyOpt, _, _) =>
-          val name = defined.bindings.headOption.map(_.name).getOrElse("unknown")
+        case letDef@LetDefStmt(kind, defined, tyOpt, bodyOpt, meta, _) =>
+          val name = defined.bindings.headOption.map(_.name).getOrElse {
+            throw new IllegalArgumentException("Unexpected let definition, maybe not desalted")
+          }
+          val (tyOptTerm, varId, _) = defBindings(name)
+
+          // Record the scope path for this definition
+          meta.flatMap(_.sourcePos).foreach { position =>
+            tyck.updateState { state =>
+              val updatedMapping = state.positionToScopePath + (position -> localCtx.scopePath)
+              state.copy(positionToScopePath = updatedMapping)
+            }
+          }
 
           kind match {
             case LetDefType.Let =>
@@ -517,7 +546,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case expr: Stmt => {
         val err = UnexpectedStmt(expr)
         tyck.report(err)
-        Judge(new ErrorTerm(err), UnitType, NoEffect)
+        Judge(ErrorTerm(err), UnitType, NoEffect)
       }
       case Identifier(id, meta) =>
         localCtx.resolve(id) match {
@@ -540,7 +569,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
           case None =>
             val err = IdentifierNotFoundError(expr)
             tyck.report(err)
-            Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
+            Judge(ErrorTerm(err), ErrorTerm(err), NoEffect)
         }
       case f: FunctionExpr => this.synthesizeFunction(f, effects)
       case call: DesaltFunctionCall => this.synthesizeFunctionCall(call, effects)
@@ -548,7 +577,7 @@ trait TyckerBase[Self <: TyckerBase[Self] & FunctionTycker[Self] & EffTycker[Sel
       case expr =>
         val err = UnsupportedExpressionError(expr)
         tyck.report(err)
-        Judge(new ErrorTerm(err), new ErrorTerm(err), NoEffect)
+        Judge(ErrorTerm(err), ErrorTerm(err), NoEffect)
     }
   }
 

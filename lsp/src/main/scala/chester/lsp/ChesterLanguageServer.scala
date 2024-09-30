@@ -3,16 +3,18 @@ package chester.lsp
 import chester.error.*
 import chester.parser.*
 import chester.syntax.concrete.*
-import chester.tyck.{ExprTycker, TyckResult}
+import chester.syntax.core.*
+import chester.tyck.{ExprTycker, TyckResult, TyckState}
 import chester.utils.StringIndex
 import fastparse.Parsed
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.*
+
 import scala.collection.mutable
 import org.eclipse.lsp4j.{SymbolInformation, WorkspaceSymbolParams}
+
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters.*
-
 import java.util.concurrent.CompletableFuture
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
@@ -26,7 +28,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   private var client: LanguageClient = uninitialized
 
   // Store documents' content
-  private val documents = mutable.HashMap[String, String]()
+  private val documents = mutable.Map[String, DocumentInfo]()
 
   def connect(client: LanguageClient): Unit = {
     this.client = client
@@ -56,10 +58,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     val uri = params.getTextDocument.getUri
     val text = params.getTextDocument.getText
 
-    // Store the document content
-    documents(uri) = text
+    // Process the document and get TyckResult and diagnostics
+    val (tyckResult, diagnostics, symbols) = processDocument(uri, text)
 
-    val diagnostics = parseAndGenerateDiagnostics(uri, text)
+    // Store the DocumentInfo in the documents map
+    documents.synchronized {
+      documents(uri) = DocumentInfo(content = text, tyckResult = tyckResult, symbols = symbols)
+    }
+
+    // Publish diagnostics
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
 
@@ -68,14 +75,27 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     val uri = params.getTextDocument.getUri
     val changes = params.getContentChanges.asScala.toSeq
 
+    // Update the document content
     val updatedText = applyChanges(uri, changes)
 
-    val diagnostics = parseAndGenerateDiagnostics(uri, updatedText)
+    // Process the updated document
+    val (tyckResult, diagnostics, symbols) = processDocument(uri, updatedText)
+
+    // Update the DocumentInfo with the new content and TyckResult
+    documents.synchronized {
+      documents.get(uri).foreach { _ =>
+        documents(uri) = DocumentInfo(content = updatedText, tyckResult = tyckResult, symbols = symbols)
+      }
+    }
+
+    // Publish diagnostics
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
   }
 
   private def applyChanges(uri: String, changes: Seq[TextDocumentContentChangeEvent]): String = {
-    val currentText = documents.getOrElse(uri, "")
+    val currentText = documents.synchronized {
+      documents.get(uri).map(_.content).getOrElse("")
+    }
 
     val updatedText = changes.foldLeft(currentText) { (text, change) =>
       if (change.getRange == null) {
@@ -89,8 +109,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
       }
     }
 
-    documents(uri) = updatedText
-    updatedText
+    updatedText // Return the updated text without modifying documents
   }
 
   private def getOffset(text: String, position: Position): Int = {
@@ -127,12 +146,19 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
   }
 
-  private def parseAndGenerateDiagnostics(fileName: String, text: String): List[Diagnostic] = {
-    Parser.parseTopLevel(FileNameAndContent(fileName, text)) match {
-      case Right(parsedBlock) =>
-        ExprTycker.synthesize(parsedBlock) match {
+  def processDocument(uri: String, text: String): (TyckResult[TyckState, Judge], List[Diagnostic], Set[TyckSymbol]) = {
+    val parseResult = Parser.parseTopLevel(FileNameAndContent(uri, text))
+
+    parseResult match {
+      case Right(parsedExpr) =>
+        val tyckResult = ExprTycker.synthesize(parsedExpr)
+
+        val symbols = tyckResult.state.symbols
+
+        // Generate diagnostics from the TyckResult
+        val diagnostics = tyckResult match {
           case TyckResult.Success(_, _, warnings) =>
-            // Optionally handle warnings here
+            // Handle warnings if needed
             List()
           case TyckResult.Failure(errors, warnings, _, _) =>
             errors.map { error =>
@@ -151,6 +177,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
               )
             }.toList
         }
+
+        (tyckResult, diagnostics, symbols)
+
       case Left(parseError) =>
         val range = new Range(
           new Position(parseError.index.line, parseError.index.column.utf16),
@@ -162,10 +191,13 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           DiagnosticSeverity.Error,
           "ChesterLanguageServer"
         )
-        List(diagnostic)
+        val tyckResult = TyckResult(
+          state = TyckState(),
+          result = Judge(ErrorTerm(parseError), ErrorTerm(parseError), NoEffect)
+        )
+        (tyckResult, List(diagnostic), Set.empty)
     }
   }
-
 
   override def completion(params: CompletionParams): CompletableFuture[Either[java.util.List[CompletionItem], CompletionList]] = {
     val position = params.getPosition
@@ -219,18 +251,93 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     // Handle watched files change event here
   }
 
-  override def definition(params: DefinitionParams): CompletableFuture[Either[java.util.List[? <: Location], java.util.List[? <: LocationLink]]] = {
-    CompletableFuture.supplyAsync(() => {
-      // Implement definition lookup logic here
-      Either.forLeft(new java.util.ArrayList[Location]())
-    })
+  private def sourcePosFromLSP(uri: String, position: Position): SourcePos = {
+    val line = position.getLine
+    val character = position.getCharacter
+    SourcePos(
+      uri = uri,
+      range = SourceRange(
+        start = SourceLocation(line, character),
+        end = SourceLocation(line, character + 1)
+      )
+    )
   }
 
-  override def references(params: ReferenceParams): CompletableFuture[java.util.List[? <: Location]] = {
-    CompletableFuture.supplyAsync(() => {
-      // Implement references lookup logic here
-      new java.util.ArrayList[Location]()
-    })
+  private def rangeFromSourcePos(sourcePos: SourcePos): Range = {
+    val start = new Position(sourcePos.range.start.line, sourcePos.range.start.column.utf16)
+    val end = new Position(sourcePos.range.end.line, sourcePos.range.end.column.utf16)
+    new Range(start, end)
+  }
+
+  override def definition(
+                           params: DefinitionParams
+                         ): CompletableFuture[Either[java.util.List[Location], java.util.List[LocationLink]]] = {
+    CompletableFuture.supplyAsync { () =>
+      val uri = params.getTextDocument.getUri
+      val position = params.getPosition
+
+      val documentOpt = documents.synchronized {
+        documents.get(uri)
+      }
+
+      documentOpt match {
+        case Some(document) =>
+          val sourcePos = sourcePosFromLSP(uri, position)
+          val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
+
+          val symbolOpt = document.symbols.find { sym =>
+            sym.scopePath == scopePath && (sym.definitionPos == sourcePos || sym.references.contains(sourcePos))
+          }
+
+          symbolOpt match {
+            case Some(symbolInfo) =>
+              val location = new Location(
+                symbolInfo.definitionPos.uri,
+                rangeFromSourcePos(symbolInfo.definitionPos)
+              )
+              Either.forLeft(java.util.Collections.singletonList(location))
+            case None =>
+              Either.forLeft(java.util.Collections.emptyList())
+          }
+
+        case None =>
+          Either.forLeft(java.util.Collections.emptyList())
+      }
+    }
+  }
+
+  override def references(params: ReferenceParams): CompletableFuture[java.util.List[Location]] = {
+    CompletableFuture.supplyAsync { () =>
+      val uri = params.getTextDocument.getUri
+      val position = params.getPosition
+
+      val documentOpt = documents.synchronized {
+        documents.get(uri)
+      }
+
+      documentOpt match {
+        case Some(document) =>
+          val sourcePos = sourcePosFromLSP(uri, position)
+          val scopePath = getScopePathAtPosition(document.tyckResult.state, sourcePos)
+
+          val symbolOpt = document.symbols.find { sym =>
+            sym.scopePath == scopePath && (sym.definitionPos == sourcePos || sym.references.contains(sourcePos))
+          }
+
+          symbolOpt match {
+            case Some(symbolInfo) =>
+              val locations = (symbolInfo.references + symbolInfo.definitionPos).map { refPos =>
+                new Location(refPos.uri, rangeFromSourcePos(refPos))
+              }
+              new java.util.ArrayList(locations.toList.asJava)
+            case None =>
+              java.util.Collections.emptyList()
+          }
+
+        case None =>
+          java.util.Collections.emptyList()
+      }
+    }
   }
 
   override def documentSymbol(params: DocumentSymbolParams): CompletableFuture[java.util.List[Either[SymbolInformation, DocumentSymbol]]] = {
@@ -247,21 +354,28 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     })
   }
 
-  private val workspaceSymbols = new mutable.HashMap[String, mutable.Set[SymbolInformation]]()
-
-  private def addWorkspaceSymbol(uri: String, symbol: SymbolInformation): Unit = {
-    workspaceSymbols.getOrElseUpdate(uri, mutable.Set.empty) += symbol
+  private def getScopePathAtPosition(tyckState: TyckState, position: SourcePos): List[UniqId] = {
+    tyckState.positionToScopePath.getOrElse(position, List.empty)
   }
 
-  private def removeWorkspaceSymbols(uri: String): Unit = {
-    workspaceSymbols.remove(uri)
-  }
-
-  private def workspaceSymbol(params: WorkspaceSymbolParams): CompletableFuture[java.util.List[? <: SymbolInformation]] = {
+  override def symbol(params: WorkspaceSymbolParams): CompletableFuture[java.util.List[SymbolInformation]] = {
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
-      val matchingSymbols = workspaceSymbols.values.flatten.filter(_.getName.toLowerCase.contains(query))
-      matchingSymbols.toList.asJava
+      val allSymbols = documents.synchronized {
+        documents.values.flatMap(_.symbols).toList
+      }
+
+      val matchingSymbols = allSymbols.filter { symbol =>
+        symbol.name.toString.toLowerCase.contains(query)
+      }.map(tyckSymbolToLSP)
+
+      matchingSymbols.asJava
     })
   }
 }
+
+case class DocumentInfo(
+  content: String,
+  tyckResult: TyckResult[TyckState, Judge],
+  symbols: Set[TyckSymbol]
+)

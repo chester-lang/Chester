@@ -1,10 +1,10 @@
 package chester.tyck
 
 import chester.error.SourcePos
-import chester.syntax.{Name}
+import chester.syntax.Name
 import chester.syntax.core.UniqId
 
-case class SymbolInformation(
+case class TyckSymbol(
   uniqId: UniqId,
   name: Name,
   definitionPos: SourcePos,
@@ -12,4 +12,4 @@ case class SymbolInformation(
   references: Set[SourcePos] = Set.empty
 )
 
-type SymbolTable = Set[SymbolInformation]
+type SymbolTable = Set[TyckSymbol]

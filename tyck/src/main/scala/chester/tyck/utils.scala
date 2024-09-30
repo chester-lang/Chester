@@ -68,7 +68,8 @@ case class TyckState(
   subst: Substitutions = Substitutions.Empty,
   constraints: Constraints = Constraints.Empty,
   deferredActions: DeferredActions = Vector.empty,
-  symbols: SymbolTable = Set.empty
+  symbols: SymbolTable = Set.empty,
+  positionToScopePath: Map[SourcePos, List[UniqId]] = Map.empty
 )
 
 extension (tyck: Tyck) {
