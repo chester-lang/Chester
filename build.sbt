@@ -378,10 +378,20 @@ lazy val ast = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   )
   .jvmSettings(commonJvmLibSettings)
 
+lazy val err = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("err"))
+  .dependsOn(base, parser, ast, pretty, utils2)
+  .settings(
+    name := "err",
+    commonSettings,
+  )
+  .jvmSettings(commonJvmLibSettings)
+
 lazy val tyck = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("tyck"))
-  .dependsOn(base, ast)
+  .dependsOn(base, ast, err)
   .settings(
     name := "tyck",
     commonSettings,
@@ -775,7 +785,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effektKiama,
     jsTypings,
     utils, utils2,
-    base, parser, ast, pretty, tyck,
+    base, parser, ast, err, pretty, tyck,
     core,
     common,
     cli,

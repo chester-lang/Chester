@@ -21,6 +21,7 @@ import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 import spire.math.Rational
 import chester.utils.impls.*
+import chester.error.ProblemUpickle.*
 
 
 enum CommentType derives ReadWriter {
@@ -474,7 +475,7 @@ case object EmptyExpr extends ErrorExpr {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("EmptyExpr")
 }
 
-case class DesaltFailed(origin: Expr, error: TyckProblem, meta: Option[ExprMeta] = None) extends ErrorExpr with Stmt {
+case class DesaltFailed(origin: Expr, error: Problem, meta: Option[ExprMeta] = None) extends ErrorExpr with Stmt {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DesaltFailed = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("DesaltFailed(") <> origin.toDoc <> Doc.text(", ") <> error.toDoc <> Doc.text(")"))
@@ -514,16 +515,6 @@ object Bindings {
 sealed trait Stmt extends DesaltExpr derives ReadWriter {
   def bindings: Bindings = Bindings(Vector.empty, Vector.empty)
 
-  def reduceOnce: (Vector[TyckWarning], Vector[TyckError], Stmt) = (Vector.empty, Vector.empty, this)
-
-  def reduce: (Vector[TyckWarning], Vector[TyckError], Stmt) = {
-    val (warnings, errors, stmt) = reduceOnce
-    if (stmt == this) (Vector.empty, Vector.empty, stmt)
-    else {
-      val (newWarnings, newErrors, newStmt) = stmt.reduce
-      (warnings ++ newWarnings, errors ++ newErrors, newStmt)
-    }
-  }
 }
 
 case class ExprStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {

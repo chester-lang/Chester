@@ -17,6 +17,7 @@ import upickle.default.*
 
 import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
+import chester.error.ProblemUpickle.*
 
 case class TermMeta(sourcePos: Option[SourcePos])derives ReadWriter
 
@@ -653,19 +654,13 @@ case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
 }
 
-// TODO: Doc support
-case class ErrorTerm(val describe: String) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = describe
+case class ErrorTerm(problem: Problem) extends Term {
+  override def toDoc(implicit options: PrettierOptions): Doc = problem.toDoc
 
   override def descent(f: Term => Term): ErrorTerm = this
 }
 
-object ErrorTerm {
-  def apply(error: Problem): ErrorTerm = new ErrorTerm(error.toString)
-  def apply(error: String): ErrorTerm = new ErrorTerm(error)
-}
-
-def ErrorType(error: TyckError): ErrorTerm = ErrorTerm(error)
+def ErrorType(error: Problem): ErrorTerm = ErrorTerm(error)
 
 case class MetaTerm(description: String, uniqId: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + uniqId)

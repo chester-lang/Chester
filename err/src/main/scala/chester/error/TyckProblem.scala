@@ -12,26 +12,6 @@ import chester.syntax.accociativity.*
 
 import scala.reflect.ClassTag
 
-object Problem {
-  enum Stage {
-    case TYCK, PARSE, OTHER
-  }
-
-  enum Severity {
-    case ERROR, GOAL, WARN, INFO
-  }
-}
-
-trait WithServerity extends Any {
-  def level: Problem.Severity
-  
-  final def isError: Boolean = level == Problem.Severity.ERROR
-}
-
-trait Problem extends ToDoc with WithServerity {
-  def stage: Problem.Stage
-}
-
 sealed trait TyckProblem extends Problem derives ReadWriter {
   final def stage: Problem.Stage = Problem.Stage.TYCK
 
