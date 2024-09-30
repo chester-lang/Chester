@@ -7,15 +7,15 @@
         "name": "Launch Chester Extension",
         "runtimeExecutable": "${execPath}",
         "args": [
-          "--extensionDevelopmentPath=${workspaceFolder}/lsp/client"
+          "--extensionDevelopmentPath=${workspaceFolder}/vscode"
         ],
         "outFiles": [
-          "${workspaceFolder}/lsp/client/out/**/*.js"
+          "${workspaceFolder}/vscode/out/**/*.js"
         ],
         "preLaunchTask": {
           "type": "npm",
           "script": "build",
-          "path": "lsp/client"
+          "path": "vscode"
         },
         "autoAttachChildProcesses": true
       },

@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/chester-lang/chester.git",
-    "directory": "lsp/client"
+    "directory": "vscode"
   },
   "engines": {
     "vscode": "^1.93.0"
@@ -48,7 +48,7 @@
   "scripts": {
     "build": "npm run compile && npm run copy-server",
     "compile": "tsc -p ./",
-    "copy-server": "cp ../../target/chester-lsp.jar ./server/chester-lsp.jar",
+    "copy-server": "cp ../target/chester-lsp.jar ./server/chester-lsp.jar",
     "package": "npm run build && vsce package",
     "pretest": "npm run compile",
     "test": "node ./out/test/runTest.js",

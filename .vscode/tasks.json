@@ -5,7 +5,7 @@
         "label": "build",
         "type": "npm",
         "script": "build",
-        "path": "lsp/client",
+        "path": "vscode",
         "problemMatcher": [],
         "group": {
           "kind": "build",
@@ -15,7 +15,7 @@
       {
         "label": "buildServer",
         "type": "shell",
-        "command": "sbt assembly",
+        "command": "sbt lsp/assembly",
         "group": "build",
         "presentation": {
           "reveal": "always"
