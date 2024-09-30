@@ -2,7 +2,6 @@
 **/*.map
 **/*.ts
 **/.vscode/**
-**/node_modules/**
 **/test/**
 **/*.git*
 **/*.md
