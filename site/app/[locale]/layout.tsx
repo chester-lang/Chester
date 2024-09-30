@@ -37,18 +37,16 @@ export default async function RootLayout({
   children,
   params: { locale },
 }: Props) {
-  const messages = await getMessages(locale)
+  const messages = await getMessages(locale);
 
   return (
     <html lang={locale}>
-      <body className="bg-white text-black dark:bg-gray-900 dark:text-white">
+      <body className="bg-white text-black dark:bg-gray-900 dark:text-white min-h-screen flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
-        <ThemeProvider>
-          <Header />
-          <div className="p-5">
-            {children}
-          </div>
-          <Footer />
+          <ThemeProvider>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

@@ -109,11 +109,11 @@ export default function Home() {
   }, [theme, xtermRef]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+    <div className="flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white">
       <div className="flex-grow flex flex-col items-center justify-start p-1 sm:p-2">
         <main className="flex flex-col gap-2 w-full max-w-4xl mt-2 sm:mt-4">
           <h1 className="text-2xl font-bold text-center">{t('title')}</h1>
-            <XTerm ref={xtermRef} />
+          <XTerm ref={xtermRef} />
         </main>
       </div>
     </div>
