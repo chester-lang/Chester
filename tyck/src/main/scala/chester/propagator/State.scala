@@ -30,12 +30,16 @@ case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
 sealed trait Propagator[Ability] extends HasUniqId {
   def readingCells: Set[UniqIdOf[Cell[?]]]
   def writingCells: Set[UniqIdOf[Cell[?]]]
+  def zonkingCells: Set[UniqIdOf[Cell[?]]] = writingCells
+  
+  require(zonkingCells.subsetOf(writingCells))
 
   /**
    * @return true if the propagator finished its work
    */
   def run(state: CellsStateAbility, more: Ability): Boolean
 
+  /** make a best guess for zonkingCells */
   def zonk(state: CellsStateAbility, more: Ability): Unit
 }
 
