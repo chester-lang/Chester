@@ -88,7 +88,10 @@ object BaseTycker {
 
   def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqOfOr[Term] =
     resolve(expr, localCtx) match {
-      case IntegerLiteral(value, meta) => ???
+      case expr@IntegerLiteral(value, meta) => {
+        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        AbstractIntTerm.from(value)
+      }
       case expr: Expr => ???
     }
 }

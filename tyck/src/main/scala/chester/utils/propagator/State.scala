@@ -72,20 +72,20 @@ case class State[Ability](cells: CellsState, propagators: PropagatorsState[Abili
 }
 
 trait StateAbility[Ability] extends CellsStateAbility {
-  def addPropagator(propagator: Propagator[Ability]): Unit
+  def addPropagator(propagator: Propagator[Ability])(using more: Ability): Unit
 
-  def tick(more: Ability): Unit
+  def tick(using more: Ability): Unit
 
   def stable: Boolean
 
-  def tickAll(more: Ability): Unit = {
+  def tickAll(using more: Ability): Unit = {
     while (!stable) {
-      tick(more)
+      tick(using more)
     }
   }
 
   /** make a best guess for those cells */
-  def naiveZonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit
+  def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
 }
 
 
@@ -114,11 +114,15 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
     state = state.copy(cells = state.cells.updated(cell.uniqId, cell))
   }
 
-  override def addPropagator(propagator: Propagator[Ability]): Unit = {
-    state = state.copy(propagators = state.propagators.updated(propagator.uniqId, propagator))
+  override def addPropagator(propagator: Propagator[Ability])(using more: Ability): Unit = {
+    val uniqId = propagator.uniqId
+    state = state.copy(propagators = state.propagators.updated(uniqId, propagator))
+    if(propagator.run(using this, more)){
+      state = state.copy(propagators = state.propagators.removed(uniqId))
+    }
   }
 
-  override def tick(more: Ability): Unit = {
+  override def tick(using more: Ability): Unit = {
     val didChanged = state.didChanged
     state = state.copy(didChanged = Vector.empty)
     state.propagators.filter((_, propagator) => propagator.readingCells.exists(didChanged.contains)).foreach {
@@ -132,7 +136,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
     }
   }
 
-  override def naiveZonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit = {
+  override def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit = {
     val cellsToZonk = cells.filter(id => !state.cells(id).stable)
     state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
       case (pid, propagator) =>
