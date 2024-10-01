@@ -219,6 +219,7 @@ object BaseTycker {
     }
   }
 
+// TODO: add something for implicit conversion
 /** ty is lhs */
   def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
@@ -241,6 +242,7 @@ object BaseTycker {
       case expr@ListExpr(terms, meta) => {
         val t = newType
         state.addPropagator(ListOf(t, ty, meta))
+        // TODO: use UnionOf
         FlatMap(terms.map(check(_, t, effects))){
           xs => ListTerm(xs)
         }
