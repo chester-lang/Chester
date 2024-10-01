@@ -174,6 +174,7 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       }
       state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
         case (pid, propagator) =>
+          tickAll
           if (state.propagators.contains(pid)) {
             val result = propagator.naiveZonk(cells)(using this, more)
             result match {

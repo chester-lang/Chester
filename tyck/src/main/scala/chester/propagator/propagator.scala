@@ -102,6 +102,7 @@ object BaseTycker {
   }
 
   case class IsType(ty: CellId[Term], uniqId: UniqIdOf[IsType] = UniqId.generate[IsType]) extends Propagator[Ck] {
+    override val readingCells = Set(ty)
     override val zonkingCells = Set(ty)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
@@ -203,6 +204,7 @@ object BaseTycker {
     }
   }
 
+/** ty is lhs */
   def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
@@ -223,6 +225,7 @@ object BaseTycker {
       }
       case expr@ListExpr(terms, meta) => {
         val t = newType
+        state.addPropagator(ListOf(t, ty, meta))
         FlatMap(terms.map(check(_, t, effects))){
           xs => ListTerm(xs)
         }
