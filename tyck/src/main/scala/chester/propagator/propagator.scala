@@ -4,9 +4,11 @@ import chester.error.TyckProblem
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.tyck.{LocalCtx, Reporter}
+import chester.tyck.{Get, LocalCtx, Reporter, SymbolTable, TyckResult, TyckState}
 import chester.utils.propagator.*
 import chester.utils.reuse
+
+import scala.language.implicitConversions
 
 type UniqOfOr[T] = UniqIdOf[Cell[T]] | T
 
@@ -25,19 +27,19 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(uniqId: UniqId, lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Reporter[TyckProblem]] {
+  case class Unify(uniqId: UniqId, lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Ck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
 
-    override def run(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = {
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       val lhs = state.read(this.lhs)
       val rhs = state.read(this.rhs)
       if (lhs.isDefined && rhs.isDefined && lhs.get == rhs.get) return true
       return false
     }
 
-    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): ZonkResult = {
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
       val lhs = state.read(this.lhs)
       val rhs = state.read(this.rhs)
       (lhs, rhs) match {
@@ -55,12 +57,12 @@ object BaseTycker {
     }
   }
 
-  case class LiteralType(uniqId: UniqId, x: Literals, ty: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Reporter[TyckProblem]] {
+  case class LiteralType(uniqId: UniqId, x: Literals, ty: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Ck] {
     override val readingCells = Set(ty)
     override val writingCells = Set(ty)
     override val zonkingCells = Set(ty)
 
-    override def run(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = {
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       if(state.notStable(ty)) return false
       val ty_ = state.read(this.ty).get
       val result = x match {
@@ -76,7 +78,7 @@ object BaseTycker {
       }
     }
 
-    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): ZonkResult =
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult =
       state.fill(ty, x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
@@ -86,7 +88,7 @@ object BaseTycker {
       ZonkResult.Done
   }
 
-  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqOfOr[Term] =
+  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): UniqOfOr[Term] =
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
@@ -106,4 +108,16 @@ object BaseTycker {
       }
       case expr: Expr => ???
     }
+}
+
+type Ck = Get[TyckProblem, CkState]
+
+given ckToReport(using ck: Ck): Reporter[TyckProblem] = ck.reporter
+
+case class CkState(
+                      symbols: SymbolTable = Set.empty,
+                    )
+
+object Tycker {
+  def check(expr: Expr,ty: Option[Term], effects: Option[Effects], localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = ???
 }
