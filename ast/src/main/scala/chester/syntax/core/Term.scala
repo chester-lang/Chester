@@ -308,7 +308,7 @@ case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
 case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def descent(f: Term => Term): SymbolTerm = this
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value, ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("'" + value, ColorProfile.literalColor)
 }
 
 case object RationalType extends TypeTerm with WithType {
