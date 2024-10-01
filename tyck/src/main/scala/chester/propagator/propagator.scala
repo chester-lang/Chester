@@ -65,7 +65,7 @@ object BaseTycker {
     override val zonkingCells = Set(ty)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      if (state.notStable(ty)) return false
+      if (state.noValue(ty)) return false
       val ty_ = state.read(this.ty).get
       val result = x match {
         case IntegerLiteral(_, _) => ty_ == IntegerType
@@ -93,7 +93,7 @@ object BaseTycker {
   case class IsEffects(effects: CellId[Effects], uniqId: UniqIdOf[IsEffects] = UniqId.generate[IsEffects]) extends Propagator[Ck] {
     override val zonkingCells = Set(effects)
 
-    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.isStable(effects)
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(effects)
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
       state.fill(effects, Effects.Empty)
@@ -104,7 +104,7 @@ object BaseTycker {
   case class IsType(ty: CellId[Term], uniqId: UniqIdOf[IsType] = UniqId.generate[IsType]) extends Propagator[Ck] {
     override val zonkingCells = Set(ty)
 
-    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.isStable(ty)
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
       state.fill(ty, AnyType0)
@@ -135,7 +135,7 @@ object BaseTycker {
     }
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val needed = xs.filter(state.notStable(_))
+      val needed = xs.filter(state.noValue(_))
       if (needed.nonEmpty) return ZonkResult.Require(needed)
       val done = run
       require(done)

@@ -11,7 +11,7 @@ sealed trait Cell[T] extends HasUniqId {
 
   def read: Option[T]
 
-  def stable: Boolean = read.isDefined
+  def hasValue: Boolean = read.isDefined
 
   /** fill an unstable cell */
   def fill(newValue: T): Cell[T]
@@ -37,7 +37,7 @@ case class MutableCell[T](value: Option[T],uniqId: UniqIdOf[MutableCell[T]]= Uni
 case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.generate[LiteralCell[T]]) extends Cell[T] {
   override def read: Option[T] = Some(value)
 
-  override def stable: Boolean = true
+  override def hasValue: Boolean = true
 
   override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
 }
@@ -68,9 +68,9 @@ trait CellsStateAbility {
 
   def addCell[T <: Cell[?]](cell: T): Unit
 
-  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = readCell(id).exists((x: T) => x.stable)
+  def hasValue[T <: Cell[?]](id: UniqIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasValue)
 
-  def notStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = !isStable(id)
+  def noValue[T <: Cell[?]](id: UniqIdOf[T]): Boolean = !hasValue(id)
 }
 
 type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
@@ -168,9 +168,9 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       val cellsToZonk = if (cellsNeeded.nonEmpty) {
         val a = cellsNeeded
         cellsNeeded = Vector.empty
-        a ++ cells.filter(id => !state.cells(id).stable)
+        a ++ cells.filter(id => !state.cells(id).hasValue)
       } else {
-        cells.filter(id => !state.cells(id).stable)
+        cells.filter(id => !state.cells(id).hasValue)
       }
       state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
         case (pid, propagator) =>
