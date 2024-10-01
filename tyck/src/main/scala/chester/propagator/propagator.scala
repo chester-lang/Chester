@@ -1,13 +1,13 @@
 package chester.propagator
 
 import cats.implicits.*
-import chester.error.TyckProblem
+import chester.error.*
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.*
 import chester.utils.propagator.*
-import chester.utils.{MutBox, reuse}
+import chester.utils.*
 
 import scala.language.implicitConversions
 
@@ -26,7 +26,7 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(lhs: CellId[Term], rhs: CellId[Term], meta: Option[ExprMeta] = None, uniqId: UniqIdOf[Unify] = UniqId.generate[Unify]) extends Propagator[Ck] {
+  case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[Unify] = UniqId.generate[Unify]) extends Propagator[Ck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
@@ -35,7 +35,7 @@ object BaseTycker {
       val lhs = state.read(this.lhs)
       val rhs = state.read(this.rhs)
       if (lhs.isDefined && rhs.isDefined) {
-        unify(lhs.get, rhs.get)
+        unify(lhs.get, rhs.get, cause)
         return true
       }
       return false
@@ -59,17 +59,61 @@ object BaseTycker {
     }
   }
 
-  case class UnionOf(lhs: CellId[Term], rhs: Vector[CellId[Term]], meta: Option[ExprMeta] = None, uniqId: UniqIdOf[Union] = UniqId.generate[Union]) extends Propagator[Ck] {
+  case class UnionOf(
+                      lhs: CellId[Term],
+                      rhs: Vector[CellId[Term]],
+                      cause: Expr,
+                      uniqId: UniqIdOf[UnionOf] = UniqId.generate[UnionOf]
+                    ) extends Propagator[Ck] {
     override val readingCells = Set(lhs) ++ rhs.toSet
-    override val writingCells = Set(lhs) ++ rhs.toSet
+    override val writingCells = Set(lhs)
     override val zonkingCells = Set(lhs) ++ rhs.toSet
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      ???
+      val lhsValueOpt = state.read(lhs)
+      val rhsValuesOpt = rhs.map(state.read)
+
+      if (lhsValueOpt.isDefined && rhsValuesOpt.forall(_.isDefined)) {
+        val lhsValue = lhsValueOpt.get
+        val rhsValues = rhsValuesOpt.map(_.get)
+
+        // Check that each rhsValue is assignable to lhsValue
+        val assignable = rhsValues.forall { rhsValue =>
+          unify(lhsValue, rhsValue, cause)
+          true // Assuming unify reports errors internally
+        }
+        assignable
+      } else {
+        // Not all values are available yet
+        false
+      }
     }
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      ???
+      val lhsValueOpt = state.read(lhs)
+      val rhsValuesOpt = rhs.map(state.read)
+
+      val unknownRhs = rhs.zip(rhsValuesOpt).collect { case (id, None) => id }
+      if (unknownRhs.nonEmpty) {
+        // Wait for all rhs values to be known
+        ZonkResult.Require(unknownRhs.toVector)
+      } else {
+        val rhsValues = rhsValuesOpt.map(_.get)
+
+        lhsValueOpt match {
+          case Some(lhsValue) =>
+            // LHS is known, unify each RHS with LHS
+            rhsValues.foreach { rhsValue =>
+              unify(lhsValue, rhsValue, cause)
+            }
+            ZonkResult.Done
+          case None =>
+            // LHS is unknown, create UnionType from RHS values and set LHS
+            val unionType = Union.from(rhsValues.assumeNonEmpty)
+            state.fill(lhs, unionType)
+            ZonkResult.Done
+        }
+      }
     }
   }
 
@@ -123,6 +167,7 @@ object BaseTycker {
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      if(state.readingZonkings(Vector(ty)).nonEmpty) return ZonkResult.NotYet
       state.fill(ty, AnyType0)
       ZonkResult.Done
     }
@@ -166,19 +211,40 @@ object BaseTycker {
     cell.uniqId
   }
 
-  def Map[T,U](x: CellId[T])(f: T => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
+  def Map[T, U](x: CellId[T])(f: T => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
     val cell = OnceCell[U]()
     state.addCell(cell)
     state.addPropagator(FlatMaping(Vector(x), (xs: Vector[T]) => f(xs.head), cell.uniqId))
     cell.uniqId
   }
 
-  def unify(t1: Term, t2: Term)(using ck: Ck, state: StateAbility[Ck]): Unit = {
-    if(t1 == t2) return
-    ???
+  def unify(lhs: Term, rhs: Term, cause: Expr)(using ck: Ck, state: StateAbility[Ck]): Unit = {
+    if (lhs == rhs) return
+    (lhs, rhs) match {
+
+      // Structural unification for ListType
+      case (ListType(elem1), ListType(elem2)) =>
+        unify(elem1, elem2, cause)
+
+      // Structural unification for Union types
+      case (Union(types1), Union(types2)) =>
+        val minLength = math.min(types1.length, types2.length)
+        (types1.take(minLength), types2.take(minLength)).zipped.foreach { (ty1, ty2) =>
+          unify(ty1, ty2, cause)
+        }
+        if (types1.length != types2.length) {
+          ck.reporter.apply(TypeMismatch(lhs, rhs, cause))
+        }
+
+      // Base case: types do not match
+      case _ =>
+        ck.reporter.apply(TypeMismatch(lhs, rhs, cause))
+
+    }
   }
-  def unify(t1: Term, t2: CellId[Term])(using ck: Ck, state: StateAbility[Ck]): Unit = {
-    state.addPropagator(Unify(literal(t1), t2))
+
+  def unify(t1: Term, t2: CellId[Term], cause: Expr)(using ck: Ck, state: StateAbility[Ck]): Unit = {
+    state.addPropagator(Unify(literal(t1), t2, cause))
   }
 
   def literal[T](t: T)(using ck: Ck, state: StateAbility[Ck]): CellId[T] = {
@@ -187,8 +253,8 @@ object BaseTycker {
     cell.uniqId
   }
 
-/** t is rhs, listT is lhs */
-  case class ListOf(t: CellId[Term], listT: CellId[Term], meta: Option[ExprMeta], uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using localCtx: LocalCtx) extends Propagator[Ck] {
+  /** t is rhs, listT is lhs */
+  case class ListOf(t: CellId[Term], listT: CellId[Term], cause: Expr, uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(t, listT)
     override val writingCells = Set(t, listT)
     override val zonkingCells = Set(listT)
@@ -198,20 +264,21 @@ object BaseTycker {
       val listT1 = state.read(this.listT)
       (t1, listT1) match {
         case (Some(t1), Some(ListType(t2))) => {
-          unify(t2, t1)
+          unify(t2, t1, cause)
           true
         }
         case (_, Some(ListType(t2))) => {
-          unify(t2, t)
+          unify(t2, t, cause)
           true
         }
         case (_, _) => false
       }
     }
+
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
       val t1 = state.read(this.t)
       val listT1 = state.read(this.listT)
-      if(!t1.isDefined) return ZonkResult.Require(Vector(this.t))
+      if (!t1.isDefined) return ZonkResult.Require(Vector(this.t))
       val ty = t1.get
       assert(listT1.isEmpty)
       state.fill(this.listT, ListType(ty))
@@ -219,8 +286,9 @@ object BaseTycker {
     }
   }
 
-// TODO: add something for implicit conversion
-/** ty is lhs */
+  // TODO: add something for implicit conversion
+
+  /** ty is lhs */
   def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
@@ -241,10 +309,25 @@ object BaseTycker {
       }
       case expr@ListExpr(terms, meta) => {
         val t = newType
-        state.addPropagator(ListOf(t, ty, meta))
-        // TODO: use UnionOf
-        FlatMap(terms.map(check(_, t, effects))){
-          xs => ListTerm(xs)
+        // Relate the list type 'ty' to 'ListType(t)'
+        state.addPropagator(ListOf(t, ty, expr))
+
+        // For each term, check it with its own type variable and collect the results
+        val termResults = terms.map { term =>
+          val elemTy = newType
+          val wellTypedTerm = check(term, elemTy, effects)
+          (wellTypedTerm, elemTy)
+        }
+
+        // Collect the types of the elements
+        val elemTypes = termResults.map(_._2).toVector
+
+        // Ensure that 't' is the union of the element types
+        state.addPropagator(UnionOf(t, elemTypes, expr))
+
+        // Build the ListTerm with the well-typed terms
+        FlatMap(termResults.map(_._1)) { xs =>
+          ListTerm(xs)
         }
       }
       case expr: Expr => ???

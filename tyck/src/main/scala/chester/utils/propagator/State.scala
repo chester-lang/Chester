@@ -17,7 +17,7 @@ sealed trait Cell[T] extends HasUniqId {
   def fill(newValue: T): Cell[T]
 }
 
-case class OnceCell[T]( value: Option[T] = None,uniqId: UniqIdOf[OnceCell[T]]= UniqId.generate[OnceCell[T]]) extends Cell[T] {
+case class OnceCell[T](value: Option[T] = None, uniqId: UniqIdOf[OnceCell[T]] = UniqId.generate[OnceCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
   override def fill(newValue: T): OnceCell[T] = {
@@ -26,7 +26,7 @@ case class OnceCell[T]( value: Option[T] = None,uniqId: UniqIdOf[OnceCell[T]]= U
   }
 }
 
-case class MutableCell[T](value: Option[T],uniqId: UniqIdOf[MutableCell[T]]= UniqId.generate[MutableCell[T]]) extends Cell[T] {
+case class MutableCell[T](value: Option[T], uniqId: UniqIdOf[MutableCell[T]] = UniqId.generate[MutableCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
   override def fill(newValue: T): MutableCell[T] = {
@@ -44,6 +44,7 @@ case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.ge
 
 trait Propagator[Ability] extends HasUniqId {
   override def uniqId: UniqIdOf[Propagator[Ability]]
+
   def readingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
 
   def writingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
@@ -62,7 +63,7 @@ trait Propagator[Ability] extends HasUniqId {
 trait CellsStateAbility {
   def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
 
-  def read[U](id: UniqIdOf[ Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
+  def read[U](id: UniqIdOf[Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
 
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
@@ -95,13 +96,15 @@ trait StateAbility[Ability] extends CellsStateAbility {
     }
   }
 
+  def readingZonkings(cells: Vector[UniqIdOf[Cell[?]]]): Vector[Propagator[Ability]]
+  
   /** make a best guess for those cells */
   def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
 
   def toId[T](x: UniqOfOr[T]): UniqIdOf[Cell[T]] = x match {
     case x: UniqId => x.asInstanceOf[UniqIdOf[Cell[T]]]
     case x: T => {
-      val cell = LiteralCell[T]( x)
+      val cell = LiteralCell[T](x)
       addCell(cell)
       cell.uniqId
     }
@@ -160,6 +163,10 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
         }
     }
   }
+  
+  override def readingZonkings(cells: Vector[UniqIdOf[Cell[?]]]): Vector[Propagator[Ability]] = {
+    state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cells.contains)).values.toVector
+  }
 
   override def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit = {
     var cellsNeeded = Vector.empty[UniqIdOf[Cell[?]]]
@@ -172,20 +179,21 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       } else {
         cells.filter(id => !state.cells(id).hasValue)
       }
-      state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
-        case (pid, propagator) =>
-          tickAll
-          if (state.propagators.contains(pid)) {
-            val result = propagator.naiveZonk(cells)(using this, more)
-            result match {
-              case ZonkResult.Done =>
-                state = state.copy(propagators = state.propagators.removed(pid))
-              case ZonkResult.Require(needed) =>
-                cellsNeeded = cellsNeeded ++ needed
-              case ZonkResult.NotYet =>
+      val xs = state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains))
+      xs.foreach {
+          case (pid, propagator) =>
+            tickAll
+            if (state.propagators.contains(pid)) {
+              val result = propagator.naiveZonk(cells)(using this, more)
+              result match {
+                case ZonkResult.Done =>
+                  state = state.copy(propagators = state.propagators.removed(pid))
+                case ZonkResult.Require(needed) =>
+                  cellsNeeded = cellsNeeded ++ needed
+                case ZonkResult.NotYet =>
+              }
             }
-          }
-      }
+        }
       tickAll
       if (cellsToZonk.isEmpty) return
     }
