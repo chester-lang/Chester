@@ -2,15 +2,17 @@ package chester.utils.propagator
 
 import chester.syntax.core.{HasUniqId, UniqId, UniqIdOf}
 
-sealed trait Cell[+T] extends HasUniqId {
+sealed trait Cell[T] extends HasUniqId {
   def read: Option[T]
   def stable: Boolean = read.isDefined
+  /** fill an unstable cell */
+  def fill(newValue: T): Cell[T]
 }
 
 case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   override def read: Option[T] = value
 
-  def fill(newValue: T): OnceCell[T] = {
+  override def fill(newValue: T): OnceCell[T] = {
     require(value.isEmpty)
     copy(value = Some(newValue))
   }
@@ -19,16 +21,18 @@ case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
 case class MutableCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   override def read: Option[T] = value
 
-  def update(newValue: T): MutableCell[T] = {
+  override def fill(newValue: T): MutableCell[T] = {
     copy(value = Some(newValue))
   }
 }
 
 case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
   override def read: Option[T] = Some(value)
+  override def stable: Boolean = true
+  override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
 }
 
-sealed trait Propagator[Ability] extends HasUniqId {
+trait Propagator[Ability] extends HasUniqId {
   def readingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
   def writingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
   def zonkingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
@@ -36,10 +40,10 @@ sealed trait Propagator[Ability] extends HasUniqId {
   /**
    * @return true if the propagator finished its work
    */
-  def run(state: CellsStateAbility, more: Ability): Boolean
+  def run(using state: StateAbility[Ability], more: Ability): Boolean
 
   /** make a best guess for zonkingCells */
-  def zonk(state: CellsStateAbility, more: Ability): Unit
+  def naiveZonk(using state: StateAbility[Ability], more: Ability): Boolean
 }
 
 trait CellsStateAbility {
@@ -99,7 +103,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
     state = state.copy(didChanged = Vector.empty)
     state.propagators.filter((_, propagator) => propagator.readingCells.exists(didChanged.contains)).foreach {
       case (pid, propagator) =>
-        val done = propagator.run(this, more)
+        val done = propagator.run(using this, more)
         if (done) {
           state = state.copy(propagators = state.propagators.removed(pid))
         }
@@ -110,7 +114,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
     val cellsToZonk = cells.filter(id => !state.cells(id).stable)
     state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
       case (pid, propagator) =>
-        propagator.zonk(this, more)
+        propagator.naiveZonk(using this, more)
     }
   }
 }
