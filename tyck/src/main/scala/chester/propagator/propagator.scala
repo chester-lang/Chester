@@ -64,7 +64,14 @@ object BaseTycker extends Tycker[Expr] {
 
     override def run(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = ???
 
-    override def naiveZonk(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = ???
+    override def naiveZonk(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean =
+      state.fill(ty, x match {
+        case IntegerLiteral(_, _) => IntegerType
+        case RationalLiteral(_, _) => RationalType
+        case StringLiteral(_, _) => StringType
+        case SymbolLiteral(_, _) => SymbolType
+      })
+      true
   }
 
   def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqIdOf[Cell[Judge]] =
