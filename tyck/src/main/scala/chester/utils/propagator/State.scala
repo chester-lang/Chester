@@ -55,7 +55,7 @@ trait Propagator[Ability] extends HasUniqId {
 trait CellsStateAbility {
   def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
 
-  def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit
+  def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
   def addCell[T <: Cell[?]](cell: T): Unit
 }
@@ -90,7 +90,11 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
 
   override def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
 
-  override def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
+  override def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit = {
+    update[T](id, _.fill(f).asInstanceOf[T])
+  }
+
+  private def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
     state.cells.get(id) match {
       case Some(cell) =>
         val newCell = f(cell.asInstanceOf[T])

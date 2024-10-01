@@ -45,11 +45,11 @@ object BaseTycker extends Tycker[Expr] {
       (lhs, rhs) match {
         case (Some(lhs), Some(rhs)) if lhs == rhs => return true
         case (Some(lhs), None) => {
-          state.update(this.rhs, _.fill(lhs))
+          state.fill(this.rhs, lhs)
           return true
         }
         case (None, Some(rhs)) => {
-          state.update(this.lhs, _.fill(rhs))
+          state.fill(this.lhs, rhs)
           return true
         }
         case _ => return false
