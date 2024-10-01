@@ -8,9 +8,7 @@ import chester.tyck.{LocalCtx, Reporter}
 import chester.utils.propagator.*
 import chester.utils.reuse
 
-trait Tycker[T <: Expr] {
-  def check(expr: T, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqIdOf[Cell[Judge]]
-}
+type UniqOfOr[T] = UniqIdOf[Cell[T]] | T
 
 def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
   val result = SimpleDesalt.desugarUnwrap(expr) match {
@@ -24,7 +22,7 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 }
 
 
-object BaseTycker extends Tycker[Expr] {
+object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
   case class Unify(uniqId: UniqId, lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Reporter[TyckProblem]] {
@@ -88,7 +86,7 @@ object BaseTycker extends Tycker[Expr] {
       true
   }
 
-  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqIdOf[Cell[Judge]] =
+  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqOfOr[Term] =
     resolve(expr, localCtx) match {
       case IntegerLiteral(value, meta) => ???
       case expr: Expr => ???
