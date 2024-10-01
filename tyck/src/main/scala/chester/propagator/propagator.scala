@@ -37,20 +37,20 @@ object BaseTycker {
       return false
     }
 
-    override def naiveZonk(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = {
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): ZonkResult = {
       val lhs = state.read(this.lhs)
       val rhs = state.read(this.rhs)
       (lhs, rhs) match {
-        case (Some(lhs), Some(rhs)) if lhs == rhs => return true
+        case (Some(lhs), Some(rhs)) if lhs == rhs => return ZonkResult.Done
         case (Some(lhs), None) => {
           state.fill(this.rhs, lhs)
-          return true
+          return ZonkResult.Done
         }
         case (None, Some(rhs)) => {
           state.fill(this.lhs, rhs)
-          return true
+          return ZonkResult.Done
         }
-        case _ => return false
+        case _ => return ZonkResult.NotYet
       }
     }
   }
@@ -76,14 +76,14 @@ object BaseTycker {
       }
     }
 
-    override def naiveZonk(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean =
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): ZonkResult =
       state.fill(ty, x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
         case StringLiteral(_, _) => StringType
         case SymbolLiteral(_, _) => SymbolType
       })
-      true
+      ZonkResult.Done
   }
 
   def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using reporter: Reporter[TyckProblem], state: StateAbility[Reporter[TyckProblem]]): UniqOfOr[Term] =
@@ -91,6 +91,18 @@ object BaseTycker {
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
         AbstractIntTerm.from(value)
+      }
+      case expr@RationalLiteral(value, meta) => {
+        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        RationalTerm(value)
+      }
+      case expr@StringLiteral(value, meta) => {
+        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        StringTerm(value)
+      }
+      case expr@SymbolLiteral(value, meta) => {
+        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        SymbolTerm(value)
       }
       case expr: Expr => ???
     }

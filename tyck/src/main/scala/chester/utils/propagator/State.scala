@@ -49,7 +49,7 @@ trait Propagator[Ability] extends HasUniqId {
   def run(using state: StateAbility[Ability], more: Ability): Boolean
 
   /** make a best guess for zonkingCells */
-  def naiveZonk(using state: StateAbility[Ability], more: Ability): Boolean
+  def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult
 }
 
 trait CellsStateAbility {
@@ -58,9 +58,9 @@ trait CellsStateAbility {
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
   def addCell[T <: Cell[?]](cell: T): Unit
-  
-  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = read(id).exists((x:T)=>x.stable)
-  
+
+  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = read(id).exists((x: T) => x.stable)
+
   def notStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = !isStable(id)
 }
 
@@ -88,6 +88,11 @@ trait StateAbility[Ability] extends CellsStateAbility {
   def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
 }
 
+enum ZonkResult {
+  case Done extends ZonkResult
+  case Require(needed: Vector[UniqIdOf[Cell[?]]]) extends ZonkResult
+  case NotYet extends ZonkResult
+}
 
 class StateCells[Ability](var state: State[Ability]) extends StateAbility[Ability] {
   override def stable: Boolean = state.stable
@@ -117,7 +122,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
   override def addPropagator(propagator: Propagator[Ability])(using more: Ability): Unit = {
     val uniqId = propagator.uniqId
     state = state.copy(propagators = state.propagators.updated(uniqId, propagator))
-    if(propagator.run(using this, more)){
+    if (propagator.run(using this, more)) {
       state = state.copy(propagators = state.propagators.removed(uniqId))
     }
   }
@@ -137,15 +142,29 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
   }
 
   override def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit = {
-    val cellsToZonk = cells.filter(id => !state.cells(id).stable)
-    state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
-      case (pid, propagator) =>
-        if (state.propagators.contains(pid)) {
-          val done = propagator.naiveZonk(using this, more)
-          if (done) {
-            state = state.copy(propagators = state.propagators.removed(pid))
+    var cellsNeeded = Vector.empty[UniqIdOf[Cell[?]]]
+    while (true) {
+      val cellsToZonk = if (cellsNeeded.nonEmpty) {
+        val a = cellsNeeded
+        cellsNeeded = Vector.empty
+        a ++ cells.filter(id => !state.cells(id).stable)
+      } else {
+        cells.filter(id => !state.cells(id).stable)
+      }
+      state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
+        case (pid, propagator) =>
+          if (state.propagators.contains(pid)) {
+            val result = propagator.naiveZonk(cells)(using this, more)
+            result match {
+              case ZonkResult.Done =>
+                state = state.copy(propagators = state.propagators.removed(pid))
+              case ZonkResult.Require(needed) =>
+                cellsNeeded = cellsNeeded ++ needed
+              case ZonkResult.NotYet =>
+            }
           }
-        }
+      }
+      if (cellsToZonk.isEmpty) return
     }
   }
 }
