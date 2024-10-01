@@ -2,6 +2,8 @@ package chester.utils.propagator
 
 import chester.syntax.core.{HasUniqId, UniqId, UniqIdOf}
 
+type UniqOfOr[T] = UniqIdOf[Cell[T]] | T
+
 sealed trait Cell[T] extends HasUniqId {
   def read: Option[T]
 
@@ -65,9 +67,11 @@ trait CellsStateAbility {
 }
 
 type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
+private val CellsStateEmpty: CellsState = Map.empty
 type PropagatorsState[Ability] = Map[UniqIdOf[Propagator[Ability]], Propagator[Ability]]
+private inline def PropagatorsStateEmpty[Ability]: PropagatorsState[Ability] = Map.empty
 
-case class State[Ability](cells: CellsState, propagators: PropagatorsState[Ability], didChanged: Vector[UniqIdOf[Cell[?]]]) {
+case class State[Ability](cells: CellsState = CellsStateEmpty, propagators: PropagatorsState[Ability] = PropagatorsStateEmpty[Ability], didChanged: Vector[UniqIdOf[Cell[?]]] = Vector.empty) {
   def stable: Boolean = didChanged.isEmpty
 }
 
@@ -86,6 +90,15 @@ trait StateAbility[Ability] extends CellsStateAbility {
 
   /** make a best guess for those cells */
   def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
+
+  def toId[T](x: UniqOfOr[T]): UniqIdOf[Cell[T]] = x match {
+    case x: UniqId => x
+    case x: T => {
+      val cell = LiteralCell(UniqId.generate, x)
+      addCell(cell)
+      cell.uniqId
+    }
+  }
 }
 
 enum ZonkResult {
@@ -94,7 +107,7 @@ enum ZonkResult {
   case NotYet extends ZonkResult
 }
 
-class StateCells[Ability](var state: State[Ability]) extends StateAbility[Ability] {
+class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends StateAbility[Ability] {
   override def stable: Boolean = state.stable
 
   override def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]

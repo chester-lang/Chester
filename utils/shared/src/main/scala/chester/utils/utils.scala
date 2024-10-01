@@ -15,7 +15,7 @@ def parserInputToLazyList(pi: ParserInput): LazyList[String] = {
     .map(index => pi.slice(index, index + 1))
 }
 
-case class MutBox[T](var value: T) {
+class MutBox[T](var value: T) {
   def get: T = value
 
   def set(x: T): Unit = value = x

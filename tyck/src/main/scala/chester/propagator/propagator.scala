@@ -4,13 +4,11 @@ import chester.error.TyckProblem
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.tyck.{Get, LocalCtx, Reporter, SymbolTable, TyckResult, TyckState}
+import chester.tyck.{Get, LocalCtx, Reporter, SymbolTable, TyckResult, TyckResult0, TyckState, VectorReporter}
 import chester.utils.propagator.*
-import chester.utils.reuse
+import chester.utils.{MutBox, reuse}
 
 import scala.language.implicitConversions
-
-type UniqOfOr[T] = UniqIdOf[Cell[T]] | T
 
 def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
   val result = SimpleDesalt.desugarUnwrap(expr) match {
@@ -88,7 +86,7 @@ object BaseTycker {
       ZonkResult.Done
   }
 
-  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): UniqOfOr[Term] =
+  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): UniqIdOf[Cell[Term]] = state.toId {
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
@@ -108,6 +106,7 @@ object BaseTycker {
       }
       case expr: Expr => ???
     }
+  }
 }
 
 type Ck = Get[TyckProblem, CkState]
@@ -119,5 +118,36 @@ case class CkState(
                     )
 
 object Tycker {
-  def check(expr: Expr,ty: Option[Term], effects: Option[Effects], localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = ???
+  def check(expr: Expr,ty: Option[Term], effects: Option[Effects], localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = {
+    val reporter = new VectorReporter[TyckProblem]
+    implicit val get: Ck = new Get(reporter, new MutBox(CkState()))
+    implicit val able: StateAbility[Ck] = new StateCells[Ck]()
+    val ty1: UniqIdOf[Term] = ty match {
+      case Some(ty) => {
+        val cell = LiteralCell(UniqId.generate, ty)
+        able.addCell(cell)
+        cell.uniqId
+      }
+      case None => {
+        val cell = OnceCell(UniqId.generate, None)
+        able.addCell(cell)
+        cell.uniqId
+      }
+    }
+    val effects1: UniqIdOf[Effects] = effects match {
+      case Some(effects) => {
+        val cell = LiteralCell(UniqId.generate, effects)
+        able.addCell(cell)
+        cell.uniqId
+      }
+      case None => {
+        val cell = OnceCell(UniqId.generate, None)
+        able.addCell(cell)
+        cell.uniqId
+      }
+    }
+    val wellTyped = BaseTycker.check(expr, ty1, effects1)
+    able.naiveZonk(Vector(ty1, effects1, wellTyped))
+    TyckResult0(get.getState, Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get), reporter.getReports)
+  }
 }
