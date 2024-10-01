@@ -59,6 +59,21 @@ object BaseTycker {
     }
   }
 
+  case class UnionOf(lhs: CellId[Term], rhs: Vector[CellId[Term]], meta: Option[ExprMeta] = None, uniqId: UniqIdOf[Union] = UniqId.generate[Union]) extends Propagator[Ck] {
+    override val readingCells = Set(lhs) ++ rhs.toSet
+    override val writingCells = Set(lhs) ++ rhs.toSet
+    override val zonkingCells = Set(lhs) ++ rhs.toSet
+
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
+      ???
+    }
+
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      ???
+    }
+  }
+
+
   case class LiteralType(x: Literals, ty: CellId[Term], meta: Option[ExprMeta], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType]) extends Propagator[Ck] {
     override val readingCells = Set(ty)
     override val writingCells = Set(ty)
