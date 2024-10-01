@@ -55,13 +55,14 @@ trait Propagator[Ability] extends HasUniqId {
 }
 
 trait CellsStateAbility {
-  def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
+  def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
+  def read[U](id: UniqIdOf[? <: Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
 
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
   def addCell[T <: Cell[?]](cell: T): Unit
 
-  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = read(id).exists((x: T) => x.stable)
+  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = readCell(id).exists((x: T) => x.stable)
 
   def notStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = !isStable(id)
 }
@@ -110,7 +111,7 @@ enum ZonkResult {
 class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends StateAbility[Ability] {
   override def stable: Boolean = state.stable
 
-  override def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
+  override def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
 
   override def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit = {
     update[T](id, _.fill(f).asInstanceOf[T])

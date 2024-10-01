@@ -126,8 +126,8 @@ case class CkState(
                       symbols: SymbolTable = Set.empty,
                     )
 
-object Tycker {
-  def check(expr: Expr,ty: Option[Term], effects: Option[Effects], localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = {
+object Cker {
+  def check(expr: Expr,ty: Option[Term] = None, effects: Option[Effects] = None, localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Ck = new Get(reporter, new MutBox(CkState()))
     implicit val able: StateAbility[Ck] = new StateCells[Ck]()
