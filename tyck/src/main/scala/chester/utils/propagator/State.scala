@@ -1,10 +1,14 @@
 package chester.utils.propagator
 
-import chester.syntax.core.{HasUniqId, UniqId, UniqIdOf}
+import chester.syntax.core.*
 
-type UniqOfOr[T] = UniqIdOf[Cell[T]] | T
+type CellId[T] = UniqIdOf[Cell[T]]
+
+type UniqOfOr[T] = CellId[T] | T
 
 sealed trait Cell[T] extends HasUniqId {
+  override def uniqId: UniqIdOf[Cell[T]]
+
   def read: Option[T]
 
   def stable: Boolean = read.isDefined
@@ -13,7 +17,7 @@ sealed trait Cell[T] extends HasUniqId {
   def fill(newValue: T): Cell[T]
 }
 
-case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
+case class OnceCell[T]( value: Option[T] = None,uniqId: UniqIdOf[OnceCell[T]]= UniqId.generate[OnceCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
   override def fill(newValue: T): OnceCell[T] = {
@@ -22,7 +26,7 @@ case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   }
 }
 
-case class MutableCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
+case class MutableCell[T](value: Option[T],uniqId: UniqIdOf[MutableCell[T]]= UniqId.generate[MutableCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
   override def fill(newValue: T): MutableCell[T] = {
@@ -30,7 +34,7 @@ case class MutableCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
   }
 }
 
-case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
+case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.generate[LiteralCell[T]]) extends Cell[T] {
   override def read: Option[T] = Some(value)
 
   override def stable: Boolean = true
@@ -39,6 +43,7 @@ case class LiteralCell[T](uniqId: UniqId, value: T) extends Cell[T] {
 }
 
 trait Propagator[Ability] extends HasUniqId {
+  override def uniqId: UniqIdOf[Propagator[Ability]]
   def readingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
 
   def writingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
@@ -56,7 +61,8 @@ trait Propagator[Ability] extends HasUniqId {
 
 trait CellsStateAbility {
   def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
-  def read[U](id: UniqIdOf[? <: Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
+
+  def read[U](id: UniqIdOf[ Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
 
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
@@ -93,9 +99,9 @@ trait StateAbility[Ability] extends CellsStateAbility {
   def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
 
   def toId[T](x: UniqOfOr[T]): UniqIdOf[Cell[T]] = x match {
-    case x: UniqId => x
+    case x: UniqId => x.asInstanceOf[UniqIdOf[Cell[T]]]
     case x: T => {
-      val cell = LiteralCell(UniqId.generate, x)
+      val cell = LiteralCell[T]( x)
       addCell(cell)
       cell.uniqId
     }

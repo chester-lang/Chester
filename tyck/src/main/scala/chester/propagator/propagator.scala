@@ -25,7 +25,7 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
+  case class Unify(lhs: CellId[Term], rhs: CellId[Term], meta: Option[ExprMeta], uniqId: UniqIdOf[Unify] = UniqId.generate[Unify]) extends Propagator[Ck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
@@ -55,7 +55,7 @@ object BaseTycker {
     }
   }
 
-  case class LiteralType(x: Literals, ty: UniqIdOf[Term], meta: Option[ExprMeta], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
+  case class LiteralType(x: Literals, ty: CellId[Term], meta: Option[ExprMeta], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType]) extends Propagator[Ck] {
     override val readingCells = Set(ty)
     override val writingCells = Set(ty)
     override val zonkingCells = Set(ty)
@@ -86,7 +86,7 @@ object BaseTycker {
       ZonkResult.Done
   }
 
-  case class IsEffects(effects: UniqIdOf[Effects], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
+  case class IsEffects(effects: CellId[Effects], uniqId: UniqIdOf[IsEffects] = UniqId.generate[IsEffects]) extends Propagator[Ck] {
     override val zonkingCells = Set(effects)
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.isStable(effects)
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
@@ -95,7 +95,7 @@ object BaseTycker {
     }
   }
 
-  def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): UniqIdOf[Cell[Term]] = state.toId {
+  def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty, meta))
@@ -131,26 +131,26 @@ object Cker {
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Ck = new Get(reporter, new MutBox(CkState()))
     implicit val able: StateAbility[Ck] = new StateCells[Ck]()
-    val ty1: UniqIdOf[Term] = ty match {
+    val ty1: CellId[Term] = ty match {
       case Some(ty) => {
-        val cell = LiteralCell(UniqId.generate, ty)
+        val cell = LiteralCell[Term](ty)
         able.addCell(cell)
         cell.uniqId
       }
       case None => {
-        val cell = OnceCell(UniqId.generate, None)
+        val cell = OnceCell[Term]( None)
         able.addCell(cell)
         cell.uniqId
       }
     }
-    val effects1: UniqIdOf[Effects] = effects match {
+    val effects1: CellId[Effects] = effects match {
       case Some(effects) => {
-        val cell = LiteralCell(UniqId.generate, effects)
+        val cell = LiteralCell[Effects]( effects)
         able.addCell(cell)
         cell.uniqId
       }
       case None => {
-        val cell = OnceCell(UniqId.generate, None)
+        val cell = OnceCell[Effects]( )
         able.addCell(cell)
         cell.uniqId
       }
