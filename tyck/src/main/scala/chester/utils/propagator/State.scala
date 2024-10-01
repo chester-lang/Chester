@@ -66,7 +66,7 @@ trait StateAbility[Ability] extends CellsStateAbility {
     }
   }
   /** make a best guess for those cells */
-  def zonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit
+  def naiveZonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit
 }
 
 
@@ -106,7 +106,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
     }
   }
 
-  override def zonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit = {
+  override def naiveZonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit = {
     val cellsToZonk = cells.filter(id => !state.cells(id).stable)
     state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
       case (pid, propagator) =>
