@@ -41,3 +41,7 @@ case class LocalCtx(ctx: Context = Context()) {
     copy(ctx = ctx.withParent(parentCtx))
   }
 }
+
+object LocalCtx {
+  val Empty: LocalCtx = LocalCtx()
+}
