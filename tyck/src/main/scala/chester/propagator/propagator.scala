@@ -62,7 +62,21 @@ object BaseTycker extends Tycker[Expr] {
     override val writingCells = Set(ty)
     override val zonkingCells = Set(ty)
 
-    override def run(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = ???
+    override def run(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean = {
+      if(state.notStable(ty)) return false
+      val ty_ = state.read(this.ty).get
+      val result = x match {
+        case IntegerLiteral(_, _) => ty_ == IntegerType
+        case RationalLiteral(_, _) => ty_ == RationalType
+        case StringLiteral(_, _) => ty_ == StringType
+        case SymbolLiteral(_, _) => ty_ == SymbolType
+      }
+      if(result) {
+        return true
+      } else {
+        ???
+      }
+    }
 
     override def naiveZonk(using state: StateAbility[Reporter[TyckProblem]], more: Reporter[TyckProblem]): Boolean =
       state.fill(ty, x match {

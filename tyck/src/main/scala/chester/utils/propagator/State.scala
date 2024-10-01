@@ -58,6 +58,10 @@ trait CellsStateAbility {
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
   def addCell[T <: Cell[?]](cell: T): Unit
+  
+  def isStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = read(id).exists((x:T)=>x.stable)
+  
+  def notStable[T <: Cell[?]](id: UniqIdOf[T]): Boolean = !isStable(id)
 }
 
 type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
