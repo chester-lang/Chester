@@ -167,7 +167,7 @@ object BaseTycker {
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      if(state.readingZonkings(Vector(ty)).nonEmpty) return ZonkResult.NotYet
+      if(state.readingZonkings(Vector(ty)).exists{(x: Propagator[Ck]) => !x.isInstanceOf[IsType]}) return ZonkResult.NotYet
       state.fill(ty, AnyType0)
       ZonkResult.Done
     }
@@ -323,7 +323,7 @@ object BaseTycker {
         val elemTypes = termResults.map(_._2).toVector
 
         // Ensure that 't' is the union of the element types
-        state.addPropagator(UnionOf(t, elemTypes, expr))
+        if(elemTypes.nonEmpty) state.addPropagator(UnionOf(t, elemTypes, expr))
 
         // Build the ListTerm with the well-typed terms
         FlatMap(termResults.map(_._1)) { xs =>
