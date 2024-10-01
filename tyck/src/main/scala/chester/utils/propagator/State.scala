@@ -4,6 +4,7 @@ import chester.syntax.core.{HasUniqId, UniqId, UniqIdOf}
 
 sealed trait Cell[+T] extends HasUniqId {
   def read: Option[T]
+  def stable: Boolean = read.isDefined
 }
 
 case class OnceCell[T](uniqId: UniqId, value: Option[T]) extends Cell[T] {
@@ -32,8 +33,6 @@ sealed trait Propagator[Ability] extends HasUniqId {
   def writingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
   def zonkingCells: Set[UniqIdOf[Cell[?]]] = Set.empty
 
-  require(zonkingCells.subsetOf(writingCells))
-
   /**
    * @return true if the propagator finished its work
    */
@@ -54,26 +53,34 @@ type CellsState = Map[UniqIdOf[Cell[?]], Cell[?]]
 type PropagatorsState[Ability] = Map[UniqIdOf[Propagator[Ability]], Propagator[Ability]]
 
 case class State[Ability](cells: CellsState, propagators: PropagatorsState[Ability], didChanged: Vector[UniqIdOf[Cell[?]]]) {
-
+  def stable: Boolean = didChanged.isEmpty
 }
 
-trait Tick[Ability] {
-  def tick(more: Ability): Unit
-}
-
-trait StateAbility[Ability] extends CellsStateAbility with Tick[Ability] {
+trait StateAbility[Ability] extends CellsStateAbility {
   def addPropagator(propagator: Propagator[Ability]): Unit
+  def tick(more: Ability): Unit
+  def stable: Boolean
+  def tickAll(more: Ability): Unit = {
+    while (!stable) {
+      tick(more)
+    }
+  }
+  /** make a best guess for those cells */
+  def zonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit
 }
 
 
 class StateCells[Ability](var state: State[Ability]) extends StateAbility[Ability] {
+  override def stable: Boolean = state.stable
   override def read[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
 
   override def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
     state.cells.get(id) match {
       case Some(cell) =>
         val newCell = f(cell.asInstanceOf[T])
-        state = state.copy(cells = state.cells.updated(id, newCell))
+        if(cell!=newCell) {
+          state = state.copy(didChanged = state.didChanged :+ id, cells = state.cells.updated(id, newCell))
+        }
       case None =>
         throw new IllegalArgumentException(s"Cell with id $id not found")
     }
@@ -96,6 +103,14 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
         if (done) {
           state = state.copy(propagators = state.propagators.removed(pid))
         }
+    }
+  }
+
+  override def zonk(more: Ability, cells: Vector[UniqIdOf[Cell[?]]]): Unit = {
+    val cellsToZonk = cells.filter(id => !state.cells(id).stable)
+    state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains)).foreach {
+      case (pid, propagator) =>
+        propagator.zonk(this, more)
     }
   }
 }
