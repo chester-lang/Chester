@@ -25,7 +25,7 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(uniqId: UniqId, lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Ck] {
+  case class Unify(lhs: UniqIdOf[Term], rhs: UniqIdOf[Term], meta: Option[ExprMeta], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
@@ -55,7 +55,7 @@ object BaseTycker {
     }
   }
 
-  case class LiteralType(uniqId: UniqId, x: Literals, ty: UniqIdOf[Term], meta: Option[ExprMeta]) extends Propagator[Ck] {
+  case class LiteralType(x: Literals, ty: UniqIdOf[Term], meta: Option[ExprMeta], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
     override val readingCells = Set(ty)
     override val writingCells = Set(ty)
     override val zonkingCells = Set(ty)
@@ -86,22 +86,31 @@ object BaseTycker {
       ZonkResult.Done
   }
 
+  case class IsEffects(effects: UniqIdOf[Effects], uniqId: UniqId = UniqId.generate) extends Propagator[Ck] {
+    override val zonkingCells = Set(effects)
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.isStable(effects)
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      state.fill(effects, Effects.Empty)
+      ZonkResult.Done
+    }
+  }
+
   def check(expr: Expr, ty: UniqIdOf[Term], effects: UniqIdOf[Effects], localCtx: LocalCtx = LocalCtx.Empty)(using ck: Ck, state: StateAbility[Ck]): UniqIdOf[Cell[Term]] = state.toId {
     resolve(expr, localCtx) match {
       case expr@IntegerLiteral(value, meta) => {
-        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty, meta))
         AbstractIntTerm.from(value)
       }
       case expr@RationalLiteral(value, meta) => {
-        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty, meta))
         RationalTerm(value)
       }
       case expr@StringLiteral(value, meta) => {
-        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty, meta))
         StringTerm(value)
       }
       case expr@SymbolLiteral(value, meta) => {
-        state.addPropagator(LiteralType(UniqId.generate, expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty, meta))
         SymbolTerm(value)
       }
       case expr: Expr => ???
@@ -146,6 +155,7 @@ object Tycker {
         cell.uniqId
       }
     }
+    able.addPropagator(BaseTycker.IsEffects(effects1))
     val wellTyped = BaseTycker.check(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     TyckResult0(get.getState, Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get), reporter.getReports)
