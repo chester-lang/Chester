@@ -162,9 +162,13 @@ object BaseTycker {
     ???
   }
   def unify(t1: Term, t2: CellId[Term])(using ck: Ck, state: StateAbility[Ck]): Unit = {
-    val cell = LiteralCell[Term](t1)
+    state.addPropagator(Unify(literal(t1), t2))
+  }
+
+  def literal[T](t: T)(using ck: Ck, state: StateAbility[Ck]): CellId[T] = {
+    val cell = LiteralCell[T](t)
     state.addCell(cell)
-    state.addPropagator(Unify(cell.uniqId, t2))
+    cell.uniqId
   }
 
 /** t is rhs, listT is lhs */
