@@ -144,6 +144,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
   override def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit = {
     var cellsNeeded = Vector.empty[UniqIdOf[Cell[?]]]
     while (true) {
+      tickAll
       val cellsToZonk = if (cellsNeeded.nonEmpty) {
         val a = cellsNeeded
         cellsNeeded = Vector.empty
@@ -164,6 +165,7 @@ class StateCells[Ability](var state: State[Ability]) extends StateAbility[Abilit
             }
           }
       }
+      tickAll
       if (cellsToZonk.isEmpty) return
     }
   }
