@@ -121,11 +121,19 @@ trait CellsStateAbility {
 
   def read[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.read
 
-  def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
+  protected def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit
 
-  def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit
+  def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit = {
+    update[T](id, _.fill(f).asInstanceOf[T])
+  }
 
-  def add[T <: MapCell[A, B], A, B](id: UniqIdOf[T], key: A, value: B): Unit
+  def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit = {
+    update[T](id, _.add(f).asInstanceOf[T])
+  }
+
+  def add[T <: MapCell[A, B], A, B](id: UniqIdOf[T], key: A, value: B): Unit = {
+    update[T](id, _.add(key, value).asInstanceOf[T])
+  }
 
   def addCell[T <: Cell[?]](cell: T): Unit
 
@@ -182,19 +190,7 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
 
   override def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
 
-  override def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit = {
-    update[T](id, _.fill(f).asInstanceOf[T])
-  }
-
-  override def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit = {
-    update[T](id, _.add(f).asInstanceOf[T])
-  }
-
-  override def add[T <: MapCell[A, B], A, B](id: UniqIdOf[T], key: A, value: B): Unit = {
-    update[T](id, _.add(key, value).asInstanceOf[T])
-  }
-
-  private def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
+  override def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
     state.cells.get(id) match {
       case Some(cell) =>
         val newCell = f(cell.asInstanceOf[T])

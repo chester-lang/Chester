@@ -282,7 +282,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
     libraryDependencies ++= Seq(
-      //"it.unimi.dsi" % "fastutil" % "8.5.14",
+      "it.unimi.dsi" % "fastutil" % "8.5.14",
     )
   )
   .nativeSettings(
