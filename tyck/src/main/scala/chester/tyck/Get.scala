@@ -50,9 +50,3 @@ object Get {
     TyckResult0(stateBox.get, result, reporter.getReports)
   }
 }
-
-type Tyck = Get[TyckProblem, TyckState]
-
-object Tyck {
-  inline def run[A](inline program: Tyck => A)(inline state: TyckState): TyckResult[TyckState, A] = Get.run(program)(state)
-}

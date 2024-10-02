@@ -1,11 +1,12 @@
 package chester.tyck.core
 
 import chester.error.{TyckError, TyckProblem, UnsupportedTermError}
+import chester.propagator.LocalCtx
 import chester.syntax.core.*
-import chester.tyck.{LocalCtx, Reporter}
+import chester.tyck.{Reporter}
 import chester.utils.*
 
-case class CoreTycker(localCtx: LocalCtx = LocalCtx.Empty, reporter: Reporter[TyckError]) {
+case class CoreTycker(reporter: Reporter[TyckError]) {
   def check(judge: Judge): Unit = ???
 
   def inferNoEffect(term: Term): Term = term match {
@@ -30,10 +31,9 @@ case class CoreTycker(localCtx: LocalCtx = LocalCtx.Empty, reporter: Reporter[Ty
           ObjectClauseValueTerm(key, valueType)
       }
       ObjectType(fieldTypes)
-    case lv:LocalVar =>
+    case lv:LocalV =>
       lv.ty
     case FunctionType(telescope, resultTy, _, _, _) => Typeω // TODO
-    case meta:MetaTerm => meta.ty
     case _ =>
       reporter.apply(UnsupportedTermError(term))
       ErrorTerm(UnsupportedTermError(term))

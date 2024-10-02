@@ -94,12 +94,12 @@ sealed trait Pat extends ToDoc derives ReadWriter {
   def thisOr(x: Pat): this.type = reuse(this, x.asInstanceOf[this.type])
 }
 
-case class Bind(bind: LocalVar, ty: Term) extends Pat {
+case class Bind(bind: LocalV, ty: Term) extends Pat {
   override def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = thisOr(copy(ty = termOp(ty)))
 }
 
 object Bind {
-  def from(bind: LocalVar): Bind = Bind(bind, bind.ty)
+  def from(bind: LocalV): Bind = Bind(bind, bind.ty)
 }
 
 sealed trait Term extends ToDoc derives ReadWriter {
@@ -377,7 +377,7 @@ case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | Rational
   override def ty: Term = Type0
 }
 
-case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
+case class ArgTerm(bind: LocalV, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val varargDoc = if (vararg) Docs.`...` else Doc.empty
     val defaultDoc = default.map(d => Docs.`=` <+> d.toDoc).getOrElse(Doc.empty)
@@ -390,7 +390,7 @@ case class ArgTerm(bind: LocalVar, ty: Term, default: Option[Term] = None, varar
 }
 
 object ArgTerm {
-  def from(bind: LocalVar): ArgTerm = ArgTerm(bind, bind.ty)
+  def from(bind: LocalV): ArgTerm = ArgTerm(bind, bind.ty)
 }
 
 object TelescopeTerm {
@@ -478,7 +478,7 @@ object FunctionType {
 }
 
 def TyToty: FunctionType = {
-  val ty = LocalVar.generate("x", Type0)
+  val ty = LocalV("x", Type0, UniqId.generate[LocalV])
   FunctionType(TelescopeTerm.from(ArgTerm.from(ty)), ty)
 }
 
@@ -571,9 +571,9 @@ sealed trait Effect extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name)
 }
 
-implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalVar]]].bimap(_.effects, Effects(_))
+implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalV]]].bimap(_.effects, Effects(_))
 
-case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) extends AnyVal with ToDoc {
+case class Effects private[syntax](effects: Map[Effect, Vector[LocalV]]) extends AnyVal with ToDoc {
   override def toDoc(implicit options: PrettierOptions): Doc =
     effects.keys.map(_.toDoc).reduceLeftOption((a, b) => a <> Docs.`,` <+> b).getOrElse(Doc.empty)
 
@@ -582,14 +582,14 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalVar]]) exten
 
   def descent(f: Term => Term): Effects = this // TODO
 
-  def add(effect: Effect, name: LocalVar): Effects =
+  def add(effect: Effect, name: LocalV): Effects =
     Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
 
-  def lookup(effect: Effect): Option[Vector[LocalVar]] = effects.get(effect)
+  def lookup(effect: Effect): Option[Vector[LocalV]] = effects.get(effect)
 
-  def lookupPair(effect: Effect): Option[(Effect, Vector[LocalVar])] = effects.get(effect).map(effect -> _)
+  def lookupPair(effect: Effect): Option[(Effect, Vector[LocalV])] = effects.get(effect).map(effect -> _)
 
-  def mapOnVars(f: (Effect, Vector[LocalVar]) => Vector[LocalVar]): Effects =
+  def mapOnVars(f: (Effect, Vector[LocalV]) => Vector[LocalV]): Effects =
     Effects(effects.map { case (effect, names) => effect -> f(effect, names) })
 
   def getEffects: Seq[Effect] = effects.keys.toSeq
@@ -615,7 +615,7 @@ object Effects {
     xs.reduce(_.merge(_))
   }
 
-  def unchecked(xs: Map[Effect, Vector[LocalVar]]): Effects = Effects(xs)
+  def unchecked(xs: Map[Effect, Vector[LocalV]]): Effects = Effects(xs)
 }
 
 val NoEffect = Effects.Empty
@@ -643,27 +643,12 @@ sealed trait MaybeVarCall extends MaybeCallTerm with HasUniqId derives ReadWrite
   def id: Name
 }
 
-case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
-
-  override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
-}
-
 case class LocalV(id: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
 
   override def descent(f: Term => Term): LocalV = thisOr(copy(ty = f(ty)))
 }
 
-object LocalVar {
-  def generate(id: Name, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
-}
-
-case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
-
-  override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
-}
 case class ToplevelV(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 
@@ -677,16 +662,6 @@ case class ErrorTerm(problem: Problem) extends Term {
 }
 
 def ErrorType(error: Problem): ErrorTerm = ErrorTerm(error)
-
-case class MetaTerm(description: String, uniqId: UniqId, ty: Term, effect: Effects = NoEffect, meta: OptionTermMeta = None) extends Term with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("MetaTerm#" + uniqId)
-
-  override def descent(f: Term => Term): MetaTerm = thisOr(copy(ty = f(ty)))
-}
-
-object MetaTerm {
-  def generate(description: String, ty: Term): MetaTerm = MetaTerm(description, UniqId.generate, ty)
-}
 
 sealed trait StmtTerm extends ToDoc derives ReadWriter {
   def descent(f: Term => Term): StmtTerm = ???

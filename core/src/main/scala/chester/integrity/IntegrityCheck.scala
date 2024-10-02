@@ -3,7 +3,6 @@ package chester.integrity
 import chester.parser.{FileNameAndContent, Parser}
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.tyck.{ExprTycker, LocalCtx, TyckState}
 
 // Test that the binary is still performing well when compiled differently.
 object IntegrityCheck {
@@ -74,17 +73,6 @@ object IntegrityCheck {
       ))
     )
     parseAndCheck(input, expected)
-  }
-
-  test("Unification with AnyTerm") {
-    val state = TyckState()
-    val ctx = LocalCtx.Empty
-
-    val intType = IntegerType
-    val anyType = AnyType0
-
-    val result = ExprTycker.unifyTy(anyType, intType, state, ctx)
-    assertEquals(result.result, intType)
   }
 
   def apply(): Unit = {

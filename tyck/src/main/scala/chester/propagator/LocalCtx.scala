@@ -52,6 +52,12 @@ object Reference {
   }
 }
 
+case class Imports()
+
+object Imports {
+  val Empty: Imports = Imports()
+}
+
 case class LocalCtx(
                      map: Map[Name, ContextItem] = Map.empty,
                      knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty,
