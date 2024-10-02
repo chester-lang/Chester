@@ -1,7 +1,6 @@
 package chester.i18n
 
 import chester.utils.doc.{<>, Doc, PrettierOptions, ToDoc}
-import jdk.javadoc.internal.doclets.formats.html.taglets.SnippetTaglet.Language
 
 trait D {
   def d(args: ToDoc*)(using options: PrettierOptions): Doc
