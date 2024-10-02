@@ -281,6 +281,9 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
+    libraryDependencies ++= Seq(
+      //"it.unimi.dsi" % "fastutil" % "8.5.14",
+    )
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -557,12 +560,12 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     commonJvmLibSettings,
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.7",
+      //"com.lihaoyi" %% "os-lib" % "0.10.7",
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.7",
+      //"com.lihaoyi" %% "os-lib" % "0.10.7",
     ),
     scalacOptions ++= (if (supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
