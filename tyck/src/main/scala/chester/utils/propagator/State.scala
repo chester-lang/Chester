@@ -173,7 +173,7 @@ trait StateAbility[Ability] extends CellsStateAbility {
 
 enum ZonkResult {
   case Done extends ZonkResult
-  case Require(needed: Vector[UniqIdOf[Cell[?]]]) extends ZonkResult
+  case Require(needed: Seq[UniqIdOf[Cell[?]]]) extends ZonkResult
   case NotYet extends ZonkResult
 }
 

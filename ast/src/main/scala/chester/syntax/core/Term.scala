@@ -167,6 +167,11 @@ case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter {
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
 }
 
+object ListTerm {
+  def apply(terms: Vector[Term]): ListTerm = new ListTerm(terms)
+  def apply(terms: Seq[Term]): ListTerm = new ListTerm(terms.toVector)
+}
+
 sealed trait Sort extends Term derives ReadWriter {
   def level: Term
 }
@@ -739,6 +744,11 @@ case class BlockTerm(stmts: Vector[StmtTerm], value: Term) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     Doc.wrapperlist(Docs.`{`, Docs.`}`, ";")((stmts.map(_.toDoc) :+ value.toDoc) *)
   }
+}
+
+object BlockTerm {
+  def apply(stmts: Vector[StmtTerm], value: Term): BlockTerm = new BlockTerm(stmts, value)
+  def apply(stmts: Seq[StmtTerm], value: Term): BlockTerm = new BlockTerm(stmts.toVector, value)
 }
 
 // TODO: tuple?

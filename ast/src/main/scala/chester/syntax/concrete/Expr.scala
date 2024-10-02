@@ -603,6 +603,14 @@ case class DefinedFunction(id: Identifier, telescope: NonEmptyVector[MaybeTelesc
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
 }
 
+case class UnitExpr(meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): UnitExpr = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("()")
+
+  override def descent(operator: Expr => Expr): Expr = this
+}
+
 case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = None, ty: Option[Expr] = None, decorations: Vector[Expr] = Vector(), meta: Option[ExprMeta] = None) extends Stmt {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     LetDefStmt(kind, defined, body.map(operator), ty.map(operator), decorations.map(operator), meta)

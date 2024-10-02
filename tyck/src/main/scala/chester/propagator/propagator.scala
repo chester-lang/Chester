@@ -214,7 +214,7 @@ object BaseTycker {
     cell.uniqId
   }
 
-  case class FlatMaping[T, U](xs: Vector[CellId[T]], f: Vector[T] => U, result: CellId[U], uniqId: UniqIdOf[FlatMaping[T, U]] = UniqId.generate[FlatMaping[T, U]]) extends Propagator[Ck] {
+  case class FlatMaping[T, U](xs: Seq[CellId[T]], f: Seq[T] => U, result: CellId[U], uniqId: UniqIdOf[FlatMaping[T, U]] = UniqId.generate[FlatMaping[T, U]]) extends Propagator[Ck] {
     override val readingCells = xs.toSet
     override val writingCells = Set(result)
     override val zonkingCells = Set(result)
@@ -282,7 +282,7 @@ object BaseTycker {
     }
   }
 
-  def FlatMap[T, U](xs: Vector[CellId[T]])(f: Vector[T] => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
+  def FlatMap[T, U](xs: Seq[CellId[T]])(f: Seq[T] => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
     val cell = OnceCell[U]()
     state.addCell(cell)
     state.addPropagator(FlatMaping(xs, f, cell.uniqId))
@@ -292,16 +292,18 @@ object BaseTycker {
   def Map[T, U](x: CellId[T])(f: T => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
     val cell = OnceCell[U]()
     state.addCell(cell)
-    state.addPropagator(FlatMaping(Vector(x), (xs: Vector[T]) => f(xs.head), cell.uniqId))
+    state.addPropagator(FlatMaping(Vector(x), (xs: Seq[T]) => f(xs.head), cell.uniqId))
     cell.uniqId
   }
 
   def Map2[A, B, C](x: CellId[A], y: CellId[B])(f: (A, B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
     val cell = OnceCell[C]()
     state.addCell(cell)
-    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Vector[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
+    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
     cell.uniqId
   }
+
+  def Traverse[A](x: Seq[CellId[A]])(using ck: Ck, state: StateAbility[Ck]): CellId[Seq[A]] = FlatMap(x)(identity)
 
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
@@ -533,7 +535,13 @@ object BaseTycker {
             Vector(Map2(check(expr, ty, effects), ty) { (wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
           }
         }
-        ???
+        {
+          implicit val localCtx: LocalCtx = ctx
+          val tailExpr = tail.getOrElse(UnitExpr(meta))
+          val wellTyped = check(tailExpr, ty, effects)
+          val s = Traverse(stmts)
+          Map2(s, wellTyped)((stmts, tail) => BlockTerm(stmts, tail))
+        }
       }
       case expr: Expr => {
         val problem = NotImplemented(expr)
