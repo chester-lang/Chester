@@ -2,13 +2,13 @@ package chester.error
 
 import chester.doc.*
 import chester.i18n.*
+import chester.syntax.Name
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.utils.doc._
+import chester.utils.doc.*
 import chester.utils.impls.*
 import upickle.default.*
 import chester.syntax.accociativity.*
-
 
 import scala.reflect.ClassTag
 
@@ -250,4 +250,16 @@ case class UnknownPrecedenceGroup(group: PrecedenceGroup) extends OpInfoError {
 case class UnconnectedPrecedenceGroups(group1: PrecedenceGroup, group2: PrecedenceGroup) extends OpInfoError {
   override def toDoc(implicit options: PrettierOptions): Doc =
     t"Precedence groups '${group1.name}' and '${group2.name}' are not connected."
+}
+
+case class UnboundVariable(name: Name, cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unbound variable $name"
+}
+
+case class NotImplemented(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Not implemented"
+}
+
+case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = d"Type mismatch: expected $lhs but got $rhs"
 }

@@ -3,6 +3,7 @@ package chester.syntax.concrete
 
 import cats.data.*
 import chester.doc.*
+import chester.doc.const.Docs
 import chester.error.*
 import chester.syntax.accociativity.Associativity
 import chester.syntax.concrete.stmt.QualifiedID
@@ -460,10 +461,17 @@ case class FunctionExpr(telescope: Vector[DefTelescope], resultTy: Option[Expr] 
     val effectDoc = effect.map(e => Doc.text(" ") <> e.toDoc).getOrElse(Doc.empty)
     val resultDoc = resultTy.map(r => Doc.text(" -> ") <> r.toDoc).getOrElse(Doc.empty)
     val bodyDoc = body.toDoc
-    telescopeDoc <> effectDoc <> resultDoc <> Doc.text(" {") </> Doc.indented(bodyDoc) </> Doc.text("}")
+    telescopeDoc <> effectDoc <> resultDoc <+> Docs.`{` </> Doc.indented(bodyDoc) </> Docs.`}`
   }
 }
 
+case class TypeAnotationNoEffects(expr:Expr, ty: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): TypeAnotationNoEffects = copy(meta = updater(meta))
+
+  override def descent(operator: Expr => Expr): Expr = thisOr(TypeAnotationNoEffects(operator(expr), operator(ty), meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = group(expr.toDoc <> Docs.`:` <+> ty.toDoc)
+}
 
 sealed trait ErrorExpr extends Expr derives ReadWriter
 

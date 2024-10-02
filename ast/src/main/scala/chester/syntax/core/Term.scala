@@ -308,7 +308,7 @@ case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
 case class SymbolTerm(value: String) extends Term derives ReadWriter {
   override def descent(f: Term => Term): SymbolTerm = this
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(":" + value, ColorProfile.literalColor)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("'" + value, ColorProfile.literalColor)
 }
 
 case object RationalType extends TypeTerm with WithType {
@@ -644,6 +644,12 @@ case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = N
   override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
 }
 
+case class LocalV(id: Name, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
+
+  override def descent(f: Term => Term): LocalV = this
+}
+
 object LocalVar {
   def generate(id: Name, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
 }
@@ -652,6 +658,11 @@ case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
 
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
+}
+case class ToplevelV(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
+
+  override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
 }
 
 case class ErrorTerm(problem: Problem) extends Term {

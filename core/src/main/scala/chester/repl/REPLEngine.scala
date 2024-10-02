@@ -4,6 +4,7 @@ import cats.implicits.*
 import chester.doc.*
 import chester.doc.const.{Colors, ReplaceBracketsWithWord}
 import chester.parser.{ParseError, ParserEngine}
+import chester.propagator.Cker
 import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 import chester.tyck.*
@@ -114,10 +115,8 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     }
   }
 
-  def typeCheck(expr: Expr): TyckResult[TyckState, Judge] = {
-    val initialState = TyckState()
-    val initialCtx = LocalCtx.Empty
-    ExprTycker.synthesize(expr, state=initialState, ctx=initialCtx)
+  def typeCheck(expr: Expr): TyckResult[?, Judge] = {
+    Cker.check(expr)
   }
 
   def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {

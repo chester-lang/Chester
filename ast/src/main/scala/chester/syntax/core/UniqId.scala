@@ -6,15 +6,26 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private val uniqIdCounter = AtomicInteger(0)
 
-opaque type UniqId = Int
-type UniqIdOf[+A] = UniqId
+opaque type UniqIdOf[+A] = Int
 
-implicit val rwUniqID: ReadWriter[UniqId] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+type UniqId = UniqIdOf[Any]
+
+extension (x: UniqId) {
+  def asof[T] : UniqIdOf[T] = x.asInstanceOf[UniqIdOf[T]]
+}
+
+extension [T](x: UniqIdOf[T]) {
+  def asid: UniqId = x
+}
+
+private val rwUniqID: ReadWriter[UniqIdOf[?]] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+
+implicit inline def rwUniqIDOf[T]: ReadWriter[UniqIdOf[T]]= rwUniqID
 
 trait HasUniqId extends Any {
-  def uniqId: UniqIdOf[this.type]
+  def uniqId: UniqId
 }
 
 object UniqId {
-  def generate: UniqId = uniqIdCounter.getAndIncrement()
+  def generate[T]: UniqIdOf[T] = uniqIdCounter.getAndIncrement()
 }

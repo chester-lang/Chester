@@ -21,6 +21,8 @@ class VectorReporter[T] extends Reporter[T] {
 
 class Get[P, S](val reporter: Reporter[P], private val state: MutBox[S]) {
   def getState: S = state.get
+  
+  implicit inline def toReporter: Reporter[P] = reporter
 
   def report(problem: P): Unit = reporter.apply(problem)
 
