@@ -6,28 +6,20 @@ import chester.syntax.concrete.ResolvingModules
 import chester.syntax.Name
 import chester.utils.propagator.*
 
-case class CtxItem(
-  name: LocalVar,
-  ty: CellId[Term] // The type of the variable as a cell
-)
+case class ContextItem(
+                        ref: LocalV,
+                        ty: CellId[Term]
+                      ) {
+}
 
 case class LocalCtx(
-                     map: Map[Name, CtxItem] = Map.empty,
-                     parent: Option[LocalCtx] = None,
+                     map: Map[Name, ContextItem] = Map.empty,
                      imports: Imports = Imports.Empty,
                      modules: ResolvingModules = ResolvingModules.Empty,
                      operators: OperatorsContext = OperatorsContext.Default
-) {
-  def get(id: Name): Option[CtxItem] =
-    map.get(id).orElse(parent.flatMap(_.get(id)))
-
-  def extend(item: CtxItem): LocalCtx = {
-    copy(map = map + (item.name.id -> item))
-  }
-
-  def withParent(ctx: LocalCtx): LocalCtx = {
-    copy(parent = Some(ctx))
-  }
+                   ) {
+  def get(id: Name): Option[ContextItem] =
+    map.get(id)
 }
 
 object LocalCtx {

@@ -18,7 +18,9 @@ extension [T](x: UniqIdOf[T]) {
   def asid: UniqId = x
 }
 
-implicit val rwUniqID: ReadWriter[UniqId] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+private val rwUniqID: ReadWriter[UniqIdOf[?]] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+
+implicit def rwUniqIDOf[T]: ReadWriter[UniqIdOf[?]] & ReadWriter[UniqIdOf[T]] = rwUniqID
 
 trait HasUniqId extends Any {
   def uniqId: UniqId

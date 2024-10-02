@@ -644,6 +644,12 @@ case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = N
   override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
 }
 
+case class LocalV(id: Name, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
+
+  override def descent(f: Term => Term): LocalV = this
+}
+
 object LocalVar {
   def generate(id: Name, ty: Term): LocalVar = LocalVar(id, ty, UniqId.generate)
 }
