@@ -407,7 +407,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
       }
 
       val matchingSymbols = allSymbols.filter { symbol =>
-        symbol.name.toLowerCase.contains(query)
+        symbol.name.toLowerCase.contains(query) && symbol.call.meta.nonEmpty
       }.map(tyckSymbolToLSP)
 
       Either.forLeft(matchingSymbols.asJava)
@@ -416,8 +416,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   private def tyckSymbolToLSP(symbol: FinalReference): SymbolInformation = {
     val location = new Location(
-      symbol.definitionPos.fileName,
-      rangeFromSourcePos(symbol.definitionPos)
+      symbol.call.meta.get.sourcePos.source.source.fileName,
+      rangeFromSourcePos(symbol.call.meta.get.sourcePos)
     )
     new SymbolInformation(
       symbol.name.toString,

@@ -19,14 +19,14 @@ import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
 import chester.error.ProblemUpickle.*
 
-case class TermMeta(sourcePos: Option[SourcePos])derives ReadWriter
+case class TermMeta(sourcePos: SourcePos)derives ReadWriter
 
 type OptionTermMeta = Option[TermMeta]
 
 sealed trait TermWithMeta extends Term with WithPos derives ReadWriter {
   def meta: OptionTermMeta
 
-  def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
+  def sourcePos: Option[SourcePos] = meta.map(_.sourcePos)
 }
 
 /** CallTerm has meta to trace runtime errors and debug */
