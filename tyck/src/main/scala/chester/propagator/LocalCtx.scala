@@ -64,6 +64,7 @@ case class LocalCtx(
   def get(id: Name): Option[ContextItem] =
     map.get(id)
 
+  def knownAdd(id: UniqIdOf[? <: MaybeVarCall], y: TyAndVal): LocalCtx = knownAdd(Seq(id -> y))
   def knownAdd(seq: Seq[(UniqIdOf[? <: MaybeVarCall], TyAndVal)]): LocalCtx = {
     val newMap = seq.foldLeft(knownMap) { (acc, item) =>
       assert(!acc.contains(item._1), s"Duplicate key ${item._1}")
@@ -71,6 +72,7 @@ case class LocalCtx(
     }
     copy(knownMap = newMap)
   }
+  def add(item: ContextItem): LocalCtx = add(Seq(item))
   def add(seq: Seq[ContextItem]): LocalCtx = {
     val newMap = seq.foldLeft(map) { (acc, item) =>
       assert(!acc.contains(item.name), s"Duplicate key ${item.name}")

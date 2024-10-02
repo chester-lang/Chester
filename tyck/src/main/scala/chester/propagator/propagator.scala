@@ -3,6 +3,7 @@ package chester.propagator
 import cats.implicits.*
 import chester.error.*
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
+import chester.syntax.Name
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.{Get, Reporter, SymbolTable, TyckResult, TyckResult0, VectorReporter}
@@ -117,8 +118,8 @@ object BaseTycker {
     }
   }
 
-  def tryUnify(lhs: Term, rhs: Term)(using state: StateAbility[Ck],localCtx: LocalCtx): Boolean = {
-    if(lhs == rhs) return true
+  def tryUnify(lhs: Term, rhs: Term)(using state: StateAbility[Ck], localCtx: LocalCtx): Boolean = {
+    if (lhs == rhs) return true
     val lhsResolved = lhs match {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
@@ -151,14 +152,14 @@ object BaseTycker {
       if (state.noValue(tyLhs)) return false
       val ty_ = state.read(this.tyLhs).get
       val t = x match {
-        case IntegerLiteral(_, _) =>IntegerType
-        case RationalLiteral(_, _) =>RationalType
+        case IntegerLiteral(_, _) => IntegerType
+        case RationalLiteral(_, _) => RationalType
         case StringLiteral(_, _) => StringType
         case SymbolLiteral(_, _) => SymbolType
       }
       x match {
-        case IntegerLiteral(_,_) => {
-          if(tryUnify(ty_, IntType)) return true
+        case IntegerLiteral(_, _) => {
+          if (tryUnify(ty_, IntType)) return true
         }
         case _ => {
 
@@ -237,6 +238,50 @@ object BaseTycker {
     }
   }
 
+  case class Merge[T](a: CellId[T], b: CellId[T], uniqId: UniqIdOf[Merge[T]] = UniqId.generate[Merge[T]]) extends Propagator[Ck] {
+    override val readingCells = Set(a, b)
+    override val writingCells = Set(a, b)
+    override val zonkingCells = Set(a, b)
+
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
+      val aVal = state.read(a)
+      val bVal = state.read(b)
+      if (aVal.isDefined && bVal.isDefined) {
+        if (aVal.get == bVal.get) return true
+        throw new IllegalStateException("Merge propagator should not be used if the values are different")
+        return true
+      }
+      if (aVal.isDefined) {
+        state.fill(b, aVal.get)
+        return true
+      }
+      if (bVal.isDefined) {
+        state.fill(a, bVal.get)
+        return true
+      }
+      false
+    }
+
+    override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      val aVal = state.read(a)
+      val bVal = state.read(b)
+      if (aVal.isDefined && bVal.isDefined) {
+        if (aVal.get == bVal.get) return ZonkResult.Done
+        throw new IllegalStateException("Merge propagator should not be used if the values are different")
+        return ZonkResult.Done
+      }
+      if (aVal.isDefined) {
+        state.fill(b, aVal.get)
+        return ZonkResult.Done
+      }
+      if (bVal.isDefined) {
+        state.fill(a, bVal.get)
+        return ZonkResult.Done
+      }
+      ZonkResult.NotYet
+    }
+  }
+
   def FlatMap[T, U](xs: Vector[CellId[T]])(f: Vector[T] => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
     val cell = OnceCell[U]()
     state.addCell(cell)
@@ -251,10 +296,10 @@ object BaseTycker {
     cell.uniqId
   }
 
-  def Map2[A,B,C](x: CellId[A], y: CellId[B])(f: (A,B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
+  def Map2[A, B, C](x: CellId[A], y: CellId[B])(f: (A, B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
     val cell = OnceCell[C]()
     state.addCell(cell)
-    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]],y.asInstanceOf[CellId[Any]]), (xs: Vector[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
+    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Vector[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
     cell.uniqId
   }
 
@@ -307,15 +352,17 @@ object BaseTycker {
   def unify(t1: Term, t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(literal(t1), t2, cause))
   }
+
   def unify(t1: CellId[Term], t2: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(t1, literal(t2), cause))
   }
+
   def unify(t1: CellId[Term], t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(t1, t2, cause))
   }
 
   /** t is rhs, listT is lhs */
-  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using  ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
+  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(tRhs, listTLhs)
     override val writingCells = Set(tRhs, listTLhs)
     override val zonkingCells = Set(listTLhs)
@@ -337,7 +384,7 @@ object BaseTycker {
           true
         }
         case (Some(t1), None) => {
-          unify(this.listTLhs, ListType(t1):Term, cause)
+          unify(this.listTLhs, ListType(t1): Term, cause)
           true
         }
         case (_, _) => false
@@ -362,7 +409,7 @@ object BaseTycker {
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
-          case Some(c:ContextItem) => {
+          case Some(c: ContextItem) => {
             state.addPropagator(Unify(ty, c.ty, expr))
             c.asTerm
           }
@@ -415,46 +462,78 @@ object BaseTycker {
       case expr@TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
         // Check the type annotation expression to get its type
         val declaredTyTerm = checkType(tyExpr)
-        
+
         unify(ty, declaredTyTerm, expr)
 
         check(innerExpr, declaredTyTerm, effects)
       case expr@Block(heads, tail, meta) => {
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
+
+        def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV] = UniqId.generate[LocalV]): CellId[LocalV] = {
+          Map(ty)(LocalV(name, _, id))
+        }
+
         val defs = heads.collect {
-          case expr@LetDefStmt(LetDefType.Def,defined,_,_,_,_) =>
+          case expr@LetDefStmt(LetDefType.Def, defined, _, _, _, _) =>
             val name = defined match {
               // TODO: support other defined patterns
               case DefinedPattern(PatternBind(name, _)) => name.name
             }
             val tyandval = TyAndVal.create()
             val id = UniqId.generate[LocalV]
-            val localv = Map(tyandval.ty)(LocalV(name, _, id))
+            val localv = newLocalv(name, tyandval.ty, id)
+            state.add(parameter.references, Reference.create(id, expr))
             DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
         }
-        val defsMap = defs.map(info=>(info.expr, info)).toMap
-        var ctx = localCtx.knownAdd(defs.map(info=>(info.id, info.tyAndVal))).add(defs.map(_.item))
+        val defsMap = defs.map(info => (info.expr, info)).toMap
+        var ctx = localCtx.knownAdd(defs.map(info => (info.id, info.tyAndVal))).add(defs.map(_.item))
         val names = heads.collect {
           case expr: LetDefStmt => expr.defined match {
             case DefinedPattern(PatternBind(name, _)) => name
           }
         }
-        if(names.hasDuplication) {
+        if (names.hasDuplication) {
           val problem = DuplicateDefinition(expr)
           ck.reporter.apply(problem)
         }
         val stmts: Seq[CellId[StmtTerm]] = heads.flatMapOrdered {
-          case expr@LetDefStmt(LetDefType.Def,_,_,_,_,_) => {
+          case expr@LetDefStmt(LetDefType.Def, _, _, _, _, _) => {
+            implicit val localCtx: LocalCtx = ctx
             val d = defsMap.apply(expr)
-            Vector(Map2(check(expr.body.get,d.item.ty, effects),d.item.ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
+            expr.ty match {
+              case Some(tyExpr) => {
+                unify(checkType(tyExpr), d.tyAndVal.ty, expr)
+              }
+              case None => ()
+            }
+            val wellTyped = check(expr.body.get, d.item.ty, effects)
+            state.addPropagator(Merge(d.tyAndVal.value, wellTyped))
+            Vector(Map2(wellTyped, d.item.ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
           }
-          case expr@LetDefStmt(LetDefType.Let,_,_,_,_,_) => ???
+          case expr@LetDefStmt(LetDefType.Let, _, _, _, _, _) => {
+            implicit val localCtx: LocalCtx = ctx
+            val name = expr.defined match {
+              // TODO: support other defined patterns
+              case DefinedPattern(PatternBind(name, _)) => name.name
+            }
+            val id = UniqId.generate[LocalV]
+            val ty = expr.ty match {
+              case Some(tyExpr) => checkType(tyExpr)
+              case None => newType
+            }
+            val localv = newLocalv(name, ty, id)
+            state.add(parameter.references, Reference.create(id, expr))
+            val wellTyped = check(expr.body.get, ty, effects)
+            ctx = ctx.add(ContextItem(name, id, localv, ty)).knownAdd(id, TyAndVal(ty, wellTyped))
+            Vector(Map2(wellTyped, ty) { (wellTyped, ty) => LetStmtTerm(name, wellTyped, ty) })
+          }
           case expr => {
+            implicit val localCtx: LocalCtx = ctx
             val ty = newType
             Vector(Map2(check(expr, ty, effects), ty) { (wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
           }
         }
-          ???
+        ???
       }
       case expr: Expr => {
         val problem = NotImplemented(expr)
