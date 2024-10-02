@@ -47,6 +47,7 @@ case class LocalCtx(
                      modules: ResolvingModules = ResolvingModules.Empty,
                      operators: OperatorsContext = OperatorsContext.Default
                    ) {
+  def getKnown(x: MaybeVarCall): Option[TyAndVal] = knownMap.get(x.uniqId.asInstanceOf[UniqIdOf[? <: MaybeVarCall]])
   def get(id: Name): Option[ContextItem] =
     map.get(id)
 }

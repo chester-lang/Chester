@@ -26,7 +26,7 @@ def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem
 object BaseTycker {
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[Unify] = UniqId.generate[Unify]) extends Propagator[Ck] {
+  case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[Unify] = UniqId.generate[Unify])(using localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
@@ -64,7 +64,7 @@ object BaseTycker {
                       rhs: Vector[CellId[Term]],
                       cause: Expr,
                       uniqId: UniqIdOf[UnionOf] = UniqId.generate[UnionOf]
-                    ) extends Propagator[Ck] {
+                    )(using localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(lhs) ++ rhs.toSet
     override val writingCells = Set(lhs)
     override val zonkingCells = Set(lhs) ++ rhs.toSet
@@ -118,7 +118,7 @@ object BaseTycker {
   }
 
 
-  case class LiteralType(x: Literals, ty: CellId[Term], meta: Option[ExprMeta], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType]) extends Propagator[Ck] {
+  case class LiteralType(x: Literals, ty: CellId[Term], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType])(using localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(ty)
     override val writingCells = Set(ty)
     override val zonkingCells = Set(ty)
@@ -126,16 +126,17 @@ object BaseTycker {
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       if (state.noValue(ty)) return false
       val ty_ = state.read(this.ty).get
-      val result = x match {
-        case IntegerLiteral(_, _) => ty_ == IntegerType
-        case RationalLiteral(_, _) => ty_ == RationalType
-        case StringLiteral(_, _) => ty_ == StringType
-        case SymbolLiteral(_, _) => ty_ == SymbolType
+      val t = x match {
+        case IntegerLiteral(_, _) =>IntegerType
+        case RationalLiteral(_, _) =>RationalType
+        case StringLiteral(_, _) => StringType
+        case SymbolLiteral(_, _) => SymbolType
       }
-      if (result) {
+      if (ty_ == t) {
         return true
       } else {
-        ???
+        unify(ty_, t, x)
+        return true
       }
     }
 
@@ -218,9 +219,31 @@ object BaseTycker {
     cell.uniqId
   }
 
-  def unify(lhs: Term, rhs: Term, cause: Expr)(using ck: Ck, state: StateAbility[Ck]): Unit = {
+  def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
-    (lhs, rhs) match {
+    // Resolve lhs if it's a MaybeVarCall and known in knownMap
+    val lhsResolved = lhs match {
+      case varCall: MaybeVarCall =>
+        localCtx.getKnown(varCall) match {
+          case Some(tyAndVal) =>
+            state.read(tyAndVal.value).getOrElse(lhs)
+          case None => lhs
+        }
+      case _ => lhs
+    }
+
+    // Resolve rhs if it's a MaybeVarCall and known in knownMap
+    val rhsResolved = rhs match {
+      case varCall: MaybeVarCall =>
+        localCtx.getKnown(varCall) match {
+          case Some(tyAndVal) =>
+            state.read(tyAndVal.value).getOrElse(rhs)
+          case None => rhs
+        }
+      case _ => rhs
+    }
+    if (lhsResolved == rhsResolved) return
+    (lhsResolved, rhsResolved) match {
 
       // Structural unification for ListType
       case (ListType(elem1), ListType(elem2)) =>
@@ -243,7 +266,7 @@ object BaseTycker {
     }
   }
 
-  def unify(t1: Term, t2: CellId[Term], cause: Expr)(using ck: Ck, state: StateAbility[Ck]): Unit = {
+  def unify(t1: Term, t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(literal(t1), t2, cause))
   }
 
@@ -299,19 +322,19 @@ object BaseTycker {
         }
       }
       case expr@IntegerLiteral(value, meta) => {
-        state.addPropagator(LiteralType(expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty))
         AbstractIntTerm.from(value)
       }
       case expr@RationalLiteral(value, meta) => {
-        state.addPropagator(LiteralType(expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty))
         RationalTerm(value)
       }
       case expr@StringLiteral(value, meta) => {
-        state.addPropagator(LiteralType(expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty))
         StringTerm(value)
       }
       case expr@SymbolLiteral(value, meta) => {
-        state.addPropagator(LiteralType(expr, ty, meta))
+        state.addPropagator(LiteralType(expr, ty))
         SymbolTerm(value)
       }
       case expr@ListExpr(terms, meta) => {
