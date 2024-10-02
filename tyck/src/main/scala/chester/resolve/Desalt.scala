@@ -273,6 +273,10 @@ case object SimpleDesalt {
         case DesaltFunctionCall(f, t, m) => DesaltFunctionCall(f, t ++ desugaredTelescopes, m)
         case _ => DesaltFunctionCall(desugaredFunction, NonEmptyVector.fromVectorUnsafe(desugaredTelescopes), meta)
       }
+    case OpSeq(Vector(lhs, Identifier(Const.`:`, _), rhs), meta) =>
+      val desugaredLhs = desugar(lhs)
+      val desugaredRhs = desugar(rhs)
+      TypeAnotationNoEffects(desugaredLhs, desugaredRhs, meta)
     case default => default
   }
 
