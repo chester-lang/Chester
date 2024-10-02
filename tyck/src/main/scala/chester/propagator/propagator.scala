@@ -405,7 +405,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
               DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
           }
           val defsMap = defs.map(info => (info.expr, info)).toMap
-          var ctx = localCtx.knownAdd(defs.map(info => (info.id, info.tyAndVal))).add(defs.map(_.item))
+          var ctx = localCtx.add(defs.map(_.item))
           val names = heads.collect {
             case expr: LetDefStmt => expr.defined match {
               case DefinedPattern(PatternBind(name, _)) => name
@@ -429,6 +429,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
               }
               val wellTyped = check(expr.body.get, ty, effects)
               state.addPropagator(Merge(d.tyAndVal.value, wellTyped))
+              ctx = ctx.knownAdd(d.id, TyAndVal(ty, wellTyped))
               Vector(Map2(wellTyped, ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
             }
             case expr@LetDefStmt(LetDefType.Let, _, _, _, _, _) => {
