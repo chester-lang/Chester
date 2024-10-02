@@ -14,7 +14,7 @@ import scala.language.implicitConversions
 def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
   val result = SimpleDesalt.desugarUnwrap(expr) match {
     case opseq: OpSeq => {
-      val result = resolveOpSeq(reporter, localCtx.ctx.operators, opseq)
+      val result = resolveOpSeq(reporter, localCtx.operators, opseq)
       result
     }
     case default => default
