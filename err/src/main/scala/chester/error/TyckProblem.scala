@@ -257,7 +257,7 @@ case class UnboundVariable(name: Name, cause: Expr) extends TyckError {
 }
 
 case class NotImplemented(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Not implemented"
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Not implemented ${cause.getClass.getName}"
 }
 
 case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
