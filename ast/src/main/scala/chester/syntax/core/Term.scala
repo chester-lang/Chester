@@ -384,7 +384,7 @@ case class ArgTerm(bind: LocalV, ty: Term, default: Option[Term] = None, vararg:
     bind.toDoc <> varargDoc <> Docs.`:` <+> ty.toDoc <> defaultDoc
   }
 
-  def name: Name = bind.id
+  def name: Name = bind.name
 
   override def descent(f: Term => Term): ArgTerm = thisOr(copy(ty = f(ty), default = default.map(f)))
 }
@@ -640,17 +640,17 @@ case object STEffect extends Effect {
 }
 
 sealed trait MaybeVarCall extends MaybeCallTerm with HasUniqId derives ReadWriter {
-  def id: Name
+  def name: Name
 }
 
-case class LocalV(id: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
+case class LocalV(name: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name.toString)
 
   override def descent(f: Term => Term): LocalV = thisOr(copy(ty = f(ty)))
 }
 
-case class ToplevelV(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
+case class ToplevelV(module: QualifiedIDString, name: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + name)
 
   override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
 }

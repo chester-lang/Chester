@@ -54,7 +54,9 @@ case class FinalReference(
                          id: UniqIdOf[? <: MaybeVarCall],
                            definedOn: Expr,
                            referencedOn: Seq[Expr]
-                         )
+                         ) {
+  def name: Name = call.name
+}
 
 object Reference {
   def create[T  <: MaybeVarCall](call: CellIdOr[T],ref: UniqIdOf[T], definedOn: CellIdOr[Expr])(using state: StateAbility[?]): Reference = {

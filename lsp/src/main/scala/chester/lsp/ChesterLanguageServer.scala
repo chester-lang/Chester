@@ -430,4 +430,6 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 case class DocumentInfo(
                          content: String,
                          tyckResult: TyckResult[CkState, Judge],
-                       )
+                       ) {
+  def symbols = tyckResult.state.symbols
+}
