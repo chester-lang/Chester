@@ -96,14 +96,14 @@ val baseDeps = Seq(
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % "2.12.0",
     "org.typelevel" %%% "cats-free" % "2.12.0",
-    "com.lihaoyi" %%% "upickle" % "4.0.1",
+    "com.lihaoyi" %%% "upickle" % "4.0.2",
     "com.lihaoyi" %%% "fansi" % "0.5.0",
     "com.lihaoyi" %%% "fastparse" % "3.1.1",
     "com.lihaoyi" %%% "scalatags" % "0.13.1",
     "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
-    "io.getkyo" %%% "kyo-prelude" % "0.12.1",
-    "io.getkyo" %%% "kyo-data" % "0.12.1",
-    "io.getkyo" %%% "kyo-tag" % "0.12.1",
+    "io.getkyo" %%% "kyo-prelude" % "0.12.2",
+    "io.getkyo" %%% "kyo-data" % "0.12.2",
+    "io.getkyo" %%% "kyo-tag" % "0.12.2",
   ),
 )
 
@@ -179,7 +179,7 @@ lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "upickle" % "4.0.1",
+      "com.lihaoyi" %%% "upickle" % "4.0.2",
       "org.typelevel" %%% "cats-core" % "2.12.0",
       "com.lihaoyi" %%% "utest" % "0.8.4" % Test,
       "org.typelevel" %%% "kittens" % "3.4.0" % Test,
