@@ -42,6 +42,12 @@ case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.ge
   override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
 }
 
+def literal[T, Ck](t: T)(using state: StateAbility[Ck]): CellId[T] = {
+  val cell = LiteralCell[T](t)
+  state.addCell(cell)
+  cell.uniqId
+}
+
 trait Propagator[Ability] extends HasUniqId {
   override def uniqId: UniqIdOf[Propagator[Ability]]
 
