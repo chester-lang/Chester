@@ -14,7 +14,11 @@ import scala.language.implicitConversions
 
 type Ck = Get[TyckProblem, Unit]
 
-trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
+trait Elaborater extends ProvideCtx {
+  def elab(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term]
+}
+
+trait ProvideElaborater extends ProvideCtx with Elaborater with CommonPropagator[Ck] {
 
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
@@ -29,7 +33,6 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
   }
 
 
-  object BaseTycker {
     type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
     case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using localCtx: LocalCtx) extends Propagator[Ck] {
@@ -319,7 +322,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
     // TODO: add something for implicit conversion
 
     /** ty is lhs */
-    def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
+    override def elab(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
       resolve(expr, localCtx) match {
         case expr@Identifier(name, meta) => {
           localCtx.get(name) match {
@@ -362,7 +365,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
           // For each term, check it with its own type variable and collect the results
           val termResults = terms.map { term =>
             val elemTy = newType
-            val wellTypedTerm = check(term, elemTy, effects)
+            val wellTypedTerm = elab(term, elemTy, effects)
             (wellTypedTerm, elemTy)
           }
 
@@ -383,7 +386,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
 
           unify(ty, declaredTyTerm, expr)
 
-          check(innerExpr, declaredTyTerm, effects)
+          elab(innerExpr, declaredTyTerm, effects)
         case expr@Block(heads, tail, meta) => {
           case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
@@ -427,7 +430,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
                 }
                 case None => d.tyAndVal.ty
               }
-              val wellTyped = check(expr.body.get, ty, effects)
+              val wellTyped = elab(expr.body.get, ty, effects)
               state.addPropagator(Merge(d.tyAndVal.value, wellTyped))
               ctx = ctx.knownAdd(d.id, TyAndVal(ty, wellTyped))
               Vector(Map2(wellTyped, ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
@@ -445,20 +448,20 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
               }
               val localv = newLocalv(name, ty, id, meta)
               state.add(parameter.references, Reference.create(localv, id, expr))
-              val wellTyped = check(expr.body.get, ty, effects)
+              val wellTyped = elab(expr.body.get, ty, effects)
               ctx = ctx.add(ContextItem(name, id, localv, ty)).knownAdd(id, TyAndVal(ty, wellTyped))
               Vector(Map2(wellTyped, ty) { (wellTyped, ty) => LetStmtTerm(name, wellTyped, ty) })
             }
             case expr => {
               implicit val localCtx: LocalCtx = ctx
               val ty = newType
-              Vector(Map2(check(expr, ty, effects), ty) { (wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
+              Vector(Map2(elab(expr, ty, effects), ty) { (wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
             }
           }
           {
             implicit val localCtx: LocalCtx = ctx
             val tailExpr = tail.getOrElse(UnitExpr(meta))
-            val wellTyped = check(tailExpr, ty, effects)
+            val wellTyped = elab(tailExpr, ty, effects)
             val s = Traverse(stmts)
             Map2(s, wellTyped)((stmts, tail) => BlockTerm(stmts, tail))
           }
@@ -478,9 +481,8 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
       // Create a new effects cell to capture any effects from the type expression
       val effectsCell = literal(NoEffect)
 
-      check(expr, kindType, effectsCell)
+      elab(expr, kindType, effectsCell)
     }
-  }
 
   given ckToReport(using ck: Ck): Reporter[TyckProblem] = ck.reporter
 
@@ -494,7 +496,7 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
 
 }
 
-trait DefaultImpl extends ProvideElobarator with ProvideImpl {
+trait DefaultImpl extends ProvideElaborater with ProvideImpl {
 
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
@@ -507,7 +509,7 @@ trait DefaultImpl extends ProvideElobarator with ProvideImpl {
       }
       case None => {
         val cell = able.addCell(OnceCell[Term]())
-        able.addPropagator(BaseTycker.IsType(cell))
+        able.addPropagator(IsType(cell))
         cell
       }
     }
@@ -521,11 +523,11 @@ trait DefaultImpl extends ProvideElobarator with ProvideImpl {
         cell
       }
     }
-    able.addPropagator(BaseTycker.IsEffects(effects1))
+    able.addPropagator(IsEffects(effects1))
     implicit val ctx: LocalCtx = LocalCtx.default
     val references = able.addCell(CollectionCell[Reference]())
     implicit val recording: Global = Global(references)
-    val wellTyped = BaseTycker.check(expr, ty1, effects1)
+    val wellTyped = elab(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     val symbols = able.read(references).get.map { ref =>
       val call = able.read(ref.callAsMaybeVarCall).get
