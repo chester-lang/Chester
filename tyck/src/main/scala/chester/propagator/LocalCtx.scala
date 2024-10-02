@@ -39,7 +39,7 @@ trait ProvideCtx extends ProvideCellId {
     }
 
     def create[Ck]()(using state: StateAbility[Ck]): TyAndVal = {
-      TyAndVal(OnceCell.create[Term](), OnceCell.create[Term]())
+      TyAndVal(state.addCell(OnceCell[Term]()), state.addCell(OnceCell[Term]()))
     }
   }
 
@@ -63,7 +63,7 @@ trait ProvideCtx extends ProvideCellId {
 
   object Reference {
     def create[T <: MaybeVarCall](call: CellIdOr[T], ref: UniqIdOf[T], definedOn: CellIdOr[Expr])(using state: StateAbility[?]): Reference = {
-      Reference(state.toId(call), ref, state.toId(definedOn), CollectionCell.create[Expr])
+      Reference(state.toId(call), ref, state.toId(definedOn), state.addCell(CollectionCell[Expr]()))
     }
   }
 

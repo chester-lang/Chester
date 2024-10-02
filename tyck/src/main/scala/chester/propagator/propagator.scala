@@ -30,7 +30,7 @@ trait ProvideElobarator extends ProvideCtx {
   object BaseTycker {
     type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-    case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr, uniqId: PIdOf[Unify] = generateP[Unify])(using localCtx: LocalCtx) extends Propagator[Ck] {
+    case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using localCtx: LocalCtx) extends Propagator[Ck] {
       override val readingCells = Set(lhs, rhs)
       override val writingCells = Set(lhs, rhs)
       override val zonkingCells = Set(lhs, rhs)
@@ -67,7 +67,6 @@ trait ProvideElobarator extends ProvideCtx {
                         lhs: CellId[Term],
                         rhs: Vector[CellId[Term]],
                         cause: Expr,
-                        uniqId: PIdOf[UnionOf] = generateP[UnionOf]
                       )(using localCtx: LocalCtx) extends Propagator[Ck] {
       override val readingCells = Set(lhs) ++ rhs.toSet
       override val writingCells = Set(lhs)
@@ -146,7 +145,7 @@ trait ProvideElobarator extends ProvideCtx {
     }
 
 
-    case class LiteralType(x: Literals, tyLhs: CellId[Term], uniqId: PIdOf[LiteralType] = generateP[LiteralType])(using localCtx: LocalCtx) extends Propagator[Ck] {
+    case class LiteralType(x: Literals, tyLhs: CellId[Term])(using localCtx: LocalCtx) extends Propagator[Ck] {
       override val readingCells = Set(tyLhs)
       override val writingCells = Set(tyLhs)
       override val zonkingCells = Set(tyLhs)
@@ -186,7 +185,7 @@ trait ProvideElobarator extends ProvideCtx {
         ZonkResult.Done
     }
 
-    case class IsEffects(effects: CellId[Effects], uniqId: PIdOf[IsEffects] = generateP[IsEffects]) extends Propagator[Ck] {
+    case class IsEffects(effects: CellId[Effects]) extends Propagator[Ck] {
       override val zonkingCells = Set(effects)
 
       override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(effects)
@@ -197,7 +196,7 @@ trait ProvideElobarator extends ProvideCtx {
       }
     }
 
-    case class IsType(ty: CellId[Term], uniqId: PIdOf[IsType] = generateP[IsType]) extends Propagator[Ck] {
+    case class IsType(ty: CellId[Term]) extends Propagator[Ck] {
       override val readingCells = Set(ty)
       override val zonkingCells = Set(ty)
 
@@ -211,10 +210,9 @@ trait ProvideElobarator extends ProvideCtx {
     }
 
     def newType(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-      val cell = OnceCell[Term]()
-      state.addCell(cell)
-      state.addPropagator(IsType(cell.uniqId))
-      cell.uniqId
+      val cell = state.addCell(OnceCell[Term]())
+      state.addPropagator(IsType(cell))
+      cell
     }
 
     case class FlatMaping[T, U](xs: Seq[CellId[T]], f: Seq[T] => U, result: CellId[U], uniqId: PIdOf[FlatMaping[T, U]] = generateP[FlatMaping[T, U]]) extends Propagator[Ck] {
@@ -286,24 +284,21 @@ trait ProvideElobarator extends ProvideCtx {
     }
 
     def FlatMap[T, U](xs: Seq[CellId[T]])(f: Seq[T] => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
-      val cell = OnceCell[U]()
-      state.addCell(cell)
-      state.addPropagator(FlatMaping(xs, f, cell.uniqId))
-      cell.uniqId
+      val cell = state.addCell(OnceCell[U]())
+      state.addPropagator(FlatMaping(xs, f, cell))
+      cell
     }
 
     def Map[T, U](x: CellId[T])(f: T => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
-      val cell = OnceCell[U]()
-      state.addCell(cell)
-      state.addPropagator(FlatMaping(Vector(x), (xs: Seq[T]) => f(xs.head), cell.uniqId))
-      cell.uniqId
+      val cell = state.addCell(OnceCell[U]())
+      state.addPropagator(FlatMaping(Vector(x), (xs: Seq[T]) => f(xs.head), cell))
+      cell
     }
 
     def Map2[A, B, C](x: CellId[A], y: CellId[B])(f: (A, B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
-      val cell = OnceCell[C]()
-      state.addCell(cell)
-      state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
-      cell.uniqId
+      val cell = state.addCell(OnceCell[C]())
+      state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell))
+      cell
     }
 
     def Traverse[A](x: Seq[CellId[A]])(using ck: Ck, state: StateAbility[Ck]): CellId[Seq[A]] = FlatMap(x)(identity)
@@ -367,7 +362,7 @@ trait ProvideElobarator extends ProvideCtx {
     }
 
     /** t is rhs, listT is lhs */
-    case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr, uniqId: PIdOf[ListOf] = generateP[ListOf])(using ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
+    case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(using ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
       override val readingCells = Set(tRhs, listTLhs)
       override val writingCells = Set(tRhs, listTLhs)
       override val zonkingCells = Set(listTLhs)
@@ -598,31 +593,28 @@ trait DefaultImpl extends ProvideElobarator with ProvideImmutable {
         cell
       }
       case None => {
-        val cell = OnceCell.create[Term]()
+        val cell = able.addCell(OnceCell[Term]())
         able.addPropagator(BaseTycker.IsType(cell))
         cell
       }
     }
     val effects1: CellId[Effects] = effects match {
       case Some(effects) => {
-        val cell = LiteralCell[Effects](effects)
-        able.addCell(cell)
-        cell.uniqId
+        val cell = able.addCell(LiteralCell[Effects](effects))
+        cell
       }
       case None => {
-        val cell = OnceCell[Effects]()
-        able.addCell(cell)
-        cell.uniqId
+        val cell = able.addCell(OnceCell[Effects]())
+        cell
       }
     }
     able.addPropagator(BaseTycker.IsEffects(effects1))
     implicit val ctx: LocalCtx = LocalCtx.default
-    val references = CollectionCell[Reference]()
-    able.addCell(references)
-    implicit val recording: Global = Global(references.uniqId)
+    val references = able.addCell(CollectionCell[Reference]())
+    implicit val recording: Global = Global(references)
     val wellTyped = BaseTycker.check(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
-    val symbols = able.read(references.uniqId).get.map { ref =>
+    val symbols = able.read(references).get.map { ref =>
       val call = able.read(ref.callAsMaybeVarCall).get
       val definedOn = able.read(ref.definedOn).get
       val referencedOn = able.read(ref.referencedOn).get

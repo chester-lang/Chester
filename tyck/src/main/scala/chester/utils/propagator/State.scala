@@ -14,8 +14,6 @@ trait ProvideCellId {
   def isCId(x: Any): Boolean
 
   sealed trait Cell[T] {
-     def uniqId: CellId[T]
-
     def read: Option[T]
 
     def hasValue: Boolean = read.isDefined
@@ -36,7 +34,7 @@ trait ProvideCellId {
     override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
   }
 
-  case class OnceCell[T](value: Option[T] = None, uniqId: CIdOf[OnceCell[T]] = generate[OnceCell[T]]) extends Cell[T] {
+  case class OnceCell[T](value: Option[T] = None) extends Cell[T] {
     override def read: Option[T] = value
 
     override def fill(newValue: T): OnceCell[T] = {
@@ -45,15 +43,7 @@ trait ProvideCellId {
     }
   }
 
-  object OnceCell {
-    def create[T](value: Option[T] = None)(using state: StateAbility[?]): CellId[T] = {
-      val cell = OnceCell[T](value)
-      state.addCell(cell)
-      cell.uniqId
-    }
-  }
-
-  case class MutableCell[T](value: Option[T], uniqId: CIdOf[MutableCell[T]] = generate[MutableCell[T]]) extends Cell[T] {
+  case class MutableCell[T](value: Option[T]) extends Cell[T] {
     override def read: Option[T] = value
 
     override def fill(newValue: T): MutableCell[T] = {
@@ -61,32 +51,16 @@ trait ProvideCellId {
     }
   }
 
-  case class CollectionCell[T](value: Vector[T] = Vector.empty, uniqId: CIdOf[CollectionCell[T]] = generate[CollectionCell[T]]) extends SeqCell[T] {
+  case class CollectionCell[T](value: Vector[T] = Vector.empty) extends SeqCell[T] {
     override def read: Option[Vector[T]] = Some(value)
 
     override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
-  }
-
-  object CollectionCell {
-    def create[T](using state: StateAbility[?]): SeqId[T] = {
-      val cell = CollectionCell[T]()
-      state.addCell(cell)
-      cell.uniqId
-    }
   }
 
   case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B], uniqId: CIdOf[MappingCell[A, B]] = generate[MappingCell[A, B]]) extends MapCell[A, B] {
     override def read: Option[Map[A, B]] = Some(value)
 
     override def add(key: A, newValue: B): MappingCell[A, B] = copy(value = value + (key -> newValue))
-  }
-
-  object MappingCell {
-    def create[A, B](using state: StateAbility[?]): CellId[Map[A, B]] = {
-      val cell = MappingCell[A, B]()
-      state.addCell(cell)
-      cell.uniqId
-    }
   }
 
   case class LiteralCell[T](value: T, uniqId: CIdOf[LiteralCell[T]] = generate[LiteralCell[T]]) extends Cell[T] {
@@ -104,7 +78,6 @@ trait ProvideCellId {
   }
 
   trait Propagator[Ability] {
-    def uniqId: PIdOf[Propagator[Ability]]
 
     def readingCells: Set[CIdOf[Cell[?]]] = Set.empty
 
@@ -140,7 +113,7 @@ trait ProvideCellId {
       update[T](id, _.add(key, value).asInstanceOf[T])
     }
 
-    def addCell[T <: Cell[?]](cell: T): Unit
+    def addCell[T <: Cell[?]](cell: T): CIdOf[T]
 
     def hasValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasValue)
 
@@ -148,7 +121,7 @@ trait ProvideCellId {
   }
 
   trait StateAbility[Ability] extends CellsStateAbility {
-    def addPropagator(propagator: Propagator[Ability])(using more: Ability): Unit
+    def addPropagator[T<:Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
 
     def tick(using more: Ability): Unit
 
@@ -217,16 +190,19 @@ trait ProvideImmutable extends ProvideCellId {
       }
     }
 
-    override def addCell[T <: Cell[?]](cell: T): Unit = {
-      state = state.copy(cells = state.cells.updated(cell.uniqId, cell))
+    override def addCell[T <: Cell[?]](cell: T): CIdOf[T] = {
+      val id = generate[T]
+      state = state.copy(cells = state.cells.updated(id, cell))
+      id
     }
 
-    override def addPropagator(propagator: Propagator[Ability])(using more: Ability): Unit = {
-      val uniqId = propagator.uniqId
+    override def addPropagator[T<:Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T] = {
+      val uniqId = generateP[T]
       state = state.copy(propagators = state.propagators.updated(uniqId, propagator))
       if (propagator.run(using this, more)) {
         state = state.copy(propagators = state.propagators.removed(uniqId))
       }
+      uniqId
     }
 
     override def tick(using more: Ability): Unit = {
