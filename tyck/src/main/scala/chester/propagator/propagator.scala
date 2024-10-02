@@ -502,15 +502,17 @@ object BaseTycker {
           case expr@LetDefStmt(LetDefType.Def, _, _, _, _, _) => {
             implicit val localCtx: LocalCtx = ctx
             val d = defsMap.apply(expr)
-            expr.ty match {
+            val ty = expr.ty match {
               case Some(tyExpr) => {
-                unify(checkType(tyExpr), d.tyAndVal.ty, expr)
+                val t = checkType(tyExpr)
+                state.addPropagator(Merge(t, d.tyAndVal.ty))
+                t
               }
-              case None => ()
+              case None => d.tyAndVal.ty
             }
-            val wellTyped = check(expr.body.get, d.item.ty, effects)
+            val wellTyped = check(expr.body.get, ty, effects)
             state.addPropagator(Merge(d.tyAndVal.value, wellTyped))
-            Vector(Map2(wellTyped, d.item.ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
+            Vector(Map2(wellTyped, ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
           }
           case expr@LetDefStmt(LetDefType.Let, _, _, _, _, _) => {
             implicit val localCtx: LocalCtx = ctx
