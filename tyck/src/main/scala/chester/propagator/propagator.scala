@@ -488,7 +488,7 @@ object BaseTycker {
             val tyandval = TyAndVal.create()
             val id = UniqId.generate[LocalV]
             val localv = newLocalv(name, tyandval.ty, id)
-            state.add(parameter.references, Reference.create(id, expr))
+            state.add(parameter.references, Reference.create(localv, id, expr))
             DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
         }
         val defsMap = defs.map(info => (info.expr, info)).toMap
@@ -530,7 +530,7 @@ object BaseTycker {
               case None => newType
             }
             val localv = newLocalv(name, ty, id)
-            state.add(parameter.references, Reference.create(id, expr))
+            state.add(parameter.references, Reference.create(localv, id, expr))
             val wellTyped = check(expr.body.get, ty, effects)
             ctx = ctx.add(ContextItem(name, id, localv, ty)).knownAdd(id, TyAndVal(ty, wellTyped))
             Vector(Map2(wellTyped, ty) { (wellTyped, ty) => LetStmtTerm(name, wellTyped, ty) })
@@ -568,18 +568,22 @@ object BaseTycker {
   }
 }
 
-type Ck = Get[TyckProblem, CkState]
+type Ck = Get[TyckProblem, Unit]
 
 given ckToReport(using ck: Ck): Reporter[TyckProblem] = ck.reporter
 
 case class CkState(
-                    symbols: SymbolTable = Set.empty,
+                    symbols: Seq[FinalReference] = Vector.empty[FinalReference]
                   )
+
+object CkState {
+  val Empty: CkState = CkState()
+}
 
 object Cker {
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
-    implicit val get: Ck = new Get(reporter, new MutBox(CkState()))
+    implicit val get: Ck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Ck] = new StateCells[Ck]()
     val ty1: CellId[Term] = ty match {
       case Some(ty) => {
@@ -611,6 +615,12 @@ object Cker {
     implicit val recording: Global = Global(references.uniqId)
     val wellTyped = BaseTycker.check(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
-    TyckResult0(get.getState, Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get), reporter.getReports)
+    val symbols = able.read(references.uniqId).get.map { ref =>
+      val call = able.read(ref.callAsMaybeVarCall).get
+      val definedOn = able.read(ref.definedOn).get
+      val referencedOn = able.read(ref.referencedOn).get
+      FinalReference(call, ref.id, definedOn, referencedOn)
+    }
+    TyckResult0(CkState(symbols), Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get), reporter.getReports)
   }
 }

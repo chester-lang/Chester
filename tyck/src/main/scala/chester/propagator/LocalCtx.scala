@@ -41,14 +41,24 @@ object TyAndVal {
 }
 
 case class Reference(
-                      ref: UniqIdOf[? <: MaybeVarCall],
+                    call: CellId[? <: MaybeVarCall],
+                      id: UniqIdOf[? <: MaybeVarCall],
                       definedOn: CellId[Expr],
                       referencedOn: SeqId[Expr]
-                    )
+                    ) {
+  def callAsMaybeVarCall: CellId[MaybeVarCall] =  call.asInstanceOf[CellId[MaybeVarCall]]
+}
+
+case class FinalReference(
+                         call: MaybeVarCall,
+                         id: UniqIdOf[? <: MaybeVarCall],
+                           definedOn: Expr,
+                           referencedOn: Seq[Expr]
+                         )
 
 object Reference {
-  def create[Ck](ref: UniqIdOf[? <: MaybeVarCall], definedOn: CellIdOr[Expr])(using state: StateAbility[Ck]): Reference = {
-    Reference(ref, state.toId(definedOn), CollectionCell.create[Expr])
+  def create[T  <: MaybeVarCall](call: CellIdOr[T],ref: UniqIdOf[T], definedOn: CellIdOr[Expr])(using state: StateAbility[?]): Reference = {
+    Reference(state.toId(call), ref, state.toId(definedOn), CollectionCell.create[Expr])
   }
 }
 
