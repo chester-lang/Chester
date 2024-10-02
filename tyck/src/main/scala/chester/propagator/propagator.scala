@@ -6,9 +6,9 @@ import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.Name
 import chester.syntax.concrete.*
 import chester.syntax.core.*
-import chester.tyck.{Get, Reporter, SymbolTable, TyckResult, TyckResult0, VectorReporter}
-import chester.utils.propagator.*
+import chester.tyck.*
 import chester.utils.*
+import chester.utils.propagator.*
 
 import scala.language.implicitConversions
 
