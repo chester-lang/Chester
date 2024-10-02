@@ -308,21 +308,25 @@ object BaseTycker {
   }
 
   /** t is rhs, listT is lhs */
-  case class ListOf(t: CellId[Term], listT: CellId[Term], cause: Expr, uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using localCtx: LocalCtx) extends Propagator[Ck] {
-    override val readingCells = Set(t, listT)
-    override val writingCells = Set(t, listT)
-    override val zonkingCells = Set(listT)
+  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr, uniqId: UniqIdOf[ListOf] = UniqId.generate[ListOf])(using  ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
+    override val readingCells = Set(tRhs, listTLhs)
+    override val writingCells = Set(tRhs, listTLhs)
+    override val zonkingCells = Set(listTLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      val t1 = state.read(this.t)
-      val listT1 = state.read(this.listT)
+      val t1 = state.read(this.tRhs)
+      val listT1 = state.read(this.listTLhs)
       (t1, listT1) match {
+        case (_, Some(l)) if !l.isInstanceOf[ListType] => {
+          ck.reporter.apply(TypeMismatch(l, ListType(t1.get), cause))
+          true
+        }
         case (Some(t1), Some(ListType(t2))) => {
           unify(t2, t1, cause)
           true
         }
         case (_, Some(ListType(t2))) => {
-          unify(t2, t, cause)
+          unify(t2, tRhs, cause)
           true
         }
         case (_, _) => false
@@ -330,12 +334,12 @@ object BaseTycker {
     }
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val t1 = state.read(this.t)
-      val listT1 = state.read(this.listT)
-      if (!t1.isDefined) return ZonkResult.Require(Vector(this.t))
+      val t1 = state.read(this.tRhs)
+      val listT1 = state.read(this.listTLhs)
+      if (!t1.isDefined) return ZonkResult.Require(Vector(this.tRhs))
       val ty = t1.get
       assert(listT1.isEmpty)
-      state.fill(this.listT, ListType(ty))
+      state.fill(this.listTLhs, ListType(ty))
       ZonkResult.Done
     }
   }
