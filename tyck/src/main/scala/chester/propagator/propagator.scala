@@ -285,6 +285,9 @@ object BaseTycker {
   /** ty is lhs */
   def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
+      case expr@Identifier(name, meta) => {
+        ???
+      }
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty, meta))
         AbstractIntTerm.from(value)

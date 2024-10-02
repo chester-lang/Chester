@@ -17,6 +17,11 @@ sealed trait Cell[T] extends HasUniqId {
   def fill(newValue: T): Cell[T]
 }
 
+sealed trait SeqCell[T] extends Cell[Seq[T]] {
+  def add(newValue: T): SeqCell[T]
+  override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
+}
+
 case class OnceCell[T](value: Option[T] = None, uniqId: UniqIdOf[OnceCell[T]] = UniqId.generate[OnceCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
@@ -32,6 +37,12 @@ case class MutableCell[T](value: Option[T], uniqId: UniqIdOf[MutableCell[T]] = U
   override def fill(newValue: T): MutableCell[T] = {
     copy(value = Some(newValue))
   }
+}
+
+case class CollectionCell[T](value: Vector[T] = Vector.empty, uniqId: UniqIdOf[CollectionCell[T]] = UniqId.generate[CollectionCell[T]]) extends SeqCell[T] {
+  override def read: Option[Vector[T]] = Some(value)
+
+  override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
 }
 
 case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.generate[LiteralCell[T]]) extends Cell[T] {
