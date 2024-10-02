@@ -63,7 +63,7 @@ trait Propagator[Ability] extends HasUniqId {
 trait CellsStateAbility {
   def readCell[T <: Cell[?]](id: UniqIdOf[T]): Option[T]
 
-  def read[U](id: UniqIdOf[Cell[U]]): Option[U] = readCell[Cell[U]](id).get.read
+  def read[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.read
 
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 

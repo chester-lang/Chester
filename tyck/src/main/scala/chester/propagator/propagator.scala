@@ -330,9 +330,23 @@ object BaseTycker {
           ListTerm(xs)
         }
       }
+      case expr@TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
+        // Check the type annotation expression to get its type
+        val declaredTyTerm = checkType(tyExpr)
+
+        check(innerExpr, declaredTyTerm, effects)
       case expr: Expr => ???
     }
   }
+  def checkType(expr: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  // Create a new type cell representing the kind Typeω (the type of types)
+  val kindType = literal(Typeω : Term)
+  
+  // Create a new effects cell to capture any effects from the type expression
+  val effectsCell = literal(NoEffect)
+  
+  check(expr, kindType, effectsCell)
+}
 }
 
 type Ck = Get[TyckProblem, CkState]
