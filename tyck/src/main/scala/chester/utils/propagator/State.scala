@@ -2,6 +2,7 @@ package chester.utils.propagator
 
 import chester.syntax.core.*
 
+// TODO: maybe distinguish between read and fill to have more sound Scala types and functions. One is +T and one is -T
 type CellId[T] = UniqIdOf[Cell[T]]
 type SeqId[T] = UniqIdOf[SeqCell[T]]
 

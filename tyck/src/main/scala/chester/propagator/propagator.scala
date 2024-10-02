@@ -355,9 +355,9 @@ object BaseTycker {
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
-          case Some(ContextItem(ref, ty2)) => {
-            state.addPropagator(Unify(ty, ty2, expr))
-            ref
+          case Some(c:ContextItem) => {
+            state.addPropagator(Unify(ty, c.ty, expr))
+            c.asTerm
           }
           case None => {
             val problem = UnboundVariable(name, expr)
@@ -413,11 +413,27 @@ object BaseTycker {
 
         check(innerExpr, declaredTyTerm, effects)
       case expr@Block(heads, tail, meta) => {
-        val defs = heads.filter {
-          case  LetDefStmt(LetDefType.Def,_,_,_,_,_) => true
-          case _ => false
-        }.asInstanceOf[Vector[LetDefStmt]]
-        
+        case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
+        val defs = heads.collect {
+          case expr@LetDefStmt(LetDefType.Def,defined,_,_,_,_) =>
+            val name = defined match {
+              // TODO: support other defined patterns
+              case DefinedPattern(PatternBind(name, _)) => name.name
+            }
+            val tyandval = TyAndVal.create()
+            val id = UniqId.generate[LocalV]
+            val localv = Map(tyandval.ty)(LocalV(name, _, id))
+            DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
+        }
+        var ctx = localCtx.knownAdd(defs.map(info=>(info.id, info.tyAndVal)))
+        val stmts: Seq[CellId[StmtTerm]] = heads.flatMapOrdered {
+          case expr@LetDefStmt(LetDefType.Def,_,_,_,_,_) => ???
+          case expr@LetDefStmt(LetDefType.Let,_,_,_,_,_) => ???
+          case expr => {
+            val ty = newType
+            Vector(FlatMap(Vector(check(expr, ty, effects), ty)) { case Vector(wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
+          }
+        }
           ???
       }
       case expr: Expr => {

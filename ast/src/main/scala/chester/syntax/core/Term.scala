@@ -644,10 +644,10 @@ case class LocalVar(id: Name, ty: Term, uniqId: UniqId, meta: OptionTermMeta = N
   override def descent(f: Term => Term): LocalVar = thisOr(copy(ty = f(ty)))
 }
 
-case class LocalV(id: Name, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+case class LocalV(id: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(id.toString)
 
-  override def descent(f: Term => Term): LocalV = this
+  override def descent(f: Term => Term): LocalV = thisOr(copy(ty = f(ty)))
 }
 
 object LocalVar {
@@ -701,8 +701,8 @@ case class DefStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
   }
 }
 
-case class ExprStmtTerm(expr: Term) extends StmtTerm {
-  override def descent(f: Term => Term): StmtTerm = copy(expr = f(expr))
+case class ExprStmtTerm(expr: Term, ty: Term = AnyType0) extends StmtTerm {
+  override def descent(f: Term => Term): StmtTerm = copy(expr = f(expr), ty = f(ty))
   override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
 }
 
