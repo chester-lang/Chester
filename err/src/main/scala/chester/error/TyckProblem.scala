@@ -85,7 +85,7 @@ case class UnifyFailedError(rhs: Term, lhs: Term) extends TyckError {
   override def cause: Term = rhs
 }
 
-case class TypeMismatch(rhs: Term, lhs: Term, cause: Expr) extends TyckError {
+case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unification failed: $rhs is not a subtype of $lhs"
 }
 case class UnsupportedExpressionError(cause: Expr) extends TyckError {

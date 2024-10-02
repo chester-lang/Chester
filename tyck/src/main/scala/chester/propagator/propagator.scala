@@ -249,7 +249,9 @@ object BaseTycker {
       case (ListType(elem1), ListType(elem2)) =>
         unify(elem1, elem2, cause)
 
-      // Structural unification for Union types
+      case (Type(Levelω), Type(LevelFinite(_))) => ()
+
+      // THIS IS INCORRECT, TODO: FIX
       case (Union(types1), Union(types2)) =>
         val minLength = math.min(types1.length, types2.length)
         (types1.take(minLength), types2.take(minLength)).zipped.foreach { (ty1, ty2) =>
@@ -268,6 +270,12 @@ object BaseTycker {
 
   def unify(t1: Term, t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(literal(t1), t2, cause))
+  }
+  def unify(t1: CellId[Term], t2: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
+    state.addPropagator(Unify(t1, literal(t2), cause))
+  }
+  def unify(t1: CellId[Term], t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
+    state.addPropagator(Unify(t1, t2, cause))
   }
 
   /** t is rhs, listT is lhs */
@@ -363,6 +371,8 @@ object BaseTycker {
       case expr@TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
         // Check the type annotation expression to get its type
         val declaredTyTerm = checkType(tyExpr)
+        
+        unify(ty, declaredTyTerm, expr)
 
         check(innerExpr, declaredTyTerm, effects)
       case expr: Expr => ???
