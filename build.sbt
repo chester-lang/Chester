@@ -99,11 +99,11 @@ val baseDeps = Seq(
     "com.lihaoyi" %%% "upickle" % "4.0.2",
     "com.lihaoyi" %%% "fansi" % "0.5.0",
     "com.lihaoyi" %%% "fastparse" % "3.1.1",
-    "com.lihaoyi" %%% "scalatags" % "0.13.1",
-    "com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
-    "io.getkyo" %%% "kyo-prelude" % "0.12.2",
-    "io.getkyo" %%% "kyo-data" % "0.12.2",
-    "io.getkyo" %%% "kyo-tag" % "0.12.2",
+    //"com.lihaoyi" %%% "scalatags" % "0.13.1",
+    //"com.github.rssh" %%% "dotty-cps-async" % "0.9.22",
+    //"io.getkyo" %%% "kyo-prelude" % "0.12.2",
+    //"io.getkyo" %%% "kyo-data" % "0.12.2",
+    //"io.getkyo" %%% "kyo-tag" % "0.12.2",
   ),
 )
 
@@ -282,7 +282,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
       "org.scala-js" %% "scalajs-stubs" % "1.1.0",
     ),
     libraryDependencies ++= Seq(
-      "it.unimi.dsi" % "fastutil" % "8.5.14",
+      //"it.unimi.dsi" % "fastutil" % "8.5.14",
     )
   )
   .nativeSettings(
