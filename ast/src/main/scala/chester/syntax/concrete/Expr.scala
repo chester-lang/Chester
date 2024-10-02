@@ -250,7 +250,7 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Tuple = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms)
 }
 
 case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
@@ -260,7 +260,7 @@ case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Op
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): DefTelescope = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(args.map(_.toDoc) *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(args.map(_.toDoc) )
 }
 
 object DefTelescope {
@@ -356,7 +356,7 @@ case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends 
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): ListExpr = copy(meta = updater(meta))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ", ")(terms*)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("[", "]", ", ")(terms)
 }
 
 case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends Expr {
@@ -416,7 +416,7 @@ case class ObjectExpr(clauses: Vector[ObjectClause], meta: Option[ExprMeta] = No
     clauses.map {
       case ObjectExprClause(key, value) => key.toDoc <> Doc.text("=") <> value.toDoc
       case ObjectExprClauseOnValue(key, value) => key.toDoc <> Doc.text("=>") <> value.toDoc
-    } *
+    }
   )
 }
 
@@ -446,7 +446,7 @@ case class DesaltMatching(clauses: Vector[DesaltCaseClause], meta: Option[ExprMe
   override def descent(operator: Expr => Expr): Expr = thisOr(DesaltMatching(clauses.map(_.descent(operator)), meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("{", "}", ";")(
-    clauses.map(_.toDoc) *
+    clauses.map(_.toDoc)
   )
 }
 

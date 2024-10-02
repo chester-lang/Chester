@@ -162,7 +162,7 @@ sealed trait Term extends ToDoc derives ReadWriter {
 }
 
 case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms )
 
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
 }
@@ -177,7 +177,7 @@ sealed trait Sort extends Term derives ReadWriter {
 }
 
 case class Type(level: Term) extends Sort with Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(Vector(level))
 
   override def descent(f: Term => Term): Term = thisOr(Type(f(level)))
 }
@@ -217,14 +217,14 @@ val Typeω = Type(Levelω)
 case class Prop(level: Term) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(Prop(f(level)))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(Vector(level))
 }
 
 // fibrant types
 case class FType(level: Term) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(FType(f(level)))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("FType" <> Docs.`(`, Docs.`)`)(level)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("FType" <> Docs.`(`, Docs.`)`)(Vector(level))
 }
 
 sealed trait LiteralTerm extends Term derives ReadWriter
@@ -491,7 +491,7 @@ case class ObjectClauseValueTerm(key: Term, value: Term)derives ReadWriter {
 
 case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc) *)
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc))
 
   override def descent(f: Term => Term): ObjectTerm = thisOr(copy(clauses = clauses.map(_.descent(f))))
 }
@@ -502,7 +502,7 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
   override def descent(f: Term => Term): ObjectType = thisOr(copy(fieldTypes = fieldTypes.map(_.descent(f))))
 
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc) *)
+    Doc.wrapperlist("Object" </> Docs.`{`, Docs.`}`, ",")(fieldTypes.map(_.toDoc) )
 }
 
 sealed trait Builtin extends Term derives ReadWriter
@@ -524,7 +524,7 @@ case class ListType(ty: Term) extends Constructed with TypeTerm {
 case class Union(xs: NonEmptyVector[Term]) extends TypeTerm {
   override def descent(f: Term => Term): Union = thisOr(copy(xs = xs.map(f)))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs )
 }
 
 
@@ -550,7 +550,7 @@ object Union {
 case class Intersection(xs: NonEmptyVector[Term]) extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): Intersection = thisOr(copy(xs = xs.map(f)))
 
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs *)
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs )
 }
 
 object Intersection {
@@ -566,42 +566,18 @@ object Intersection {
 }
 
 /** Effect needs to have reasonable equals and hashcode for simple comparison, whereas they are not requirements for other Terms */
-sealed trait Effect extends ToDoc derives ReadWriter {
+sealed trait Effect extends Term derives ReadWriter {
   def name: String
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name)
+  override def descent(f: Term => Term): Effect = this
 }
 
-implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[Effect, Vector[LocalV]]].bimap(_.effects, Effects(_))
+implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[LocalV, Term]].bimap(_.effects, Effects(_))
 
-case class Effects private[syntax](effects: Map[Effect, Vector[LocalV]]) extends AnyVal with ToDoc {
-  override def toDoc(implicit options: PrettierOptions): Doc =
-    effects.keys.map(_.toDoc).reduceLeftOption((a, b) => a <> Docs.`,` <+> b).getOrElse(Doc.empty)
+case class Effects private[syntax](effects: Map[LocalV, Term]) extends AnyVal with ToDoc {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(effects.map { case (k, v) => k.toDoc <+> Docs.`:` <+> v.toDoc })
 
-  def descentEffects(f: Effect => Effect): Effects =
-    Effects(effects.map { case (effect, names) => f(effect) -> names })
-
-  def descent(f: Term => Term): Effects = this // TODO
-
-  def add(effect: Effect, name: LocalV): Effects =
-    Effects(effects.updated(effect, effects.getOrElse(effect, Vector.empty) :+ name))
-
-  def lookup(effect: Effect): Option[Vector[LocalV]] = effects.get(effect)
-
-  def lookupPair(effect: Effect): Option[(Effect, Vector[LocalV])] = effects.get(effect).map(effect -> _)
-
-  def mapOnVars(f: (Effect, Vector[LocalV]) => Vector[LocalV]): Effects =
-    Effects(effects.map { case (effect, names) => effect -> f(effect, names) })
-
-  def getEffects: Seq[Effect] = effects.keys.toSeq
-
-  def contains(effect: Effect): Boolean = effects.contains(effect)
-
-  def containAll(effects: Seq[Effect]): Boolean = effects.forall(this.contains)
-
-  def merge(other: Effects): Effects =
-    Effects(other.effects.foldLeft(effects) { case (acc, (effect, names)) =>
-      acc.updated(effect, acc.getOrElse(effect, Vector.empty) ++ names)
-    })
+  def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => effect -> f(names) })
 
   def isEmpty: Boolean = (effects eq NoEffect.effects) || effects.isEmpty
 
@@ -611,11 +587,6 @@ case class Effects private[syntax](effects: Map[Effect, Vector[LocalV]]) extends
 object Effects {
   val Empty: Effects = Effects(HashMap.empty)
 
-  def merge(xs: NonEmptySeq[Effects]): Effects = {
-    xs.reduce(_.merge(_))
-  }
-
-  def unchecked(xs: Map[Effect, Vector[LocalV]]): Effects = Effects(xs)
 }
 
 val NoEffect = Effects.Empty
@@ -699,7 +670,7 @@ case class TupleType(types: Vector[Term]) extends TypeTerm {
   override def descent(f: Term => Term): TupleType = thisOr(copy(types = types.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    Doc.wrapperlist("Tuple" <> Docs.`[`, Docs.`]`, ",")(types *)
+    Doc.wrapperlist("Tuple" <> Docs.`[`, Docs.`]`, ",")(types )
   }
 }
 
@@ -707,7 +678,7 @@ case class TupleTerm(values: Vector[Term]) extends Term {
   override def descent(f: Term => Term): TupleTerm = thisOr(copy(values = values.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    Doc.wrapperlist(Docs.`(`, Docs.`)`, ",")(values *)
+    Doc.wrapperlist(Docs.`(`, Docs.`)`, ",")(values )
   }
 }
 
@@ -717,7 +688,7 @@ case class BlockTerm(stmts: Vector[StmtTerm], value: Term) extends Term {
   }, value = f(value)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    Doc.wrapperlist(Docs.`{`, Docs.`}`, ";")((stmts.map(_.toDoc) :+ value.toDoc) *)
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, ";")((stmts.map(_.toDoc) :+ value.toDoc) )
   }
 }
 

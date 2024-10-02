@@ -58,7 +58,7 @@ def render(doc: ToDoc)(using options: PrettierOptions, printer: DocPrinter): pri
 def render(doc: ToDoc, w: Width)(using options: PrettierOptions, printer: DocPrinter): printer.Layout = render0(doc.toDoc, w)
 
 // TODO: this is broken, please fix
-def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: ToDoc*)(using options: PrettierOptions): Doc = group {
+def wrapperlist(begin: ToDoc, end: ToDoc, sep: ToDoc = ",")(docs: Iterable[ToDoc])(using options: PrettierOptions): Doc = group {
   docs.toList match {
     case Nil =>
       begin.toDoc <> end.toDoc
