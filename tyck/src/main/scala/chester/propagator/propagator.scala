@@ -475,8 +475,9 @@ object BaseTycker {
       case expr@Block(heads, tail, meta) => {
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
-        def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV] = UniqId.generate[LocalV]): CellId[LocalV] = {
-          Map(ty)(LocalV(name, _, id))
+        def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta]): CellId[LocalV] = {
+          val m = convertMeta(meta)
+          Map(ty)(LocalV(name, _, id, m))
         }
 
         val defs = heads.collect {
@@ -487,7 +488,7 @@ object BaseTycker {
             }
             val tyandval = TyAndVal.create()
             val id = UniqId.generate[LocalV]
-            val localv = newLocalv(name, tyandval.ty, id)
+            val localv = newLocalv(name, tyandval.ty, id, meta)
             state.add(parameter.references, Reference.create(localv, id, expr))
             DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
         }
@@ -529,7 +530,7 @@ object BaseTycker {
               case Some(tyExpr) => checkType(tyExpr)
               case None => newType
             }
-            val localv = newLocalv(name, ty, id)
+            val localv = newLocalv(name, ty, id, meta)
             state.add(parameter.references, Reference.create(localv, id, expr))
             val wellTyped = check(expr.body.get, ty, effects)
             ctx = ctx.add(ContextItem(name, id, localv, ty)).knownAdd(id, TyAndVal(ty, wellTyped))
