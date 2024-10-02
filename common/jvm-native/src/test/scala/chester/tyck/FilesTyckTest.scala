@@ -1,6 +1,7 @@
 package chester.tyck
 
 import chester.parser.*
+import chester.propagator.Cker
 import chester.syntax.concrete.*
 import chester.utils.doc.*
 import chester.utils.ponyfill.Files
@@ -22,7 +23,7 @@ class FilesTyckTest extends FunSuite {
 
       Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
-          ExprTycker.synthesize(parsedBlock) match {
+          Cker.check(parsedBlock) match {
             case TyckResult.Success(result, status, warnings) =>
               val actual = StringPrinter.render(result.wellTyped)(using PrettierOptions.Default)
 

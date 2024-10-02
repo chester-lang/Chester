@@ -438,6 +438,10 @@ object BaseTycker {
         state.addPropagator(LiteralType(expr, ty))
         SymbolTerm(value)
       }
+      case expr@UnitExpr(meta) => {
+        unify(ty, UnitType, expr)
+        UnitTerm
+      }
       case expr@ListExpr(terms, meta) => {
         val t = newType
         // Relate the list type 'ty' to 'ListType(t)'
