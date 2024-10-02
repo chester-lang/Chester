@@ -366,7 +366,7 @@ case class CkState(
                   )
 
 object Cker {
-  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None, localCtx: LocalCtx = LocalCtx.Empty): TyckResult[CkState, Judge] = {
+  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Ck = new Get(reporter, new MutBox(CkState()))
     implicit val able: StateAbility[Ck] = new StateCells[Ck]()
@@ -394,7 +394,7 @@ object Cker {
       }
     }
     able.addPropagator(BaseTycker.IsEffects(effects1))
-    implicit val ctx: LocalCtx = LocalCtx.Empty
+    implicit val ctx: LocalCtx = LocalCtx.default
     val references = CollectionCell[Reference]()
     able.addCell(references)
     implicit val recording: Global = Global(references.uniqId)

@@ -659,6 +659,11 @@ case class ToplevelVarCall(module: QualifiedIDString, id: Name, ty: Term, uniqId
 
   override def descent(f: Term => Term): ToplevelVarCall = thisOr(copy(ty = f(ty)))
 }
+case class ToplevelV(module: QualifiedIDString, id: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + id)
+
+  override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
+}
 
 case class ErrorTerm(problem: Problem) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = problem.toDoc
