@@ -5,7 +5,7 @@ import chester.syntax.core.*
 type CellId[T] = UniqIdOf[Cell[T]]
 type SeqId[T] = UniqIdOf[SeqCell[T]]
 
-type UniqOfOr[T] = CellId[T] | T
+type CellIdOr[T] = CellId[T] | T
 
 sealed trait Cell[T] extends HasUniqId {
   override def uniqId: UniqIdOf[Cell[T]]
@@ -20,6 +20,7 @@ sealed trait Cell[T] extends HasUniqId {
 
 sealed trait SeqCell[T] extends Cell[Seq[T]] {
   def add(newValue: T): SeqCell[T]
+
   override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
 }
 
@@ -44,6 +45,14 @@ case class CollectionCell[T](value: Vector[T] = Vector.empty, uniqId: UniqIdOf[C
   override def read: Option[Vector[T]] = Some(value)
 
   override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
+}
+
+object CollectionCell {
+  def create[T](using state: StateAbility[?]): SeqId[T] = {
+    val cell = CollectionCell[T]()
+    state.addCell(cell)
+    cell.uniqId
+  }
 }
 
 case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.generate[LiteralCell[T]]) extends Cell[T] {
@@ -85,6 +94,8 @@ trait CellsStateAbility {
 
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
+  def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit
+
   def addCell[T <: Cell[?]](cell: T): Unit
 
   def hasValue[T <: Cell[?]](id: UniqIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasValue)
@@ -115,11 +126,11 @@ trait StateAbility[Ability] extends CellsStateAbility {
   }
 
   def readingZonkings(cells: Vector[UniqIdOf[Cell[?]]]): Vector[Propagator[Ability]]
-  
+
   /** make a best guess for those cells */
   def naiveZonk(cells: Vector[UniqIdOf[Cell[?]]])(using more: Ability): Unit
 
-  def toId[T](x: UniqOfOr[T]): UniqIdOf[Cell[T]] = x match {
+  def toId[T](x: CellIdOr[T]): UniqIdOf[Cell[T]] = x match {
     case x: UniqId => x.asInstanceOf[UniqIdOf[Cell[T]]]
     case x: T => {
       val cell = LiteralCell[T](x)
@@ -142,6 +153,10 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
 
   override def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit = {
     update[T](id, _.fill(f).asInstanceOf[T])
+  }
+
+  override def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit = {
+    update[T](id, _.add(f).asInstanceOf[T])
   }
 
   private def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
@@ -181,7 +196,7 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
         }
     }
   }
-  
+
   override def readingZonkings(cells: Vector[UniqIdOf[Cell[?]]]): Vector[Propagator[Ability]] = {
     state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cells.contains)).values.toVector
   }
@@ -199,19 +214,19 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       }
       val xs = state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains))
       xs.foreach {
-          case (pid, propagator) =>
-            tickAll
-            if (state.propagators.contains(pid)) {
-              val result = propagator.naiveZonk(cells)(using this, more)
-              result match {
-                case ZonkResult.Done =>
-                  state = state.copy(propagators = state.propagators.removed(pid))
-                case ZonkResult.Require(needed) =>
-                  cellsNeeded = cellsNeeded ++ needed
-                case ZonkResult.NotYet =>
-              }
+        case (pid, propagator) =>
+          tickAll
+          if (state.propagators.contains(pid)) {
+            val result = propagator.naiveZonk(cells)(using this, more)
+            result match {
+              case ZonkResult.Done =>
+                state = state.copy(propagators = state.propagators.removed(pid))
+              case ZonkResult.Require(needed) =>
+                cellsNeeded = cellsNeeded ++ needed
+              case ZonkResult.NotYet =>
             }
-        }
+          }
+      }
       tickAll
       if (cellsToZonk.isEmpty) return
     }

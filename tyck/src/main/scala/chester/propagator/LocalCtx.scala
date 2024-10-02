@@ -13,10 +13,16 @@ case class ContextItem(
 }
 
 case class Reference(
-                    ref: UniqIdOf[? <: MaybeVarCall],
-                    definedOn: CellId[Expr],
-                    referencedOn: SeqId[Expr]
+                      ref: UniqIdOf[? <: MaybeVarCall],
+                      definedOn: CellId[Expr],
+                      referencedOn: SeqId[Expr]
                     )
+
+object Reference {
+  def create[Ck](ref: UniqIdOf[? <: MaybeVarCall], definedOn: CellIdOr[Expr])(using state: StateAbility[Ck]): Reference = {
+    Reference(ref, state.toId(definedOn), CollectionCell.create[Expr])
+  }
+}
 
 case class LocalCtx(
                      map: Map[Name, ContextItem] = Map.empty,
