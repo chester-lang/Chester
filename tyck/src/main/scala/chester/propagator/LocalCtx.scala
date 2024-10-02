@@ -2,7 +2,7 @@ package chester.propagator
 
 import chester.syntax.core.*
 import chester.syntax.accociativity.OperatorsContext
-import chester.syntax.concrete.ResolvingModules
+import chester.syntax.concrete.{Expr, ResolvingModules}
 import chester.syntax.Name
 import chester.utils.propagator.*
 
@@ -11,6 +11,12 @@ case class ContextItem(
                         ty: CellId[Term]
                       ) {
 }
+
+case class Reference(
+                    ref: UniqIdOf[? <: MaybeVarCall],
+                    definedOn: CellId[Expr],
+                    referencedOn: SeqId[Expr]
+                    )
 
 case class LocalCtx(
                      map: Map[Name, ContextItem] = Map.empty,
@@ -21,6 +27,8 @@ case class LocalCtx(
   def get(id: Name): Option[ContextItem] =
     map.get(id)
 }
+
+case class Global(references: SeqId[Reference])
 
 object LocalCtx {
   val Empty: LocalCtx = LocalCtx()

@@ -3,6 +3,7 @@ package chester.utils.propagator
 import chester.syntax.core.*
 
 type CellId[T] = UniqIdOf[Cell[T]]
+type SeqId[T] = UniqIdOf[SeqCell[T]]
 
 type UniqOfOr[T] = CellId[T] | T
 

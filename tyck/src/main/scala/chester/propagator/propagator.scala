@@ -283,7 +283,7 @@ object BaseTycker {
   // TODO: add something for implicit conversion
 
   /** ty is lhs */
-  def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
+  def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
         ???
@@ -335,7 +335,7 @@ object BaseTycker {
       case expr: Expr => ???
     }
   }
-  def checkType(expr: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
   // Create a new type cell representing the kind Typeω (the type of types)
   val kindType = literal(Typeω : Term)
   
@@ -385,6 +385,9 @@ object Cker {
     }
     able.addPropagator(BaseTycker.IsEffects(effects1))
     implicit val ctx: LocalCtx = LocalCtx.Empty
+    val references = CollectionCell[Reference]()
+    able.addCell(references)
+    implicit val recording: Global = Global(references.uniqId)
     val wellTyped = BaseTycker.check(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     TyckResult0(get.getState, Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get), reporter.getReports)
