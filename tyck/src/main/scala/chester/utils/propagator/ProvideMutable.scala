@@ -87,8 +87,8 @@ trait ProvideMutable extends ProvideImpl {
           require(c.uniqId == uniqId)
           for(p <- c.zonkingPropagators) {
             require(p.uniqId == uniqId)
+            tickAll
             if(c.noValue && p.alive) {
-              tickAll
               p.store.asInstanceOf[Propagator[Ability]].naiveZonk(cellsToZonk)(using this, more) match {
                 case ZonkResult.Done =>
                   p.alive = false
