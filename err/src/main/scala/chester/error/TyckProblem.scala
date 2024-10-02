@@ -263,3 +263,7 @@ case class NotImplemented(cause: Expr) extends TyckError {
 case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = d"Type mismatch: expected $lhs but got $rhs"
 }
+
+case class DuplicateDefinition(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Duplicate definition"
+}

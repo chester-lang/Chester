@@ -71,10 +71,10 @@ case class LocalCtx(
     }
     copy(knownMap = newMap)
   }
-  def add(seq: Seq[(Name, ContextItem)]): LocalCtx = {
+  def add(seq: Seq[ContextItem]): LocalCtx = {
     val newMap = seq.foldLeft(map) { (acc, item) =>
-      assert(!acc.contains(item._1), s"Duplicate key ${item._1}")
-      acc + item
+      assert(!acc.contains(item.name), s"Duplicate key ${item.name}")
+      acc + (item.name -> item)
     }
     copy(map = newMap)
   }

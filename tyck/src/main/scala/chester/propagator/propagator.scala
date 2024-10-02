@@ -251,6 +251,13 @@ object BaseTycker {
     cell.uniqId
   }
 
+  def Map2[A,B,C](x: CellId[A], y: CellId[B])(f: (A,B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
+    val cell = OnceCell[C]()
+    state.addCell(cell)
+    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]],y.asInstanceOf[CellId[Any]]), (xs: Vector[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell.uniqId))
+    cell.uniqId
+  }
+
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
     val lhsResolved = lhs match {
@@ -425,13 +432,26 @@ object BaseTycker {
             val localv = Map(tyandval.ty)(LocalV(name, _, id))
             DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
         }
-        var ctx = localCtx.knownAdd(defs.map(info=>(info.id, info.tyAndVal)))
+        val defsMap = defs.map(info=>(info.expr, info)).toMap
+        var ctx = localCtx.knownAdd(defs.map(info=>(info.id, info.tyAndVal))).add(defs.map(_.item))
+        val names = heads.collect {
+          case expr: LetDefStmt => expr.defined match {
+            case DefinedPattern(PatternBind(name, _)) => name
+          }
+        }
+        if(names.hasDuplication) {
+          val problem = DuplicateDefinition(expr)
+          ck.reporter.apply(problem)
+        }
         val stmts: Seq[CellId[StmtTerm]] = heads.flatMapOrdered {
-          case expr@LetDefStmt(LetDefType.Def,_,_,_,_,_) => ???
+          case expr@LetDefStmt(LetDefType.Def,_,_,_,_,_) => {
+            val d = defsMap.apply(expr)
+            Vector(Map2(check(expr.body.get,d.item.ty, effects),d.item.ty)((wellTyped, ty) => DefStmtTerm(d.item.name, wellTyped, ty)))
+          }
           case expr@LetDefStmt(LetDefType.Let,_,_,_,_,_) => ???
           case expr => {
             val ty = newType
-            Vector(FlatMap(Vector(check(expr, ty, effects), ty)) { case Vector(wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
+            Vector(Map2(check(expr, ty, effects), ty) { (wellTyped, ty) => ExprStmtTerm(wellTyped, ty) })
           }
         }
           ???
