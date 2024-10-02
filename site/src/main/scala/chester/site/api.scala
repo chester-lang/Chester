@@ -5,7 +5,7 @@ import chester.js.*
 import chester.doc.const.LightMode
 import chester.parser.{FileNameAndContent, Parser}
 import chester.repl.REPLEngine
-import chester.tyck.{ExprTycker, TyckResult}
+import chester.tyck.{TyckResult}
 import chester.utils.doc.*
 import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.env.{BrowserEnv, Environment}
