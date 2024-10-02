@@ -167,7 +167,7 @@ object BaseTycker {
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      if(state.readingZonkings(Vector(ty)).exists{(x: Propagator[Ck]) => !x.isInstanceOf[IsType]}) return ZonkResult.NotYet
+      if (state.readingZonkings(Vector(ty)).exists { (x: Propagator[Ck]) => !x.isInstanceOf[IsType] }) return ZonkResult.NotYet
       state.fill(ty, AnyType0)
       ZonkResult.Done
     }
@@ -330,7 +330,7 @@ object BaseTycker {
         val elemTypes = termResults.map(_._2).toVector
 
         // Ensure that 't' is the union of the element types
-        if(elemTypes.nonEmpty) state.addPropagator(UnionOf(t, elemTypes, expr))
+        if (elemTypes.nonEmpty) state.addPropagator(UnionOf(t, elemTypes, expr))
 
         // Build the ListTerm with the well-typed terms
         FlatMap(termResults.map(_._1)) { xs =>
@@ -345,15 +345,16 @@ object BaseTycker {
       case expr: Expr => ???
     }
   }
+
   def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-  // Create a new type cell representing the kind Typeω (the type of types)
-  val kindType = literal(Typeω : Term)
-  
-  // Create a new effects cell to capture any effects from the type expression
-  val effectsCell = literal(NoEffect)
-  
-  check(expr, kindType, effectsCell)
-}
+    // Create a new type cell representing the kind Typeω (the type of types)
+    val kindType = literal(Typeω: Term)
+
+    // Create a new effects cell to capture any effects from the type expression
+    val effectsCell = literal(NoEffect)
+
+    check(expr, kindType, effectsCell)
+  }
 }
 
 type Ck = Get[TyckProblem, CkState]
