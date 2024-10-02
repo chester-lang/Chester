@@ -494,12 +494,12 @@ trait ProvideElobarator extends ProvideCtx with CommonPropagator[Ck] {
 
 }
 
-trait DefaultImpl extends ProvideElobarator with ProvideImmutable {
+trait DefaultImpl extends ProvideElobarator with ProvideImpl {
 
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Ck = new Get(reporter, new MutBox(()))
-    implicit val able: StateAbility[Ck] = new StateCells[Ck]()
+    implicit val able: StateAbility[Ck] = stateAbilityImpl
     val ty1: CellId[Term] = ty match {
       case Some(ty) => {
         val cell = literal[Term](ty)
@@ -537,7 +537,7 @@ trait DefaultImpl extends ProvideElobarator with ProvideImmutable {
   }
 }
 
-object Cker extends DefaultImpl {
+object Cker extends DefaultImpl with ProvideMutable {
 }
 
-export Cker.*
+export Cker.{check, CkState, FinalReference}

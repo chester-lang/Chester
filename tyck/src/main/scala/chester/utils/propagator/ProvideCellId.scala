@@ -8,11 +8,13 @@ trait ProvideCellId {
   type SeqId[T] = CIdOf[SeqCell[T]]
   type CellIdOr[T] = CellId[T] | T
   def isCId(x: Any): Boolean
+  def assumeCId(x: Any): CIdOf[Cell[?]] = x.asInstanceOf[CIdOf[Cell[?]]]
 
   sealed trait Cell[T] {
     def read: Option[T]
 
     def hasValue: Boolean = read.isDefined
+    def noValue: Boolean = !hasValue
 
     /** fill an unstable cell */
     def fill(newValue: T): Cell[T]
@@ -137,7 +139,7 @@ trait ProvideCellId {
       case x if isCId(x) => x.asInstanceOf[CIdOf[Cell[T]]]
       case x: T => {
         val cell = addCell(LiteralCell[T](x))
-        cell
+        cell.asInstanceOf[CIdOf[Cell[T]]]
       }
     }
   }

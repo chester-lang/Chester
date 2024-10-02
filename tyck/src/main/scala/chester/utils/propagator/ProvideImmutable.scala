@@ -2,7 +2,7 @@ package chester.utils.propagator
 
 import chester.syntax.core
 
-trait ProvideImmutable extends ProvideCellId {
+trait ProvideImmutable extends ProvideImpl {
   type CIdOf[+T <:Cell[?]] = core.UniqIdOf[T]
   type PIdOf[+T<:Propagator[?]] = core.UniqIdOf[T]
   override def isCId(x: Any): Boolean = x.isInstanceOf[core.UniqId]
@@ -16,6 +16,8 @@ trait ProvideImmutable extends ProvideCellId {
   case class State[Ability](cells: CellsState = CellsStateEmpty, propagators: PropagatorsState[Ability] = PropagatorsStateEmpty[Ability], didChanged: Vector[CIdOf[Cell[?]]] = Vector.empty) {
     def stable: Boolean = didChanged.isEmpty
   }
+
+  override def stateAbilityImpl[Ability]: StateAbility[Ability] = StateCells[Ability]()
 
   class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends StateAbility[Ability] {
     override def stable: Boolean = state.stable
