@@ -412,7 +412,11 @@ object BaseTycker {
         unify(ty, declaredTyTerm, expr)
 
         check(innerExpr, declaredTyTerm, effects)
-      case expr: Expr => ???
+      case expr: Expr => {
+        val problem = NotImplemented(expr)
+        ck.reporter.apply(problem)
+        ErrorTerm(problem)
+      }
     }
   }
 

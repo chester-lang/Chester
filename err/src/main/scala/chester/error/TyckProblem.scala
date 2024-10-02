@@ -85,9 +85,6 @@ case class UnifyFailedError(rhs: Term, lhs: Term) extends TyckError {
   override def cause: Term = rhs
 }
 
-case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unification failed: $rhs is not a subtype of $lhs"
-}
 case class UnsupportedExpressionError(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported expression type ${cause.getClass.getName}"
 }
@@ -257,4 +254,12 @@ case class UnconnectedPrecedenceGroups(group1: PrecedenceGroup, group2: Preceden
 
 case class UnboundVariable(name: Name, cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unbound variable $name"
+}
+
+case class NotImplemented(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Not implemented"
+}
+
+case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = d"Type mismatch: expected $lhs but got $rhs"
 }

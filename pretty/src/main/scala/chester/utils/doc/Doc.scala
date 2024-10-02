@@ -23,6 +23,10 @@ sealed trait Doc extends ToDoc derives ReadWriter {
   def descent(f: Doc => Doc): Doc = this
 
   def styled(style: Style): Doc = descent(_.styled(style))
+
+  override def toString: String = {
+    StringPrinter.render(this)(using PrettierOptions.Default)
+  }
 }
 
 implicit inline def textFrom(inline s: String): Doc = text(s)
