@@ -74,8 +74,8 @@ trait ProvideCtx extends ProvideCellId {
   }
 
   case class LocalCtx(
-                       map: Map[Name, ContextItem] = Map.empty,
-                       knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty,
+                       map: Map[Name, ContextItem] = Map.empty[Name, ContextItem],
+                       knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
                        imports: Imports = Imports.Empty,
                        modules: ResolvingModules = ResolvingModules.Empty,
                        operators: OperatorsContext = OperatorsContext.Default

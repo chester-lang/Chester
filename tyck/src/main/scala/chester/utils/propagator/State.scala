@@ -1,12 +1,11 @@
 package chester.utils.propagator
 
 import chester.syntax.core
+import cats.implicits.*
 
 // TODO: maybe distinguish between read and fill to have more sound Scala types and functions. One is +T and one is -T
 trait ProvideCellId {
   type CIdOf[+T <:Cell[?]]
-  def generate[T <:Cell[?]]: CIdOf[T]
-  def generateP[T <:Propagator[?]]: PIdOf[T]
   type PIdOf[+T<:Propagator[?]]
   type CellId[T] = CIdOf[Cell[T]]
   type SeqId[T] = CIdOf[SeqCell[T]]
@@ -57,13 +56,13 @@ trait ProvideCellId {
     override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
   }
 
-  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B], uniqId: CIdOf[MappingCell[A, B]] = generate[MappingCell[A, B]]) extends MapCell[A, B] {
+  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B]) extends MapCell[A, B] {
     override def read: Option[Map[A, B]] = Some(value)
 
     override def add(key: A, newValue: B): MappingCell[A, B] = copy(value = value + (key -> newValue))
   }
 
-  case class LiteralCell[T](value: T, uniqId: CIdOf[LiteralCell[T]] = generate[LiteralCell[T]]) extends Cell[T] {
+  case class LiteralCell[T](value: T) extends Cell[T] {
     override def read: Option[T] = Some(value)
 
     override def hasValue: Boolean = true
@@ -72,9 +71,8 @@ trait ProvideCellId {
   }
 
   def literal[T](t: T)(using state: StateAbility[?]): CellId[T] = {
-    val cell = LiteralCell[T](t)
-    state.addCell(cell)
-    cell.uniqId
+    val cell = state.addCell(LiteralCell[T](t))
+    cell
   }
 
   trait Propagator[Ability] {
@@ -141,9 +139,8 @@ trait ProvideCellId {
     def toId[T](x: CellIdOr[T]): CIdOf[Cell[T]] = x match {
       case x if isCId(x) => x.asInstanceOf[CIdOf[Cell[T]]]
       case x: T => {
-        val cell = LiteralCell[T](x)
-        addCell(cell)
-        cell.uniqId
+        val cell = addCell(LiteralCell[T](x))
+        cell
       }
     }
   }
@@ -156,11 +153,101 @@ trait ProvideCellId {
 
 }
 
+trait CommonPropagator[Ck] extends ProvideCellId {
+
+  case class Merge[T](a: CellId[T], b: CellId[T]) extends Propagator[Ck] {
+    override val readingCells = Set(a, b)
+    override val writingCells = Set(a, b)
+    override val zonkingCells = Set(a, b)
+
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
+      val aVal = state.read(a)
+      val bVal = state.read(b)
+      if (aVal.isDefined && bVal.isDefined) {
+        if (aVal.get == bVal.get) return true
+        throw new IllegalStateException("Merge propagator should not be used if the values are different")
+        return true
+      }
+      if (aVal.isDefined) {
+        state.fill(b, aVal.get)
+        return true
+      }
+      if (bVal.isDefined) {
+        state.fill(a, bVal.get)
+        return true
+      }
+      false
+    }
+
+    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      val aVal = state.read(a)
+      val bVal = state.read(b)
+      if (aVal.isDefined && bVal.isDefined) {
+        if (aVal.get == bVal.get) return ZonkResult.Done
+        throw new IllegalStateException("Merge propagator should not be used if the values are different")
+        return ZonkResult.Done
+      }
+      if (aVal.isDefined) {
+        state.fill(b, aVal.get)
+        return ZonkResult.Done
+      }
+      if (bVal.isDefined) {
+        state.fill(a, bVal.get)
+        return ZonkResult.Done
+      }
+      ZonkResult.NotYet
+    }
+  }
+
+  case class FlatMaping[T, U](xs: Seq[CellId[T]], f: Seq[T] => U, result: CellId[U]) extends Propagator[Ck] {
+    override val readingCells = xs.toSet
+    override val writingCells = Set(result)
+    override val zonkingCells = Set(result)
+
+    override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
+      xs.traverse(state.read(_)).map(f) match {
+        case Some(result) => {
+          state.fill(this.result, result)
+          true
+        }
+        case None => false
+      }
+    }
+
+    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
+      val needed = xs.filter(state.noValue(_))
+      if (needed.nonEmpty) return ZonkResult.Require(needed)
+      val done = run
+      require(done)
+      ZonkResult.Done
+    }
+  }
+
+  def FlatMap[T, U](xs: Seq[CellId[T]])(f: Seq[T] => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
+    val cell = state.addCell(OnceCell[U]())
+    state.addPropagator(FlatMaping(xs, f, cell))
+    cell
+  }
+
+  def Map1[T, U](x: CellId[T])(f: T => U)(using ck: Ck, state: StateAbility[Ck]): CellId[U] = {
+    val cell = state.addCell(OnceCell[U]())
+    state.addPropagator(FlatMaping(Vector(x), (xs: Seq[T]) => f(xs.head), cell))
+    cell
+  }
+
+  def Map2[A, B, C](x: CellId[A], y: CellId[B])(f: (A, B) => C)(using ck: Ck, state: StateAbility[Ck]): CellId[C] = {
+    val cell = state.addCell(OnceCell[C]())
+    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell))
+    cell
+  }
+
+  def Traverse[A](x: Seq[CellId[A]])(using ck: Ck, state: StateAbility[Ck]): CellId[Seq[A]] = FlatMap(x)(identity)
+
+}
+
 trait ProvideImmutable extends ProvideCellId {
   type CIdOf[+T <:Cell[?]] = core.UniqIdOf[T]
   type PIdOf[+T<:Propagator[?]] = core.UniqIdOf[T]
-  override def generate[T <:Cell[?]]: CIdOf[T] = core.UniqId.generate
-  override def generateP[T <:Propagator[?]]: PIdOf[T] = core.UniqId.generate
   override def isCId(x: Any): Boolean = x.isInstanceOf[core.UniqId]
 
   type CellsState = Map[CIdOf[Cell[?]], Cell[?]]
@@ -191,13 +278,13 @@ trait ProvideImmutable extends ProvideCellId {
     }
 
     override def addCell[T <: Cell[?]](cell: T): CIdOf[T] = {
-      val id = generate[T]
+      val id = core.UniqId.generate[T]
       state = state.copy(cells = state.cells.updated(id, cell))
       id
     }
 
     override def addPropagator[T<:Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T] = {
-      val uniqId = generateP[T]
+      val uniqId = core.UniqId.generate[T]
       state = state.copy(propagators = state.propagators.updated(uniqId, propagator))
       if (propagator.run(using this, more)) {
         state = state.copy(propagators = state.propagators.removed(uniqId))
