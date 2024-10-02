@@ -24,6 +24,12 @@ sealed trait SeqCell[T] extends Cell[Seq[T]] {
   override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
 }
 
+sealed trait MapCell[A, B] extends Cell[Map[A, B]] {
+  def add(key: A, value: B): MapCell[A, B]
+
+  override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
+}
+
 case class OnceCell[T](value: Option[T] = None, uniqId: UniqIdOf[OnceCell[T]] = UniqId.generate[OnceCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
@@ -58,6 +64,20 @@ case class CollectionCell[T](value: Vector[T] = Vector.empty, uniqId: UniqIdOf[C
 object CollectionCell {
   def create[T](using state: StateAbility[?]): SeqId[T] = {
     val cell = CollectionCell[T]()
+    state.addCell(cell)
+    cell.uniqId
+  }
+}
+
+case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B], uniqId: UniqIdOf[MappingCell[A, B]] = UniqId.generate[MappingCell[A, B]]) extends MapCell[A, B] {
+  override def read: Option[Map[A, B]] = Some(value)
+
+  override def add(key: A, newValue: B): MappingCell[A, B] = copy(value = value + (key -> newValue))
+}
+
+object MappingCell {
+  def create[A, B](using state: StateAbility[?]): CellId[Map[A, B]] = {
+    val cell = MappingCell[A, B]()
     state.addCell(cell)
     cell.uniqId
   }
@@ -103,6 +123,8 @@ trait CellsStateAbility {
   def fill[T <: Cell[U], U](id: UniqIdOf[T], f: U): Unit
 
   def add[T <: SeqCell[U], U](id: UniqIdOf[T], f: U): Unit
+
+  def add[T <: MapCell[A, B], A, B](id: UniqIdOf[T], key: A, value: B): Unit
 
   def addCell[T <: Cell[?]](cell: T): Unit
 
@@ -167,6 +189,10 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
     update[T](id, _.add(f).asInstanceOf[T])
   }
 
+  override def add[T <: MapCell[A, B], A, B](id: UniqIdOf[T], key: A, value: B): Unit = {
+    update[T](id, _.add(key, value).asInstanceOf[T])
+  }
+
   private def update[T <: Cell[?]](id: UniqIdOf[T], f: T => T): Unit = {
     state.cells.get(id) match {
       case Some(cell) =>
@@ -222,7 +248,7 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       }
       val xs = state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains))
       val uncorvedCells = cellsToZonk.filter(id => !xs.values.exists(_.zonkingCells.contains(id)))
-      if(uncorvedCells.nonEmpty) {
+      if (uncorvedCells.nonEmpty) {
         throw new IllegalStateException(s"Cells $uncorvedCells are not covered by any propagator")
       }
       xs.foreach {

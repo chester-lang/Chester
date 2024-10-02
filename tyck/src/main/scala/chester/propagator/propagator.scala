@@ -412,6 +412,14 @@ object BaseTycker {
         unify(ty, declaredTyTerm, expr)
 
         check(innerExpr, declaredTyTerm, effects)
+      case expr@Block(heads, tail, meta) => {
+        val defs = heads.filter {
+          case  LetDefStmt(LetDefType.Def,_,_,_,_,_) => true
+          case _ => false
+        }.asInstanceOf[Vector[LetDefStmt]]
+        
+          ???
+      }
       case expr: Expr => {
         val problem = NotImplemented(expr)
         ck.reporter.apply(problem)
