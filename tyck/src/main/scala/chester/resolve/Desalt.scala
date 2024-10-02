@@ -219,7 +219,7 @@ case object StmtDesalt {
 
     val ty = if (typeExprs.nonEmpty) Some(opSeq(typeExprs)) else None
     val body = if (valueExprs.nonEmpty) Some(opSeq(valueExprs)) else None
-    LetDefStmt(kind, on, ty, body, decorations, cause.meta)
+    LetDefStmt(kind, on, ty=ty, body=body, decorations=decorations, meta=cause.meta)
   }
 
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Stmt] = x match {
