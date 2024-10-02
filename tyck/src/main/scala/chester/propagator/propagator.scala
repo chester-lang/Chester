@@ -286,7 +286,17 @@ object BaseTycker {
   def check(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = state.toId {
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
-        ???
+        localCtx.get(name) match {
+          case Some(ContextItem(ref, ty2)) => {
+            state.addPropagator(Unify(ty, ty2, expr))
+            ref
+          }
+          case None => {
+            val problem = UnboundVariable(name, expr)
+            ck.reporter.apply(problem)
+            ErrorTerm(problem)
+          }
+        }
       }
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty, meta))
@@ -368,6 +378,7 @@ object Cker {
       case None => {
         val cell = OnceCell[Term](None)
         able.addCell(cell)
+        able.addPropagator(BaseTycker.IsType(cell.uniqId))
         cell.uniqId
       }
     }

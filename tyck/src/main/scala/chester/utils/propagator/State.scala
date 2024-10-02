@@ -208,11 +208,15 @@ class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends 
       val cellsToZonk = if (cellsNeeded.nonEmpty) {
         val a = cellsNeeded
         cellsNeeded = Vector.empty
-        a ++ cells.filter(id => !state.cells(id).hasValue)
+        (a ++ cells).filter(id => !state.cells(id).hasValue)
       } else {
         cells.filter(id => !state.cells(id).hasValue)
       }
       val xs = state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains))
+      val uncorvedCells = cellsToZonk.filter(id => !xs.values.exists(_.zonkingCells.contains(id)))
+      if(uncorvedCells.nonEmpty) {
+        throw new IllegalStateException(s"Cells $uncorvedCells are not covered by any propagator")
+      }
       xs.foreach {
         case (pid, propagator) =>
           tickAll
