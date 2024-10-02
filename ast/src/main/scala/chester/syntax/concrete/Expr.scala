@@ -73,6 +73,7 @@ sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
 
   /** Every Expr has meta to trace compile time errors type checking errors */
   def meta: Option[ExprMeta]
+  final def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 
   def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr
 
@@ -85,8 +86,6 @@ sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
     case Some(meta) => Some(meta.copy(commentInfo = meta.commentInfo.map(info => info.copy(commentBefore = info.commentBefore ++ comment))))
     case None => Some(ExprMeta(None, Some(CommentInfo(comment))))
   }
-
-  def sourcePos: Option[SourcePos] = meta.flatMap(_.sourcePos)
 
   def commentInfo: Option[CommentInfo] = meta.flatMap(_.commentInfo)
 

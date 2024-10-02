@@ -313,13 +313,13 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
               val symbolOpt = document.symbols.find { sym =>
-                positionsEqual(sym.definitionPos, sourcePos) || sym.references.exists(ref => positionsEqual(ref, sourcePos))
+                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
                   val location = new Location(
-                    symbolInfo.definitionPos.fileName,
-                    rangeFromSourcePos(symbolInfo.definitionPos)
+                    symbolInfo.definedOn.sourcePos.get.fileName,
+                    rangeFromSourcePos(symbolInfo.definedOn.sourcePos.get)
                   )
                   val locations = java.util.Collections.singletonList(location)
                   Either.forLeft(locations)
@@ -358,11 +358,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
               val symbolOpt = document.symbols.find { sym =>
-                positionsEqual(sym.definitionPos, sourcePos) || sym.references.exists(ref => positionsEqual(ref, sourcePos))
+                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
-                  val locations = (symbolInfo.references + symbolInfo.definitionPos).map { refPos =>
+                  val locations = (symbolInfo.referencedOn.flatMap(_.sourcePos) ++ symbolInfo.definedOn.sourcePos).map { refPos =>
                     new Location(refPos.fileName, rangeFromSourcePos(refPos))
                   }
                   new java.util.ArrayList(locations.toList.asJava)
@@ -407,7 +407,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
       }
 
       val matchingSymbols = allSymbols.filter { symbol =>
-        symbol.name.toLowerCase.contains(query) && symbol.call.meta.nonEmpty
+        symbol.name.toLowerCase.contains(query) &&
+          symbol.definedOn.sourcePos.nonEmpty
       }.map(tyckSymbolToLSP)
 
       Either.forLeft(matchingSymbols.asJava)
@@ -415,9 +416,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def tyckSymbolToLSP(symbol: FinalReference): SymbolInformation = {
+    val sp = symbol.definedOn.sourcePos.get
     val location = new Location(
-      symbol.call.meta.get.sourcePos.source.source.fileName,
-      rangeFromSourcePos(symbol.call.meta.get.sourcePos)
+      sp.fileName,
+      rangeFromSourcePos(sp)
     )
     new SymbolInformation(
       symbol.name.toString,
