@@ -329,6 +329,10 @@ object BaseTycker {
           unify(t2, tRhs, cause)
           true
         }
+        case (Some(t1), None) => {
+          unify(this.listTLhs, ListType(t1):Term, cause)
+          true
+        }
         case (_, _) => false
       }
     }
