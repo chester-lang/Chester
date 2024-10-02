@@ -33,6 +33,14 @@ case class OnceCell[T](value: Option[T] = None, uniqId: UniqIdOf[OnceCell[T]] = 
   }
 }
 
+object OnceCell {
+  def create[T](value: Option[T] = None)(using state: StateAbility[?]): CellId[T] = {
+    val cell = OnceCell[T](value)
+    state.addCell(cell)
+    cell.uniqId
+  }
+}
+
 case class MutableCell[T](value: Option[T], uniqId: UniqIdOf[MutableCell[T]] = UniqId.generate[MutableCell[T]]) extends Cell[T] {
   override def read: Option[T] = value
 
@@ -63,7 +71,7 @@ case class LiteralCell[T](value: T, uniqId: UniqIdOf[LiteralCell[T]] = UniqId.ge
   override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
 }
 
-def literal[T, Ck](t: T)(using state: StateAbility[Ck]): CellId[T] = {
+def literal[T](t: T)(using state: StateAbility[?]): CellId[T] = {
   val cell = LiteralCell[T](t)
   state.addCell(cell)
   cell.uniqId

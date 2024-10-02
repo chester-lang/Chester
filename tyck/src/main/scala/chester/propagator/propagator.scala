@@ -371,15 +371,13 @@ object Cker {
     implicit val able: StateAbility[Ck] = new StateCells[Ck]()
     val ty1: CellId[Term] = ty match {
       case Some(ty) => {
-        val cell = LiteralCell[Term](ty)
-        able.addCell(cell)
-        cell.uniqId
+        val cell = literal[Term](ty)
+        cell
       }
       case None => {
-        val cell = OnceCell[Term](None)
-        able.addCell(cell)
-        able.addPropagator(BaseTycker.IsType(cell.uniqId))
-        cell.uniqId
+        val cell = OnceCell.create[Term]()
+        able.addPropagator(BaseTycker.IsType(cell))
+        cell
       }
     }
     val effects1: CellId[Effects] = effects match {
