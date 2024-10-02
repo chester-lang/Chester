@@ -117,20 +117,52 @@ object BaseTycker {
     }
   }
 
+  def tryUnify(lhs: Term, rhs: Term)(using state: StateAbility[Ck],localCtx: LocalCtx): Boolean = {
+    if(lhs == rhs) return true
+    val lhsResolved = lhs match {
+      case varCall: MaybeVarCall =>
+        localCtx.getKnown(varCall) match {
+          case Some(tyAndVal) =>
+            state.read(tyAndVal.value).getOrElse(lhs)
+          case None => lhs
+        }
+      case _ => lhs
+    }
+    val rhsResolved = rhs match {
+      case varCall: MaybeVarCall =>
+        localCtx.getKnown(varCall) match {
+          case Some(tyAndVal) =>
+            state.read(tyAndVal.value).getOrElse(rhs)
+          case None => rhs
+        }
+      case _ => rhs
+    }
+    if (lhsResolved == rhsResolved) return true
+    return false // TODO
+  }
 
-  case class LiteralType(x: Literals, ty: CellId[Term], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType])(using localCtx: LocalCtx) extends Propagator[Ck] {
-    override val readingCells = Set(ty)
-    override val writingCells = Set(ty)
-    override val zonkingCells = Set(ty)
+
+  case class LiteralType(x: Literals, tyLhs: CellId[Term], uniqId: UniqIdOf[LiteralType] = UniqId.generate[LiteralType])(using localCtx: LocalCtx) extends Propagator[Ck] {
+    override val readingCells = Set(tyLhs)
+    override val writingCells = Set(tyLhs)
+    override val zonkingCells = Set(tyLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      if (state.noValue(ty)) return false
-      val ty_ = state.read(this.ty).get
+      if (state.noValue(tyLhs)) return false
+      val ty_ = state.read(this.tyLhs).get
       val t = x match {
         case IntegerLiteral(_, _) =>IntegerType
         case RationalLiteral(_, _) =>RationalType
         case StringLiteral(_, _) => StringType
         case SymbolLiteral(_, _) => SymbolType
+      }
+      x match {
+        case IntegerLiteral(_,_) => {
+          if(tryUnify(ty_, IntType)) return true
+        }
+        case _ => {
+
+        }
       }
       if (ty_ == t) {
         return true
@@ -141,7 +173,7 @@ object BaseTycker {
     }
 
     override def naiveZonk(needed: Vector[UniqIdOf[Cell[?]]])(using state: StateAbility[Ck], more: Ck): ZonkResult =
-      state.fill(ty, x match {
+      state.fill(tyLhs, x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
         case StringLiteral(_, _) => StringType
@@ -221,7 +253,6 @@ object BaseTycker {
 
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
-    // Resolve lhs if it's a MaybeVarCall and known in knownMap
     val lhsResolved = lhs match {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
@@ -231,8 +262,6 @@ object BaseTycker {
         }
       case _ => lhs
     }
-
-    // Resolve rhs if it's a MaybeVarCall and known in knownMap
     val rhsResolved = rhs match {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
