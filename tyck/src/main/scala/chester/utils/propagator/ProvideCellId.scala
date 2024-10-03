@@ -89,6 +89,8 @@ trait ProvideCellId {
 
     /** make a best guess for zonkingCells */
     def naiveZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult
+    
+    def naiveFallbackZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult = naiveZonk(needed)
   }
 
   trait CellsStateAbility {
