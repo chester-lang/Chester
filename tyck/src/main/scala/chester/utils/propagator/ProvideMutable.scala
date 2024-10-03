@@ -75,29 +75,37 @@ trait ProvideMutable extends ProvideImpl {
       cells.flatMap(_.zonkingPropagators).map(_.store.asInstanceOf[Propagator[Ability]])
     }
     override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit = {
-      var cellsNeeded = Vector.empty[CIdOf[Cell[?]]]
+      var cellsNeeded = cells
       while(true) {
         tickAll
-        val cellsToZonk = (cells ++ cellsNeeded).filter(this.noValue(_))
-        cellsNeeded = Vector.empty[CIdOf[Cell[?]]]
-        if(cellsToZonk.isEmpty) {
+        cellsNeeded = cellsNeeded.filter(this.noValue(_))
+        if(cellsNeeded.isEmpty) {
           return
         }
-        for(c <- cellsToZonk) {
+        var didSomething = false
+        for(c <- cellsNeeded) {
           require(c.uniqId == uniqId)
           for(p <- c.zonkingPropagators) {
             require(p.uniqId == uniqId)
             tickAll
             if(c.noValue && p.alive) {
-              p.store.asInstanceOf[Propagator[Ability]].naiveZonk(cellsToZonk)(using this, more) match {
+              p.store.asInstanceOf[Propagator[Ability]].naiveZonk(cellsNeeded)(using this, more) match {
                 case ZonkResult.Done =>
                   p.alive = false
+                  didSomething = true
                 case ZonkResult.Require(needed) =>
-                  cellsNeeded = cellsNeeded ++ needed
+                  val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                  if(needed1.nonEmpty) {
+                    cellsNeeded = cellsNeeded ++ needed1
+                    didSomething = true
+                  }
                 case ZonkResult.NotYet =>
               }
             }
           }
+        }
+        if(!didSomething) {
+          throw new IllegalStateException(s"Cells $cellsNeeded are not covered by any propagator")
         }
       }
     }
