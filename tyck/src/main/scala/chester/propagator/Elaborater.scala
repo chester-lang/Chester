@@ -14,7 +14,7 @@ import scala.language.implicitConversions
 
 type Ck = Get[TyckProblem, Unit]
 
-trait Elaborater extends ProvideCtx with ElaboraterCommon with CommonPropagator[Ck] {
+trait Elaborater extends ProvideCtx with ElaboraterCommon {
 
   def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     // Create a new type cell representing the kind Typeω (the type of types)
@@ -108,11 +108,6 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
       case expr: FunctionExpr => elabFunction(expr, ty, effects)
       case expr@Block(heads, tail, meta) => {
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
-
-        def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta]): CellId[LocalV] = {
-          val m = convertMeta(meta)
-          Map1(ty)(LocalV(name, _, id, m))
-        }
 
         val defs = heads.collect {
           case expr@LetDefStmt(LetDefType.Def, defined, _, _, _, _) =>

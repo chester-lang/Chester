@@ -2,13 +2,14 @@ package chester.propagator
 
 import chester.error.{TyckProblem, TypeMismatch}
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
+import chester.syntax.Name
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
 import chester.utils.propagator.CommonPropagator
 
-trait ElaboraterCommon extends ProvideCtx {
+trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
     val result = SimpleDesalt.desugarUnwrap(expr) match {
@@ -314,4 +315,11 @@ trait ElaboraterCommon extends ProvideCtx {
     }
   }
   given mutL(using m: MutableLocalCtx): LocalCtx = m.ctx
+
+
+  def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta])(using ck: Ck, state: StateAbility[Ck]): CellId[LocalV] = {
+    val m = convertMeta(meta)
+    Map1(ty)(LocalV(name, _, id, m))
+  }
+
 }
