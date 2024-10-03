@@ -88,6 +88,12 @@ trait CommonPropagator[Ck] extends ProvideCellId {
     state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B]), cell))
     cell
   }
+  
+  def Map3[A, B, C, D](x: CellId[A], y: CellId[B], z: CellId[C])(f: (A, B, C) => D)(using ck: Ck, state: StateAbility[Ck]): CellId[D] = {
+    val cell = state.addCell(OnceCell[D]())
+    state.addPropagator(FlatMaping(Vector[CellId[Any]](x.asInstanceOf[CellId[Any]], y.asInstanceOf[CellId[Any]], z.asInstanceOf[CellId[Any]]), (xs: Seq[Any]) => f(xs(0).asInstanceOf[A], xs(1).asInstanceOf[B], xs(2).asInstanceOf[C]), cell))
+    cell
+  }
 
   def Traverse[A](x: Seq[CellId[A]])(using ck: Ck, state: StateAbility[Ck]): CellId[Seq[A]] = FlatMap(x)(identity)
 

@@ -185,13 +185,15 @@ object Block {
 }
 
 // in function declaration
-case class Arg(decorations: Vector[Identifier] = Vector(), name: Identifier, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false, meta: Option[ExprMeta] = None)derives ReadWriter {
+case class Arg(decorations: Vector[Identifier] = Vector(), name: Identifier, ty: Option[Expr] = None, exprOrDefault: Option[Expr] = None, vararg: Boolean = false, meta: Option[ExprMeta] = None) extends Expr derives ReadWriter {
 
   def getName: Name = name match {
     case Identifier(name, _) => name
   }
 
-  def descent(operator: Expr => Expr): Arg = {
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+
+  override def descent(operator: Expr => Expr): Arg = {
     Arg(decorations, name, ty.map(operator), exprOrDefault.map(operator), vararg, meta)
   }
 

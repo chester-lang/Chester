@@ -12,7 +12,16 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     require(arg.decorations.isEmpty, "decorations are not supported yet")
     val ty = elabTy(arg.ty)
     val default = arg.exprOrDefault.map(elab(_, ty, effects))
-    ???
+    val id = UniqId.generate[LocalV]
+    val bind = newLocalv(arg.name.name, ty, id, arg.meta)
+    localCtx.update(_.add(ContextItem(arg.name.name, id, bind, ty)))
+    state.add(parameter.references, Reference.create(bind, id, arg))
+    default match {
+      case Some(default) =>
+        Map3(bind, ty, default)((bind, ty, default)=>ArgTerm(bind, ty, Some(default), arg.vararg))
+      case None =>
+        Map2(bind, ty)((bind, ty)=>ArgTerm(bind, ty, None, arg.vararg))
+    }
   }
   def elabFunction(expr: FunctionExpr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     ???
