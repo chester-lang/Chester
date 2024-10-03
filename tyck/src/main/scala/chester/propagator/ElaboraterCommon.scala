@@ -181,6 +181,7 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
   }
 
   case class IsEffects(effects: CellId[Effects]) extends Propagator[Ck] {
+    override val readingCells = Set(effects)
     override val zonkingCells = Set(effects)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(effects)
@@ -191,14 +192,17 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
     }
   }
 
+  object IsTypeIdentify
   case class IsType(ty: CellId[Term]) extends Propagator[Ck] {
+    override def identify: Option[Any] = Some(IsTypeIdentify)
     override val readingCells = Set(ty)
     override val zonkingCells = Set(ty)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      if (state.readingZonkings(Vector(ty)).exists { (x: Propagator[Ck]) => !x.isInstanceOf[IsType] }) return ZonkResult.NotYet
+    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = ZonkResult.NotYet
+
+    override def naiveFallbackZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
       state.fill(ty, AnyType0)
       ZonkResult.Done
     }
@@ -275,11 +279,12 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
     override val zonkingCells = Set(listTLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
+      state.requireRemovePropagatorZonking(IsTypeIdentify, listTLhs)
       val t1 = state.read(this.tRhs)
       val listT1 = state.read(this.listTLhs)
       (t1, listT1) match {
         case (_, Some(l)) if !l.isInstanceOf[ListType] => {
-          ck.reporter.apply(TypeMismatch(l, ListType(t1.get), cause))
+          ck.reporter.apply(TypeMismatch(ListType(AnyType0), l, cause))
           true
         }
         case (Some(t1), Some(ListType(t2))) => {

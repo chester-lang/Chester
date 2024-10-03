@@ -63,6 +63,9 @@ trait ProvideMutable extends ProvideImpl {
       for (cell <- propagator.readingCells) {
         cell.readingPropagators = cell.readingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
       }
+      if (propagator.run(using this, more)) {
+        id.alive = false
+      }
       id
     }
 
@@ -89,6 +92,13 @@ trait ProvideMutable extends ProvideImpl {
       cells.flatMap(_.zonkingPropagators).map(_.store.asInstanceOf[Propagator[Ability]])
     }
 
+    override def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = {
+      val cell1 = cell.asInstanceOf[CIdOf[Cell[?]]]
+      for(p<-cell1.zonkingPropagators.filter(x=> x.store.identify == Some(identify))) {
+        p.alive = false
+      }
+    }
+
     override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit = {
       var cellsNeeded = cells
       var tryFallback = false
@@ -107,10 +117,7 @@ trait ProvideMutable extends ProvideImpl {
               tickAll
               if (c.noValue && p.alive) {
                 val store = p.store.asInstanceOf[Propagator[Ability]]
-                val on = if (tryFallback && !didSomething)
-                  store.naiveFallbackZonk(cellsNeeded)(using this, more)
-                else
-                  store.naiveZonk(cellsNeeded)(using this, more)
+                val on = store.naiveZonk(cellsNeeded)(using this, more)
                 on match {
                   case ZonkResult.Done =>
                     p.alive = false
@@ -122,6 +129,28 @@ trait ProvideMutable extends ProvideImpl {
                       didSomething = true
                     }
                   case ZonkResult.NotYet =>
+                }
+              }
+            }
+            if (tryFallback && !didSomething) {
+              for (p <- c.zonkingPropagators) {
+                require(p.uniqId == uniqId)
+                tickAll
+                if (c.noValue && p.alive) {
+                  val store = p.store.asInstanceOf[Propagator[Ability]]
+                  val on = store.naiveFallbackZonk(cellsNeeded)(using this, more)
+                  on match {
+                    case ZonkResult.Done =>
+                      p.alive = false
+                      didSomething = true
+                    case ZonkResult.Require(needed) =>
+                      val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                      if (needed1.nonEmpty) {
+                        cellsNeeded = cellsNeeded ++ needed1
+                        didSomething = true
+                      }
+                    case ZonkResult.NotYet =>
+                  }
                 }
               }
             }

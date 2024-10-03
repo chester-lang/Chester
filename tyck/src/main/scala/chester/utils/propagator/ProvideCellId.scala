@@ -76,6 +76,8 @@ trait ProvideCellId {
 
   trait Propagator[Ability] {
 
+    def identify: Option[Any] = None
+
     def readingCells: Set[CIdOf[Cell[?]]] = Set.empty
 
     def writingCells: Set[CIdOf[Cell[?]]] = Set.empty
@@ -120,6 +122,8 @@ trait ProvideCellId {
   }
 
   trait StateAbility[Ability] extends CellsStateAbility {
+    def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ()
+    
     def addPropagator[T<:Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
 
     def tick(using more: Ability): Unit
