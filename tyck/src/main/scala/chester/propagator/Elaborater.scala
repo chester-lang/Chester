@@ -15,6 +15,23 @@ import scala.language.implicitConversions
 type Ck = Get[TyckProblem, Unit]
 
 trait Elaborater extends ProvideCtx with ElaboraterCommon with CommonPropagator[Ck] {
+
+  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+    // Create a new type cell representing the kind Typeω (the type of types)
+    val kindType = literal(Typeω: Term)
+
+    // Create a new effects cell to capture any effects from the type expression
+    val effectsCell = literal(NoEffect)
+
+    elab(expr, kindType, effectsCell)
+  }
+  
+  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] =
+    expr match {
+      case Some(expr) => checkType(expr)
+      case None => newType
+    }
+
   def elab(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term]
 }
 
@@ -174,16 +191,6 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         ErrorTerm(problem)
       }
     }
-  }
-
-  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-    // Create a new type cell representing the kind Typeω (the type of types)
-    val kindType = literal(Typeω: Term)
-
-    // Create a new effects cell to capture any effects from the type expression
-    val effectsCell = literal(NoEffect)
-
-    elab(expr, kindType, effectsCell)
   }
 
   given ckToReport(using ck: Ck): Reporter[TyckProblem] = ck.reporter

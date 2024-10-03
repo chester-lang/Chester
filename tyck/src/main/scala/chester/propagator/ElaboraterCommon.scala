@@ -308,4 +308,10 @@ trait ElaboraterCommon extends ProvideCtx {
     }
   }
 
+  class MutableLocalCtx(var ctx: LocalCtx) {
+    def update(f: LocalCtx => LocalCtx): Unit = {
+      ctx = f(ctx)
+    }
+  }
+  given mutL(using m: MutableLocalCtx): LocalCtx = m.ctx
 }
