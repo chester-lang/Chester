@@ -13,7 +13,8 @@ trait ProvideCtx extends ProvideCellId {
                           name: Name,
                           uniqId: UniqIdOf[? <: MaybeVarCall],
                           ref: CellId[? <: MaybeVarCall],
-                          ty: CellId[Term]
+                          ty: CellId[Term],
+                          reference: Option[Reference] = None
                         ) {
     def asTerm: CellId[Term] = ref.asInstanceOf[CellId[Term]]
   }

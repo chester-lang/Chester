@@ -14,8 +14,9 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     val default = arg.exprOrDefault.map(elab(_, ty, effects))
     val id = UniqId.generate[LocalV]
     val bind = newLocalv(arg.name.name, ty, id, arg.meta)
-    localCtx.update(_.add(ContextItem(arg.name.name, id, bind, ty)))
-    state.add(parameter.references, Reference.create(bind, id, arg))
+    val r = Reference.create(bind, id, arg)
+    state.add(parameter.references, r)
+    localCtx.update(_.add(ContextItem(arg.name.name, id, bind, ty, Some(r))))
     default match {
       case Some(default) =>
         Map3(bind, ty, default)((bind, ty, default)=>ArgTerm(bind, ty, Some(default), arg.vararg))

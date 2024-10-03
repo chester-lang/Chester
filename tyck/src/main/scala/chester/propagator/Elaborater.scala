@@ -45,6 +45,9 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
+            if(c.reference.isDefined){
+              state.add(c.reference.get.referencedOn, expr)
+            }
             state.addPropagator(Unify(ty, c.ty, expr))
             c.asTerm
           }
@@ -118,8 +121,9 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             val tyandval = TyAndVal.create()
             val id = UniqId.generate[LocalV]
             val localv = newLocalv(name, tyandval.ty, id, meta)
-            state.add(parameter.references, Reference.create(localv, id, expr))
-            DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty))
+            val r = Reference.create(localv, id, expr)
+            state.add(parameter.references, r)
+            DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty, Some(r)))
         }
         val defsMap = defs.map(info => (info.expr, info)).toMap
         var ctx = localCtx.add(defs.map(_.item))
@@ -161,9 +165,10 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
               case None => newType
             }
             val localv = newLocalv(name, ty, id, meta)
-            state.add(parameter.references, Reference.create(localv, id, expr))
+            val r = Reference.create(localv, id, expr)
+            state.add(parameter.references, r)
             val wellTyped = elab(expr.body.get, ty, effects)
-            ctx = ctx.add(ContextItem(name, id, localv, ty)).knownAdd(id, TyAndVal(ty, wellTyped))
+            ctx = ctx.add(ContextItem(name, id, localv, ty, Some(r))).knownAdd(id, TyAndVal(ty, wellTyped))
             Vector(Map2(wellTyped, ty) { (wellTyped, ty) => LetStmtTerm(name, wellTyped, ty) })
           }
           case expr => {
