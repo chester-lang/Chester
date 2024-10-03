@@ -6,6 +6,7 @@ import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
+import chester.utils.propagator.CommonPropagator
 
 trait ElaboraterCommon extends ProvideCtx {
 

@@ -14,11 +14,11 @@ import scala.language.implicitConversions
 
 type Ck = Get[TyckProblem, Unit]
 
-trait Elaborater extends ProvideCtx {
+trait Elaborater extends ProvideCtx with ElaboraterCommon with CommonPropagator[Ck] {
   def elab(expr: Expr, ty: CellId[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term]
 }
 
-trait ProvideElaborater extends ProvideCtx with ElaboraterCommon with Elaborater with CommonPropagator[Ck] {
+trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFunction {
 
   // TODO: add something for implicit conversion
 
@@ -88,6 +88,7 @@ trait ProvideElaborater extends ProvideCtx with ElaboraterCommon with Elaborater
         unify(ty, declaredTyTerm, expr)
 
         elab(innerExpr, declaredTyTerm, effects)
+      case expr: FunctionExpr => elabFunction(expr, ty, effects)
       case expr@Block(heads, tail, meta) => {
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
@@ -197,7 +198,7 @@ trait ProvideElaborater extends ProvideCtx with ElaboraterCommon with Elaborater
 
 }
 
-trait DefaultImpl extends ProvideElaborater with ProvideImpl {
+trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction {
 
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
