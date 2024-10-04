@@ -153,7 +153,7 @@ trait ProvideCellId {
   }
 
   trait StateAbility[Ability] extends CellsStateAbility {
-    def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ()
+    def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ???
 
     def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
 
@@ -167,7 +167,7 @@ trait ProvideCellId {
       }
     }
 
-    def readingZonkings(cells: Vector[CIdOf[Cell[?]]]): Vector[Propagator[Ability]]
+    def readingZonkings(cells: Vector[CIdOf[Cell[?]]]): Vector[Propagator[Ability]] = ???
 
     /** make a best guess for those cells */
     def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit
