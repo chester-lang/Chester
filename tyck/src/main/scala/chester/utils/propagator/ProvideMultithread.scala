@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent._
 import scala.jdk.CollectionConverters._
 
+// currently broken too eager to use default values
 trait ProvideMultithread extends ProvideImpl {
 
   class HoldCell[+T <: Cell[?]](val uniqId: UniqIdOf[Impl[?]], initialValue: T) {
@@ -49,6 +50,8 @@ trait ProvideMultithread extends ProvideImpl {
       aliveRef.set(value)
     }
   }
+
+  override def stateAbilityImpl[Ability]: StateAbility[Ability] = Impl[Ability]()
 
   class Impl[Ability](val uniqId: UniqIdOf[Impl[Ability]] = UniqId.generate[Impl[Ability]])
       extends StateAbility[Ability] {
