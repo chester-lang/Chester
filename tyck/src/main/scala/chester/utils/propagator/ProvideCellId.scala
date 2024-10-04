@@ -121,23 +121,23 @@ trait ProvideCellId {
     def naiveFallbackZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult = naiveZonk(needed)
   }
 
-  trait CellsStateAbility {
+  trait StateAbility[Ability] {
     def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T]
 
     def readStable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readStable
     def readUnstable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readUnstable
 
-    protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit
+    protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit
 
-    def fill[T <: Cell[U], U](id: CIdOf[T], f: U): Unit = {
+    def fill[T <: Cell[U], U](id: CIdOf[T], f: U)(using Ability): Unit = {
       update[T](id, _.fill(f).asInstanceOf[T])
     }
 
-    def add[T <: SeqCell[U], U](id: CIdOf[T], f: U): Unit = {
+    def add[T <: SeqCell[U], U](id: CIdOf[T], f: U)(using Ability): Unit = {
       update[T](id, _.add(f).asInstanceOf[T])
     }
 
-    def add[T <: MapCell[A, B], A, B](id: CIdOf[T], key: A, value: B): Unit = {
+    def add[T <: MapCell[A, B], A, B](id: CIdOf[T], key: A, value: B)(using Ability): Unit = {
       update[T](id, _.add(key, value).asInstanceOf[T])
     }
 
@@ -150,9 +150,6 @@ trait ProvideCellId {
     def hasSomeValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasSomeValue)
 
     def noAnyValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasSomeValue(id)
-  }
-
-  trait StateAbility[Ability] extends CellsStateAbility {
     def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ???
 
     def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]

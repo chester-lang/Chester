@@ -442,7 +442,7 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
     case x => state.toId(x)
   }
 
-  def merge(a: CellIdOr[Term], b: CellIdOr[Term])(using state: StateAbility[Ck]): Unit = {
+  def merge(a: CellIdOr[Term], b: CellIdOr[Term])(using state: StateAbility[Ck], ab: Ck): Unit = {
     if (a == b) return
     val t1 = toTerm(a)
     val t2 = toTerm(b)

@@ -24,7 +24,7 @@ trait ProvideImmutable extends ProvideImpl {
 
     override def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T] = state.cells.get(id).asInstanceOf[Option[T]]
 
-    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit = {
+    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit = {
       state.cells.get(id) match {
         case Some(cell) =>
           val newCell = f(cell.asInstanceOf[T])

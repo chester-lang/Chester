@@ -43,7 +43,7 @@ trait ProvideMutable extends ProvideImpl {
       Some(id.store.asInstanceOf[T])
     }
 
-    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit = {
+    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit = {
       didSomething = true
       require(id.uniqId == uniqId)
       id.store = f(id.store.asInstanceOf[T])
