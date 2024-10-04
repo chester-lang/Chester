@@ -12,10 +12,15 @@ trait ProvideCellId {
 
    trait Cell[T] {
     def default: Option[T] = None
-    def read: Option[T]
+    /** stable means can only change once from None to a fixed Some value or always be a fixed value */
+    def readStable: Option[T]
+    def readUnstable: Option[T] = readStable
 
-    def hasValue: Boolean = read.isDefined
-    def noValue: Boolean = !hasValue
+    def hasStableValue: Boolean = readStable.isDefined
+    def noStableValue: Boolean = !hasStableValue
+
+    def hasSomeValue: Boolean = hasStableValue
+    def noAnyValue: Boolean = noStableValue
 
     /** fill an unstable cell */
     def fill(newValue: T): Cell[T]
@@ -26,7 +31,7 @@ trait ProvideCellId {
 
     override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
   }
-   
+
    trait BaseMapCell[A,B] {
      def add(key: A, value: B): BaseMapCell[A,B]
    }
@@ -36,7 +41,7 @@ trait ProvideCellId {
   }
 
   case class OnceCell[T](value: Option[T] = None, override val default: Option[T] = None) extends Cell[T] {
-    override def read: Option[T] = value
+    override def readStable: Option[T] = value
 
     override def fill(newValue: T): OnceCell[T] = {
       require(value.isEmpty)
@@ -45,7 +50,7 @@ trait ProvideCellId {
   }
 
   case class MutableCell[T](value: Option[T]) extends Cell[T] {
-    override def read: Option[T] = value
+    override def readStable: Option[T] = value
 
     override def fill(newValue: T): MutableCell[T] = {
       copy(value = Some(newValue))
@@ -53,21 +58,21 @@ trait ProvideCellId {
   }
 
   case class CollectionCell[T](value: Vector[T] = Vector.empty) extends SeqCell[T] {
-    override def read: Option[Vector[T]] = Some(value)
+    override def readStable: Option[Vector[T]] = Some(value)
 
     override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
   }
 
   case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B]) extends MapCell[A, B] {
-    override def read: Option[Map[A, B]] = Some(value)
+    override def readStable: Option[Map[A, B]] = Some(value)
 
     override def add(key: A, newValue: B): MappingCell[A, B] = copy(value = value + (key -> newValue))
   }
 
   case class LiteralCell[T](value: T) extends Cell[T] {
-    override def read: Option[T] = Some(value)
+    override def readStable: Option[T] = Some(value)
 
-    override def hasValue: Boolean = true
+    override def hasStableValue: Boolean = true
 
     override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
   }
@@ -105,7 +110,7 @@ trait ProvideCellId {
   trait CellsStateAbility {
     def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T]
 
-    def read[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.read
+    def read[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readStable
 
     protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit
 
@@ -123,7 +128,7 @@ trait ProvideCellId {
 
     def addCell[T <: Cell[?]](cell: T): CIdOf[T]
 
-    def hasValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasValue)
+    def hasValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasStableValue)
 
     def noValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasValue(id)
   }

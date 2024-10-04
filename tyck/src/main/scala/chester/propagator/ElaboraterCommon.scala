@@ -17,7 +17,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       copy(effects = effects + (key -> value))
     }
     override def fill(newValue: Effects): DynamicEffectsCell = throw new UnsupportedOperationException("EffectsCell cannot be filled")
-    override def read: Option[Effects] = Some(Effects(effects))
+    override def readStable: Option[Effects] = Some(Effects(effects))
     
   }
 

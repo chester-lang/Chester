@@ -11,7 +11,7 @@ trait ProvideMutable extends ProvideImpl {
     var readingPropagators: Vector[PIdOf[Propagator[?]]] = Vector.empty
     var zonkingPropagators: Vector[PIdOf[Propagator[?]]] = Vector.empty
 
-    inline def noValue: Boolean = store.noValue
+    inline def noAnyValue: Boolean = store.noAnyValue
   }
 
   type CIdOf[+T <: Cell[?]] = HoldCell[T]
@@ -120,7 +120,7 @@ trait ProvideMutable extends ProvideImpl {
         }
         for (c <- cellsNeeded) {
           require(c.uniqId == uniqId)
-          if (c.noValue) {
+          if (c.noAnyValue) {
             def processZonking = {
               val aliveP = c.zonkingPropagators.filter(_.alive)
               c.zonkingPropagators = aliveP
@@ -130,7 +130,7 @@ trait ProvideMutable extends ProvideImpl {
             for (p <- processZonking) {
               require(p.uniqId == uniqId)
               tickAll
-              if (c.noValue && p.alive) {
+              if (c.noAnyValue && p.alive) {
                 val store = p.store.asInstanceOf[Propagator[Ability]]
                 if(store.run(using this, more)) {
                   p.alive = false
@@ -156,7 +156,7 @@ trait ProvideMutable extends ProvideImpl {
               for (p <- processZonking) {
                 require(p.uniqId == uniqId)
                 tickAll
-                if (c.noValue && p.alive) {
+                if (c.noAnyValue && p.alive) {
                   val store = p.store.asInstanceOf[Propagator[Ability]]
                   if(store.run(using this, more)) {
                     p.alive = false
@@ -183,7 +183,7 @@ trait ProvideMutable extends ProvideImpl {
         }
         if(tryFallback>1 && !didSomething) {
           for (c <- cellsNeeded) {
-            if (c.noValue && c.store.default.isDefined) {
+            if (c.noAnyValue && c.store.default.isDefined) {
               fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
               didSomething = true
             }
