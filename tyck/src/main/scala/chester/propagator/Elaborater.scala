@@ -29,7 +29,7 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
   }
 
   def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-    toId(checkTypeId(expr))
+    toId(checkType(expr))
   }
   
   def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term =
