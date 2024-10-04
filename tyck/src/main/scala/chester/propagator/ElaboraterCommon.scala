@@ -37,6 +37,17 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         unify(lhs.get, rhs.get, cause)
         return true
       }
+      (lhs, rhs) match {
+        case (Some(Meta(lhs)), _) => {
+          state.addPropagator(Unify(lhs, this.rhs, cause))
+          return true
+        }
+        case (_, Some(Meta(rhs))) => {
+          state.addPropagator(Unify(this.lhs, rhs, cause))
+          return true
+        }
+        case _ => ()
+      }
       return false
     }
 
@@ -155,7 +166,6 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         }
         case _ => ()
       }
-      throw new IllegalStateException("debug")
       val t = x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
