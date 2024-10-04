@@ -81,34 +81,40 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
   }
 
   case class LocalCtx(
-                       map: Map[Name, ContextItem] = Map.empty[Name, ContextItem],
+                       map: Map[Name, UniqIdOf[? <: MaybeVarCall]] = Map.empty[Name, UniqIdOf[? <: MaybeVarCall]],
+                       contextItems: Map[UniqIdOf[? <: MaybeVarCall], ContextItem] = Map.empty[UniqIdOf[? <: MaybeVarCall], ContextItem],
                        knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
                        imports: Imports = Imports.Empty,
                        modules: ResolvingModules = ResolvingModules.Empty,
                        operators: OperatorsContext = OperatorsContext.Default
                      ) {
-    def getKnown(x: MaybeVarCall): Option[TyAndVal] = knownMap.get(x.uniqId.asInstanceOf[UniqIdOf[? <: MaybeVarCall]])
+    def getKnown(x: MaybeVarCall): Option[TyAndVal] =
+      knownMap.get(x.uniqId.asInstanceOf[UniqIdOf[? <: MaybeVarCall]])
 
     def get(id: Name): Option[ContextItem] =
-      map.get(id)
+      map.get(id).flatMap(uniqId => contextItems.get(uniqId))
 
     def knownAdd(id: UniqIdOf[? <: MaybeVarCall], y: TyAndVal): LocalCtx = knownAdd(Seq(id -> y))
 
     def knownAdd(seq: Seq[(UniqIdOf[? <: MaybeVarCall], TyAndVal)]): LocalCtx = {
-      val newMap = seq.foldLeft(knownMap) { (acc, item) =>
+      val newKnownMap = seq.foldLeft(knownMap) { (acc, item) =>
         assert(!acc.contains(item._1), s"Duplicate key ${item._1}")
         acc + item
       }
-      copy(knownMap = newMap)
+      copy(knownMap = newKnownMap)
     }
 
     def add(item: ContextItem): LocalCtx = add(Seq(item))
 
     def add(seq: Seq[ContextItem]): LocalCtx = {
       val newMap = seq.foldLeft(map) { (acc, item) =>
-        acc + (item.name -> item)
+        acc + (item.name -> item.uniqId)
       }
-      copy(map = newMap)
+      val newContextItems = seq.foldLeft(contextItems) { (acc, item) =>
+        require(!acc.contains(item.uniqId), s"Duplicate key ${item.uniqId}")
+        acc + (item.uniqId -> item)
+      }
+      copy(map = newMap, contextItems = newContextItems)
     }
   }
 
@@ -117,9 +123,10 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
   object LocalCtx {
     def default[Ck](using state: StateAbility[Ck]): LocalCtx = {
       val items = BuiltIn.builtinItems.map(ContextItem.builtin)
-      val map = items.map(item => item._2.name -> item._2).toMap
+      val map = items.map(item => item._2.name -> item._2.uniqId).toMap
+      val contextItems = items.map(item => item._2.uniqId -> item._2).toMap
       val knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = items.map(item => item._2.uniqId -> item._1).toMap.asInstanceOf[Map[UniqIdOf[? <: MaybeVarCall], TyAndVal]]
-      LocalCtx(map, knownMap)
+      LocalCtx(map, contextItems, knownMap)
     }
   }
 }
