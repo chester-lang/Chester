@@ -121,10 +121,13 @@ trait ProvideMutable extends ProvideImpl {
         for (c <- cellsNeeded) {
           require(c.uniqId == uniqId)
           if (c.noValue) {
-            val aliveP = c.zonkingPropagators.filter(_.alive)
-            c.zonkingPropagators = aliveP
-            val zonking = aliveP.sortBy(x=> -x.store.score)
-            for (p <- zonking) {
+            def processZonking = {
+              val aliveP = c.zonkingPropagators.filter(_.alive)
+              c.zonkingPropagators = aliveP
+              val zonking = aliveP.sortBy(x => -x.store.score)
+              zonking
+            }
+            for (p <- processZonking) {
               require(p.uniqId == uniqId)
               tickAll
               if (c.noValue && p.alive) {
@@ -150,32 +153,39 @@ trait ProvideMutable extends ProvideImpl {
               }
             }
             if (tryFallback>0 && !didSomething) {
-              for (p <- zonking) {
+              for (p <- processZonking) {
                 require(p.uniqId == uniqId)
                 tickAll
                 if (c.noValue && p.alive) {
                   val store = p.store.asInstanceOf[Propagator[Ability]]
-                  val on = store.naiveFallbackZonk(cellsNeeded)(using this, more)
-                  on match {
-                    case ZonkResult.Done =>
-                      p.alive = false
-                      didSomething = true
-                    case ZonkResult.Require(needed) =>
-                      val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
-                      if (needed1.nonEmpty) {
-                        cellsNeeded = cellsNeeded ++ needed1
+                  if(store.run(using this, more)) {
+                    p.alive = false
+                    didSomething = true
+                  } else {
+                    val on = store.naiveFallbackZonk(cellsNeeded)(using this, more)
+                    on match {
+                      case ZonkResult.Done =>
+                        p.alive = false
                         didSomething = true
-                      }
-                    case ZonkResult.NotYet =>
+                      case ZonkResult.Require(needed) =>
+                        val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                        if (needed1.nonEmpty) {
+                          cellsNeeded = cellsNeeded ++ needed1
+                          didSomething = true
+                        }
+                      case ZonkResult.NotYet =>
+                    }
                   }
                 }
               }
             }
-            if(tryFallback>1 && !didSomething) {
-              if(c.store.default.isDefined) {
-                fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
-                didSomething = true
-              }
+          }
+        }
+        if(tryFallback>1 && !didSomething) {
+          for (c <- cellsNeeded) {
+            if (c.store.default.isDefined) {
+              fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
+              didSomething = true
             }
           }
         }

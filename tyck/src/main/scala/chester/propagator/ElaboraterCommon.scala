@@ -53,7 +53,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
           state.fill(this.lhs, rhs)
           return ZonkResult.Done
         }
-        case _ => return ZonkResult.NotYet
+        case _ => return ZonkResult.Require(Vector(this.lhs, this.rhs))
       }
     }
   }
