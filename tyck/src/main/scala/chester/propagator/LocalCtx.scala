@@ -106,7 +106,6 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
 
     def add(seq: Seq[ContextItem]): LocalCtx = {
       val newMap = seq.foldLeft(map) { (acc, item) =>
-        assert(!acc.contains(item.name), s"Duplicate key ${item.name}")
         acc + (item.name -> item)
       }
       copy(map = newMap)
