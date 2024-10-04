@@ -148,6 +148,13 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       if (state.noValue(tyLhs)) return false
       val ty_ = state.read(this.tyLhs).get
+      ty_ match {
+        case Meta(ty) => {
+          state.addPropagator(LiteralType(x, ty))
+          return true
+        }
+        case _ => ()
+      }
       val t = x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
@@ -192,26 +199,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
   }
 
-  object IsTypeIdentify
-  case class IsType(ty: CellId[Term]) extends Propagator[Ck] {
-    override def score: Int = NoScore
-    override def identify: Option[Any] = Some(IsTypeIdentify)
-    override val readingCells = Set(ty)
-    override val zonkingCells = Set(ty)
-
-    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(ty)
-
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = ZonkResult.NotYet
-
-    override def naiveFallbackZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      state.fill(ty, AnyType0)
-      ZonkResult.Done
-    }
-  }
-
   def newType(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-    val cell = state.addCell(OnceCell[Term]())
-    state.addPropagator(IsType(cell))
+    val cell = state.addCell(OnceCell[Term](default=Some(AnyType0)))
     cell
   }
 
@@ -286,7 +275,6 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override val zonkingCells = Set(listTLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      state.requireRemovePropagatorZonking(IsTypeIdentify, listTLhs)
       val t1 = state.read(this.tRhs)
       val listT1 = state.read(this.listTLhs)
       (t1, listT1) match {

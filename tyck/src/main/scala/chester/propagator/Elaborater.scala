@@ -224,8 +224,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         cell
       }
       case None => {
-        val cell = able.addCell(OnceCell[Term]())
-        able.addPropagator(IsType(cell))
+        val cell = newType
         cell
       }
     }

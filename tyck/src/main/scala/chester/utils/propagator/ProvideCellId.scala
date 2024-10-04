@@ -11,6 +11,7 @@ trait ProvideCellId {
   def assumeCId(x: Any): CIdOf[Cell[?]] = x.asInstanceOf[CIdOf[Cell[?]]]
 
   sealed trait Cell[T] {
+    def default: Option[T] = None
     def read: Option[T]
 
     def hasValue: Boolean = read.isDefined
@@ -32,7 +33,7 @@ trait ProvideCellId {
     override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
   }
 
-  case class OnceCell[T](value: Option[T] = None) extends Cell[T] {
+  case class OnceCell[T](value: Option[T] = None, override val default: Option[T] = None) extends Cell[T] {
     override def read: Option[T] = value
 
     override def fill(newValue: T): OnceCell[T] = {

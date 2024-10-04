@@ -129,18 +129,23 @@ trait ProvideMutable extends ProvideImpl {
               tickAll
               if (c.noValue && p.alive) {
                 val store = p.store.asInstanceOf[Propagator[Ability]]
-                val on = store.naiveZonk(cellsNeeded)(using this, more)
-                on match {
-                  case ZonkResult.Done =>
-                    p.alive = false
-                    didSomething = true
-                  case ZonkResult.Require(needed) =>
-                    val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
-                    if (needed1.nonEmpty) {
-                      cellsNeeded = cellsNeeded ++ needed1
+                if(store.run(using this, more)) {
+                  p.alive = false
+                  didSomething = true
+                } else {
+                  val on = store.naiveZonk(cellsNeeded)(using this, more)
+                  on match {
+                    case ZonkResult.Done =>
+                      p.alive = false
                       didSomething = true
-                    }
-                  case ZonkResult.NotYet =>
+                    case ZonkResult.Require(needed) =>
+                      val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                      if (needed1.nonEmpty) {
+                        cellsNeeded = cellsNeeded ++ needed1
+                        didSomething = true
+                      }
+                    case ZonkResult.NotYet =>
+                  }
                 }
               }
             }
