@@ -155,6 +155,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         }
         case _ => ()
       }
+      throw new IllegalStateException("debug")
       val t = x match {
         case IntegerLiteral(_, _) => IntegerType
         case RationalLiteral(_, _) => RationalType
