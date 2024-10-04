@@ -10,6 +10,16 @@ import chester.utils.*
 import chester.utils.propagator.CommonPropagator
 
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Ck] {
+  
+  case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with Cell[Effects] {
+    override def add(key: LocalV, value: Term): DynamicEffectsCell = {
+      require(!effects.contains(key))
+      copy(effects = effects + (key -> value))
+    }
+    override def fill(newValue: Effects): DynamicEffectsCell = throw new UnsupportedOperationException("EffectsCell cannot be filled")
+    override def read: Option[Effects] = Some(Effects(effects))
+    
+  }
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
     val result = SimpleDesalt.desugarUnwrap(expr) match {

@@ -10,7 +10,7 @@ trait ProvideCellId {
   def isCId(x: Any): Boolean
   def assumeCId(x: Any): CIdOf[Cell[?]] = x.asInstanceOf[CIdOf[Cell[?]]]
 
-  sealed trait Cell[T] {
+   trait Cell[T] {
     def default: Option[T] = None
     def read: Option[T]
 
@@ -21,15 +21,17 @@ trait ProvideCellId {
     def fill(newValue: T): Cell[T]
   }
 
-  sealed trait SeqCell[T] extends Cell[Seq[T]] {
+   trait SeqCell[T] extends Cell[Seq[T]] {
     def add(newValue: T): SeqCell[T]
 
     override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
   }
+   
+   trait BaseMapCell[A,B] {
+     def add(key: A, value: B): BaseMapCell[A,B]
+   }
 
-  sealed trait MapCell[A, B] extends Cell[Map[A, B]] {
-    def add(key: A, value: B): MapCell[A, B]
-
+   trait MapCell[A, B] extends Cell[Map[A, B]] with BaseMapCell[A,B] {
     override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
   }
 

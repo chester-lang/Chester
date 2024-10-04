@@ -627,7 +627,7 @@ extension (e: EffectsM) {
   }
 }
 
-case class Effects private[syntax](effects: Map[LocalV, Term]) extends ToDoc with Term derives ReadWriter  {
+case class Effects(effects: Map[LocalV, Term]) extends ToDoc with Term derives ReadWriter  {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(effects.map { case (k, v) => k.toDoc <+> Docs.`:` <+> v.toDoc })
 
   def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => effect -> f(names) })
