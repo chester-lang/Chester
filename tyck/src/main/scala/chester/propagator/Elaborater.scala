@@ -118,8 +118,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
         val defs = heads.collect {
-          case expr@LetDefStmt(LetDefType.Def, defined, _, _, _, _) =>
-            val name = defined match {
+          case expr:LetDefStmt if expr.kind == LetDefType.Def =>
+            val name = expr.defined match {
               // TODO: support other defined patterns
               case DefinedPattern(PatternBind(name, _)) => name.name
             }
@@ -142,7 +142,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           ck.reporter.apply(problem)
         }
         val stmts: Seq[StmtTerm] = heads.flatMapOrdered {
-          case expr@LetDefStmt(LetDefType.Def, _, _, _, _, _) => {
+          case expr:LetDefStmt if expr.kind == LetDefType.Def => {
             implicit val localCtx: LocalCtx = ctx
             val d = defsMap.apply(expr)
             val ty = expr.ty match {
@@ -158,7 +158,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             ctx = ctx.knownAdd(d.id, TyAndVal(ty, wellTyped))
             Vector(DefStmtTerm(d.item.name, Meta(wellTyped), toTerm(ty)))
           }
-          case expr@LetDefStmt(LetDefType.Let, _, _, _, _, _) => {
+          case expr:LetDefStmt if expr.kind == LetDefType.Let => {
             implicit val localCtx: LocalCtx = ctx
             val name = expr.defined match {
               // TODO: support other defined patterns

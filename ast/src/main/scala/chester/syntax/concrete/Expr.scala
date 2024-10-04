@@ -255,7 +255,7 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("(", ")", ", ")(terms)
 }
 
-case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr {
+case class DefTelescope(args: Vector[Arg], implicitly: Boolean = false, meta: Option[ExprMeta] = None) extends MaybeTelescope with DesaltExpr  derives ReadWriter  {
   override def descent(operator: Expr => Expr): DefTelescope = thisOr {
     DefTelescope(args.map(_.descent(operator)), implicitly, meta)
   }
@@ -598,7 +598,7 @@ case class DefinedPattern(pattern: DesaltPattern) extends Defined {
   def bindings: Vector[Identifier] = pattern.bindings
 }
 
-case class DefinedFunction(id: Identifier, telescope: NonEmptyVector[MaybeTelescope]) extends Defined {
+case class DefinedFunction(id: Identifier, telescope: NonEmptyVector[DefTelescope]) extends Defined {
   def bindings: Vector[Identifier] = Vector(id)
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <> telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty))
@@ -612,9 +612,9 @@ case class UnitExpr(meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def descent(operator: Expr => Expr): Expr = this
 }
 
-case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = None, ty: Option[Expr] = None, decorations: Vector[Expr] = Vector(), meta: Option[ExprMeta] = None) extends Stmt {
+case class LetDefStmt(kind: LetDefType, defined: Defined, body: Option[Expr] = None, ty: Option[Expr] = None, effect: Option[Expr] = None, decorations: Vector[Expr] = Vector(), meta: Option[ExprMeta] = None) extends Stmt {
   override def descent(operator: Expr => Expr): Expr = thisOr {
-    LetDefStmt(kind, defined, body.map(operator), ty.map(operator), decorations.map(operator), meta)
+    LetDefStmt(kind, defined, body.map(operator), ty.map(operator), effect.map(operator), decorations.map(operator), meta)
   }
 
   override def bindings: Bindings = kind match {

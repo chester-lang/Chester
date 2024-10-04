@@ -165,13 +165,6 @@ case object PatternDesalt {
   }
 }
 
-case object MatchDefinedTelescope {
-  def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = x match {
-    // TODO
-    case _ => None
-  }
-}
-
 case object StmtDesalt {
   def desugar(x: Expr)(using reporter: Reporter[TyckProblem]): Expr = x match {
     case StmtDesalt(x) => x
@@ -180,10 +173,14 @@ case object StmtDesalt {
 
   def defined(xs: Vector[Expr])(using reporter: Reporter[TyckProblem]): Option[Defined] = {
     if (xs.isEmpty) None
-    else if (xs.length == 1) PatternDesalt.desugar(xs.head).map(DefinedPattern)
+    else if (xs.length == 1) xs.head match {
+      // TODO: support multiple telescopes
+      case FunctionCall(f: Identifier, MatchDeclarationTelescope(t), meta) => Some(DefinedFunction(f, Vector(t).assumeNonEmpty))
+      case a => PatternDesalt.desugar(a).map(DefinedPattern)
+    }
     else xs.head match {
       case identifier: Identifier =>
-        xs.tail.traverse(MatchDefinedTelescope.unapply).map { telescopes =>
+        xs.tail.traverse(MatchDeclarationTelescope.unapply).map { telescopes =>
           DefinedFunction(identifier, NonEmptyVector.fromVectorUnsafe(telescopes))
         }
       case _ => None
@@ -219,7 +216,18 @@ case object StmtDesalt {
 
     val ty = if (typeExprs.nonEmpty) Some(opSeq(typeExprs)) else None
     val body = if (valueExprs.nonEmpty) Some(opSeq(valueExprs)) else None
-    LetDefStmt(kind, on, ty=ty, body=body, decorations=decorations, meta=cause.meta)
+    unrollFunction(LetDefStmt(kind, on, ty=ty, body=body, decorations=decorations, meta=cause.meta))
+  }
+  
+  def unrollFunction(stmt: LetDefStmt): LetDefStmt = {
+    stmt.defined match {
+      case DefinedFunction(id, telescopes) =>
+        require(stmt.decorations.isEmpty, "not supported yet")
+        require(stmt.body.nonEmpty, "not supported yet")
+        val expr = FunctionExpr(telescope = telescopes.toVector, resultTy = stmt.ty, effect = stmt.effect,  body = stmt.body.get, meta = stmt.meta)
+        stmt.copy(defined=DefinedPattern(PatternBind(id, id.meta)), body=Some(expr), ty = None, effect = None)
+      case other => stmt
+    }
   }
 
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Stmt] = x match {
