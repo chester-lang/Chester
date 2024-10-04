@@ -22,10 +22,7 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
     // Create a new type cell representing the kind Typeω (the type of types)
     val kindType = literal(Typeω: Term)
 
-    // Create a new effects cell to capture any effects from the type expression
-    val effectsCell = literal(NoEffect)
-
-    elab(expr, kindType, effectsCell)
+    elab(expr, kindType, toEffectsCell(NoEffect))
   }
 
   def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
@@ -38,8 +35,8 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
       case None => Meta(newType)
     }
 
-  def elab(expr: Expr, ty: CellIdOr[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term
-  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term
+  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     val term = elab(expr, ty, effects)
     toId(term)
   }
@@ -50,7 +47,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
   // TODO: add something for implicit conversion
 
   /** ty is lhs */
-  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = toTerm {
+  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
@@ -229,14 +226,13 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         cell
       }
     }
-    val effects1: CellId[Effects] = effects match {
+    val effects1: CIdOf[EffectsCell] = effects match {
       case Some(effects) => {
-        val cell = able.addCell(LiteralCell[Effects](effects))
+        val cell = toEffectsCell(effects)
         cell
       }
       case None => {
-        val cell = able.addCell(OnceCell[Effects]())
-        cell
+        newEffects
       }
     }
     able.addPropagator(IsEffects(effects1))
@@ -245,7 +241,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     implicit val recording: Global = Global(references)
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
-    var judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readStable(effects1).get)
+    var judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readUnstable(effects1).get)
     boundary{
       while (true) {
         val metas = judge.collectMeta

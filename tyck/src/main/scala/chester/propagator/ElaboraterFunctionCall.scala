@@ -8,7 +8,7 @@ trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
     expr: DesaltFunctionCall,
     ty: CellId[Term],
-    effects: CellId[Effects]
+    effects: CIdOf[EffectsCell]
   )(using
     ctx: LocalCtx,
     parameter: Global,
@@ -21,7 +21,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
     expr: DesaltFunctionCall,
     ty: CellId[Term],
-    effects: CellId[Effects]
+    effects: CIdOf[EffectsCell]
   )(using
     ctx: LocalCtx,
     parameter: Global,

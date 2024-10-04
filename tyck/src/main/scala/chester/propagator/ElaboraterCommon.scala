@@ -29,7 +29,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   }
 
 
-  case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
+  case class DynamicEffectsCell(effects: Map[LocalV, Term] = Map()) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
     override def add(key: LocalV, value: Term): DynamicEffectsCell = {
       require(!effects.contains(key))
       copy(effects = effects + (key -> value))
@@ -250,8 +250,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     Meta(newType)
   }
 
-  def newEffects(using ck: Ck, state: StateAbility[Ck]): CellId[Effects] = {
-    val cell = state.addCell(OnceCell[Effects](default = Some(NoEffect)))
+  def newEffects(using ck: Ck, state: StateAbility[Ck]): CIdOf[EffectsCell] = {
+    val cell = state.addCell(DynamicEffectsCell())
     cell
   }
 
