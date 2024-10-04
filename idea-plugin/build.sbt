@@ -19,7 +19,7 @@ lazy val chesterPlugin =
       resolvers += "jitpack" at "https://jitpack.io",
       // Exclude LSP4J dependencies
       libraryDependencies ++= Seq(
-        ("com.github.chester-lang.chester" %% "lsp" % "c2e174695e")
+        ("com.github.chester-lang.chester" %% "lsp" % "b856059f91")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j.jsonrpc"),
         "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5"
