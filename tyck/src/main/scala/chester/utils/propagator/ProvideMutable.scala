@@ -183,7 +183,7 @@ trait ProvideMutable extends ProvideImpl {
         }
         if(tryFallback>1 && !didSomething) {
           for (c <- cellsNeeded) {
-            if (c.store.default.isDefined) {
+            if (c.noValue && c.store.default.isDefined) {
               fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
               didSomething = true
             }

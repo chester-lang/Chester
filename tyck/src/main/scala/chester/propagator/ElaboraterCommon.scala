@@ -218,6 +218,15 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   def newTypeTerm(using ck: Ck, state: StateAbility[Ck]): Term = {
     Meta(newType)
   }
+  
+  def newEffects(using ck: Ck, state: StateAbility[Ck]): CellId[Effects] = {
+    val cell = state.addCell(OnceCell[Effects](default=Some(NoEffect)))
+    cell
+  }
+  
+  def newEffectsTerm(using ck: Ck, state: StateAbility[Ck]): Effects | MetaTerm = {
+    Meta(newEffects)
+  }
 
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
@@ -345,9 +354,9 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
         case None => default
       }
     }
-    def apply(x: CellId[Term])(using state: StateAbility[Ck]): Term = {
+    def apply[T<:Term](x: CellId[T])(using state: StateAbility[Ck]): T|MetaTerm = {
       state.read(x) match {
-        case Some(x@Meta(id)) => rec(id,x)
+        case Some(x@Meta(id)) => rec(id,x).asInstanceOf[T|MetaTerm]
         case Some(x) => x
         case None => MetaTerm.from(x)
       }
@@ -373,9 +382,12 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
     LocalV(name, toTerm(ty), id, m)
   }
 
-  def toTerm(x: CellIdOr[Term])(using state: StateAbility[Ck]): Term = x match {
-    case x: Term => x
-    case x => Meta(x.asInstanceOf[CellId[Term]])
+  def toTerm[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): T|MetaTerm = x match {
+    case x: Term => x match {
+      case Meta(x) => Meta(x).asInstanceOf[T|MetaTerm]
+      case x => x.asInstanceOf[T|MetaTerm]
+    }
+    case x => Meta(x.asInstanceOf[CellId[Term]]).asInstanceOf[T|MetaTerm]
   }
 
   def toId[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): CellId[T] = x match {

@@ -490,7 +490,7 @@ case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[Ma
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
+case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
     val effectsDoc = if (effects.nonEmpty) {
@@ -501,13 +501,13 @@ case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect
     group(telescopeDoc <+> Docs.`->` <+> resultTy.toDoc <> effectsDoc)
   }
 
-  override def descent(f: Term => Term): FunctionType = thisOr(copy(telescope = telescope.map(_.descent(f)), effects = effects.descent(f), resultTy = f(resultTy)))
+  override def descent(f: Term => Term): FunctionType = thisOr(copy(telescope = telescope.map(_.descent(f)), effects = effects.descentM(f), resultTy = f(resultTy)))
 }
 
 
 object FunctionType {
-  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effect: Effects = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
-    new FunctionType(telescope, resultTy, effect, restrictInScope, meta)
+  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
+    new FunctionType(telescope, resultTy, effects, restrictInScope, meta)
   }
 
   def apply(telescope: TelescopeTerm, resultTy: Term): FunctionType = {
@@ -612,9 +612,22 @@ sealed trait Effect extends Term derives ReadWriter {
   override def descent(f: Term => Term): Effect = this
 }
 
-implicit val rwEffects: ReadWriter[Effects] = readwriter[Map[LocalV, Term]].bimap(_.effects, Effects(_))
+type EffectsM = (Effects | MetaTerm)
 
-case class Effects private[syntax](effects: Map[LocalV, Term]) extends AnyVal with ToDoc {
+given EffectsMRW: ReadWriter[EffectsM] = readwriter[Term].asInstanceOf[ReadWriter[EffectsM]]
+
+extension (e: EffectsM) {
+  def descentM(f: Term => Term): EffectsM = e match {
+    case e: Effects => e.descent(f)
+    case e: MetaTerm => f(e).asInstanceOf[EffectsM]
+  }
+  def nonEmpty: Boolean = e match {
+    case e: Effects => e.nonEmpty
+    case _ => true
+  }
+}
+
+case class Effects private[syntax](effects: Map[LocalV, Term]) extends ToDoc with Term derives ReadWriter  {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(effects.map { case (k, v) => k.toDoc <+> Docs.`:` <+> v.toDoc })
 
   def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => effect -> f(names) })
