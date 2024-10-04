@@ -1,6 +1,6 @@
 package chester.propagator
 
-import chester.error.FunctionCallUnificationError
+import chester.error.*
 import chester.syntax.concrete._
 import chester.syntax.core._
 
@@ -76,9 +76,10 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       state.read(functionTy) match {
         case Some(FunctionType(telescopes, retTy, _, _, _)) =>
           // Unify the arguments with the function's parameters
-          unifyTelescopes(telescopes, callings, cause)
-          // Unify the result type
-          unify(resultTy, retTy, cause)
+          if (unifyTelescopes(telescopes, callings, cause)) {
+            // Unify the result type
+            unify(resultTy, retTy, cause)
+          }
           true
         case Some(Meta(id)) =>
           // If the function type is a meta variable, delay until it is known
@@ -102,16 +103,16 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     )(using
       state: StateAbility[Ck],
       ck: Ck
-    ): Unit = {
+    ): Boolean = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
         val argTypes = actual.flatMap(_.args.map(_.value))
         val functionType = FunctionType(expected, newTypeTerm)
-        ck.reporter(FunctionCallUnificationError(functionType, argTypes, cause))
-        return
+        ck.reporter(FunctionCallArityMismatchError(expected.length, actual.length, cause))
+        return false
       }
 
-      expected.zip(actual).foreach { case (expectedTele, actualCalling) =>
+      expected.zip(actual).forall { case (expectedTele, actualCalling) =>
         unifyArgs(expectedTele.args, actualCalling.args, cause)
       }
     }
@@ -123,24 +124,23 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     )(using
       state: StateAbility[Ck],
       ck: Ck
-    ): Unit = {
+    ): Boolean = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
-        val argTypes = actualArgs.map(_.value)
-        val expectedTypes = expectedArgs.map(_.ty)
-        ck.reporter(FunctionCallUnificationError(FunctionType(Vector.empty, newTypeTerm), argTypes, cause))
-        return
+        ck.reporter(FunctionCallArgumentMismatchError(expectedArgs.length, actualArgs.length, cause))
+        return false
       }
 
       expectedArgs.zip(actualArgs).foreach { case (expectedArg, actualArg) =>
         // Unify argument types
         unify(actualArg.value, expectedArg.ty, cause)
       }
+      true
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], ck: Ck): ZonkResult = {
       // Implement zonking logic if needed
-      ZonkResult.Done
+      ZonkResult.NotYet
     }
   }
 }

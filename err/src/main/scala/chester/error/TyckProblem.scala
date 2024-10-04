@@ -277,3 +277,10 @@ case class FunctionCallUnificationError(
     t"Function call unification failed: expected $functionType but got $argumentTypes"
 
 }
+  case class FunctionCallArityMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
+    override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expects $expected arguments, but got $actual"
+  }
+
+case class FunctionCallArgumentMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expected $expected arguments, but received $actual"
+}
