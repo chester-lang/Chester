@@ -620,6 +620,9 @@ case class Effects private[syntax](effects: Map[LocalV, Term]) extends AnyVal wi
   def isEmpty: Boolean = (effects eq NoEffect.effects) || effects.isEmpty
 
   def nonEmpty: Boolean = (effects ne NoEffect.effects) || effects.nonEmpty
+
+  def collectMeta = effects.flatMap((a, b) => a.collectMeta ++ b.collectMeta)
+  def replaceMeta(f: MetaTerm=> Term): Effects = Effects(effects.map { case (a, b) => a.replaceMeta(f).asInstanceOf[LocalV] -> b.replaceMeta(f) })
 }
 
 object Effects {

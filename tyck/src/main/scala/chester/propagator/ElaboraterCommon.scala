@@ -236,6 +236,8 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
     }
     if (lhsResolved == rhsResolved) return
     (lhsResolved, rhsResolved) match {
+      case (Meta(lhs), rhs) => unify(lhs, rhs, cause)
+      case (lhs, Meta(rhs)) => unify(lhs, rhs, cause)
 
       // Structural unification for ListType
       case (ListType(elem1), ListType(elem2)) =>
@@ -272,6 +274,19 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
     state.addPropagator(Unify(t1, t2, cause))
   }
 
+  object Meta {
+    def apply(x: CellId[Term])(using state: StateAbility[Ck]): Term = {
+      state.read(x) match {
+        case Some(x) => x
+        case None => MetaTerm.from(x)
+      }
+    }
+    def unapply(x: Term): Option[CellId[Term]] = x match {
+      case m : MetaTerm => Some(m.unsafeRead[CellId[Term]])
+      case _ => None
+    }
+  }
+
   /** t is rhs, listT is lhs */
   case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(using ck: Ck, localCtx: LocalCtx) extends Propagator[Ck] {
     override val readingCells = Set(tRhs, listTLhs)
@@ -283,6 +298,10 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
       val t1 = state.read(this.tRhs)
       val listT1 = state.read(this.listTLhs)
       (t1, listT1) match {
+        case (_, Some(Meta(listTLhs))) => {
+          state.addPropagator(ListOf(tRhs, listTLhs, cause))
+          true
+        }
         case (_, Some(l)) if !l.isInstanceOf[ListType] => {
           ck.reporter.apply(TypeMismatch(ListType(AnyType0), l, cause))
           true
@@ -299,7 +318,10 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
           unify(this.listTLhs, ListType(t1): Term, cause)
           true
         }
-        case (_, _) => false
+        case (None, None) => {
+          unify(this.listTLhs, ListType(Meta(tRhs)): Term, cause)
+          true
+        }
       }
     }
 
