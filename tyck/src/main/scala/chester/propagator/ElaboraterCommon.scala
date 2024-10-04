@@ -228,7 +228,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     Meta(newEffects)
   }
 
-  def resolveVarRec(x: Term)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Term = {
+  def readVar(x: Term)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Term = {
     var result = x
     while (true) {
       result match {
@@ -245,11 +245,34 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
     result
   }
+  
+  def readMetaVar(x: Term)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Term = {
+    var result = x
+    while (true) {
+      result match {
+        case varCall: MaybeVarCall =>
+          localCtx.getKnown(varCall) match {
+            case Some(tyAndVal) =>
+              result = state.read(tyAndVal.valueId).getOrElse {
+                return result
+              }
+            case None => return result
+          }
+        case Meta(id) =>
+          state.read(id) match {
+            case Some(x) => result = x
+            case None => return result
+          }
+        case _ => return result
+      }
+    }
+    result
+  }
 
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
-    val lhsResolved = resolveVarRec(lhs)
-    val rhsResolved = resolveVarRec(rhs)
+    val lhsResolved = readVar(lhs)
+    val rhsResolved = readVar(rhs)
     if (lhsResolved == rhsResolved) return
     (lhsResolved, rhsResolved) match {
       case (Meta(lhs), rhs) => unify(lhs, rhs, cause)

@@ -51,7 +51,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   /** ty is lhs */
   override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CellId[Effects])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = toTerm {
-    val ty = state.toId(ty0)
+    val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
