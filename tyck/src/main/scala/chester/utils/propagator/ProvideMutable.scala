@@ -114,7 +114,7 @@ trait ProvideMutable extends ProvideImpl {
       while (true) {
         didSomething = false
         tickAll
-        cellsNeeded = cellsNeeded.filter(this.noValue(_)).sortBy(x=> -x.zonkingPropagators.map(_.store.score).sum)
+        cellsNeeded = cellsNeeded.filter(this.noAnyValue(_)).sortBy(x=> -x.zonkingPropagators.map(_.store.score).sum)
         if (cellsNeeded.isEmpty) {
           return
         }
@@ -142,7 +142,7 @@ trait ProvideMutable extends ProvideImpl {
                       p.alive = false
                       didSomething = true
                     case ZonkResult.Require(needed) =>
-                      val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                      val needed1 = needed.filter(this.noStableValue(_)).filterNot(cellsNeeded.contains)
                       if (needed1.nonEmpty) {
                         cellsNeeded = cellsNeeded ++ needed1
                         didSomething = true
@@ -168,7 +168,7 @@ trait ProvideMutable extends ProvideImpl {
                         p.alive = false
                         didSomething = true
                       case ZonkResult.Require(needed) =>
-                        val needed1 = needed.filter(this.noValue(_)).filterNot(cellsNeeded.contains)
+                        val needed1 = needed.filter(this.noStableValue(_)).filterNot(cellsNeeded.contains)
                         if (needed1.nonEmpty) {
                           cellsNeeded = cellsNeeded ++ needed1
                           didSomething = true

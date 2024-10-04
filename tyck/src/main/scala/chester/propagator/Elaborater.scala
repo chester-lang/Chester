@@ -246,13 +246,13 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         val metas = judge.collectMeta
         if (metas.isEmpty) break()
         able.naiveZonk(metas.map(x=>x.unsafeRead[CellId[Term]]))
-        judge = judge.replaceMeta(x => able.readStable(x.unsafeRead[CellId[Term]]).get)
+        judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
       }
     }
     val symbols = able.readUnstable(references).get.map { ref =>
       val call = able.readStable(ref.callAsMaybeVarCall).get
       val definedOn = able.readStable(ref.definedOn).get
-      val referencedOn = able.readStable(ref.referencedOn).get
+      val referencedOn = able.readUnstable(ref.referencedOn).get
       FinalReference(call, ref.id, definedOn, referencedOn)
     }
     TyckResult0(CkState(symbols), judge, reporter.getReports)

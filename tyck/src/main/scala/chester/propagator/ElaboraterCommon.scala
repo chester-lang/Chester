@@ -188,7 +188,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override val zonkingCells = Set(tyLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      if (state.noValue(tyLhs)) return false
+      if (state.noStableValue(tyLhs)) return false
       val ty_ = state.readStable(this.tyLhs).get
       ty_ match {
         case Meta(ty) => {
@@ -401,7 +401,7 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
     }
 
     def apply[T <: Term](x: CellId[T])(using state: StateAbility[Ck]): T | MetaTerm = {
-      state.readStable(x) match {
+      state.readUnstable(x) match {
         case Some(x@Meta(id)) => rec(id, x).asInstanceOf[T | MetaTerm]
         case Some(x) => x
         case None => MetaTerm.from(x)
@@ -412,7 +412,7 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
       case m: MetaTerm => {
         var result: CellId[Term] = m.unsafeRead[CellId[Term]]
         while (true) {
-          state.readStable(result) match {
+          state.readUnstable(result) match {
             case Some(m: MetaTerm) => result = m.unsafeRead[CellId[Term]]
             case _ => return Some(result)
           }

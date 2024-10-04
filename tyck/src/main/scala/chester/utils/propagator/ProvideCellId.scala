@@ -143,9 +143,13 @@ trait ProvideCellId {
 
     def addCell[T <: Cell[?]](cell: T): CIdOf[T]
 
-    def hasValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasStableValue)
+    def hasStableValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasStableValue)
 
-    def noValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasValue(id)
+    def noStableValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasStableValue(id)
+
+    def hasSomeValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasSomeValue)
+
+    def noAnyValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasSomeValue(id)
   }
 
   trait StateAbility[Ability] extends CellsStateAbility {

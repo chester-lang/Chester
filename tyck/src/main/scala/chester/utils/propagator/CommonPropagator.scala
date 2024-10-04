@@ -63,7 +63,7 @@ trait CommonPropagator[Ck] extends ProvideCellId {
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val needed = xs.filter(state.noValue(_))
+      val needed = xs.filter(state.noStableValue(_))
       if (needed.nonEmpty) return ZonkResult.Require(needed)
       val done = run
       require(done)
