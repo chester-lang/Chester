@@ -162,18 +162,23 @@ sealed trait Term extends ToDoc derives ReadWriter {
 }
 
 // allow write, not allow read
-given MetaTermHoldRW: ReadWriter[MetaTermHold] = readwriter[MetaTermRW].bimap(_ => MetaTermRW(), _ => {
+given MetaTermHoldRW: ReadWriter[MetaTermHold[?]] = readwriter[MetaTermRW].bimap(_ => MetaTermRW(), _ => {
   throw new UnsupportedOperationException("Cannot read MetaTerm")
 })
 
-case class MetaTermHold(inner: Any) extends AnyVal
+case class MetaTermHold[T](inner: T) extends AnyVal
 
 case class MetaTermRW()derives ReadWriter
 
-case class MetaTerm(impl: MetaTermHold)extends Term {
+case class MetaTerm(impl: MetaTermHold[?])extends Term {
+  def unsafeRead[T]: T = impl.inner.asInstanceOf[T]
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.group("Meta" <> Doc.text(impl.toString))
 
   override def descent(f: Term => Term): MetaTerm= this
+}
+
+object MetaTerm {
+  def from[T](x: T): MetaTerm = MetaTerm(MetaTermHold(x))
 }
 
 extension (t: Term) {
