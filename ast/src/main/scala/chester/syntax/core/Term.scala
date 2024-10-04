@@ -395,6 +395,8 @@ case class AnyType(level: Term) extends TypeTerm with WithType derives ReadWrite
 
 def AnyType0 = AnyType(Level0)
 
+val AnyType0Debug = AnyType(Level0)
+
 case object NothingType extends TypeTerm with WithType {
   override def descent(f: Term => Term): NothingType.type = this
 

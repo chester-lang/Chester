@@ -200,7 +200,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   }
 
   def newType(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-    val cell = state.addCell(OnceCell[Term](default=Some(AnyType0)))
+    val cell = state.addCell(OnceCell[Term](default=Some(AnyType0Debug)))
     cell
   }
 
