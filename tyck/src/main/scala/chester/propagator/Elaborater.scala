@@ -235,7 +235,6 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         newEffects
       }
     }
-    able.addPropagator(IsEffects(effects1))
     implicit val ctx: LocalCtx = LocalCtx.default
     val references = able.addCell(CollectionCell[Reference]())
     implicit val recording: Global = Global(references)

@@ -229,18 +229,6 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       ZonkResult.Done
   }
 
-  case class IsEffects(effects: CellId[Effects]) extends Propagator[Ck] {
-    override val readingCells = Set(effects)
-    override val zonkingCells = Set(effects)
-
-    override def run(using state: StateAbility[Ck], more: Ck): Boolean = state.hasValue(effects)
-
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      state.fill(effects, Effects.Empty)
-      ZonkResult.Done
-    }
-  }
-
   def newType(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     val cell = state.addCell(OnceCell[Term](default = Some(AnyType0Debug)))
     cell
