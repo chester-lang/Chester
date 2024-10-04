@@ -9,7 +9,7 @@ import chester.tyck.Reporter
 import chester.utils.*
 import chester.utils.propagator.CommonPropagator
 
-trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
+trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Ck] {
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
     val result = SimpleDesalt.desugarUnwrap(expr) match {
@@ -121,7 +121,7 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.value).getOrElse(lhs)
+            state.read(tyAndVal.valueId).getOrElse(lhs)
           case None => lhs
         }
       case _ => lhs
@@ -130,7 +130,7 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.value).getOrElse(rhs)
+            state.read(tyAndVal.valueId).getOrElse(rhs)
           case None => rhs
         }
       case _ => rhs
@@ -214,13 +214,17 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
     cell
   }
 
+  def newTypeTerm(using ck: Ck, state: StateAbility[Ck]): Term = {
+    Meta(newType)
+  }
+
   def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     if (lhs == rhs) return
     val lhsResolved = lhs match {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.value).getOrElse(lhs)
+            state.read(tyAndVal.valueId).getOrElse(lhs)
           case None => lhs
         }
       case _ => lhs
@@ -229,7 +233,7 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.value).getOrElse(rhs)
+            state.read(tyAndVal.valueId).getOrElse(rhs)
           case None => rhs
         }
       case _ => rhs
@@ -272,19 +276,6 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
 
   def unify(t1: CellId[Term], t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Unit = {
     state.addPropagator(Unify(t1, t2, cause))
-  }
-
-  object Meta {
-    def apply(x: CellId[Term])(using state: StateAbility[Ck]): Term = {
-      state.read(x) match {
-        case Some(x) => x
-        case None => MetaTerm.from(x)
-      }
-    }
-    def unapply(x: Term): Option[CellId[Term]] = x match {
-      case m : MetaTerm => Some(m.unsafeRead[CellId[Term]])
-      case _ => None
-    }
   }
 
   /** t is rhs, listT is lhs */
@@ -343,10 +334,36 @@ trait ElaboraterCommon extends ProvideCtx with CommonPropagator[Ck] {
   }
   given mutL(using m: MutableLocalCtx): LocalCtx = m.ctx
 
+}
 
-  def newLocalv(name: Name, ty: CellId[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta])(using ck: Ck, state: StateAbility[Ck]): CellId[LocalV] = {
-    val m = convertMeta(meta)
-    Map1(ty)(LocalV(name, _, id, m))
+trait ElaboraterBase extends CommonPropagator[Ck] {
+
+  object Meta {
+    def apply(x: CellId[Term])(using state: StateAbility[Ck]): Term = {
+      state.read(x) match {
+        case Some(x) => x
+        case None => MetaTerm.from(x)
+      }
+    }
+    def unapply(x: Term): Option[CellId[Term]] = x match {
+      case m : MetaTerm => Some(m.unsafeRead[CellId[Term]])
+      case _ => None
+    }
   }
 
+
+  def newLocalv(name: Name, ty: CellIdOr[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta])(using ck: Ck, state: StateAbility[Ck]): LocalV = {
+    val m = convertMeta(meta)
+    LocalV(name, toTerm(ty), id, m)
+  }
+
+  def toTerm(x: CellIdOr[Term])(using state: StateAbility[Ck]): Term = x match {
+    case x: Term => x
+    case x => Meta(x.asInstanceOf[CellId[Term]])
+  }
+
+  def toId[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): CellId[T] = x match {
+    case Meta(id) => id.asInstanceOf[CellId[T]]
+    case x => state.toId(x)
+  }
 }

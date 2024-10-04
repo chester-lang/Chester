@@ -8,7 +8,7 @@ trait ElaboraterFunction extends ProvideCtx with Elaborater {
 }
 
 trait ProvideElaboraterFunction extends ElaboraterFunction {
-  def elabArg(arg: Arg, effects: CellId[Effects])(using localCtx: MutableLocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[ArgTerm] = {
+  def elabArg(arg: Arg, effects: CellId[Effects])(using localCtx: MutableLocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellIdOr[ArgTerm] = {
     require(arg.decorations.isEmpty, "decorations are not supported yet")
     val ty = elabTy(arg.ty)
     val default = arg.exprOrDefault.map(elab(_, ty, effects))
@@ -19,20 +19,16 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     localCtx.update(_.add(ContextItem(arg.name.name, id, bind, ty, Some(r))))
     default match {
       case Some(defaultValue) =>
-        Map3(bind, ty, defaultValue) { (bind, ty, defaultValue) =>
-          ArgTerm(bind, ty, Some(defaultValue), arg.vararg)
-        }
+        ArgTerm(bind, ty, Some(defaultValue), arg.vararg)
       case None =>
-        Map2(bind, ty) { (bind, ty) =>
-          ArgTerm(bind, ty, None, arg.vararg)
-        }
+        ArgTerm(bind, ty, None, arg.vararg)
     }
   }
 
-  def elabTelescope(telescope: DefTelescope, effects: CellId[Effects])(using localCtx: MutableLocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[TelescopeTerm] = {
+  def elabTelescope(telescope: DefTelescope, effects: CellId[Effects])(using localCtx: MutableLocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellIdOr[TelescopeTerm] = {
     // Process each argument in the telescope, updating the context
     val argTerms = telescope.args.map { arg =>
-      elabArg(arg, effects)
+      toId(elabArg(arg, effects))
     }
 
     // Combine the argument terms into a TelescopeTerm
@@ -47,19 +43,19 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
 
     // Elaborate each telescope and collect TelescopeTerms
     val telescopeTerms: Seq[CellId[TelescopeTerm]] = expr.telescope.map { telescope =>
-      elabTelescope(telescope, effects)(using mutableCtx, parameter, ck, state)
+      toId(elabTelescope(telescope, effects)(using mutableCtx, parameter, ck, state))
     }
 
     // Process the return type, if provided
     val returnType: CellId[Term] = expr.resultTy match {
       case Some(rtExpr) =>
-        elabTy(Some(rtExpr))(using mutableCtx.ctx, parameter, ck, state)
+        toId(elabTy(Some(rtExpr))(using mutableCtx.ctx, parameter, ck, state))
       case None =>
         newType(using ck, state)
     }
 
     // Process the body of the function using the updated context
-    val bodyTerm: CellId[Term] = elab(expr.body, returnType, effects)(using mutableCtx.ctx, parameter, ck, state)
+    val bodyTerm: CellId[Term] = elabId(expr.body, returnType, effects)(using mutableCtx.ctx, parameter, ck, state)
 
     // Build the function type by folding over the telescopes
     val functionType: CellId[Term] = {

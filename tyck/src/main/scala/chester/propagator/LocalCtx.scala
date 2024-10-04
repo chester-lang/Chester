@@ -7,16 +7,17 @@ import chester.syntax.concrete.{Expr, ResolvingModules}
 import chester.syntax.{Name, QualifiedIDString}
 import chester.utils.propagator.*
 
-trait ProvideCtx extends ProvideCellId {
+trait ProvideCtx extends ProvideCellId with ElaboraterBase {
 
   case class ContextItem(
                           name: Name,
                           uniqId: UniqIdOf[? <: MaybeVarCall],
-                          ref: CellId[? <: MaybeVarCall],
-                          ty: CellId[Term],
+                          ref: MaybeVarCall,
+                          ty: CellIdOr[Term],
                           reference: Option[Reference] = None
                         ) {
-    def asTerm: CellId[Term] = ref.asInstanceOf[CellId[Term]]
+    def tyId(using state: StateAbility[Ck]): CellId[Term] = toId(ty)
+    def tyTerm(using state: StateAbility[Ck]): Term = toTerm(ty)
   }
 
   object ContextItem {
@@ -25,14 +26,19 @@ trait ProvideCtx extends ProvideCellId {
       val name = ToplevelV(QualifiedIDString.from(), item.id, item.ty, varId)
       val ty1 = state.toId(item.ty)
       (TyAndVal(ty1, state.toId(item.value)),
-        ContextItem(item.id, varId, literal(name), ty1))
+        ContextItem(item.id, varId, name, ty1))
     }
   }
 
   case class TyAndVal(
-                       ty: CellId[Term],
-                       value: CellId[Term]
-                     )
+                       ty: CellIdOr[Term],
+                       value: CellIdOr[Term]
+                     ) {
+    def tyId(using state: StateAbility[Ck]): CellId[Term] = toId(ty)
+    def valueId(using state: StateAbility[Ck]): CellId[Term] = toId(value)
+    def tyTerm(using state: StateAbility[Ck]): Term = toTerm(ty)
+    def valueTerm(using state: StateAbility[Ck]): Term = toTerm(value)
+  }
 
   object TyAndVal {
     def create[Ck](ty: Term, value: Term)(using state: StateAbility[Ck]): TyAndVal = {
