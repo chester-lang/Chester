@@ -10,23 +10,36 @@ import chester.utils.*
 import chester.utils.propagator.CommonPropagator
 
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Ck] {
-  
+
   trait EffectsCell extends Cell[Effects] {
     def requireEffect(effect: Term)(using ck: Ck, state: StateAbility[Ck]): LocalV = {
       ???
     }
   }
-  
+
+
+  def toEffectsM(x: CellIdOr[Effects])(using state: StateAbility[Ck]): EffectsM = x match {
+    case x: Effects => x
+    case x: EffectsCell => Meta(x.asInstanceOf[CellId[Effects]])
+  }
+
+  def toEffectsCell(x: EffectsM)(using state: StateAbility[Ck]): CIdOf[EffectsCell] = x match {
+    case x: Effects => state.addCell(FixedEffectsCell(x))
+    case Meta(x) => x.asInstanceOf[CIdOf[EffectsCell]]
+  }
+
+
   case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
     override def add(key: LocalV, value: Term): DynamicEffectsCell = {
       require(!effects.contains(key))
       copy(effects = effects + (key -> value))
     }
+
     override def readUnstable: Option[Effects] = Some(Effects(effects))
   }
-  
-  case class FixedEffectsCell(effects: Map[LocalV, Term]) extends EffectsCell with NoFill[Effects] {
-    override def readStable: Option[Effects] = Some(Effects(effects))
+
+  case class FixedEffectsCell(effects: Effects) extends EffectsCell with NoFill[Effects] {
+    override def readStable: Option[Effects] = Some(effects)
   }
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
@@ -229,19 +242,19 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   }
 
   def newType(using ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
-    val cell = state.addCell(OnceCell[Term](default=Some(AnyType0Debug)))
+    val cell = state.addCell(OnceCell[Term](default = Some(AnyType0Debug)))
     cell
   }
 
   def newTypeTerm(using ck: Ck, state: StateAbility[Ck]): Term = {
     Meta(newType)
   }
-  
+
   def newEffects(using ck: Ck, state: StateAbility[Ck]): CellId[Effects] = {
-    val cell = state.addCell(OnceCell[Effects](default=Some(NoEffect)))
+    val cell = state.addCell(OnceCell[Effects](default = Some(NoEffect)))
     cell
   }
-  
+
   def newEffectsTerm(using ck: Ck, state: StateAbility[Ck]): Effects | MetaTerm = {
     Meta(newEffects)
   }
@@ -263,7 +276,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
     result
   }
-  
+
   def readMetaVar(x: Term)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): Term = {
     var result = x
     while (true) {
@@ -384,6 +397,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       ctx = f(ctx)
     }
   }
+
   given mutL(using m: MutableLocalCtx): LocalCtx = m.ctx
 
 }
@@ -397,17 +411,19 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
         case None => default
       }
     }
-    def apply[T<:Term](x: CellId[T])(using state: StateAbility[Ck]): T|MetaTerm = {
+
+    def apply[T <: Term](x: CellId[T])(using state: StateAbility[Ck]): T | MetaTerm = {
       state.readStable(x) match {
-        case Some(x@Meta(id)) => rec(id,x).asInstanceOf[T|MetaTerm]
+        case Some(x@Meta(id)) => rec(id, x).asInstanceOf[T | MetaTerm]
         case Some(x) => x
         case None => MetaTerm.from(x)
       }
     }
+
     def unapply(x: Term)(using state: StateAbility[Ck]): Option[CellId[Term]] = x match {
-      case m : MetaTerm => {
+      case m: MetaTerm => {
         var result: CellId[Term] = m.unsafeRead[CellId[Term]]
-        while(true){
+        while (true) {
           state.readStable(result) match {
             case Some(m: MetaTerm) => result = m.unsafeRead[CellId[Term]]
             case _ => return Some(result)
@@ -425,24 +441,24 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
     LocalV(name, toTerm(ty), id, m)
   }
 
-  def toTerm[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): T|MetaTerm = x match {
+  def toTerm[T <: Term](x: CellIdOr[T])(using state: StateAbility[Ck]): T | MetaTerm = x match {
     case x: Term => x match {
-      case Meta(x) => Meta(x).asInstanceOf[T|MetaTerm]
-      case x => x.asInstanceOf[T|MetaTerm]
+      case Meta(x) => Meta(x).asInstanceOf[T | MetaTerm]
+      case x => x.asInstanceOf[T | MetaTerm]
     }
-    case x => Meta(x.asInstanceOf[CellId[Term]]).asInstanceOf[T|MetaTerm]
+    case x => Meta(x.asInstanceOf[CellId[Term]]).asInstanceOf[T | MetaTerm]
   }
 
-  def toId[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): CellId[T] = x match {
+  def toId[T <: Term](x: CellIdOr[T])(using state: StateAbility[Ck]): CellId[T] = x match {
     case Meta(id) => id.asInstanceOf[CellId[T]]
     case x => state.toId(x)
   }
 
-  def merge(a: CellIdOr[Term],b:CellIdOr[Term])(using state: StateAbility[Ck]) : Unit = {
-    if(a==b) return
+  def merge(a: CellIdOr[Term], b: CellIdOr[Term])(using state: StateAbility[Ck]): Unit = {
+    if (a == b) return
     val t1 = toTerm(a)
     val t2 = toTerm(b)
-    if(a==b) return
+    if (a == b) return
     (t1, t2) match {
       case (Meta(t1), t2) => state.fill(t1, t2)
       case (t1, Meta(t2)) => state.fill(t2, t1)
