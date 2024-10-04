@@ -44,6 +44,7 @@ trait ProvideMutable extends ProvideImpl {
     }
 
     override def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit = {
+      didSomething = true
       require(id.uniqId == uniqId)
       id.store = f(id.store.asInstanceOf[T])
       id.didChange = true
@@ -51,11 +52,13 @@ trait ProvideMutable extends ProvideImpl {
     }
 
     override def addCell[T <: Cell[?]](cell: T): CIdOf[T] = {
+      didSomething = true
       val id = new HoldCell[T](uniqId, cell)
       id
     }
 
     override def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T] = {
+      didSomething = true
       val id = new HoldPropagator[T](uniqId, propagator)
       for (cell <- propagator.zonkingCells) {
         cell.zonkingPropagators = cell.zonkingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
@@ -80,6 +83,7 @@ trait ProvideMutable extends ProvideImpl {
             require(p.uniqId == uniqId)
             if (p.alive) {
               if (p.store.asInstanceOf[Propagator[Ability]].run(using this, more)) {
+                didSomething = true
                 p.alive = false
               }
             }
@@ -95,24 +99,32 @@ trait ProvideMutable extends ProvideImpl {
     override def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = {
       val cell1 = cell.asInstanceOf[CIdOf[Cell[?]]]
       for(p<-cell1.zonkingPropagators.filter(x=> x.store.identify == Some(identify))) {
-        p.alive = false
+        if(p.alive) {
+          didSomething = true
+          p.alive = false
+        }
       }
     }
+
+    var didSomething = false
 
     override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit = {
       var cellsNeeded = cells
       var tryFallback = false
       while (true) {
+        didSomething = false
         tickAll
-        cellsNeeded = cellsNeeded.filter(this.noValue(_))
+        cellsNeeded = cellsNeeded.filter(this.noValue(_)).sortBy(x=> -x.zonkingPropagators.map(_.store.score).sum)
         if (cellsNeeded.isEmpty) {
           return
         }
-        var didSomething = false
         for (c <- cellsNeeded) {
           require(c.uniqId == uniqId)
           if (c.noValue) {
-            for (p <- c.zonkingPropagators) {
+            val aliveP = c.zonkingPropagators.filter(_.alive)
+            c.zonkingPropagators = aliveP
+            val zonking = aliveP.sortBy(x=> -x.store.score)
+            for (p <- zonking) {
               require(p.uniqId == uniqId)
               tickAll
               if (c.noValue && p.alive) {
@@ -133,7 +145,7 @@ trait ProvideMutable extends ProvideImpl {
               }
             }
             if (tryFallback && !didSomething) {
-              for (p <- c.zonkingPropagators) {
+              for (p <- zonking) {
                 require(p.uniqId == uniqId)
                 tickAll
                 if (c.noValue && p.alive) {

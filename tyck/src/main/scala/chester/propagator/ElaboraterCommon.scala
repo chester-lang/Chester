@@ -194,6 +194,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 
   object IsTypeIdentify
   case class IsType(ty: CellId[Term]) extends Propagator[Ck] {
+    override def score: Int = NoScore
     override def identify: Option[Any] = Some(IsTypeIdentify)
     override val readingCells = Set(ty)
     override val zonkingCells = Set(ty)

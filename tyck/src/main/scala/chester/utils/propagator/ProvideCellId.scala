@@ -73,8 +73,12 @@ trait ProvideCellId {
     val cell = state.addCell(LiteralCell[T](t))
     cell
   }
+  
+  val NormalScore: Int = 8
+  val NoScore: Int = 0
 
   trait Propagator[Ability] {
+    def score: Int = NormalScore
 
     def identify: Option[Any] = None
 
