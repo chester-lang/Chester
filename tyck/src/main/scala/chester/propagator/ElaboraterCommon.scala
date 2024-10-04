@@ -12,6 +12,9 @@ import chester.utils.propagator.CommonPropagator
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Ck] {
   
   trait EffectsCell extends Cell[Effects] {
+    def requireEffect(effect: Term)(using ck: Ck, state: StateAbility[Ck]): LocalV = {
+      ???
+    }
   }
   
   case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
