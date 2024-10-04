@@ -11,14 +11,19 @@ import chester.utils.propagator.CommonPropagator
 
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Ck] {
   
-  case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with Cell[Effects] {
+  trait EffectsCell extends Cell[Effects] {
+  }
+  
+  case class DynamicEffectsCell(effects: Map[LocalV, Term]) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
     override def add(key: LocalV, value: Term): DynamicEffectsCell = {
       require(!effects.contains(key))
       copy(effects = effects + (key -> value))
     }
-    override def fill(newValue: Effects): DynamicEffectsCell = throw new UnsupportedOperationException("EffectsCell cannot be filled")
+    override def readUnstable: Option[Effects] = Some(Effects(effects))
+  }
+  
+  case class FixedEffectsCell(effects: Map[LocalV, Term]) extends EffectsCell with NoFill[Effects] {
     override def readStable: Option[Effects] = Some(Effects(effects))
-    
   }
 
   def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {

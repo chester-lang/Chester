@@ -32,30 +32,26 @@ trait ProvideCellId {
     def fill(newValue: T): Cell[T]
   }
 
-  trait SeqCell[T] extends Cell[Seq[T]] {
+  trait SeqCell[T] extends UnstableCell[Seq[T]] with NoFill[Seq[T]] {
     def add(newValue: T): SeqCell[T]
-
-    override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
-
-    override def readStable: Option[Seq[T]] = throw new UnsupportedOperationException("SeqCell is not stable")
-
-    override def hasStableValue: Boolean = throw new UnsupportedOperationException("SeqCell is not stable")
-
-    override def noStableValue: Boolean = throw new UnsupportedOperationException("SeqCell is not stable")
   }
 
   trait BaseMapCell[A, B] {
     def add(key: A, value: B): BaseMapCell[A, B]
   }
+  
+  trait UnstableCell[T] extends Cell[T] {
+    override def readStable: Option[T] = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
 
-  trait MapCell[A, B] extends Cell[Map[A, B]] with BaseMapCell[A, B] {
-    override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
+    override def hasStableValue: Boolean = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
 
-    override def readStable: Option[Map[A, B]] = throw new UnsupportedOperationException("MapCell is not stable")
+    override def noStableValue: Boolean = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
+  }
+  trait NoFill[T] extends Cell[T] {
+    override def fill(newValue: T): Cell[T] = throw new UnsupportedOperationException(s"${getClass.getName} cannot be filled")
+  }
 
-    override def hasStableValue: Boolean = throw new UnsupportedOperationException("MapCell is not stable")
-
-    override def noStableValue: Boolean = throw new UnsupportedOperationException("MapCell is not stable")
+  trait MapCell[A, B] extends UnstableCell[Map[A, B]] with BaseMapCell[A, B] with NoFill[Map[A, B]] {
   }
 
   case class OnceCell[T](value: Option[T] = None, override val default: Option[T] = None) extends Cell[T] {
