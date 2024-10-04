@@ -3,7 +3,7 @@ import sbt.librarymanagement.InclExclRule
 
 import scala.scalanative.build.*
 
-val scala3Version = "3.5.1"
+val scala3Version = "3.5.2-RC1"
 val scala2Version = "2.13.15"
 
 val graalVm = "graalvm-java23"
