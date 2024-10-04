@@ -12,7 +12,7 @@ trait ProvideMultithread extends ProvideImpl {
     val readingPropagators = new ConcurrentLinkedQueue[PIdOf[Propagator[?]]]()
     val zonkingPropagators = new ConcurrentLinkedQueue[PIdOf[Propagator[?]]]()
 
-    def store: Cell[?] = storeRef.get()
+    def store: T = storeRef.get().asInstanceOf[T]
 
     /** Atomically updates the store */
     def compareAndSetStore(expectedValue: Cell[?], newValue: Cell[?]): Boolean = {
@@ -36,7 +36,7 @@ trait ProvideMultithread extends ProvideImpl {
     private val storeRef = new AtomicReference[Propagator[?]](initialValue)
     private val aliveRef = new AtomicBoolean(true)
 
-    def store: Propagator[?] = storeRef.get()
+    def store: T = storeRef.get().asInstanceOf[T]
 
     /** Atomically updates the store */
     def compareAndSetStore(expectedValue: Propagator[?], newValue: Propagator[?]): Boolean = {
@@ -54,20 +54,18 @@ trait ProvideMultithread extends ProvideImpl {
       extends StateAbility[Ability] {
 
     private val propagators = new ConcurrentLinkedQueue[PIdOf[Propagator[Ability]]]()
-    private val forkJoinPool = ForkJoinPool.commonPool()
+    private val forkJoinPool = new ForkJoinPool(Runtime.getRuntime.availableProcessors())
 
     override def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T] = {
       require(id.uniqId == uniqId)
-      Some(id.store.asInstanceOf[T])
+      Some(id.store)
     }
-    
-    override def tick(using more: Ability): Unit = ()
 
     override def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit = {
       require(id.uniqId == uniqId)
       var updated = false
       while (!updated) {
-        val oldValue = id.store.asInstanceOf[T]
+        val oldValue = id.store
         val newValue = f(oldValue)
         updated = id.compareAndSetStore(oldValue, newValue)
         if (updated) {
@@ -77,11 +75,15 @@ trait ProvideMultithread extends ProvideImpl {
       }
     }
 
+    override def tick(using Ability): Unit = {
+      // Do nothing
+    }
+
     override def fill[T <: Cell[U], U](id: CIdOf[T], value: U)(using Ability): Unit = {
       require(id.uniqId == uniqId)
       var updated = false
       while (!updated) {
-        val oldValue = id.store.asInstanceOf[T]
+        val oldValue = id.store
         val newValue = oldValue.fill(value).asInstanceOf[T]
         updated = id.compareAndSetStore(oldValue, newValue)
         if (updated) {
@@ -92,29 +94,26 @@ trait ProvideMultithread extends ProvideImpl {
     }
 
     override def addCell[T <: Cell[?]](cell: T): CIdOf[T] = {
-      val id = new HoldCell[T](uniqId, cell)
-      id
+      new HoldCell[T](uniqId, cell)
     }
 
-    override def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T] = {
+    override def addPropagator[T <: Propagator[Ability]](propagator: T)(using Ability): PIdOf[T] = {
       val id = new HoldPropagator[T](uniqId, propagator)
       propagators.add(id.asInstanceOf[PIdOf[Propagator[Ability]]])
       // Submit task to process this propagator
-      forkJoinPool.execute(new PropagatorTask(id, this, more))
+      forkJoinPool.execute(new PropagatorTask(Vector(id.asInstanceOf[HoldPropagator[Propagator[Ability]]]), this))
       id
     }
 
     override def stable: Boolean = propagators.isEmpty
 
-    // Merged tick and tickAll into processPropagators
+    // Process propagators in batches to improve performance
     private def processPropagators(changedCell: CIdOf[?])(using Ability): Unit = {
-      val dependentPropagators = changedCell.readingPropagators.iterator().asScala.toVector
-      for (p <- dependentPropagators if p.alive) {
-        forkJoinPool.execute(new PropagatorTask(p.asInstanceOf[HoldPropagator[Propagator[Ability]]], this, summon[Ability]))
+      val dependentPropagators = changedCell.readingPropagators.iterator().asScala.filter(_.alive).toVector
+      if (dependentPropagators.nonEmpty) {
+        forkJoinPool.execute(new BatchPropagatorTask(dependentPropagators.asInstanceOf[Vector[HoldPropagator[Propagator[Ability]]]], this))
       }
     }
-
-    // No longer need tick and tickAll
 
     override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using Ability): Unit = {
       var cellsNeeded = cells
@@ -123,13 +122,17 @@ trait ProvideMultithread extends ProvideImpl {
 
       while (loop) {
         // Process any remaining propagators
-        cellsNeeded.foreach { c =>
+        val tasks = cellsNeeded.flatMap { c =>
           if (c.noAnyValue) {
-            val tasks = c.zonkingPropagators.asScala.filter(_.alive).map { p =>
-              new ZonkTask(c, p.asInstanceOf[HoldPropagator[Propagator[Ability]]], firstFallback = tryFallback == 0, this, summon[Ability])
+            c.zonkingPropagators.asScala.filter(_.alive).map { p =>
+              new ZonkTask(c, p.asInstanceOf[HoldPropagator[Propagator[Ability]]], firstFallback = tryFallback == 0, this)
             }
-            ForkJoinTask.invokeAll(tasks.toList.asJava)
+          } else {
+            Vector.empty
           }
+        }
+        if (tasks.nonEmpty) {
+          ForkJoinTask.invokeAll(tasks.asJava)
         }
 
         // Check if all cells have values
@@ -140,7 +143,7 @@ trait ProvideMultithread extends ProvideImpl {
           tryFallback += 1
           if (tryFallback > 2) {
             // Last resort: try default values
-            val defaultTasks = cellsNeeded.map(c => new DefaultValueTask(c, this, summon[Ability]))
+            val defaultTasks = cellsNeeded.map(c => new DefaultValueTask(c, this))
             ForkJoinTask.invokeAll(defaultTasks.asJava)
 
             // Check again if all cells have values
@@ -155,20 +158,52 @@ trait ProvideMultithread extends ProvideImpl {
       }
     }
 
-    class PropagatorTask(
-        p: PIdOf[Propagator[Ability]],
-        state: Impl[Ability],
-        more: Ability
-    ) extends RecursiveAction {
+    class BatchPropagatorTask(
+        propagators: Vector[PIdOf[Propagator[Ability]]],
+        state: Impl[Ability]
+    )(using more: Ability) extends RecursiveAction {
       override def compute(): Unit = {
-        require(p.uniqId == uniqId)
-        if (p.alive) {
-          val propagator = p.store.asInstanceOf[Propagator[Ability]]
-          val done = propagator.run(using state, more)
-          if (done) {
-            p.setAlive(false)
-            propagators.remove(p)
+        try {
+          propagators.foreach { p =>
+            require(p.uniqId == uniqId)
+            if (p.alive) {
+              val propagator = p.store
+              val done = propagator.run(using state, more)
+              if (done) {
+                p.setAlive(false)
+                state.propagators.remove(p)
+              }
+            }
           }
+        } catch {
+          case ex: Exception =>
+            // Handle or log the exception as needed
+            throw ex
+        }
+      }
+    }
+
+    class PropagatorTask(
+        propagators: Vector[PIdOf[Propagator[Ability]]],
+        state: Impl[Ability]
+    )(using more: Ability) extends RecursiveAction {
+      override def compute(): Unit = {
+        try {
+          propagators.foreach { p =>
+            require(p.uniqId == uniqId)
+            if (p.alive) {
+              val propagator = p.store
+              val done = propagator.run(using state, more)
+              if (done) {
+                p.setAlive(false)
+                state.propagators.remove(p)
+              }
+            }
+          }
+        } catch {
+          case ex: Exception =>
+            // Handle or log the exception as needed
+            throw ex
         }
       }
     }
@@ -177,14 +212,13 @@ trait ProvideMultithread extends ProvideImpl {
         c: CIdOf[Cell[?]],
         p: PIdOf[Propagator[Ability]],
         firstFallback: Boolean,
-        state: Impl[Ability],
-        more: Ability
-    ) extends RecursiveAction {
+        state: Impl[Ability]
+    )(using more: Ability) extends RecursiveAction {
       override def compute(): Unit = {
         require(c.uniqId == uniqId)
         require(p.uniqId == uniqId)
         if (c.noAnyValue && p.alive) {
-          val propagator = p.store.asInstanceOf[Propagator[Ability]]
+          val propagator = p.store
           val zonkResult = if (firstFallback) {
             propagator.naiveZonk(Vector(c))(using state, more)
           } else {
@@ -198,7 +232,7 @@ trait ProvideMultithread extends ProvideImpl {
               needed.foreach { n =>
                 if (n.noStableValue) {
                   // Process the newly needed cells
-                  state.naiveZonk(Vector(n))(using more)
+                  state.naiveZonk(Vector(n))
                 }
               }
             case ZonkResult.NotYet =>
@@ -208,10 +242,10 @@ trait ProvideMultithread extends ProvideImpl {
       }
     }
 
-    class DefaultValueTask(c: CIdOf[Cell[?]], state: Impl[Ability], ability: Ability) extends RecursiveAction {
+    class DefaultValueTask(c: CIdOf[Cell[?]], state: Impl[Ability])(using ability: Ability) extends RecursiveAction {
       override def compute(): Unit = {
         if (c.noAnyValue && c.store.default.isDefined) {
-          state.fill(c.asInstanceOf[CIdOf[Cell[Any]]], c.store.default.get)(using ability)
+          state.fill(c.asInstanceOf[CIdOf[Cell[Any]]], c.store.default.get)
         }
       }
     }
