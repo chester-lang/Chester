@@ -110,7 +110,7 @@ trait ProvideMutable extends ProvideImpl {
 
     override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit = {
       var cellsNeeded = cells
-      var tryFallback = false
+      var tryFallback: Int = 0
       while (true) {
         didSomething = false
         tickAll
@@ -149,7 +149,7 @@ trait ProvideMutable extends ProvideImpl {
                 }
               }
             }
-            if (tryFallback && !didSomething) {
+            if (tryFallback>0 && !didSomething) {
               for (p <- zonking) {
                 require(p.uniqId == uniqId)
                 tickAll
@@ -171,16 +171,22 @@ trait ProvideMutable extends ProvideImpl {
                 }
               }
             }
+            if(tryFallback>1 && !didSomething) {
+              if(c.store.default.isDefined) {
+                fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
+                didSomething = true
+              }
+            }
           }
         }
         if (!didSomething) {
-          if (tryFallback) {
+          if (tryFallback>1) {
             throw new IllegalStateException(s"Cells $cellsNeeded are not covered by any propagator")
           } else {
-            tryFallback = true
+            tryFallback = tryFallback+1
           }
         } else {
-          tryFallback = false
+          tryFallback = 0
         }
       }
     }

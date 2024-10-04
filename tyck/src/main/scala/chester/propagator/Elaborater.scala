@@ -151,13 +151,13 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             val ty = expr.ty match {
               case Some(tyExpr) => {
                 val t = checkTypeId(tyExpr)
-                state.addPropagator(Merge(t, d.tyAndVal.tyId))
+                merge(t, d.tyAndVal.tyId)
                 t
               }
               case None => d.tyAndVal.ty
             }
             val wellTyped = elabId(expr.body.get, ty, effects)
-            state.addPropagator(Merge(d.tyAndVal.valueId, wellTyped))
+            merge(d.tyAndVal.valueId, wellTyped)
             ctx = ctx.knownAdd(d.id, TyAndVal(ty, wellTyped))
             Vector(DefStmtTerm(d.item.name, Meta(wellTyped), toTerm(ty)))
           }

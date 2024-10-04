@@ -328,14 +328,30 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 trait ElaboraterBase extends CommonPropagator[Ck] {
 
   object Meta {
+    def rec(x: CellId[Term], default: Term)(using state: StateAbility[Ck]): Term = {
+      state.read(x) match {
+        case Some(x) => x
+        case None => default
+      }
+    }
     def apply(x: CellId[Term])(using state: StateAbility[Ck]): Term = {
       state.read(x) match {
+        case Some(x@Meta(id)) => rec(id,x)
         case Some(x) => x
         case None => MetaTerm.from(x)
       }
     }
-    def unapply(x: Term): Option[CellId[Term]] = x match {
-      case m : MetaTerm => Some(m.unsafeRead[CellId[Term]])
+    def unapply(x: Term)(using state: StateAbility[Ck]): Option[CellId[Term]] = x match {
+      case m : MetaTerm => {
+        var result: CellId[Term] = m.unsafeRead[CellId[Term]]
+        while(true){
+          state.read(result) match {
+            case Some(m: MetaTerm) => result = m.unsafeRead[CellId[Term]]
+            case _ => return Some(result)
+          }
+        }
+        throw new IllegalStateException("Unreachable")
+      }
       case _ => None
     }
   }
@@ -354,5 +370,17 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
   def toId[T<:Term](x: CellIdOr[T])(using state: StateAbility[Ck]): CellId[T] = x match {
     case Meta(id) => id.asInstanceOf[CellId[T]]
     case x => state.toId(x)
+  }
+
+  def merge(a: CellIdOr[Term],b:CellIdOr[Term])(using state: StateAbility[Ck]) : Unit = {
+    if(a==b) return
+    val t1 = toTerm(a)
+    val t2 = toTerm(b)
+    if(a==b) return
+    (t1, t2) match {
+      case (Meta(t1), t2) => state.fill(t1, t2)
+      case (t1, Meta(t2)) => state.fill(t2, t1)
+      case _ => ???
+    }
   }
 }

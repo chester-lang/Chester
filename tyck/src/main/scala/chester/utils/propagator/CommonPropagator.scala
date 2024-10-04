@@ -3,7 +3,7 @@ import cats.implicits.*
 
 trait CommonPropagator[Ck] extends ProvideCellId {
 
-  case class Merge[T](a: CellId[T], b: CellId[T]) extends Propagator[Ck] {
+  case class MergeSimple[T](a: CellId[T], b: CellId[T]) extends Propagator[Ck] {
     override val readingCells = Set(a, b)
     override val writingCells = Set(a, b)
     override val zonkingCells = Set(a, b)
