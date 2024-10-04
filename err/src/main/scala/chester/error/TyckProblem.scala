@@ -267,3 +267,13 @@ case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
 case class DuplicateDefinition(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Duplicate definition"
 }
+
+case class FunctionCallUnificationError(
+  functionType: Term,
+  argumentTypes: Vector[Term],
+  cause: Expr
+) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Function call unification failed: expected $functionType but got $argumentTypes"
+
+}

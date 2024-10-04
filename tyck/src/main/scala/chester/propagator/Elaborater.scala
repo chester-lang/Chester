@@ -45,7 +45,7 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
   }
 }
 
-trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFunction {
+trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFunction with ElaboraterFunctionCall {
 
   // TODO: add something for implicit conversion
 
@@ -192,6 +192,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           BlockTerm(stmts, elab(tailExpr, ty, effects))
         }
       }
+      case expr: DesaltFunctionCall => elabFunctionCall(expr, ty, effects)
       case expr: Expr => {
         val problem = NotImplemented(expr)
         ck.reporter.apply(problem)
@@ -212,7 +213,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
 }
 
-trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction {
+trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction with ProvideElaboraterFunctionCall {
 
   def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
