@@ -1,0 +1,8 @@
+jdk:
+  - openjdk17
+before_install:
+  - echo before
+install:
+  - sbt publishM2
+env:
+  MYVAR: "custom environment variable"
