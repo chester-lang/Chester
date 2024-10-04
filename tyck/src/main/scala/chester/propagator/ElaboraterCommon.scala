@@ -41,8 +41,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override val zonkingCells = Set(lhs, rhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      val lhs = state.read(this.lhs)
-      val rhs = state.read(this.rhs)
+      val lhs = state.readStable(this.lhs)
+      val rhs = state.readStable(this.rhs)
       if (lhs.isDefined && rhs.isDefined) {
         unify(lhs.get, rhs.get, cause)
         return true
@@ -62,8 +62,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val lhs = state.read(this.lhs)
-      val rhs = state.read(this.rhs)
+      val lhs = state.readStable(this.lhs)
+      val rhs = state.readStable(this.rhs)
       (lhs, rhs) match {
         case (Some(lhs), Some(rhs)) if lhs == rhs => return ZonkResult.Done
         case (Some(lhs), None) => {
@@ -89,8 +89,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override val zonkingCells = Set(lhs) ++ rhs.toSet
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      val lhsValueOpt = state.read(lhs)
-      val rhsValuesOpt = rhs.map(state.read)
+      val lhsValueOpt = state.readStable(lhs)
+      val rhsValuesOpt = rhs.map(state.readStable)
 
       if (lhsValueOpt.isDefined && rhsValuesOpt.forall(_.isDefined)) {
         val lhsValue = lhsValueOpt.get
@@ -109,8 +109,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val lhsValueOpt = state.read(lhs)
-      val rhsValuesOpt = rhs.map(state.read)
+      val lhsValueOpt = state.readStable(lhs)
+      val rhsValuesOpt = rhs.map(state.readStable)
 
       val unknownRhs = rhs.zip(rhsValuesOpt).collect { case (id, None) => id }
       if (unknownRhs.nonEmpty) {
@@ -142,7 +142,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.valueId).getOrElse(lhs)
+            state.readStable(tyAndVal.valueId).getOrElse(lhs)
           case None => lhs
         }
       case _ => lhs
@@ -151,7 +151,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case varCall: MaybeVarCall =>
         localCtx.getKnown(varCall) match {
           case Some(tyAndVal) =>
-            state.read(tyAndVal.valueId).getOrElse(rhs)
+            state.readStable(tyAndVal.valueId).getOrElse(rhs)
           case None => rhs
         }
       case _ => rhs
@@ -168,7 +168,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       if (state.noValue(tyLhs)) return false
-      val ty_ = state.read(this.tyLhs).get
+      val ty_ = state.readStable(this.tyLhs).get
       ty_ match {
         case Meta(ty) => {
           state.addPropagator(LiteralType(x, ty))
@@ -245,7 +245,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         case varCall: MaybeVarCall =>
           localCtx.getKnown(varCall) match {
             case Some(tyAndVal) =>
-              result = state.read(tyAndVal.valueId).getOrElse {
+              result = state.readStable(tyAndVal.valueId).getOrElse {
                 return result
               }
             case None => return result
@@ -263,13 +263,13 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         case varCall: MaybeVarCall =>
           localCtx.getKnown(varCall) match {
             case Some(tyAndVal) =>
-              result = state.read(tyAndVal.valueId).getOrElse {
+              result = state.readStable(tyAndVal.valueId).getOrElse {
                 return result
               }
             case None => return result
           }
         case Meta(id) =>
-          state.read(id) match {
+          state.readStable(id) match {
             case Some(x) => result = x
             case None => return result
           }
@@ -330,8 +330,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override val zonkingCells = Set(listTLhs)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      val t1 = state.read(this.tRhs)
-      val listT1 = state.read(this.listTLhs)
+      val t1 = state.readStable(this.tRhs)
+      val listT1 = state.readStable(this.listTLhs)
       (t1, listT1) match {
         case (_, Some(Meta(listTLhs))) => {
           state.addPropagator(ListOf(tRhs, listTLhs, cause))
@@ -361,8 +361,8 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val t1 = state.read(this.tRhs)
-      val listT1 = state.read(this.listTLhs)
+      val t1 = state.readStable(this.tRhs)
+      val listT1 = state.readStable(this.listTLhs)
       if (!t1.isDefined) return ZonkResult.Require(Vector(this.tRhs))
       val ty = t1.get
       assert(listT1.isEmpty)
@@ -384,13 +384,13 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
 
   object Meta {
     def rec(x: CellId[Term], default: Term)(using state: StateAbility[Ck]): Term = {
-      state.read(x) match {
+      state.readStable(x) match {
         case Some(x) => x
         case None => default
       }
     }
     def apply[T<:Term](x: CellId[T])(using state: StateAbility[Ck]): T|MetaTerm = {
-      state.read(x) match {
+      state.readStable(x) match {
         case Some(x@Meta(id)) => rec(id,x).asInstanceOf[T|MetaTerm]
         case Some(x) => x
         case None => MetaTerm.from(x)
@@ -400,7 +400,7 @@ trait ElaboraterBase extends CommonPropagator[Ck] {
       case m : MetaTerm => {
         var result: CellId[Term] = m.unsafeRead[CellId[Term]]
         while(true){
-          state.read(result) match {
+          state.readStable(result) match {
             case Some(m: MetaTerm) => result = m.unsafeRead[CellId[Term]]
             case _ => return Some(result)
           }

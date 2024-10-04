@@ -9,8 +9,8 @@ trait CommonPropagator[Ck] extends ProvideCellId {
     override val zonkingCells = Set(a, b)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      val aVal = state.read(a)
-      val bVal = state.read(b)
+      val aVal = state.readStable(a)
+      val bVal = state.readStable(b)
       if (aVal.isDefined && bVal.isDefined) {
         if (aVal.get == bVal.get) return true
         throw new IllegalStateException("Merge propagator should not be used if the values are different")
@@ -28,8 +28,8 @@ trait CommonPropagator[Ck] extends ProvideCellId {
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult = {
-      val aVal = state.read(a)
-      val bVal = state.read(b)
+      val aVal = state.readStable(a)
+      val bVal = state.readStable(b)
       if (aVal.isDefined && bVal.isDefined) {
         if (aVal.get == bVal.get) return ZonkResult.Done
         throw new IllegalStateException("Merge propagator should not be used if the values are different")
@@ -53,7 +53,7 @@ trait CommonPropagator[Ck] extends ProvideCellId {
     override val zonkingCells = Set(result)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
-      xs.traverse(state.read(_)).map(f) match {
+      xs.traverse(state.readStable(_)).map(f) match {
         case Some(result) => {
           state.fill(this.result, result)
           true

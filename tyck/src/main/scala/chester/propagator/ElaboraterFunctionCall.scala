@@ -73,7 +73,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     override val zonkingCells: Set[CellId[?]] = Set(functionTy, resultTy)
 
     override def run(using state: StateAbility[Ck], ck: Ck): Boolean = {
-      state.read(functionTy) match {
+      state.readStable(functionTy) match {
         case Some(FunctionType(telescopes, retTy, _, _, _)) =>
           // Unify the arguments with the function's parameters
           if (unifyTelescopes(telescopes, callings, cause)) {

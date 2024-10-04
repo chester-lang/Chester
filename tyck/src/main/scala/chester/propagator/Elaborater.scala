@@ -245,19 +245,19 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     implicit val recording: Global = Global(references)
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
-    var judge = Judge(able.read(wellTyped).get, able.read(ty1).get, able.read(effects1).get)
+    var judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readStable(effects1).get)
     boundary{
       while (true) {
         val metas = judge.collectMeta
         if (metas.isEmpty) break()
         able.naiveZonk(metas.map(x=>x.unsafeRead[CellId[Term]]))
-        judge = judge.replaceMeta(x => able.read(x.unsafeRead[CellId[Term]]).get)
+        judge = judge.replaceMeta(x => able.readStable(x.unsafeRead[CellId[Term]]).get)
       }
     }
-    val symbols = able.read(references).get.map { ref =>
-      val call = able.read(ref.callAsMaybeVarCall).get
-      val definedOn = able.read(ref.definedOn).get
-      val referencedOn = able.read(ref.referencedOn).get
+    val symbols = able.readUnstable(references).get.map { ref =>
+      val call = able.readStable(ref.callAsMaybeVarCall).get
+      val definedOn = able.readStable(ref.definedOn).get
+      val referencedOn = able.readStable(ref.referencedOn).get
       FinalReference(call, ref.id, definedOn, referencedOn)
     }
     TyckResult0(CkState(symbols), judge, reporter.getReports)

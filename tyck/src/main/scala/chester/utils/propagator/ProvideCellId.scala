@@ -2,42 +2,60 @@ package chester.utils.propagator
 
 // TODO: maybe distinguish between read and fill to have more sound Scala types and functions. One is +T and one is -T
 trait ProvideCellId {
-  type CIdOf[+T <:Cell[?]]
-  type PIdOf[+T<:Propagator[?]]
+  type CIdOf[+T <: Cell[?]]
+  type PIdOf[+T <: Propagator[?]]
   type CellId[T] = CIdOf[Cell[T]]
   type SeqId[T] = CIdOf[SeqCell[T]]
   type CellIdOr[T] = CellId[T] | T
+
   def isCId(x: Any): Boolean
+
   def assumeCId(x: Any): CIdOf[Cell[?]] = x.asInstanceOf[CIdOf[Cell[?]]]
 
-   trait Cell[T] {
+  trait Cell[T] {
     def default: Option[T] = None
+
     /** stable means can only change once from None to a fixed Some value or always be a fixed value */
     def readStable: Option[T]
+
     def readUnstable: Option[T] = readStable
 
     def hasStableValue: Boolean = readStable.isDefined
+
     def noStableValue: Boolean = !hasStableValue
 
-    def hasSomeValue: Boolean = hasStableValue
-    def noAnyValue: Boolean = noStableValue
+    def hasSomeValue: Boolean = readUnstable.isDefined
+
+    def noAnyValue: Boolean = !hasSomeValue
 
     /** fill an unstable cell */
     def fill(newValue: T): Cell[T]
   }
 
-   trait SeqCell[T] extends Cell[Seq[T]] {
+  trait SeqCell[T] extends Cell[Seq[T]] {
     def add(newValue: T): SeqCell[T]
 
     override def fill(newValue: Seq[T]): SeqCell[T] = throw new UnsupportedOperationException("SeqCell cannot be filled")
+
+    override def readStable: Option[Seq[T]] = throw new UnsupportedOperationException("SeqCell is not stable")
+
+    override def hasStableValue: Boolean = throw new UnsupportedOperationException("SeqCell is not stable")
+
+    override def noStableValue: Boolean = throw new UnsupportedOperationException("SeqCell is not stable")
   }
 
-   trait BaseMapCell[A,B] {
-     def add(key: A, value: B): BaseMapCell[A,B]
-   }
+  trait BaseMapCell[A, B] {
+    def add(key: A, value: B): BaseMapCell[A, B]
+  }
 
-   trait MapCell[A, B] extends Cell[Map[A, B]] with BaseMapCell[A,B] {
+  trait MapCell[A, B] extends Cell[Map[A, B]] with BaseMapCell[A, B] {
     override def fill(newValue: Map[A, B]): MapCell[A, B] = throw new UnsupportedOperationException("MapCell cannot be filled")
+
+    override def readStable: Option[Map[A, B]] = throw new UnsupportedOperationException("MapCell is not stable")
+
+    override def hasStableValue: Boolean = throw new UnsupportedOperationException("MapCell is not stable")
+
+    override def noStableValue: Boolean = throw new UnsupportedOperationException("MapCell is not stable")
   }
 
   case class OnceCell[T](value: Option[T] = None, override val default: Option[T] = None) extends Cell[T] {
@@ -58,7 +76,7 @@ trait ProvideCellId {
   }
 
   case class CollectionCell[T](value: Vector[T] = Vector.empty) extends SeqCell[T] {
-    override def readStable: Option[Vector[T]] = Some(value)
+    override def readUnstable: Option[Vector[T]] = Some(value)
 
     override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
   }
@@ -81,7 +99,7 @@ trait ProvideCellId {
     val cell = state.addCell(LiteralCell[T](t))
     cell
   }
-  
+
   val NormalScore: Int = 8
   val NoScore: Int = 0
 
@@ -103,14 +121,15 @@ trait ProvideCellId {
 
     /** make a best guess for zonkingCells */
     def naiveZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult
-    
+
     def naiveFallbackZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult = naiveZonk(needed)
   }
 
   trait CellsStateAbility {
     def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T]
 
-    def read[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readStable
+    def readStable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readStable
+    def readUnstable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readUnstable
 
     protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T): Unit
 
@@ -135,8 +154,8 @@ trait ProvideCellId {
 
   trait StateAbility[Ability] extends CellsStateAbility {
     def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ()
-    
-    def addPropagator[T<:Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
+
+    def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
 
     def tick(using more: Ability): Unit
 
