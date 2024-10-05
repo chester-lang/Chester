@@ -46,6 +46,12 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
 trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFunction with ElaboraterFunctionCall {
 
   // TODO: add something for implicit conversion
+  
+  def newSubtype(ty: CellIdOr[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+    val cell = newType
+    state.addPropagator(Unify(toId(ty), cell, cause))
+    cell
+  }
 
   /** ty is lhs */
   override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = toTerm {

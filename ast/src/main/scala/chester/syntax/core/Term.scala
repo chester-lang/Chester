@@ -757,6 +757,22 @@ object BlockTerm {
   def apply(stmts: Seq[StmtTerm], value: Term): BlockTerm = new BlockTerm(stmts.toVector, value)
 }
 
+case class Annotation(term: Term, ty: Option[Term], effects: Option[EffectsM], meta: OptionTermMeta = None) extends Term {
+  require(ty.nonEmpty || effects.nonEmpty)
+
+  override def descent(f: Term => Term): Annotation = thisOr(copy(
+    term = f(term),
+    ty = ty.map(f),
+    effects = effects.map(_.descentM(f))
+  ))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val tyDoc = ty.map(Docs.`:` <+> _.toDoc).getOrElse(Doc.empty)
+    val effectsDoc = effects.map(Docs.`/` <+> _.toDoc).getOrElse(Doc.empty)
+    term.toDoc <> tyDoc <> effectsDoc
+  }
+}
+
 // TODO: tuple?
 val UnitType = ObjectType(Vector.empty)
 val UnitTerm = ObjectTerm(Vector.empty)
