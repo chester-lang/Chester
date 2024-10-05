@@ -10,21 +10,21 @@ case class CoreTycker(reporter: Reporter[TyckError]) {
 
   def inferNoEffect(term: Term): Term = term match {
     case ty: WithType => ty.ty
-    case ListType(t)=>inferNoEffect(t)
-    case IntegerTerm(_) => IntegerType
-    case IntTerm(_) => IntType
-    case StringTerm(_) => StringType
-    case RationalTerm(_) => RationalType
-    case SymbolTerm(_) => SymbolType
-    case TupleTerm(terms) =>
+    case ListType(t,_)=>inferNoEffect(t)
+    case IntegerTerm(_,_) => IntegerType()
+    case IntTerm(_,_) => IntType()
+    case StringTerm(_,_) => StringType()
+    case RationalTerm(_,_) => RationalType()
+    case SymbolTerm(_,_) => SymbolType()
+    case TupleTerm(terms,_) =>
       val types = terms.map(inferNoEffect)
       TupleType(types)
-    case ListTerm(terms) =>
+    case ListTerm(terms,_) =>
       val elementType = inferCommonType(terms)
       ListType(elementType)
-    case ObjectTerm(clauses) =>
+    case ObjectTerm(clauses,_) =>
       val fieldTypes = clauses.map {
-        case ObjectClauseValueTerm(key, value) =>
+        case ObjectClauseValueTerm(key, value,_) =>
           val keyType = inferNoEffect(key)
           val valueType = inferNoEffect(value)
           ObjectClauseValueTerm(key, valueType)

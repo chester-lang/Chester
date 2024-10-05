@@ -198,14 +198,14 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         case _ => ()
       }
       val t = x match {
-        case IntegerLiteral(_, _) => IntegerType
-        case RationalLiteral(_, _) => RationalType
-        case StringLiteral(_, _) => StringType
-        case SymbolLiteral(_, _) => SymbolType
+        case IntegerLiteral(_, _) => IntegerType()
+        case RationalLiteral(_, _) => RationalType()
+        case StringLiteral(_, _) => StringType()
+        case SymbolLiteral(_, _) => SymbolType()
       }
       x match {
         case IntegerLiteral(_, _) => {
-          if (tryUnify(ty_, IntType)) return true
+          if (tryUnify(ty_, IntType())) return true
         }
         case _ => {
 
@@ -221,10 +221,10 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], more: Ck): ZonkResult =
       state.fill(tyLhs, x match {
-        case IntegerLiteral(_, _) => IntegerType
-        case RationalLiteral(_, _) => RationalType
-        case StringLiteral(_, _) => StringType
-        case SymbolLiteral(_, _) => SymbolType
+        case IntegerLiteral(_, _) => IntegerType()
+        case RationalLiteral(_, _) => RationalType()
+        case StringLiteral(_, _) => StringType()
+        case SymbolLiteral(_, _) => SymbolType()
       })
       ZonkResult.Done
   }
@@ -298,13 +298,13 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case (lhs, Meta(rhs)) => unify(lhs, rhs, cause)
 
       // Structural unification for ListType
-      case (ListType(elem1), ListType(elem2)) =>
+      case (ListType(elem1,_), ListType(elem2,_)) =>
         unify(elem1, elem2, cause)
 
-      case (Type(Levelω), Type(LevelFinite(_))) => ()
+      case (Type(Levelω(_),_), Type(LevelFinite(_,_),_)) => ()
 
       // THIS IS INCORRECT, TODO: FIX
-      case (Union(types1), Union(types2)) =>
+      case (Union(types1,_), Union(types2,_)) =>
         val minLength = math.min(types1.length, types2.length)
         (types1.take(minLength), types2.take(minLength)).zipped.foreach { (ty1, ty2) =>
           unify(ty1, ty2, cause)
@@ -350,11 +350,11 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
           ck.reporter.apply(TypeMismatch(ListType(AnyType0), l, cause))
           true
         }
-        case (Some(t1), Some(ListType(t2))) => {
+        case (Some(t1), Some(ListType(t2,_))) => {
           unify(t2, t1, cause)
           true
         }
-        case (_, Some(ListType(t2))) => {
+        case (_, Some(ListType(t2,_))) => {
           unify(t2, tRhs, cause)
           true
         }

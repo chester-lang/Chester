@@ -242,7 +242,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
     // Construct the expected object type
     val expectedObjectType = ObjectType(elaboratedFields.map {
-      case ObjectClauseValueTerm(keyTerm, _) =>
+      case ObjectClauseValueTerm(keyTerm, _,_) =>
         ObjectClauseValueTerm(keyTerm, Meta(fieldTypeVars(keyTerm)))
     })
 

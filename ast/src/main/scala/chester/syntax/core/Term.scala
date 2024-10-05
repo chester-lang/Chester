@@ -5,6 +5,7 @@ import cats.data.*
 import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
+import chester.error.ProblemUpickle.*
 import chester.syntax.{Name, QualifiedIDString}
 import chester.utils.doc.*
 import chester.utils.impls.*
@@ -17,24 +18,17 @@ import upickle.default.*
 
 import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
-import chester.error.ProblemUpickle.*
 
 case class TermMeta(sourcePos: SourcePos)derives ReadWriter
 
 type OptionTermMeta = Option[TermMeta]
 
-sealed trait TermWithMeta extends Term with WithPos derives ReadWriter {
-  def meta: OptionTermMeta
-
-  def sourcePos: Option[SourcePos] = meta.map(_.sourcePos)
-}
-
 /** CallTerm has meta to trace runtime errors and debug */
-sealed trait MaybeCallTerm extends TermWithMeta derives ReadWriter {
+sealed trait MaybeCallTerm extends Term derives ReadWriter {
   override def whnf: Boolean = false
 }
 
-case class CallingArgTerm(value: Term, name: Option[Name] = None, vararg: Boolean = false) extends ToDoc derives ReadWriter {
+case class CallingArgTerm(value: Term, name: Option[Name] = None, vararg: Boolean = false, meta: OptionTermMeta = None) extends ToDoc derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     if (name.isEmpty && !vararg) return value.toDoc
     if (name.isEmpty && vararg) return group(value.toDoc <> Docs.`...`)
@@ -44,10 +38,10 @@ case class CallingArgTerm(value: Term, name: Option[Name] = None, vararg: Boolea
     group(nameDoc <+> valueDoc <+> varargDoc)
   }
 
-  def descent(f: Term => Term): CallingArgTerm = (copy(value = f(value)))
+  def descent(f: Term => Term): CallingArgTerm = copy(value = f(value))
 }
 
-case class Calling(args: Vector[CallingArgTerm], implicitly: Boolean = false) extends ToDoc derives ReadWriter {
+case class Calling(args: Vector[CallingArgTerm], implicitly: Boolean = false, meta: OptionTermMeta = None) extends ToDoc derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = {
     val argsDoc = args.map(_.toDoc).reduce(_ <+> _)
     if (implicitly) Docs.`(` <> argsDoc <> Docs.`)` else argsDoc
@@ -75,11 +69,11 @@ object FCallTerm {
     def apply(f: Term, args: Term*): FCallTerm = FCallTerm(f, Vector(Calling(args.toVector.map(CallingArgTerm(_)))))
 
     def unapplySeq(f: Term): Option[Seq[Term]] = f match {
-      case FCallTerm(f, Seq(Calling(args, false)), _) if args.forall {
-        case CallingArgTerm(_, None, false) => true
+      case FCallTerm(f, Seq(Calling(args, false, _)), _) if args.forall {
+        case CallingArgTerm(_, None, false, _) => true
         case _ => false
       } => Some(f +: args.map {
-        case CallingArgTerm(value, _, _) => value
+        case CallingArgTerm(value, _, _, _) => value
       })
       case _ => None
     }
@@ -94,7 +88,7 @@ sealed trait Pat extends ToDoc derives ReadWriter {
   def thisOr(x: Pat): this.type = reuse(this, x.asInstanceOf[this.type])
 }
 
-case class Bind(bind: LocalV, ty: Term) extends Pat {
+case class Bind(bind: LocalV, ty: Term, meta: OptionTermMeta = None) extends Pat {
   override def descent(patOp: Pat => Pat, termOp: Term => Term): Pat = thisOr(copy(ty = termOp(ty)))
 }
 
@@ -103,6 +97,10 @@ object Bind {
 }
 
 sealed trait Term extends ToDoc derives ReadWriter {
+  def meta: OptionTermMeta
+
+  def sourcePos: Option[SourcePos] = meta.map(_.sourcePos)
+
   override def toDoc(implicit options: PrettierOptions): Doc = toString
 
   def whnf: Boolean = true
@@ -170,11 +168,12 @@ case class MetaTermHold[T](inner: T) extends AnyVal
 
 case class MetaTermRW()derives ReadWriter
 
-case class MetaTerm(impl: MetaTermHold[?])extends Term {
+case class MetaTerm(impl: MetaTermHold[?], meta: OptionTermMeta = None) extends Term {
   def unsafeRead[T]: T = impl.inner.asInstanceOf[T]
+
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.group("Meta" <> Doc.text(impl.toString))
 
-  override def descent(f: Term => Term): MetaTerm= this
+  override def descent(f: Term => Term): MetaTerm = this
 }
 
 object MetaTerm {
@@ -185,18 +184,18 @@ extension (t: Term) {
   def collectMeta: Vector[MetaTerm] = {
     var result = Vector.empty[MetaTerm]
     t.foreach {
-      case x: MetaTerm=> result = result :+ x
+      case x: MetaTerm => result = result :+ x
       case _ =>
     }
     result
   }
-  def replaceMeta(f: MetaTerm=> Term): Term = t.descentRecursive {
-    case x: MetaTerm=> f(x)
+  def replaceMeta(f: MetaTerm => Term): Term = t.descentRecursive {
+    case x: MetaTerm => f(x)
     case x => x
   }
 }
 
-case class ListTerm(terms: Vector[Term]) extends Term derives ReadWriter {
+case class ListTerm(terms: Vector[Term], meta: OptionTermMeta = None) extends Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`[`, Docs.`]`, ",")(terms)
 
   override def descent(f: Term => Term): Term = thisOr(ListTerm(terms.map(f)))
@@ -212,13 +211,13 @@ sealed trait Sort extends Term derives ReadWriter {
   def level: Term
 }
 
-case class Type(level: Term) extends Sort with Term {
+case class Type(level: Term, meta: OptionTermMeta = None) extends Sort with Term {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Type" <> Docs.`(`, Docs.`)`)(Vector(level))
 
   override def descent(f: Term => Term): Term = thisOr(Type(f(level)))
 }
 
-case object LevelType extends TypeTerm with WithType {
+case class LevelType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("LevelType")
 
   override def descent(f: Term => Term): Term = this
@@ -228,7 +227,7 @@ case object LevelType extends TypeTerm with WithType {
 
 sealed trait Level extends Term derives ReadWriter
 
-case class LevelFinite(n: Term) extends Level {
+case class LevelFinite(n: Term, meta: OptionTermMeta = None) extends Level {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.text("Level(") <> n.toDoc <> Doc.text(")")
 
@@ -236,10 +235,10 @@ case class LevelFinite(n: Term) extends Level {
     thisOr(LevelFinite(f(n)))
 }
 
-case object Levelω extends Level {
+case class Levelω(meta: OptionTermMeta = None) extends Level {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Levelω")
 
-  override def descent(f: Term => Term): Levelω.type = this
+  override def descent(f: Term => Term): Levelω = this
 }
 
 // Define Level0 using LevelFinite
@@ -248,16 +247,16 @@ val Level0 = LevelFinite(IntegerTerm(0))
 val Type0 = Type(Level0)
 
 // Referencing Setω in Agda
-val Typeω = Type(Levelω)
+val Typeω = Type(Levelω())
 
-case class Prop(level: Term) extends Sort with Term {
+case class Prop(level: Term, meta: OptionTermMeta = None) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(Prop(f(level)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("Prop" <> Docs.`(`, Docs.`)`)(Vector(level))
 }
 
 // fibrant types
-case class FType(level: Term) extends Sort with Term {
+case class FType(level: Term, meta: OptionTermMeta = None) extends Sort with Term {
   override def descent(f: Term => Term): Term = thisOr(FType(f(level)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist("FType" <> Docs.`(`, Docs.`)`)(Vector(level))
@@ -265,13 +264,13 @@ case class FType(level: Term) extends Sort with Term {
 
 sealed trait LiteralTerm extends Term derives ReadWriter
 
-case class IntTerm(value: Int) extends LiteralTerm derives ReadWriter {
+case class IntTerm(value: Int, meta: OptionTermMeta = None) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): IntTerm = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
-case class IntegerTerm(value: BigInt) extends LiteralTerm derives ReadWriter {
+case class IntegerTerm(value: BigInt, meta: OptionTermMeta = None) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): IntegerTerm = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
@@ -283,8 +282,8 @@ object AbstractIntTerm {
   def from(value: BigInt): AbstractIntTerm = if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
 
   def unapply(term: Term): Option[BigInt] = term match {
-    case IntTerm(value) => Some(BigInt(value))
-    case IntegerTerm(value) => Some(value)
+    case IntTerm(value, _) => Some(BigInt(value))
+    case IntegerTerm(value, _) => Some(value)
     case _ => None
   }
 }
@@ -300,8 +299,8 @@ sealed trait WithType extends Term derives ReadWriter {
   def ty: Term
 }
 
-case object IntegerType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): IntegerType.type = this
+case class IntegerType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): IntegerType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Integer", ColorProfile.typeColor)
 
@@ -309,8 +308,8 @@ case object IntegerType extends TypeTerm with WithType {
 }
 
 // int of 64 bits or more
-case object IntType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): IntType.type = this
+case class IntType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): IntType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Int", ColorProfile.typeColor)
 
@@ -318,42 +317,42 @@ case object IntType extends TypeTerm with WithType {
 }
 
 // unsigned int of 64 bits or more
-case object UIntType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): UIntType.type = this
+case class UIntType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): UIntType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("UInt", ColorProfile.typeColor)
 
   override def ty: Term = Type0
 }
 
-case object NaturalType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): NaturalType.type = this
+case class NaturalType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): NaturalType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Natural", ColorProfile.typeColor)
 
   override def ty: Term = Type0
 }
 
-case class RationalTerm(value: Rational) extends LiteralTerm derives ReadWriter {
+case class RationalTerm(value: Rational, meta: OptionTermMeta = None) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): RationalTerm = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(value.toString, ColorProfile.literalColor)
 }
 
-case class StringTerm(value: String) extends LiteralTerm derives ReadWriter {
+case class StringTerm(value: String, meta: OptionTermMeta = None) extends LiteralTerm derives ReadWriter {
   override def descent(f: Term => Term): StringTerm = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("\"" + encodeString(value) + "\"", ColorProfile.literalColor)
 }
 
-case class SymbolTerm(value: String) extends Term derives ReadWriter {
+case class SymbolTerm(value: String, meta: OptionTermMeta = None) extends Term derives ReadWriter {
   override def descent(f: Term => Term): SymbolTerm = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("'" + value, ColorProfile.literalColor)
 }
 
-case object RationalType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): RationalType.type = this
+case class RationalType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): RationalType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Rational", ColorProfile.typeColor)
 
@@ -361,31 +360,31 @@ case object RationalType extends TypeTerm with WithType {
 }
 
 // float of 32 bits or more
-case object FloatType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): FloatType.type = this
+case class FloatType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): FloatType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Float", ColorProfile.typeColor)
 
   override def ty: Term = Type0
 }
 
-case object StringType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): StringType.type = this
+case class StringType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): StringType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("String", ColorProfile.typeColor)
 
   override def ty: Term = Type0
 }
 
-case object SymbolType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): SymbolType.type = this
+case class SymbolType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): SymbolType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Symbol", ColorProfile.typeColor)
 
   override def ty: Term = Type0
 }
 
-case class AnyType(level: Term) extends TypeTerm with WithType derives ReadWriter {
+case class AnyType(level: Term, meta: OptionTermMeta = None) extends TypeTerm with WithType derives ReadWriter {
   override def descent(f: Term => Term): AnyType = thisOr(copy(level = f(level)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Any", ColorProfile.typeColor)
@@ -397,8 +396,8 @@ def AnyType0 = AnyType(Level0)
 
 val AnyType0Debug = AnyType(Level0)
 
-case object NothingType extends TypeTerm with WithType {
-  override def descent(f: Term => Term): NothingType.type = this
+case class NothingType(meta: OptionTermMeta = None) extends TypeTerm with WithType {
+  override def descent(f: Term => Term): NothingType = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("Nothing", ColorProfile.typeColor)
 
@@ -407,7 +406,7 @@ case object NothingType extends TypeTerm with WithType {
 
 implicit val rwUnionHere: ReadWriter[IntegerTerm | SymbolTerm | StringTerm | RationalTerm] = union4RW[IntegerTerm, SymbolTerm, StringTerm, RationalTerm]
 
-case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm) extends TypeTerm with WithType {
+case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | RationalTerm, meta: OptionTermMeta = None) extends TypeTerm with WithType {
   override def descent(f: Term => Term): LiteralType = copy(literal = literal.descent(f).asInstanceOf[IntegerTerm | SymbolTerm | StringTerm | RationalTerm])
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(literal.toString, ColorProfile.typeColor)
@@ -415,7 +414,7 @@ case class LiteralType(literal: IntegerTerm | SymbolTerm | StringTerm | Rational
   override def ty: Term = Type0
 }
 
-case class ArgTerm(bind: LocalV, ty: Term, default: Option[Term] = None, vararg: Boolean = false) extends Term {
+case class ArgTerm(bind: LocalV, ty: Term, default: Option[Term] = None, vararg: Boolean = false, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val varargDoc = if (vararg) Docs.`...` else Doc.empty
     val defaultDoc = default.map(d => Docs.`=` <+> d.toDoc).getOrElse(Doc.empty)
@@ -435,7 +434,7 @@ object TelescopeTerm {
   def from(x: ArgTerm*): TelescopeTerm = TelescopeTerm(x.toVector)
 }
 
-case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false) extends Term {
+case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val argsDoc = args.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
     if (implicitly) {
@@ -457,9 +456,8 @@ object ScopeId {
 case class Function(
                      ty: FunctionType,
                      body: Term,
-                     scope: Option[ScopeId] = None,
-                     meta: OptionTermMeta = None
-                   ) extends TermWithMeta {
+                     scope: Option[ScopeId] = None
+                     , meta: OptionTermMeta = None) extends Term {
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val paramsDoc = ty.telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
@@ -483,14 +481,14 @@ case class MatchingClause()derives ReadWriter {
 
 }
 
-case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[MatchingClause], meta: OptionTermMeta = None) extends TermWithMeta {
+case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[MatchingClause], meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
 
   override def descent(f: Term => Term): Term = thisOr(copy(ty = ty.descent(f)))
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends TermWithMeta {
+case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
     val effectsDoc = if (effects.nonEmpty) {
@@ -521,13 +519,13 @@ def TyToty: FunctionType = {
 }
 
 
-case class ObjectClauseValueTerm(key: Term, value: Term)derives ReadWriter {
+case class ObjectClauseValueTerm(key: Term, value: Term, meta: OptionTermMeta = None)derives ReadWriter {
   def toDoc(implicit options: PrettierOptions): Doc = group(key <+> Doc.text("=") <+> value)
 
   def descent(f: Term => Term): ObjectClauseValueTerm = (copy(key = f(key), value = f(value)))
 }
 
-case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
+case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm], meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(clauses.map(_.toDoc))
 
@@ -536,7 +534,7 @@ case class ObjectTerm(clauses: Vector[ObjectClauseValueTerm]) extends Term {
 
 
 // exactFields is a hint: subtype relationship should not include different number of fields. Otherwise, throw a warning (only warning no error)
-case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false) extends Term {
+case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Boolean = false, meta: OptionTermMeta = None) extends Term {
   override def descent(f: Term => Term): ObjectType = thisOr(copy(fieldTypes = fieldTypes.map(_.descent(f))))
 
   override def toDoc(implicit options: PrettierOptions): Doc =
@@ -545,21 +543,21 @@ case class ObjectType(fieldTypes: Vector[ObjectClauseValueTerm], exactFields: Bo
 
 sealed trait Builtin extends Term derives ReadWriter
 
-case object ListF extends Builtin {
-  override def descent(f: Term => Term): ListF.type = this
+case class ListF(meta: OptionTermMeta = None) extends Builtin {
+  override def descent(f: Term => Term): ListF = this
 
   override def toDoc(implicit options: PrettierOptions): Doc = "List"
 }
 
 sealed trait Constructed extends Term derives ReadWriter
 
-case class ListType(ty: Term) extends Constructed with TypeTerm {
+case class ListType(ty: Term, meta: OptionTermMeta = None) extends Constructed with TypeTerm {
   override def descent(f: Term => Term): ListType = thisOr(copy(ty = f(ty)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("List") <> Docs.`(` <> ty <> Docs.`)`
 }
 
-case class Union(xs: NonEmptyVector[Term]) extends TypeTerm {
+case class Union(xs: NonEmptyVector[Term], meta: OptionTermMeta = None) extends TypeTerm {
   override def descent(f: Term => Term): Union = thisOr(copy(xs = xs.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " | ")(xs)
@@ -577,15 +575,15 @@ object Union {
   //def apply(xs: Vector[Term]): OrType = flatList[OrType]((x => new OrType(x)), { case OrType(x) => Some(x); case _ => None }, _.distinct)(xs)
   def from(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
-      case Union(ys) => ys
+      case Union(ys, _) => ys
       case x => Vector(x)
-    }.distinct.filter(_ != NothingType)
+    }.distinct.filter(x => !x.isInstanceOf[NothingType])
     if (flattened.size == 1) return flattened.head
-    if (flattened.nonEmpty) new Union(flattened.assumeNonEmpty) else NothingType
+    if (flattened.nonEmpty) new Union(flattened.assumeNonEmpty) else NothingType()
   }
 }
 
-case class Intersection(xs: NonEmptyVector[Term]) extends TypeTerm derives ReadWriter {
+case class Intersection(xs: NonEmptyVector[Term], meta: OptionTermMeta = None) extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): Intersection = thisOr(copy(xs = xs.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`(`, Docs.`)`, " & ")(xs)
@@ -595,7 +593,7 @@ object Intersection {
   //def apply(xs: Vector[Term]): AndType = flatList[AndType]((x => new AndType(x)), { case AndType(x) => Some(x); case _ => None })(xs)
   def from(xs: Vector[Term]): Term = {
     val flattened = xs.flatMap {
-      case Intersection(ys) => ys
+      case Intersection(ys, _) => ys
       case x => Vector(x)
     }.distinct
     if (flattened.size == 1) return flattened.head
@@ -627,7 +625,7 @@ extension (e: EffectsM) {
   }
 }
 
-case class Effects(effects: Map[LocalV, Term]) extends ToDoc with Term derives ReadWriter  {
+case class Effects(effects: Map[LocalV, Term], meta: OptionTermMeta = None) extends ToDoc with Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(effects.map { case (k, v) => k.toDoc <+> Docs.`:` <+> v.toDoc })
 
   def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => effect -> f(names) })
@@ -637,7 +635,8 @@ case class Effects(effects: Map[LocalV, Term]) extends ToDoc with Term derives R
   def nonEmpty: Boolean = (effects ne NoEffect.effects) && effects.nonEmpty
 
   def collectMeta = effects.flatMap((a, b) => a.collectMeta ++ b.collectMeta)
-  def replaceMeta(f: MetaTerm=> Term): Effects = Effects(effects.map { case (a, b) => a.replaceMeta(f).asInstanceOf[LocalV] -> b.replaceMeta(f) })
+
+  def replaceMeta(f: MetaTerm => Term): Effects = Effects(effects.map { case (a, b) => a.replaceMeta(f).asInstanceOf[LocalV] -> b.replaceMeta(f) })
 }
 
 object Effects {
@@ -648,21 +647,21 @@ object Effects {
 val NoEffect = Effects.Empty
 
 // may raise an exception
-case object ExceptionEffect extends Effect {
+case class ExceptionEffect(meta: OptionTermMeta = None) extends Effect {
   val name = "Exception"
 }
 
 // may not terminate
-case object DivergeEffect extends Effect {
+case class DivergeEffect(meta: OptionTermMeta = None) extends Effect {
   val name = "Diverge"
 }
 
 // whatever IO: console, file, network, ...
-case object IOEffect extends Effect {
+case class IOEffect(meta: OptionTermMeta = None) extends Effect {
   val name = "IO"
 }
 
-case object STEffect extends Effect {
+case class STEffect(meta: OptionTermMeta = None) extends Effect {
   val name = "ST"
 }
 
@@ -682,19 +681,19 @@ case class ToplevelV(module: QualifiedIDString, name: Name, ty: Term, uniqId: Un
   override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
 }
 
-case class ErrorTerm(problem: Problem) extends Term {
+case class ErrorTerm(problem: Problem, meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = problem.toDoc
 
   override def descent(f: Term => Term): ErrorTerm = this
 }
 
-def ErrorType(error: Problem): ErrorTerm = ErrorTerm(error)
+def ErrorType(error: Problem, meta: OptionTermMeta = None): ErrorTerm = ErrorTerm(error, meta)
 
 sealed trait StmtTerm extends ToDoc derives ReadWriter {
   def descent(f: Term => Term): StmtTerm = ???
 }
 
-case class LetStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
+case class LetStmtTerm(name: Name, value: Term, ty: Term, meta: OptionTermMeta = None) extends StmtTerm {
   override def descent(f: Term => Term): StmtTerm = copy(value = f(value), ty = f(ty))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
@@ -702,7 +701,7 @@ case class LetStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
   }
 }
 
-case class DefStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
+case class DefStmtTerm(name: Name, value: Term, ty: Term, meta: OptionTermMeta = None) extends StmtTerm {
   override def descent(f: Term => Term): StmtTerm = copy(value = f(value), ty = f(ty))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
@@ -710,7 +709,7 @@ case class DefStmtTerm(name: Name, value: Term, ty: Term) extends StmtTerm {
   }
 }
 
-case class ExprStmtTerm(expr: Term, ty: Term = AnyType0) extends StmtTerm {
+case class ExprStmtTerm(expr: Term, ty: Term = AnyType0, meta: OptionTermMeta = None) extends StmtTerm {
   override def descent(f: Term => Term): StmtTerm = copy(expr = f(expr), ty = f(ty))
 
   override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
@@ -726,7 +725,7 @@ case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Te
   override def descent(f: Term => Term): BuiltinTerm = this
 }
 
-case class TupleType(types: Vector[Term]) extends TypeTerm {
+case class TupleType(types: Vector[Term], meta: OptionTermMeta = None) extends TypeTerm {
   override def descent(f: Term => Term): TupleType = thisOr(copy(types = types.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
@@ -734,7 +733,7 @@ case class TupleType(types: Vector[Term]) extends TypeTerm {
   }
 }
 
-case class TupleTerm(values: Vector[Term]) extends Term {
+case class TupleTerm(values: Vector[Term], meta: OptionTermMeta = None) extends Term {
   override def descent(f: Term => Term): TupleTerm = thisOr(copy(values = values.map(f)))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
@@ -742,7 +741,7 @@ case class TupleTerm(values: Vector[Term]) extends Term {
   }
 }
 
-case class BlockTerm(stmts: Vector[StmtTerm], value: Term) extends Term {
+case class BlockTerm(stmts: Vector[StmtTerm], value: Term, meta: OptionTermMeta = None) extends Term {
   override def descent(f: Term => Term): BlockTerm = thisOr(copy(stmts = stmts.map {
     _.descent(f)
   }, value = f(value)))
@@ -766,14 +765,14 @@ sealed trait ErasedType extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): ErasedType = this
 }
 
-case object ErasedInteger extends ErasedType
+case class ErasedInteger(meta: OptionTermMeta = None) extends ErasedType
 
-case object ErasedString extends ErasedType
+case class ErasedString(meta: OptionTermMeta = None) extends ErasedType
 
-case object ErasedList extends ErasedType
+case class ErasedList(meta: OptionTermMeta = None) extends ErasedType
 
-case object ErasedTuple extends ErasedType
+case class ErasedTuple(meta: OptionTermMeta = None) extends ErasedType
 
-case object ErasedObject extends ErasedType
+case class ErasedObject(meta: OptionTermMeta = None) extends ErasedType
 
-case object ErasedErasedType extends ErasedType
+case class ErasedErasedType(meta: OptionTermMeta = None) extends ErasedType

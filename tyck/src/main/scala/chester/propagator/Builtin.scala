@@ -8,13 +8,13 @@ object BuiltIn {
   }
 
   val builtinItems: Seq[BuiltinItem] = Vector(
-    BuiltinItem("Int", IntType, Type0),
-    BuiltinItem("Integer", IntegerType, Type0),
-    BuiltinItem("Float", FloatType, Type0),
-    BuiltinItem("Rational", RationalType, Type0),
-    BuiltinItem("String", StringType, Type0),
-    BuiltinItem("Symbol", SymbolType, Type0),
-    BuiltinItem("List", ListF, TyToty)
+    BuiltinItem("Int", IntType(), Type0),
+    BuiltinItem("Integer", IntegerType(), Type0),
+    BuiltinItem("Float", FloatType(), Type0),
+    BuiltinItem("Rational", RationalType(), Type0),
+    BuiltinItem("String", StringType(), Type0),
+    BuiltinItem("Symbol", SymbolType(), Type0),
+    BuiltinItem("List", ListF(), TyToty)
   )
 
 }
