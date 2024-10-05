@@ -17,6 +17,9 @@ lazy val chesterPlugin =
         "com.redhat.devtools.lsp4ij".toPlugin
       ),
       resolvers += "jitpack" at "https://jitpack.io",
+      scalacOptions ++= Seq(
+        "-experimental",
+      ),
       // Exclude LSP4J dependencies
       libraryDependencies ++= Seq(
         ("com.github.chester-lang.chester" %% "lsp" % "42d5d8e15b")
