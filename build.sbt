@@ -169,27 +169,6 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
     ),
   )
 
-// https://github.com/jokade/slogging/commit/1dd073a88f2d98854970fe0d06bcd3b92da3db8f
-// slogging
-// js & native & shared folder
-// native: based on scala-native-0.4
-// native: addded syslog & glib, Main -> MainSyslog
-// native TerminalLogger.scala replaced `c"\33` with `c"\u001b`
-lazy val slogging = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
-  .crossType(CrossType.Full)
-  .in(file("vendor/slogging"))
-  .settings(
-    scala2VendorSettings,
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scala2Version,
-      "com.lihaoyi" %%% "utest" % "0.8.4" % Test
-    ),
-    testFrameworks += new TestFramework("utest.runner.Framework")
-  ).nativeSettings(
-    libraryDependencies ++= Seq(
-    )
-  )
-
 // iron & iron-cats & iron-upickle, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
 // removed RefinedTypeOpsSuite.scala because of compilation error
 lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
@@ -343,24 +322,6 @@ def useSpire(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproje
     .jsSettings(
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "spire" % "0.18.0",
-      )
-    )
-
-val sloggingJVM = Seq(
-  libraryDependencies ++= Seq(
-    "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
-    "biz.enef" %%% "slogging-slf4j" % "0.6.2" cross (CrossVersion.for3Use2_13),
-    "org.slf4j" % "slf4j-simple" % "2.0.16",
-  )
-)
-def useSlogging(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
-  project.jvmSettings(sloggingJVM)
-    .nativeConfigure(_.dependsOn(slogging.native))
-    .jsSettings(
-      libraryDependencies ++= Seq(
-        "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
-        "biz.enef" %%% "slogging-winston" % "0.6.2" cross (CrossVersion.for3Use2_13),
-        "biz.enef" %%% "slogging-http" % "0.6.2" cross (CrossVersion.for3Use2_13),
       )
     )
 
@@ -809,7 +770,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
-    ironNative, spireNative, scalaGraph, slogging,
+    ironNative, spireNative, scalaGraph,
     typednode,
     typedstd,
     typedundici,
