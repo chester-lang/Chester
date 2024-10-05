@@ -343,6 +343,12 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                   Either.forLeft(locations)
                 case None =>
                   logger.warn(s"No symbol found at position: $sourcePos in document: $uri")
+                  if (logger.isTraceEnabled) {
+                    logger.trace("Available symbols:")
+                    document.symbols.foreach { sym =>
+                      logger.trace(s"Symbol name: ${sym.name}, defined at: ${sym.definedOn.sourcePos.get}")
+                    }
+                  }
                   Either.forLeft(java.util.Collections.emptyList())
               }
             case None =>
