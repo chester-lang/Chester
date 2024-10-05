@@ -298,6 +298,15 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
       val referencedOn = able.readUnstable(ref.referencedOn).get
       FinalReference(call, ref.id, definedOn, referencedOn)
     }
+
+    // Generate warnings for unused variables
+    symbols.foreach { symbol =>
+      if (symbol.referencedOn.isEmpty) {
+        // The variable is defined but not referenced
+        val warning = UnusedVariableWarning(symbol.call, symbol.definedOn)
+        reporter.apply(warning)
+      }
+    }
     TyckResult0(CkState(symbols), judge, reporter.getReports)
   }
 }

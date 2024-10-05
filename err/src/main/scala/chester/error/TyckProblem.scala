@@ -3,12 +3,12 @@ package chester.error
 import chester.doc.*
 import chester.i18n.*
 import chester.syntax.Name
+import chester.syntax.accociativity.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.utils.doc.*
 import chester.utils.impls.*
 import upickle.default.*
-import chester.syntax.accociativity.*
 
 import scala.reflect.ClassTag
 
@@ -67,13 +67,10 @@ sealed trait TyckWarning extends TyckProblem derives ReadWriter {
   final override def level: Problem.Severity = Problem.Severity.WARN
 }
 
-case object ExampleWarning extends TyckWarning {
-  override def cause: Term | Expr = EmptyExpr
-
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Example warning"
+case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr) extends TyckWarning {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Unused variable: ${id.name}"
 }
-
-import chester.syntax.concrete.qualifiedNameRW
 
 implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a = qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b = readwriter[String]).asInstanceOf
 
@@ -168,18 +165,19 @@ case class FunctionCallArityMismatchError(expected: Int, actual: Int, cause: Exp
 case class FunctionCallArgumentMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expected $expected arguments, but received $actual"
 }
-   case class ObjectFieldMismatch(
-     missingInLHS: Seq[Term],
-     missingInRHS: Seq[Term],
-     cause: Expr
-   ) extends TyckError {
-     override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
-       val missingInLHSDoc = if (missingInLHS.nonEmpty) {
-         Doc.text(t"Missing fields in LHS: ${missingInLHS.mkString(", ")}")
-       } else Doc.empty
-       val missingInRHSDoc = if (missingInRHS.nonEmpty) {
-         Doc.text(t"Missing fields in RHS: ${missingInRHS.mkString(", ")}")
-       } else Doc.empty
-       missingInLHSDoc <> missingInRHSDoc
-     }
-   }
+
+case class ObjectFieldMismatch(
+                                missingInLHS: Seq[Term],
+                                missingInRHS: Seq[Term],
+                                cause: Expr
+                              ) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
+    val missingInLHSDoc = if (missingInLHS.nonEmpty) {
+      Doc.text(t"Missing fields in LHS: ${missingInLHS.mkString(", ")}")
+    } else Doc.empty
+    val missingInRHSDoc = if (missingInRHS.nonEmpty) {
+      Doc.text(t"Missing fields in RHS: ${missingInRHS.mkString(", ")}")
+    } else Doc.empty
+    missingInLHSDoc <> missingInRHSDoc
+  }
+}
