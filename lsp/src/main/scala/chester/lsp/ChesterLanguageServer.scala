@@ -1,5 +1,6 @@
 package chester.lsp
 
+import org.log4s.*
 import chester.error.*
 import chester.parser.*
 import chester.propagator.*
@@ -23,6 +24,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.List as JList
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
+  private val logger = getLogger
 
   private var client: LanguageClient = uninitialized
 
@@ -31,11 +33,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   def connect(client: LanguageClient): Unit = {
     this.client = client
-    println("Language client connected to the server")
+    logger.info("Language client connected to the server")
   }
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
-    println(s"Initializing with params: $params")
+    logger.info(s"Initializing with params: $params")
     val capabilities = new ServerCapabilities()
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
     capabilities.setCompletionProvider(new CompletionOptions(false, List(".", ":").asJava))
@@ -53,8 +55,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   override def getWorkspaceService: WorkspaceService = this
 
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
-    println(s"Document opened: ${params.getTextDocument.getUri}")
     val uri = params.getTextDocument.getUri
+    logger.info(s"Document opened: $uri")
     val text = params.getTextDocument.getText
 
     // Process the document and get TyckResult and diagnostics
@@ -70,8 +72,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
-    println(s"Document changed: ${params.getTextDocument.getUri}")
     val uri = params.getTextDocument.getUri
+    logger.info(s"Document changed: $uri")
     val changes = params.getContentChanges.asScala.toSeq
 
     // Update the document content
@@ -252,6 +254,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   private def sourcePosFromLSP(uri: String, position: Position): Option[SourcePos] = {
+    logger.debug(s"Converting LSP position to source position for URI: $uri at position: $position")
     documents.synchronized {
       documents.get(uri)
     } match {
@@ -263,9 +266,13 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         val line = position.getLine
         val utf16Column = position.getCharacter
 
-        // Calculate the character index in the text
+        logger.debug(s"Calculating offsets for line: $line, UTF-16 column: $utf16Column")
+
         val lineStartOffset = getLineStartOffset(text, line)
         val charIndexUtf16 = lineStartOffset + utf16Column
+
+        logger.debug(s"Line start offset: $lineStartOffset, char index UTF-16: $charIndexUtf16")
+
         val codepointIndex = stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
 
         // Create WithUTF16 instance
@@ -277,11 +284,14 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           column = withUTF16
         )
         val range = RangeInFile(start = pos, end = pos)
-
         val source = SourceOffset(FileNameAndContent(uri, text))
-        Some(SourcePos(source, range))
+        val sourcePos = SourcePos(source, range)
 
+        logger.debug(s"Generated SourcePos: $sourcePos")
+
+        Some(sourcePos)
       case None =>
+        logger.warn(s"No document content found for URI: $uri")
         None
     }
   }
@@ -304,19 +314,25 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
 
+      logger.debug(s"Definition requested for URI: $uri at position: $position")
+
       val documentOpt = documents.synchronized {
         documents.get(uri)
       }
 
       documentOpt match {
         case Some(document) =>
+          logger.debug(s"Document found for URI: $uri")
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
+              logger.debug(s"Source position obtained: $sourcePos")
               val symbolOpt = document.symbols.find { sym =>
-                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
+                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) ||
+                  sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
+                  logger.debug(s"Symbol found: ${symbolInfo.name}")
                   val location = new Location(
                     symbolInfo.definedOn.sourcePos.get.fileName,
                     rangeFromSourcePos(symbolInfo.definedOn.sourcePos.get)
@@ -324,13 +340,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                   val locations = java.util.Collections.singletonList(location)
                   Either.forLeft(locations)
                 case None =>
+                  logger.warn(s"No symbol found at position: $sourcePos in document: $uri")
                   Either.forLeft(java.util.Collections.emptyList())
               }
             case None =>
+              logger.warn(s"Could not obtain source position for URI: $uri at position: $position")
               Either.forLeft(java.util.Collections.emptyList())
           }
-
         case None =>
+          logger.warn(s"No document found for URI: $uri")
           Either.forLeft(java.util.Collections.emptyList())
       }
     }

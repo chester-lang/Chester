@@ -11,6 +11,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val port = if (args.nonEmpty) args(0).toInt else 1044
     logger.info(s"Starting Chester Language Server on port $port")
+    logger.debug("Debugging enabled")
 
     val serverSocket = new ServerSocket(port)
     logger.info(s"Server socket created, waiting for client connection...")
