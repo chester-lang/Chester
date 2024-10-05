@@ -330,39 +330,39 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
 
 def useSpire(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
   project.jvmSettings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire" % "0.18.0",
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "spire" % "0.18.0",
+      )
     )
-  )
-  .nativeSettings(
-    libraryDependencies ++= Seq(
-      //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
+    .nativeSettings(
+      libraryDependencies ++= Seq(
+        //"com.github.mio-19.spire" /*"org.typelevel"*/ %%% "spire" % "fcf7d67b61",
+      )
     )
-  )
-  .nativeConfigure(_.dependsOn(spireNative.native))
-  .jsSettings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire" % "0.18.0",
+    .nativeConfigure(_.dependsOn(spireNative.native))
+    .jsSettings(
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "spire" % "0.18.0",
+      )
     )
-  )
 
 val sloggingJVM = Seq(
-    libraryDependencies ++= Seq(
-      "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
-      "biz.enef" %%% "slogging-slf4j" % "0.6.2" cross (CrossVersion.for3Use2_13),
-      "org.slf4j" % "slf4j-simple" % "2.0.16",
-    )
+  libraryDependencies ++= Seq(
+    "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
+    "biz.enef" %%% "slogging-slf4j" % "0.6.2" cross (CrossVersion.for3Use2_13),
+    "org.slf4j" % "slf4j-simple" % "2.0.16",
   )
+)
 def useSlogging(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
   project.jvmSettings(sloggingJVM)
-  .nativeConfigure(_.dependsOn(slogging.native))
-  .jsSettings(
-    libraryDependencies ++= Seq(
-      "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
-      "biz.enef" %%% "slogging-winston" % "0.6.2" cross (CrossVersion.for3Use2_13),
-      "biz.enef" %%% "slogging-http" % "0.6.2" cross (CrossVersion.for3Use2_13),
+    .nativeConfigure(_.dependsOn(slogging.native))
+    .jsSettings(
+      libraryDependencies ++= Seq(
+        "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
+        "biz.enef" %%% "slogging-winston" % "0.6.2" cross (CrossVersion.for3Use2_13),
+        "biz.enef" %%% "slogging-http" % "0.6.2" cross (CrossVersion.for3Use2_13),
+      )
     )
-  )
 
 lazy val utils2 = useSpire(crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -732,6 +732,11 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   //.enablePlugins(SbtProguard)
   .dependsOn(common)
   .settings(
+    libraryDependencies ++= Seq(
+      "org.log4s" %%% "log4s" % "1.10.0",
+      "org.slf4j" % "slf4j-api" % "2.0.16",
+      "org.slf4j" % "slf4j-simple" % "2.0.16",
+    ),
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
