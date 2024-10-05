@@ -169,6 +169,26 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
     ),
   )
 
+// https://github.com/jokade/slogging/commit/1dd073a88f2d98854970fe0d06bcd3b92da3db8f
+// slogging
+// js & native & shared folder
+// native: based on scala-native-0.4
+// native TerminalLogger.scala replaced `c"\33` with `c"\u001b`
+lazy val slogging = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
+  .crossType(CrossType.Full)
+  .in(file("vendor/slogging"))
+  .settings(
+    scala2VendorSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scala2Version,
+      "com.lihaoyi" %%% "utest" % "0.8.4" % Test
+    ),
+    testFrameworks += new TestFramework("utest.runner.Framework")
+  ).nativeSettings(
+    libraryDependencies ++= Seq(
+    )
+  )
+
 // iron & iron-cats & iron-upickle, commit 86fbe48e8c9b0f6e5d2f7261ddefaa7c671341ae, built against Scala Native 0.5
 // removed RefinedTypeOpsSuite.scala because of compilation error
 lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
@@ -184,6 +204,7 @@ lazy val ironNative = crossProject(NativePlatform).withoutSuffixFor(NativePlatfo
       "com.lihaoyi" %%% "utest" % "0.8.4" % Test,
       "org.typelevel" %%% "kittens" % "3.4.0" % Test,
     ),
+    testFrameworks += new TestFramework("utest.runner.Framework")
   )
 
 // commit 52b3692bdfe01ef6c645380b02595a9c60a9725b, core & util & platform & macros, main only, no tests
@@ -764,7 +785,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("."))
   .aggregate(
-    ironNative, spireNative, scalaGraph,
+    ironNative, spireNative, scalaGraph, slogging,
     typednode,
     typedstd,
     typedundici,
