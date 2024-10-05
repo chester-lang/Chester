@@ -57,7 +57,5 @@ class ChesterInProcessConnectionProvider extends StreamConnectionProvider {
 
   override def getInputStream: java.io.InputStream = inputFromServer
 
-  override def getErrorStream: java.io.InputStream = null // No error stream in in-process server
-
   override def getOutputStream: java.io.OutputStream = outputFromClient
 }
