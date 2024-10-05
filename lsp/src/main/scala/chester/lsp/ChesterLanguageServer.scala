@@ -467,6 +467,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
       location
     )
   }
+
+  override def setTrace(value: SetTraceParams): Unit = {
+    logger.debug(s"(ignored) Required Trace level: ${value.getValue}")
+  }
 }
 
 case class DocumentInfo(
