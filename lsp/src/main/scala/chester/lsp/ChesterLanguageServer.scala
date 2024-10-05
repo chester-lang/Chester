@@ -329,8 +329,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
             case Some(sourcePos) =>
               logger.debug(s"Source position obtained: $sourcePos")
               val symbolOpt = document.symbols.find { sym =>
-                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) ||
-                  sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
+                positionWithin(sym.definedOn.sourcePos.get, sourcePos) ||
+                  sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
@@ -370,12 +370,18 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  private def positionsEqual(pos1: SourcePos, pos2: SourcePos): Boolean = {
+  private def positionWithin(pos1: SourcePos, pos2: SourcePos): Boolean = {
     pos1.source.fileName == pos2.source.fileName &&
-      pos1.range.start.line == pos2.range.start.line &&
-      pos1.range.start.column.utf16 == pos2.range.start.column.utf16 &&
-      pos1.range.end.line == pos2.range.end.line &&
-      pos1.range.end.column.utf16 == pos2.range.end.column.utf16
+      comparePositions(pos1.range.start, pos2.range.start) <= 0 &&
+      comparePositions(pos1.range.end1, pos2.range.end) >= 0
+  }
+
+  private def comparePositions(p1: Pos, p2: Pos): Int = {
+    if (p1.line != p2.line) {
+      p1.line.compareTo(p2.line)
+    } else {
+      p1.column.utf16.compareTo(p2.column.utf16)
+    }
   }
 
   override def references(params: ReferenceParams): CompletableFuture[JList[? <: Location]] = {
@@ -392,7 +398,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
               val symbolOpt = document.symbols.find { sym =>
-                positionsEqual(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionsEqual(ref.sourcePos.get, sourcePos))
+                positionWithin(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>

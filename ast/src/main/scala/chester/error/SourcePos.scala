@@ -17,7 +17,11 @@ object Pos {
   val Zero = Pos(WithUTF16.Zero, 0, WithUTF16.Zero)
 }
 
-case class RangeInFile(start: Pos, end: Pos)derives ReadWriter
+/** start <= i <= end */
+case class RangeInFile(start: Pos, end: Pos)derives ReadWriter {
+  /** used in start <= 1 < end situation */
+  def end1: Pos = Pos(end.index + WithUTF16.One, end.line, end.column + WithUTF16.One)
+}
 
 type AcceptedString = String | LazyList[String] | ParserInput
 
