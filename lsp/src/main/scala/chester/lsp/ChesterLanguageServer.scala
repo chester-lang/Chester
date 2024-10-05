@@ -165,10 +165,23 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         // Generate diagnostics from the TyckResult
         val diagnostics = tyckResult match {
           case TyckResult.Success(_, _, warnings) =>
-            // Handle warnings if needed
-            List()
+            // Process warnings
+            warnings.map { warning =>
+              val range = warning.location.map { pos =>
+                rangeFromSourcePos(pos)
+              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+
+              new Diagnostic(
+                range,
+                warning.getMessage,
+                DiagnosticSeverity.Warning,
+                "ChesterLanguageServer"
+              )
+            }.toList
+
           case TyckResult.Failure(errors, warnings, _, _) =>
-            errors.map { error =>
+            // Combine errors and warnings into diagnostics
+            val errorDiagnostics = errors.map { error =>
               val range = error.location.map { pos =>
                 rangeFromSourcePos(pos)
               }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
@@ -179,7 +192,22 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                 DiagnosticSeverity.Error,
                 "ChesterLanguageServer"
               )
-            }.toList
+            }
+
+            val warningDiagnostics = warnings.map { warning =>
+              val range = warning.location.map { pos =>
+                rangeFromSourcePos(pos)
+              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+
+              new Diagnostic(
+                range,
+                warning.getMessage,
+                DiagnosticSeverity.Warning,
+                "ChesterLanguageServer"
+              )
+            }
+
+            (errorDiagnostics ++ warningDiagnostics).toList
         }
 
         (tyckResult, diagnostics)
