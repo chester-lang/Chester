@@ -1,12 +1,19 @@
 package chester.lsp
 
 import org.eclipse.lsp4j.launch.LSPLauncher
+
 import java.net.ServerSocket
 import java.io.InputStream
 import java.io.OutputStream
 import org.log4s.*
+import org.slf4j.simple.SimpleLogger
+
+def enableDebug(): Unit = {
+  System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "Debug")
+}
 
 object Main {
+  enableDebug()
   private val logger = getLogger
   def main(args: Array[String]): Unit = {
     val port = if (args.nonEmpty) args(0).toInt else 1044

@@ -20,10 +20,12 @@ import io.github.iltotore.iron.*
 
 import java.util.concurrent.CompletableFuture
 import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.slf4j.simple.SimpleLogger
 
 import java.util.List as JList
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
+  enableDebug()
   private val logger = getLogger
 
   private var client: LanguageClient = uninitialized
