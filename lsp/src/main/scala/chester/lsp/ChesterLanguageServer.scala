@@ -346,7 +346,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                   if (logger.isTraceEnabled) {
                     logger.trace("Available symbols:")
                     document.symbols.foreach { sym =>
-                      logger.trace(s"Symbol name: ${sym.name}, defined at: ${sym.definedOn.sourcePos.get}")
+                      logger.trace(s"Symbol name: ${sym.name}")
+                      sym.definedOn.sourcePos.foreach { pos =>
+                        logger.trace(s"  Defined at: $pos")
+                      }
+                      sym.referencedOn.foreach { ref =>
+                        ref.sourcePos.foreach { pos =>
+                          logger.trace(s"  Referenced at: $pos")
+                        }
+                      }
                     }
                   }
                   Either.forLeft(java.util.Collections.emptyList())
