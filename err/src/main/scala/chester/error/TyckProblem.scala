@@ -168,3 +168,18 @@ case class FunctionCallArityMismatchError(expected: Int, actual: Int, cause: Exp
 case class FunctionCallArgumentMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expected $expected arguments, but received $actual"
 }
+   case class ObjectFieldMismatch(
+     missingInLHS: Seq[Term],
+     missingInRHS: Seq[Term],
+     cause: Expr
+   ) extends TyckError {
+     override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
+       val missingInLHSDoc = if (missingInLHS.nonEmpty) {
+         Doc.text(t"Missing fields in LHS: ${missingInLHS.mkString(", ")}")
+       } else Doc.empty
+       val missingInRHSDoc = if (missingInRHS.nonEmpty) {
+         Doc.text(t"Missing fields in RHS: ${missingInRHS.mkString(", ")}")
+       } else Doc.empty
+       missingInLHSDoc <> missingInRHSDoc
+     }
+   }

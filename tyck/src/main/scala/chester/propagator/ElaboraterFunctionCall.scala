@@ -17,6 +17,7 @@ trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   ): Term
 }
 
+// TODO: incorrect, fix this
 trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
     expr: DesaltFunctionCall,

@@ -28,7 +28,7 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
   def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     toId(checkType(expr))
   }
-  
+
   def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term =
     expr match {
       case Some(expr) => checkType(expr)
@@ -36,6 +36,7 @@ trait Elaborater extends ProvideCtx with ElaboraterCommon {
     }
 
   def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term
+
   def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
     val term = elab(expr, ty, effects)
     toId(term)
@@ -53,7 +54,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
-            if(c.reference.isDefined){
+            if (c.reference.isDefined) {
               state.add(c.reference.get.referencedOn, expr)
             }
             state.addPropagator(Unify(ty, c.tyId, expr))
@@ -118,7 +119,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
         val defs = heads.collect {
-          case expr:LetDefStmt if expr.kind == LetDefType.Def =>
+          case expr: LetDefStmt if expr.kind == LetDefType.Def =>
             val name = expr.defined match {
               // TODO: support other defined patterns
               case DefinedPattern(PatternBind(name, _)) => name.name
@@ -142,7 +143,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           ck.reporter.apply(problem)
         }
         val stmts: Seq[StmtTerm] = heads.flatMapOrdered {
-          case expr:LetDefStmt if expr.kind == LetDefType.Def => {
+          case expr: LetDefStmt if expr.kind == LetDefType.Def => {
             implicit val localCtx: LocalCtx = ctx
             val d = defsMap.apply(expr)
             val ty = expr.ty match {
@@ -158,7 +159,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             ctx = ctx.knownAdd(d.id, TyAndVal(ty, wellTyped))
             Vector(DefStmtTerm(d.item.name, Meta(wellTyped), toTerm(ty)))
           }
-          case expr:LetDefStmt if expr.kind == LetDefType.Let => {
+          case expr: LetDefStmt if expr.kind == LetDefType.Let => {
             implicit val localCtx: LocalCtx = ctx
             val name = expr.defined match {
               // TODO: support other defined patterns
@@ -190,6 +191,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         }
       }
       case expr: DesaltFunctionCall => elabFunctionCall(expr, ty, effects)
+      case expr@ObjectExpr(fields, meta) =>
+        elabObjectExpr(expr, fields, ty, effects)
       case expr: Expr => {
         val problem = NotImplemented(expr)
         ck.reporter.apply(problem)
@@ -208,6 +211,46 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
     val Empty: CkState = CkState()
   }
 
+  // TODO: untested
+  def elabObjectExpr(
+                      expr: ObjectExpr,
+                      fields: Vector[ObjectClause],
+                      ty: CellId[Term],
+                      effects: CIdOf[EffectsCell]
+                    )(using
+                      localCtx: LocalCtx,
+                      parameter: Global,
+                      ck: Ck,
+                      state: StateAbility[Ck]
+                    ): Term = {
+    // Create collections to store field keys and types
+    val fieldTypeVars = scala.collection.mutable.Map[Term, CellId[Term]]()
+    val elaboratedFields = fields.flatMap {
+      case ObjectExprClauseOnValue(keyExpr, valueExpr) =>
+        // Elaborate the key and value expressions
+        val elaboratedKey = elab(keyExpr, newType, effects)
+        val fieldType = newType
+        val elaboratedValue = elab(valueExpr, fieldType, effects)
+        fieldTypeVars += (elaboratedKey -> fieldType)
+        Some(ObjectClauseValueTerm(elaboratedKey, elaboratedValue))
+      // Handle other possible clauses
+      case _ => ???
+    }
+
+    // Construct the object term with elaborated fields
+    val objectTerm = ObjectTerm(elaboratedFields)
+
+    // Construct the expected object type
+    val expectedObjectType = ObjectType(elaboratedFields.map {
+      case ObjectClauseValueTerm(keyTerm, _) =>
+        ObjectClauseValueTerm(keyTerm, Meta(fieldTypeVars(keyTerm)))
+    })
+
+    // Unify the expected type with the object's type
+    unify(ty, expectedObjectType, expr)
+
+    objectTerm
+  }
 }
 
 trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction with ProvideElaboraterFunctionCall {
@@ -241,11 +284,11 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     var judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readUnstable(effects1).get)
-    boundary{
+    boundary {
       while (true) {
         val metas = judge.collectMeta
         if (metas.isEmpty) break()
-        able.naiveZonk(metas.map(x=>x.unsafeRead[CellId[Term]]))
+        able.naiveZonk(metas.map(x => x.unsafeRead[CellId[Term]]))
         judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
       }
     }
