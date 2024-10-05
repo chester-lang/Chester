@@ -17,7 +17,7 @@ Block(
                       ),
                       range = RangeInFile(
                         start = Pos(index = WithUTF16(i = 2, utf16 = 2), line = 0, column = WithUTF16(i = 2, utf16 = 2)),
-                        end = Pos(index = WithUTF16(i = 2, utf16 = 2), line = 0, column = WithUTF16(i = 2, utf16 = 2))
+                        end = Pos(index = WithUTF16(i = 3, utf16 = 3), line = 0, column = WithUTF16(i = 3, utf16 = 3))
                       )
                     )
                   ),
@@ -38,7 +38,7 @@ Block(
                       ),
                       range = RangeInFile(
                         start = Pos(index = WithUTF16(i = 4, utf16 = 4), line = 0, column = WithUTF16(i = 4, utf16 = 4)),
-                        end = Pos(index = WithUTF16(i = 4, utf16 = 4), line = 0, column = WithUTF16(i = 4, utf16 = 4))
+                        end = Pos(index = WithUTF16(i = 5, utf16 = 5), line = 0, column = WithUTF16(i = 5, utf16 = 5))
                       )
                     )
                   ),
@@ -58,7 +58,7 @@ Block(
                     ),
                     range = RangeInFile(
                       start = Pos(index = WithUTF16(i = 3, utf16 = 3), line = 0, column = WithUTF16(i = 3, utf16 = 3)),
-                      end = Pos(index = WithUTF16(i = 4, utf16 = 4), line = 0, column = WithUTF16(i = 4, utf16 = 4))
+                      end = Pos(index = WithUTF16(i = 5, utf16 = 5), line = 0, column = WithUTF16(i = 5, utf16 = 5))
                     )
                   )
                 ),
@@ -79,7 +79,7 @@ Block(
                     ),
                     range = RangeInFile(
                       start = Pos(index = WithUTF16(i = 8, utf16 = 8), line = 0, column = WithUTF16(i = 8, utf16 = 8)),
-                      end = Pos(index = WithUTF16(i = 8, utf16 = 8), line = 0, column = WithUTF16(i = 8, utf16 = 8))
+                      end = Pos(index = WithUTF16(i = 9, utf16 = 9), line = 0, column = WithUTF16(i = 9, utf16 = 9))
                     )
                   )
                 ),
@@ -102,7 +102,7 @@ Block(
                     ),
                     range = RangeInFile(
                       start = Pos(index = WithUTF16(i = 11, utf16 = 11), line = 0, column = WithUTF16(i = 11, utf16 = 11)),
-                      end = Pos(index = WithUTF16(i = 11, utf16 = 11), line = 0, column = WithUTF16(i = 11, utf16 = 11))
+                      end = Pos(index = WithUTF16(i = 12, utf16 = 12), line = 0, column = WithUTF16(i = 12, utf16 = 12))
                     )
                   )
                 ),
@@ -126,7 +126,7 @@ Block(
                           ),
                           range = RangeInFile(
                             start = Pos(index = WithUTF16(i = 17, utf16 = 17), line = 0, column = WithUTF16(i = 17, utf16 = 17)),
-                            end = Pos(index = WithUTF16(i = 19, utf16 = 19), line = 0, column = WithUTF16(i = 19, utf16 = 19))
+                            end = Pos(index = WithUTF16(i = 20, utf16 = 20), line = 0, column = WithUTF16(i = 20, utf16 = 20))
                           )
                         )
                       ),
@@ -147,7 +147,7 @@ Block(
                           ),
                           range = RangeInFile(
                             start = Pos(index = WithUTF16(i = 24, utf16 = 24), line = 0, column = WithUTF16(i = 24, utf16 = 24)),
-                            end = Pos(index = WithUTF16(i = 24, utf16 = 24), line = 0, column = WithUTF16(i = 24, utf16 = 24))
+                            end = Pos(index = WithUTF16(i = 25, utf16 = 25), line = 0, column = WithUTF16(i = 25, utf16 = 25))
                           )
                         )
                       ),
@@ -168,7 +168,7 @@ Block(
                     ),
                     range = RangeInFile(
                       start = Pos(index = WithUTF16(i = 15, utf16 = 15), line = 0, column = WithUTF16(i = 15, utf16 = 15)),
-                      end = Pos(index = WithUTF16(i = 26, utf16 = 26), line = 0, column = WithUTF16(i = 26, utf16 = 26))
+                      end = Pos(index = WithUTF16(i = 27, utf16 = 27), line = 0, column = WithUTF16(i = 27, utf16 = 27))
                     )
                   )
                 ),
@@ -189,7 +189,7 @@ Block(
               ),
               range = RangeInFile(
                 start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
-                end = Pos(index = WithUTF16(i = 28, utf16 = 28), line = 0, column = WithUTF16(i = 28, utf16 = 28))
+                end = Pos(index = WithUTF16(i = 29, utf16 = 29), line = 0, column = WithUTF16(i = 29, utf16 = 29))
               )
             )
           ),
@@ -210,7 +210,7 @@ Block(
           ),
           range = RangeInFile(
             start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
-            end = Pos(index = WithUTF16(i = 28, utf16 = 28), line = 0, column = WithUTF16(i = 28, utf16 = 28))
+            end = Pos(index = WithUTF16(i = 29, utf16 = 29), line = 0, column = WithUTF16(i = 29, utf16 = 29))
           )
         )
       ),

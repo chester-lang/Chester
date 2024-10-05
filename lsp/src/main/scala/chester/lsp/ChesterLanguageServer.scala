@@ -373,7 +373,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   private def positionWithin(pos1: SourcePos, pos2: SourcePos): Boolean = {
     pos1.source.fileName == pos2.source.fileName &&
       comparePositions(pos1.range.start, pos2.range.start) <= 0 &&
-      comparePositions(pos1.range.end1, pos2.range.end) >= 0
+      comparePositions(pos1.range.end, pos2.range.end) >= 0
   }
 
   private def comparePositions(p1: Pos, p2: Pos): Int = {
