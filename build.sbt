@@ -345,6 +345,23 @@ def useSpire(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproje
     )
   )
 
+def useSlogging(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
+  project.jvmSettings(
+    libraryDependencies ++= Seq(
+      "biz.enef" %%% "slogging" % "0.6.2",
+      "biz.enef" %%% "slogging-slf4j" % "0.6.2",
+      "org.slf4j" % "slf4j-simple" % "2.0.16",
+    )
+  )
+  .nativeConfigure(_.dependsOn(slogging.native))
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "biz.enef" %%% "slogging" % "0.6.2",
+      "biz.enef" %%% "slogging-winston" % "0.6.2",
+      "biz.enef" %%% "slogging-http" % "0.6.2",
+    )
+  )
+
 lazy val utils2 = useSpire(crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("utils2"))
