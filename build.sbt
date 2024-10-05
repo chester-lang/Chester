@@ -732,7 +732,6 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   //.enablePlugins(SbtProguard)
   .dependsOn(common)
   .settings(
-    sloggingJVM,
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
     libraryDependencies += "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.23.1",
