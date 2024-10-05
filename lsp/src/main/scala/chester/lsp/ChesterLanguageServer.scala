@@ -277,13 +277,13 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
         val codepointIndex = stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
 
-        // Create WithUTF16 instance
-        val withUTF16 = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe)
+        // Get the line and column with both Unicode code points and UTF-16 code units
+        val lineAndColumn = stringIndex.charIndexToLineAndColumnWithUTF16(charIndexUtf16)
 
         val pos = Pos(
-          index = withUTF16,
-          line = line.refineUnsafe,
-          column = withUTF16
+          index = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe),
+          line = lineAndColumn.line,
+          column = lineAndColumn.column
         )
         val range = RangeInFile(start = pos, end = pos)
         val source = SourceOffset(FileNameAndContent(uri, text))
