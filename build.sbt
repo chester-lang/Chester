@@ -173,6 +173,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform).wit
 // slogging
 // js & native & shared folder
 // native: based on scala-native-0.4
+// native: addded syslog & glib, Main -> MainSyslog
 // native TerminalLogger.scala replaced `c"\33` with `c"\u001b`
 lazy val slogging = crossProject(NativePlatform).withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Full)
@@ -348,17 +349,17 @@ def useSpire(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproje
 def useSlogging(project: _root_.sbtcrossproject.CrossProject): _root_.sbtcrossproject.CrossProject =
   project.jvmSettings(
     libraryDependencies ++= Seq(
-      "biz.enef" %%% "slogging" % "0.6.2",
-      "biz.enef" %%% "slogging-slf4j" % "0.6.2",
+      "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
+      "biz.enef" %%% "slogging-slf4j" % "0.6.2" cross (CrossVersion.for3Use2_13),
       "org.slf4j" % "slf4j-simple" % "2.0.16",
     )
   )
   .nativeConfigure(_.dependsOn(slogging.native))
   .jsSettings(
     libraryDependencies ++= Seq(
-      "biz.enef" %%% "slogging" % "0.6.2",
-      "biz.enef" %%% "slogging-winston" % "0.6.2",
-      "biz.enef" %%% "slogging-http" % "0.6.2",
+      "biz.enef" %%% "slogging" % "0.6.2" cross (CrossVersion.for3Use2_13),
+      "biz.enef" %%% "slogging-winston" % "0.6.2" cross (CrossVersion.for3Use2_13),
+      "biz.enef" %%% "slogging-http" % "0.6.2" cross (CrossVersion.for3Use2_13),
     )
   )
 
