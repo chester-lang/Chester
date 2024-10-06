@@ -197,25 +197,30 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         }
         case _ => ()
       }
-      val t = x match {
-        case IntegerLiteral(_, _) => IntegerType()
-        case RationalLiteral(_, _) => RationalType()
-        case StringLiteral(_, _) => StringType()
-        case SymbolLiteral(_, _) => SymbolType()
-      }
       x match {
-        case IntegerLiteral(_, _) => {
-          if (tryUnify(ty_, IntType())) return true
+        case IntegerLiteral(value, _) => {
+          if (value.isValidInt && tryUnify(ty_, IntType())) return true
+          if (value > 0 && tryUnify(ty_, NaturalType())) return true
+          val i = Vector(IntegerType()) ++
+            Vector(NaturalType()).filter(x => value > 0) ++
+            Vector(IntType()).filter(x => value.isValidInt) ++
+            Vector(UIntType()).filter(x => value > 0 && value.isValidInt)
+          unify(ty_, Intersection(i.assumeNonEmpty), x)
+          return true
         }
-        case _ => {
+        case RationalLiteral(_, _) => {
+          unify(ty_, RationalType(), x)
+          return true
+        }
+        case StringLiteral(_, _) => {
+          unify(ty_, StringType(), x)
 
+          return true
         }
-      }
-      if (ty_ == t) {
-        return true
-      } else {
-        unify(ty_, t, x)
-        return true
+        case SymbolLiteral(_, _) => {
+          unify(ty_, SymbolType(), x)
+          return true
+        }
       }
     }
 
@@ -298,13 +303,17 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case (lhs, Meta(rhs)) => unify(lhs, rhs, cause)
 
       // Structural unification for ListType
-      case (ListType(elem1,_), ListType(elem2,_)) =>
+      case (ListType(elem1, _), ListType(elem2, _)) =>
         unify(elem1, elem2, cause)
 
-      case (Type(Levelω(_),_), Type(LevelFinite(_,_),_)) => ()
+      case (Type(Levelω(_), _), Type(LevelFinite(_, _), _)) => ()
+
+      case (x, Intersection(xs, _)) =>
+        if(xs.exists(tryUnify(x, _))) return
+        ck.reporter.apply(TypeMismatch(lhs, rhs, cause)) // TODO
 
       // THIS IS INCORRECT, TODO: FIX
-      case (Union(types1,_), Union(types2,_)) =>
+      case (Union(types1, _), Union(types2, _)) =>
         val minLength = math.min(types1.length, types2.length)
         (types1.take(minLength), types2.take(minLength)).zipped.foreach { (ty1, ty2) =>
           unify(ty1, ty2, cause)
@@ -350,11 +359,11 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
           ck.reporter.apply(TypeMismatch(ListType(AnyType0), l, cause))
           true
         }
-        case (Some(t1), Some(ListType(t2,_))) => {
+        case (Some(t1), Some(ListType(t2, _))) => {
           unify(t2, t1, cause)
           true
         }
-        case (_, Some(ListType(t2,_))) => {
+        case (_, Some(ListType(t2, _))) => {
           unify(t2, tRhs, cause)
           true
         }
