@@ -1,6 +1,7 @@
 package chester.tyck
 
 import chester.syntax.accociativity.OperatorsContext
+import chester.syntax.*
 import chester.syntax.concrete.{Expr, ResolvingModules}
 import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString}
@@ -17,13 +18,14 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                           reference: Option[Reference] = None
                         ) {
     def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
+
     def tyTerm(using state: StateAbility[Tyck]): Term = toTerm(ty)
   }
 
   object ContextItem {
     def builtin[Ck](item: BuiltinItem)(using state: StateAbility[Ck]): (TyAndVal, ContextItem) = {
       val varId = UniqId.generate[ToplevelV]
-      val name = ToplevelV(QualifiedIDString.from(), item.id, item.ty, varId)
+      val name = ToplevelV(AbsoluteRef(BuiltinModule, item.id), item.ty, varId)
       val ty1 = state.toId(item.ty)
       (TyAndVal(ty1, state.toId(item.value)),
         ContextItem(item.id, varId, name, ty1))
@@ -35,8 +37,11 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                        value: CellIdOr[Term]
                      ) {
     def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
+
     def valueId(using state: StateAbility[Tyck]): CellId[Term] = toId(value)
+
     def tyTerm(using state: StateAbility[Tyck]): Term = toTerm(ty)
+
     def valueTerm(using state: StateAbility[Tyck]): Term = toTerm(value)
   }
 

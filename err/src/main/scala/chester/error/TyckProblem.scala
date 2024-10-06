@@ -69,7 +69,7 @@ sealed trait TyckWarning extends TyckProblem derives ReadWriter {
 
 case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr) extends TyckWarning {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
-    t"Unused variable: ${id.name}"
+    d"Unused variable: ${id}"
 }
 
 implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a = qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b = readwriter[String]).asInstanceOf

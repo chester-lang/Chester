@@ -6,7 +6,7 @@ import chester.doc.*
 import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.error.ProblemUpickle.*
-import chester.syntax.{Name, QualifiedIDString}
+import chester.syntax.{AbsoluteRef, Name, QualifiedIDString}
 import chester.utils.*
 import chester.utils.doc.*
 import chester.utils.impls.*
@@ -673,8 +673,9 @@ case class LocalV(name: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTe
   override def descent(f: Term => Term): LocalV = thisOr(copy(ty = f(ty)))
 }
 
-case class ToplevelV(module: QualifiedIDString, name: Name, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(module.mkString(".") + "." + name)
+case class ToplevelV(id: AbsoluteRef, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+  override def name: Name = id.name
+  override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <+> Docs.`.` <+> ty.toDoc)
 
   override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
 }

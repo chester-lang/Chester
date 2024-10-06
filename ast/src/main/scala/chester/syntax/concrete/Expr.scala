@@ -8,7 +8,7 @@ import chester.error.*
 import chester.syntax.accociativity.Associativity
 import chester.syntax.concrete.stmt.QualifiedID
 import chester.syntax.core.*
-import chester.syntax.{Name, QualifiedIDString, UnresolvedID}
+import chester.syntax.*
 import chester.utils.doc.*
 import upickle.default.*
 import io.github.iltotore.iron.*
@@ -649,8 +649,8 @@ case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 }
 
 
-case class ImportStmt(module: Vector[Name], meta: Option[ExprMeta]) extends Stmt {
-  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("import ") <> module.map(_.toDoc).reduce(_ <> Doc.text(".") <> _))
+case class ImportStmt(module: ModuleRef, meta: Option[ExprMeta]) extends Stmt {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("import ") <> module.toDoc)
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }

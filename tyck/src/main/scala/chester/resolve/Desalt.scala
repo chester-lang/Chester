@@ -3,7 +3,7 @@ package chester.resolve
 import cats.data.*
 import cats.implicits.*
 import chester.error.*
-import chester.syntax.Const
+import chester.syntax.{Const, ModuleRef}
 import chester.syntax.concrete.*
 import chester.tyck.*
 import io.github.iltotore.iron.*
@@ -288,7 +288,7 @@ case object SimpleDesalt {
     case opSeq @ OpSeq(Vector(Identifier(Const.Import, _), some), meta) =>
       Some(some) match {
         case Some(qualifiedName) =>
-          val modulePath = ObjectDesalt.desugarQualifiedName(qualifiedName.asInstanceOf[QualifiedName])
+          val modulePath = ModuleRef(ObjectDesalt.desugarQualifiedName(qualifiedName.asInstanceOf[QualifiedName]))
           ImportStmt(modulePath, meta)
         case None =>
           val error = InvalidImportSyntax(opSeq)
