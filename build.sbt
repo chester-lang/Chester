@@ -748,12 +748,9 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .in(file("lsp"))
   .jvmEnablePlugins(NativeImagePlugin)
   //.enablePlugins(SbtProguard)
-  .dependsOn(common)
+  .dependsOn(buildProtocol)
   .settings(
     libraryDependencies ++= Seq(
-      "org.log4s" %%% "log4s" % "1.10.0",
-      "org.slf4j" % "slf4j-api" % "2.0.16",
-      "org.slf4j" % "slf4j-simple" % "2.0.16",
     ),
     name := "lsp",
     Compile / mainClass := Some("chester.lsp.Main"),
@@ -795,11 +792,32 @@ lazy val lspTs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
     commonSettings
   )
 
+lazy val buildProtocol = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("build-protocol"))
+  .dependsOn(common)
+  .settings(
+    name := "build-protocol",
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "ch.epfl.scala" %%% "bsp4s" % "2.2.0-M4.TEST" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13") exclude("org.typelevel", "cats-core_2.13") exclude("org.typelevel", "cats-kernel_2.13"),
+      "com.lihaoyi" %%% "sourcecode" % "0.4.3-M1",
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-kernel" % "2.12.0",
+      "org.log4s" %%% "log4s" % "1.10.0",
+      "org.slf4j" % "slf4j-api" % "2.0.16",
+      "org.slf4j" % "slf4j-simple" % "2.0.16",
+      "ch.epfl.scala" % "bsp4j" % "2.2.0-M4.TEST",
+    )
+  )
+  .jvmSettings(commonJvmLibSettings)
+
+
 lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("build-tool"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .dependsOn(common)
+  .dependsOn(buildProtocol)
   .settings(
     name := "build-tool",
     Compile / mainClass := Some("chester.build.Main"),
@@ -807,10 +825,6 @@ lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageOutput := file("target") / "chester-build",
     commonSettings,
     libraryDependencies ++= Seq(
-      "org.log4s" %%% "log4s" % "1.10.0",
-      "org.slf4j" % "slf4j-api" % "2.0.16",
-      "org.slf4j" % "slf4j-simple" % "2.0.16",
-      "ch.epfl.scala" % "bsp4j" % "2.2.0-M4.TEST",
     )
   )
 
@@ -881,7 +895,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, lspTs, buildTool, up, truffle, js, site, docs)
+    lsp, lspTs, buildProtocol, buildTool, up, truffle, js, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
