@@ -807,10 +807,7 @@ lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageOutput := file("target") / "chester-build",
     commonSettings,
     libraryDependencies ++= Seq(
-      "ch.epfl.scala" %%% "bsp4s" % "2.2.0-M4.TEST" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13") exclude("org.typelevel", "cats-core_2.13") exclude("org.typelevel", "cats-kernel_2.13"),
-      "com.lihaoyi" %%% "sourcecode" % "0.4.3-M1",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-kernel" % "2.12.0",
+      "ch.epfl.scala" % "bsp4j" % "2.2.0-M4.TEST",
     )
   )
 
