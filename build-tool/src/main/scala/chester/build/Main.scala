@@ -11,7 +11,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     logger.info("Starting Chester Build Server")
 
-    val server = new ChesterBuildServer()
+    val server = new ChesterBuildServerImpl()
 
     val executorService = Executors.newFixedThreadPool(4)
 
