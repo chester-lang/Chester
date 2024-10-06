@@ -11,6 +11,7 @@ import chester.tyck.*
 import chester.utils.*
 import chester.utils.propagator.*
 import chester.syntax.*
+import chester.syntax.tyck.{FinalReference, TyckMeta}
 
 import scala.language.implicitConversions
 import scala.util.boundary
@@ -322,11 +323,3 @@ object Tycker extends DefaultImpl with ProvideMutable {
 
 export Tycker.{check, parseCheckTAST}
 
-
-case class TyckMeta(
-                     symbols: Seq[FinalReference] = Vector.empty[FinalReference]
-                   )
-
-object TyckMeta {
-  val Empty: TyckMeta = TyckMeta()
-}

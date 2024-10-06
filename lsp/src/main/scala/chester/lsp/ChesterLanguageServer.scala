@@ -3,6 +3,7 @@ package chester.lsp
 import chester.error.*
 import chester.parser.*
 import chester.syntax.core.*
+import chester.syntax.tyck.{FinalReference, TyckMeta}
 import chester.tyck.*
 import chester.utils.{StringIndex, WithUTF16}
 import io.github.iltotore.iron.*

@@ -1,8 +1,8 @@
 package chester.syntax
 
 import chester.syntax.*
-import chester.tyck.*
 import chester.syntax.core.{BlockTerm, Effects, Term}
+import chester.syntax.tyck.TyckMeta
 import com.eed3si9n.ifdef.*
 import upickle.default.*
 import upickle.default as upickle

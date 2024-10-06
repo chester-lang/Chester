@@ -8,14 +8,7 @@ import chester.syntax.{Name, QualifiedIDString}
 import chester.tyck.BuiltIn.BuiltinItem
 import chester.utils.propagator.*
 
-case class FinalReference(
-                           call: MaybeVarCall,
-                           id: UniqIdOf[? <: MaybeVarCall],
-                           definedOn: Expr,
-                           referencedOn: Seq[Expr]
-                         ) {
-  def name: Name = call.name
-}
+
 
 trait ProvideCtx extends ProvideCellId with ElaboraterBase {
 
