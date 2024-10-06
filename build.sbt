@@ -785,6 +785,25 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     graalvmSettings,
   )
 
+lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("build-tool"))
+  .jvmEnablePlugins(NativeImagePlugin)
+  .dependsOn(common)
+  .settings(
+    name := "build-tool",
+    Compile / mainClass := Some("chester.build.Main"),
+    assembly / assemblyOutputPath := file("target") / "chester-build.jar",
+    nativeImageOutput := file("target") / "chester-build",
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "ch.epfl.scala" %%% "bsp4s" % "2.2.0-M4.TEST" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13") exclude("org.typelevel", "cats-core_2.13") exclude("org.typelevel", "cats-kernel_2.13"),
+      "com.lihaoyi" %%% "sourcecode" % "0.4.3-M1",
+      "org.typelevel" %%% "cats-core" % "2.12.0",
+      "org.typelevel" %%% "cats-kernel" % "2.12.0",
+    )
+  )
+
 lazy val truffle = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("truffle"))
@@ -852,7 +871,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, up, truffle, js, site, docs)
+    lsp, buildTool, up, truffle, js, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
