@@ -42,7 +42,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override def readStable: Option[Effects] = Some(effects)
   }
 
-  def resolve(expr: Expr, localCtx: LocalCtx)(using reporter: Reporter[TyckProblem]): Expr = {
+  def resolve(expr: Expr)(using localCtx: LocalCtx, reporter: Reporter[TyckProblem]): Expr = {
     val result = SimpleDesalt.desugarUnwrap(expr) match {
       case opseq: OpSeq => {
         val result = resolveOpSeq(reporter, localCtx.operators, opseq)

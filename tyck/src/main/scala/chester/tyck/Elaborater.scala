@@ -58,7 +58,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   def elabBlock(expr: Block, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): BlockTerm = {
     val ty = toId(readMetaVar(toTerm(ty0)))
-    val Block(heads, tail, meta) = expr
+    val Block(heads0, tail, meta) = expr
+    val heads = heads0.map(resolve)
     {
       case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
 
@@ -135,7 +136,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         implicit val localCtx: LocalCtx = ctx
         val tailExpr = tail.getOrElse(UnitExpr(meta))
         val wellTyped = elab(tailExpr, ty, effects)
-        BlockTerm(stmts, elab(tailExpr, ty, effects))
+        BlockTerm(stmts, wellTyped)
       }
     }
   }
@@ -143,7 +144,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
   /** ty is lhs */
   override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
-    resolve(expr, localCtx) match {
+    resolve(expr) match {
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
@@ -325,8 +326,8 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
     implicit val ctx: LocalCtx = LocalCtx.default
-    val (module, block) : (ModuleRef, Block) = resolve(expr, ctx) match {
-      case b@Block(head+:heads, tail, meta) => resolve(head, ctx) match {
+    val (module, block) : (ModuleRef, Block) = resolve(expr) match {
+      case b@Block(head+:heads, tail, meta) => resolve(head) match {
         case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
         case stmt => (DefaultModule, b)
       }
