@@ -650,7 +650,13 @@ case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
 
 
 case class ImportStmt(module: ModuleRef, meta: Option[ExprMeta]) extends Stmt {
-  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("import ") <> module.toDoc)
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("import") <+> module.toDoc)
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
+case class ModuleStmt(module: ModuleRef,  meta: Option[ExprMeta] = None) extends Stmt {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("module") <+> module.toDoc)
 
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }

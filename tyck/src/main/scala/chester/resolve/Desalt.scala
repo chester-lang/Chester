@@ -295,6 +295,16 @@ case object SimpleDesalt {
           reporter(error)
           DesaltFailed(opSeq, error, meta)
       }
+    case opseq @ OpSeq(Vector(Identifier(Const.Module, _), some), meta) =>
+      Some(some) match {
+        case Some(qualifiedName) =>
+          val modulePath = ModuleRef(ObjectDesalt.desugarQualifiedName(qualifiedName.asInstanceOf[QualifiedName]))
+          ModuleStmt(modulePath, meta)
+        case None =>
+          val error = InvalidModuleSyntax(opseq)
+          reporter(error)
+          DesaltFailed(opseq, error, meta)
+      }
     case default => default
   }
 

@@ -6,6 +6,7 @@ object Const {
   val Trait: String = "trait"
   val Implement: String = "implement"
   val Import: String = "import"
+  val Module: String = "module"
   val Arrow2: String = "=>"
   val Arrow: String = "->"
   val Let: String = "let"

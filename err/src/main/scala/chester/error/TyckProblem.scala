@@ -184,5 +184,10 @@ case class ObjectFieldMismatch(
 
 case class InvalidImportSyntax(cause: Expr) extends TyckError {
   override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
-    t"Invalid syntax in import statement: ${cause.toDoc}"
+    t"Invalid syntax in import statement:"
+}
+
+case class InvalidModuleSyntax(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Invalid syntax in module statement:"
 }

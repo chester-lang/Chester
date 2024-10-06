@@ -34,6 +34,8 @@ case class ModuleRef(xs: Vector[Name]) extends AnyVal with ToDoc {
 
 val BuiltinModule = ModuleRef(Vector("_builtin"))
 
+val DefaultModule = ModuleRef(Vector("_default"))
+
 case class AbsoluteRef(module: ModuleRef, id: Name) extends ToDoc derives ReadWriter {
   def name: Name = id
   override def toDoc(implicit options: PrettierOptions): Doc = module.toDoc <> Doc.text(".") <> id.toDoc
