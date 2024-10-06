@@ -533,8 +533,8 @@ lazy val typedvscodeLanguageserver = crossProject(JSPlatform).withoutSuffixFor(J
   )
 
 // Update the jsTypings project to include the new dependencies
-lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
+lazy val jsTypings = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Pure)
   .in(file("js-typings"))
   // Remove comments to generate typings again
   //.jsEnablePlugins(ScalablyTypedConverterPlugin)
@@ -601,13 +601,14 @@ lazy val jsTypings = crossProject(JSPlatform, JVMPlatform, NativePlatform).witho
     ),
     */
   )
-  .jvmSettings(commonJvmLibSettings)
 
 lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("common"))
   .dependsOn(core)
-  .dependsOn(jsTypings)
+  .jsConfigure(
+    _.dependsOn(jsTypings.js)
+  )
   .settings(
     name := "chester",
     assembly / assemblyOutputPath := file("target") / "chester-common.jar",
@@ -644,7 +645,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .crossType(CrossType.Full)
   .in(file("cli"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .dependsOn(common, jsTypings)
+  .dependsOn(common)
   .settings(
     name := "cli",
     Compile / mainClass := Some("chester.cli.Main"),
@@ -680,7 +681,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
   .crossType(CrossType.Full)
   .in(file("up"))
   .jvmEnablePlugins(NativeImagePlugin)
-  .dependsOn(common, jsTypings)
+  .dependsOn(common)
   .settings(
     name := "up",
     Compile / mainClass := Some("chester.up.Main"),
@@ -701,7 +702,7 @@ lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffi
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("js"))
-  .dependsOn(common, jsTypings)
+  .dependsOn(common)
   .settings(
     name := "js",
     commonSettings
@@ -783,6 +784,15 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
   )
   .jvmSettings(
     graalvmSettings,
+  )
+
+lazy val lspTs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("lsp-ts"))
+  .dependsOn(common)
+  .settings(
+    name := "lsp-ts",
+    commonSettings
   )
 
 lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
@@ -871,7 +881,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, buildTool, up, truffle, js, site, docs)
+    lsp, lspTs, buildTool, up, truffle, js, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
