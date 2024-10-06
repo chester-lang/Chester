@@ -107,8 +107,9 @@ ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.1-RC0")
 ThisBuild / organization := "com.github.chester-lang"
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("META-INF", "versions", xs@_*) => MergeStrategy.first
-  case PathList("module-info.class") => MergeStrategy.first
+  case PathList("META-INF", "versions", "9", "module-info.class") => MergeStrategy.discard
+  case PathList("module-info.class" | "plugin.xml" | "plugin.properties" | ".options" | ".api_description") => MergeStrategy.discard
+  case PathList("META-INF", "eclipse.inf") => MergeStrategy.discard
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
@@ -794,10 +795,10 @@ lazy val buildProtocol = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     name := "build-protocol",
     commonSettings,
     libraryDependencies ++= Seq(
-      "ch.epfl.scala" %%% "bsp4s" % "2.2.0-M4.TEST" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13") exclude("org.typelevel", "cats-core_2.13") exclude("org.typelevel", "cats-kernel_2.13"),
-      "com.lihaoyi" %%% "sourcecode" % "0.4.3-M1",
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-kernel" % "2.12.0",
+      //"ch.epfl.scala" %%% "bsp4s" % "2.2.0-M4.TEST" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13") exclude("org.typelevel", "cats-core_2.13") exclude("org.typelevel", "cats-kernel_2.13"),
+      //"com.lihaoyi" %%% "sourcecode" % "0.4.3-M1",
+      //"org.typelevel" %%% "cats-core" % "2.12.0",
+      //"org.typelevel" %%% "cats-kernel" % "2.12.0",
       "org.log4s" %%% "log4s" % "1.10.0",
       "org.slf4j" % "slf4j-api" % "2.0.16",
       "org.slf4j" % "slf4j-simple" % "2.0.16",
