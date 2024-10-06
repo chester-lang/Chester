@@ -9,15 +9,18 @@ type Name = String
 
 inline def Name(inline name: String): Name = name
 
+@deprecated("Use ModuleRef")
 type UnresolvedID = Vector[Name]
 
+@deprecated("Use ModuleRef")
 type QualifiedIDString = Vector[Name]
 
 extension (x: QualifiedIDString) {
+  @deprecated("Use ModuleRef")
   def name: Name = x.last
 }
 
-
+@deprecated("Use ModuleRef")
 object QualifiedIDString {
   def from(id: Name*): QualifiedIDString = id.toVector
 }

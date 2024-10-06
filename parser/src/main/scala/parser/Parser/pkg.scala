@@ -47,6 +47,7 @@ def parseExpr(source: ParserSource, ignoreLocation: Boolean = false): Either[Par
   parseFromSource(source, _.exprEntrance, ignoreLocation)
 }
 
+@deprecated("Create new module representation")
 def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
   block.heads.headOption match {
     case Some(OpSeq(Vector(Identifier("module", _), identifiers*), _)) =>
@@ -56,6 +57,7 @@ def extractModuleName(block: Block): Either[ParseError, QualifiedIDString] = {
   }
 }
 
+@deprecated("Create new module representation")
 def parseModule(source: ParserSource, modules: ResolvingModules = ResolvingModules.Empty, ignoreLocation: Boolean = false): Either[ParseError, ResolvingModules] = {
   parseTopLevel(source, ignoreLocation).flatMap { block =>
     extractModuleName(block).map { id =>
