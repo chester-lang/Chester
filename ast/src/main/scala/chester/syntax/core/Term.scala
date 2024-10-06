@@ -139,18 +139,18 @@ sealed trait Term extends ToDoc derives ReadWriter {
   }
 
   // TODO: optimize
-  final def substitute[A <: Term & HasUniqId](mapping: Seq[(A, Term)]): Term = {
+  final def substitute[A <: TermWithUniqId](mapping: Seq[(A, Term)]): Term = {
     mapping.foldLeft(this) { case (acc, (from, to)) => acc.substitute(from, to) }
   }
 
-  final def substitute(from: Term & HasUniqId, to: Term): Term = {
+  final def substitute(from: TermWithUniqId, to: Term): Term = {
     if (from == to) return this
     if (to match {
-      case to: HasUniqId => from.uniqId == to.uniqId
+      case to: TermWithUniqId => from.uniqId == to.uniqId
       case _ => false
     }) return this
     descentRecursive {
-      case x: HasUniqId if x.uniqId == from.uniqId => to
+      case x: TermWithUniqId if x.uniqId == from.uniqId => to
       case x => x
     }
   }
@@ -171,6 +171,10 @@ sealed trait Term extends ToDoc derives ReadWriter {
       case _ => descent(_.replaceMeta(f))
     }
   }
+}
+
+sealed trait TermWithUniqId extends Term with HasUniqId derives ReadWriter {
+  override def uniqId: UniqIdOf[Term]
 }
 
 // allow write, not allow read
@@ -447,17 +451,10 @@ case class TelescopeTerm(args: Vector[ArgTerm], implicitly: Boolean = false, met
   override def descent(f: Term => Term): TelescopeTerm = thisOr(copy(args = args.map(_.descent(f))))
 }
 
-case class ScopeId(id: UniqId)derives ReadWriter
-
-object ScopeId {
-  def generate: ScopeId = ScopeId(UniqId.generate)
-}
-
 case class Function(
                      ty: FunctionType,
                      body: Term,
-                     scope: Option[ScopeId] = None
-                     , meta: OptionTermMeta = None) extends Term {
+                     meta: OptionTermMeta = None) extends Term {
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val paramsDoc = ty.telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
@@ -481,14 +478,14 @@ case class MatchingClause()derives ReadWriter {
 
 }
 
-case class Matching(scope: ScopeId, ty: FunctionType, clauses: NonEmptyVector[MatchingClause], meta: OptionTermMeta = None) extends Term {
+case class Matching(ty: FunctionType, clauses: NonEmptyVector[MatchingClause], meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = toString // TODO
 
   override def descent(f: Term => Term): Term = thisOr(copy(ty = ty.descent(f)))
 }
 
 // Note that effect and result can use variables from telescope
-case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None) extends Term {
+case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect,  meta: OptionTermMeta = None) extends Term {
   override def toDoc(implicit options: PrettierOptions): Doc = {
     val telescopeDoc = telescope.map(_.toDoc).reduceLeftOption(_ <+> _).getOrElse(Doc.empty)
     val effectsDoc = if (effects.nonEmpty) {
@@ -504,8 +501,8 @@ case class FunctionType(telescope: Vector[TelescopeTerm], resultTy: Term, effect
 
 
 object FunctionType {
-  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect, restrictInScope: Vector[ScopeId] = Vector(), meta: OptionTermMeta = None): FunctionType = {
-    new FunctionType(telescope, resultTy, effects, restrictInScope, meta)
+  def apply(telescope: Vector[TelescopeTerm], resultTy: Term, effects: EffectsM = NoEffect,  meta: OptionTermMeta = None): FunctionType = {
+    new FunctionType(telescope, resultTy, effects, meta)
   }
 
   def apply(telescope: TelescopeTerm, resultTy: Term): FunctionType = {
@@ -665,17 +662,17 @@ case class STEffect(meta: OptionTermMeta = None) extends Effect {
   val name = "ST"
 }
 
-sealed trait MaybeVarCall extends MaybeCallTerm with HasUniqId derives ReadWriter {
+sealed trait MaybeVarCall extends MaybeCallTerm with TermWithUniqId derives ReadWriter {
   def name: Name
 }
 
-case class LocalV(name: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+case class LocalV(name: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTermMeta = None) extends MaybeVarCall {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(name.toString)
 
   override def descent(f: Term => Term): LocalV = thisOr(copy(ty = f(ty)))
 }
 
-case class ToplevelV(id: AbsoluteRef, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
+case class ToplevelV(id: AbsoluteRef, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall {
   override def name: Name = id.name
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <+> Docs.`.` <+> ty.toDoc)
@@ -717,14 +714,8 @@ case class ExprStmtTerm(expr: Term, ty: Term = AnyType0, meta: OptionTermMeta = 
   override def toDoc(implicit options: PrettierOptions): Doc = expr.toDoc
 }
 
-case class NonlocalOrLocalReturn(scope: ScopeId, value: Term, meta: OptionTermMeta = None) extends StmtTerm {
+case class NonlocalOrLocalReturn(value: Term, meta: OptionTermMeta = None) extends StmtTerm {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.text("return") <+> value.toDoc
-}
-
-case class BuiltinTerm(builtin: Builtin, meta: OptionTermMeta = None) extends Term {
-  override def toDoc(implicit options: PrettierOptions): Doc = builtin.toDoc
-
-  override def descent(f: Term => Term): BuiltinTerm = this
 }
 
 case class TupleType(types: Vector[Term], meta: OptionTermMeta = None) extends TypeTerm {

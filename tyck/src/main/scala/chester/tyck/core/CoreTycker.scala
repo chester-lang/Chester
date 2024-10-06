@@ -32,7 +32,7 @@ case class CoreTycker(reporter: Reporter[TyckError]) {
       ObjectType(fieldTypes)
     case lv:LocalV =>
       lv.ty
-    case FunctionType(telescope, resultTy, _, _, _) => Typeω // TODO
+    case FunctionType(telescope, resultTy, _, _) => Typeω // TODO
     case _ =>
       reporter.apply(UnsupportedTermError(term))
       ErrorTerm(UnsupportedTermError(term))

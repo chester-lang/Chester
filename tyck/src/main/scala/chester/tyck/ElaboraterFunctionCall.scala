@@ -75,7 +75,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
 
     override def run(using state: StateAbility[Tyck], ck: Tyck): Boolean = {
       state.readStable(functionTy) match {
-        case Some(FunctionType(telescopes, retTy, _, _, _)) =>
+        case Some(FunctionType(telescopes, retTy, _, _)) =>
           // Unify the arguments with the function's parameters
           if (unifyTelescopes(telescopes, callings, cause)) {
             // Unify the result type

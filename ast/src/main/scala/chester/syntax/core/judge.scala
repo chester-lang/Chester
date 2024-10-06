@@ -3,7 +3,7 @@ import upickle.default.*
 
 case class Judge(wellTyped: Term, ty: Term, effects: Effects = NoEffect)  derives ReadWriter {
   def toMaybe: JudgeMaybeEffect = JudgeMaybeEffect(wellTyped, ty, Some(effects))
-  def substitute(from: Term & HasUniqId, to: Term): Judge = Judge(wellTyped.substitute(from, to), ty.substitute(from, to), effects.descent(_.substitute(from, to)))
+  def substitute(from: TermWithUniqId, to: Term): Judge = Judge(wellTyped.substitute(from, to), ty.substitute(from, to), effects.substitute(from, to).asInstanceOf[Effects])
   
   def collectMeta: Vector[MetaTerm] = wellTyped.collectMeta ++ ty.collectMeta ++ effects.collectMeta
   def replaceMeta(f: MetaTerm=> Term): Judge = Judge(wellTyped.replaceMeta(f), ty.replaceMeta(f), effects.replaceMeta(f))
