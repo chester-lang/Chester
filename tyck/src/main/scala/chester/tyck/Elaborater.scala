@@ -1,4 +1,4 @@
-package chester.propagator
+package chester.tyck
 
 import cats.implicits.*
 import chester.error.*
@@ -14,30 +14,30 @@ import scala.language.implicitConversions
 import scala.util.boundary
 import scala.util.boundary.break
 
-type Ck = Get[TyckProblem, Unit]
+type Tyck = Get[TyckProblem, Unit]
 
 trait Elaborater extends ProvideCtx with ElaboraterCommon {
 
-  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = {
+  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = {
     // Create a new type cell representing the kind Typeω (the type of types)
     val kindType = literal(Typeω: Term)
 
     elab(expr, kindType, toEffectsCell(NoEffect))
   }
 
-  def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     toId(checkType(expr))
   }
 
-  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term =
+  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term =
     expr match {
       case Some(expr) => checkType(expr)
       case None => Meta(newType)
     }
 
-  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term
+  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term
 
-  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     val term = elab(expr, ty, effects)
     toId(term)
   }
@@ -47,14 +47,14 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   // TODO: add something for implicit conversion
   
-  def newSubtype(ty: CellIdOr[Term], cause: Expr)(using localCtx: LocalCtx, ck: Ck, state: StateAbility[Ck]): CellId[Term] = {
+  def newSubtype(ty: CellIdOr[Term], cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     val cell = newType
     state.addPropagator(Unify(toId(ty), cell, cause))
     cell
   }
 
   /** ty is lhs */
-  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Ck, state: StateAbility[Ck]): Term = toTerm {
+  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr, localCtx) match {
       case expr@Identifier(name, meta) => {
@@ -211,14 +211,14 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
     }
   }
 
-  given ckToReport(using ck: Ck): Reporter[TyckProblem] = ck.reporter
+  given ckToReport(using ck: Tyck): Reporter[TyckProblem] = ck.reporter
 
-  case class CkState(
+  case class TyckMeta(
                       symbols: Seq[FinalReference] = Vector.empty[FinalReference]
                     )
 
-  object CkState {
-    val Empty: CkState = CkState()
+  object TyckMeta {
+    val Empty: TyckMeta = TyckMeta()
   }
 
   // TODO: untested
@@ -230,8 +230,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
                     )(using
                       localCtx: LocalCtx,
                       parameter: Global,
-                      ck: Ck,
-                      state: StateAbility[Ck]
+                      ck: Tyck,
+                      state: StateAbility[Tyck]
                     ): Term = {
     // Create collections to store field keys and types
     val fieldTypeVars = scala.collection.mutable.Map[Term, CellId[Term]]()
@@ -265,10 +265,10 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
 trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction with ProvideElaboraterFunctionCall {
 
-  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[CkState, Judge] = {
+  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[TyckMeta, Judge] = {
     val reporter = new VectorReporter[TyckProblem]
-    implicit val get: Ck = new Get(reporter, new MutBox(()))
-    implicit val able: StateAbility[Ck] = stateAbilityImpl
+    implicit val get: Tyck = new Get(reporter, new MutBox(()))
+    implicit val able: StateAbility[Tyck] = stateAbilityImpl
     val ty1: CellId[Term] = ty match {
       case Some(ty) => {
         val cell = literal[Term](ty)
@@ -317,11 +317,11 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         reporter.apply(warning)
       }
     }
-    TyckResult0(CkState(symbols), judge, reporter.getReports)
+    TyckResult0(TyckMeta(symbols), judge, reporter.getReports)
   }
 }
 
 object Cker extends DefaultImpl with ProvideMutable {
 }
 
-export Cker.{check, CkState, FinalReference}
+export Cker.{check, TyckMeta, FinalReference}

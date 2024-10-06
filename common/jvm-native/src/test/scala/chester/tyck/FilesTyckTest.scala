@@ -1,7 +1,6 @@
 package chester.tyck
 
 import chester.parser.*
-import chester.propagator.Cker
 import chester.syntax.concrete.*
 import chester.utils.doc.*
 import chester.utils.ponyfill.Files

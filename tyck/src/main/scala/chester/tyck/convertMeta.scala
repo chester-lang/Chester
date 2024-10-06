@@ -1,4 +1,4 @@
-package chester.propagator
+package chester.tyck
 
 import chester.syntax.concrete.ExprMeta
 import chester.syntax.core.TermMeta

@@ -1,4 +1,4 @@
-package chester.propagator
+package chester.tyck
 
 import chester.syntax.Name
 import chester.syntax.core.*

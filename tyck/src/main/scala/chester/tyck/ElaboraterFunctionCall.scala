@@ -1,8 +1,8 @@
-package chester.propagator
+package chester.tyck
 
 import chester.error.*
-import chester.syntax.concrete._
-import chester.syntax.core._
+import chester.syntax.concrete.*
+import chester.syntax.core.*
 
 trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
@@ -12,8 +12,8 @@ trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   )(using
     ctx: LocalCtx,
     parameter: Global,
-    ck: Ck,
-    state: StateAbility[Ck]
+    ck: Tyck,
+    state: StateAbility[Tyck]
   ): Term
 }
 
@@ -26,8 +26,8 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   )(using
     ctx: LocalCtx,
     parameter: Global,
-    ck: Ck,
-    state: StateAbility[Ck]
+    ck: Tyck,
+    state: StateAbility[Tyck]
   ): Term = {
 
     // Elaborate the function expression to get its term and type
@@ -67,13 +67,13 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     resultTy: CellId[Term],
     cause: Expr
   )(using localCtx: LocalCtx)
-      extends Propagator[Ck] {
+      extends Propagator[Tyck] {
 
     override val readingCells: Set[CellId[?]] = Set(functionTy)
     override val writingCells: Set[CellId[?]] = Set(resultTy)
     override val zonkingCells: Set[CellId[?]] = Set(functionTy, resultTy)
 
-    override def run(using state: StateAbility[Ck], ck: Ck): Boolean = {
+    override def run(using state: StateAbility[Tyck], ck: Tyck): Boolean = {
       state.readStable(functionTy) match {
         case Some(FunctionType(telescopes, retTy, _, _, _)) =>
           // Unify the arguments with the function's parameters
@@ -102,8 +102,8 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       actual: Vector[Calling],
       cause: Expr
     )(using
-      state: StateAbility[Ck],
-      ck: Ck
+      state: StateAbility[Tyck],
+      ck: Tyck
     ): Boolean = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
@@ -123,8 +123,8 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       actualArgs: Vector[CallingArgTerm],
       cause: Expr
     )(using
-      state: StateAbility[Ck],
-      ck: Ck
+      state: StateAbility[Tyck],
+      ck: Tyck
     ): Boolean = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
@@ -139,7 +139,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       true
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Ck], ck: Ck): ZonkResult = {
+    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], ck: Tyck): ZonkResult = {
       // Implement zonking logic if needed
       ZonkResult.NotYet
     }

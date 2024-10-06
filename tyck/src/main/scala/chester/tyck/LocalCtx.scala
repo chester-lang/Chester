@@ -1,10 +1,10 @@
-package chester.propagator
+package chester.tyck
 
-import chester.propagator.BuiltIn.BuiltinItem
-import chester.syntax.core.*
 import chester.syntax.accociativity.OperatorsContext
 import chester.syntax.concrete.{Expr, ResolvingModules}
+import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString}
+import chester.tyck.BuiltIn.BuiltinItem
 import chester.utils.propagator.*
 
 trait ProvideCtx extends ProvideCellId with ElaboraterBase {
@@ -16,8 +16,8 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                           ty: CellIdOr[Term],
                           reference: Option[Reference] = None
                         ) {
-    def tyId(using state: StateAbility[Ck]): CellId[Term] = toId(ty)
-    def tyTerm(using state: StateAbility[Ck]): Term = toTerm(ty)
+    def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
+    def tyTerm(using state: StateAbility[Tyck]): Term = toTerm(ty)
   }
 
   object ContextItem {
@@ -34,10 +34,10 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                        ty: CellIdOr[Term],
                        value: CellIdOr[Term]
                      ) {
-    def tyId(using state: StateAbility[Ck]): CellId[Term] = toId(ty)
-    def valueId(using state: StateAbility[Ck]): CellId[Term] = toId(value)
-    def tyTerm(using state: StateAbility[Ck]): Term = toTerm(ty)
-    def valueTerm(using state: StateAbility[Ck]): Term = toTerm(value)
+    def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
+    def valueId(using state: StateAbility[Tyck]): CellId[Term] = toId(value)
+    def tyTerm(using state: StateAbility[Tyck]): Term = toTerm(ty)
+    def valueTerm(using state: StateAbility[Tyck]): Term = toTerm(value)
   }
 
   object TyAndVal {

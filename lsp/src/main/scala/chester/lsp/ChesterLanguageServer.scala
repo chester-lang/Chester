@@ -3,7 +3,6 @@ package chester.lsp
 import org.log4s.*
 import chester.error.*
 import chester.parser.*
-import chester.propagator.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.*
@@ -155,7 +154,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
   }
 
-  def processDocument(uri: String, text: String): (TyckResult[CkState, Judge], List[Diagnostic]) = {
+  def processDocument(uri: String, text: String): (TyckResult[TyckMeta, Judge], List[Diagnostic]) = {
     val parseResult = Parser.parseTopLevel(FileNameAndContent(uri, text))
 
     parseResult match {
@@ -224,7 +223,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           "ChesterLanguageServer"
         )
         val tyckResult = TyckResult(
-          state = CkState.Empty,
+          state = TyckMeta.Empty,
           result = Judge(ErrorTerm(parseError), ErrorTerm(parseError), NoEffect)
         )
         (tyckResult, List(diagnostic))
@@ -503,7 +502,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
 case class DocumentInfo(
                          content: String,
-                         tyckResult: TyckResult[CkState, Judge],
+                         tyckResult: TyckResult[TyckMeta, Judge],
                        ) {
   def symbols = tyckResult.state.symbols
 }

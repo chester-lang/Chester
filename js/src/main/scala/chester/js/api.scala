@@ -2,7 +2,7 @@ package chester.js
 
 import chester.doc.const.LightMode
 import chester.parser.{FileNameAndContent, Parser}
-import chester.tyck.{TyckResult}
+import chester.tyck.{Cker, TyckResult}
 import chester.propagator.*
 import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.doc.*

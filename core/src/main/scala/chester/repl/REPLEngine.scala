@@ -4,7 +4,6 @@ import cats.implicits.*
 import chester.doc.*
 import chester.doc.const.{Colors, ReplaceBracketsWithWord}
 import chester.parser.{ParseError, ParserEngine}
-import chester.propagator.Cker
 import chester.syntax.concrete.Expr
 import chester.syntax.core.*
 import chester.tyck.*
