@@ -177,7 +177,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         }
       case _ => rhs
     }
-    if(lhsResolved == rhsResolved) return true
+    if (lhsResolved == rhsResolved) return true
 
     (lhsResolved, rhsResolved) match {
       case (Type(level1, _), Type(level2, _)) =>
@@ -331,18 +331,22 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case (Type(Levelω(_), _), Type(LevelFinite(_, _), _)) => ()
 
       case (x, Intersection(xs, _)) =>
-        if(xs.exists(tryUnify(x, _))) return
+        if (xs.exists(tryUnify(x, _))) return
         ck.reporter.apply(TypeMismatch(lhs, rhs, cause)) // TODO
 
-      // THIS IS INCORRECT, TODO: FIX
-      case (Union(types1, _), Union(types2, _)) =>
-        val minLength = math.min(types1.length, types2.length)
-        (types1.take(minLength), types2.take(minLength)).zipped.foreach { (ty1, ty2) =>
-          unify(ty1, ty2, cause)
+      // Structural unification for TupleType
+      case (TupleType(types1, _), TupleType(types2, _)) if types1.length == types2.length =>
+        types1.zip(types2).foreach { case (t1, t2) =>
+          unify(t1, t2, cause)
         }
-        if (types1.length != types2.length) {
-          ck.reporter.apply(TypeMismatch(lhs, rhs, cause))
-        }
+
+      // Type levels: unify levels
+      case (Type(level1, _), Type(level2, _)) =>
+        unify(level1, level2, cause)
+
+      case (LevelFinite(_,_), Levelω(_)) => ()
+
+      case (Union(types1, _), Union(types2, _)) => ???
 
       // Base case: types do not match
       case _ =>
