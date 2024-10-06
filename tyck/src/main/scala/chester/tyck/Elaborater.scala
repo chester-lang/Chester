@@ -321,7 +321,8 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     TyckResult0(TyckMeta(symbols), judge, reporter.getReports)
   }
 
-  def checkTop(fileName: String,expr: Expr)(using reporter: Reporter[Problem]):chester.syntax.TAST = {
+  def checkTop(fileName: String,expr: Expr, reporter0: Reporter[Problem]):chester.syntax.TAST = {
+    implicit val reporter: ReporterTrackError[Problem] = new ReporterTrackError(reporter0)
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
     implicit var ctx: LocalCtx = LocalCtx.default
@@ -362,7 +363,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         reporter.apply(warning)
       }
     }
-    ???
+    TAST(fileName=fileName,module=module,ast=judge.wellTyped.asInstanceOf[BlockTerm],meta=TyckMeta(symbols),ty=judge.ty, effects=judge.effects, problems=reporter.getSeverityMap)
   }
   
   def parseCheckTAST(source: ParserSource, ignoreLocation: Boolean = false)(using reporter: Reporter[Problem]): chester.syntax.TAST = ???

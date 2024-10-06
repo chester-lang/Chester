@@ -1,7 +1,9 @@
 package chester.tyck
 
 import chester.error.*
+import chester.error.Problem.Severity
 import chester.utils.MutBox
+import upickle.default.*
 
 trait Reporter[-T] {
   def apply(value: T): Unit
@@ -17,6 +19,30 @@ class VectorReporter[T] extends Reporter[T] {
   def apply(value: T): Unit = buffer += value
 
   def getReports: Vector[T] = buffer.toVector
+}
+
+case class SeverityMap(error: Boolean, goal: Boolean, warn: Boolean, info: Boolean) derives ReadWriter
+
+class ReporterTrackError[T<:Problem](x: Reporter[T]) extends Reporter[T] {
+  private var errorVar = false
+  private var warnVar = false
+  private var goalVar = false
+  private var infoVar = false
+
+  def apply(value: T): Unit = {
+    x.apply(value)
+    if value.level == Severity.ERROR then errorVar = true
+    if value.level == Severity.WARN then warnVar = true
+    if value.level == Severity.GOAL then goalVar = true
+    if value.level == Severity.INFO then infoVar = true
+  }
+
+  def hasError: Boolean = errorVar
+  def hasWarn: Boolean = warnVar
+  def hasGoal: Boolean = goalVar
+  def hasInfo: Boolean = infoVar
+  
+  def getSeverityMap: SeverityMap = SeverityMap(error=errorVar, goal=goalVar, warn=warnVar, info=infoVar)
 }
 
 class Get[P, S](val reporter: Reporter[P], private val state: MutBox[S]) {
