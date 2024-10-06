@@ -75,23 +75,23 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
       }
       case expr@IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
-        AbstractIntTerm.from(value)
+        AbstractIntTerm.from(value, convertMeta(meta))
       }
       case expr@RationalLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
-        RationalTerm(value)
+        RationalTerm(value, convertMeta(meta))
       }
       case expr@StringLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
-        StringTerm(value)
+        StringTerm(value, convertMeta(meta))
       }
       case expr@SymbolLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
-        SymbolTerm(value)
+        SymbolTerm(value, convertMeta(meta))
       }
       case expr@UnitExpr(meta) => {
-        unify(ty, UnitType, expr)
-        UnitTerm
+        unify(ty, UnitType(convertMeta(meta)), expr)
+        UnitTerm(convertMeta(meta))
       }
       case expr@ListExpr(terms, meta) => {
         val t = newType
@@ -111,7 +111,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
         // Ensure that 't' is the union of the element types
         if (elemTypes.nonEmpty) state.addPropagator(UnionOf(t, elemTypes, expr))
 
-        ListTerm(termResults.map(_._1))
+        ListTerm(termResults.map(_._1), convertMeta(meta))
       }
       case expr@TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
         // Check the type annotation expression to get its type

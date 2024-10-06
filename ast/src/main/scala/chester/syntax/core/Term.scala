@@ -7,12 +7,9 @@ import chester.doc.const.{ColorProfile, Docs}
 import chester.error.*
 import chester.error.ProblemUpickle.*
 import chester.syntax.{Name, QualifiedIDString}
+import chester.utils.*
 import chester.utils.doc.*
 import chester.utils.impls.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.upickle.given
-import chester.utils.*
 import spire.math.Rational
 import upickle.default.*
 
@@ -279,7 +276,8 @@ case class IntegerTerm(value: BigInt, meta: OptionTermMeta = None) extends Liter
 type AbstractIntTerm = IntegerTerm | IntTerm
 
 object AbstractIntTerm {
-  def from(value: BigInt): AbstractIntTerm = if (value.isValidInt) IntTerm(value.toInt) else IntegerTerm(value)
+  def from(value: BigInt, meta: OptionTermMeta = None): AbstractIntTerm =
+    if (value.isValidInt) IntTerm(value.toInt, meta) else IntegerTerm(value, meta)
 
   def unapply(term: Term): Option[BigInt] = term match {
     case IntTerm(value, _) => Some(BigInt(value))
@@ -774,8 +772,8 @@ case class Annotation(term: Term, ty: Option[Term], effects: Option[EffectsM], m
 }
 
 // TODO: tuple?
-val UnitType = ObjectType(Vector.empty)
-val UnitTerm = ObjectTerm(Vector.empty)
+def UnitType(meta: OptionTermMeta = None) = ObjectType(Vector.empty, meta=meta)
+def UnitTerm(meta: OptionTermMeta = None) = ObjectTerm(Vector.empty, meta=meta)
 
 sealed trait ErasedType extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): ErasedType = this
