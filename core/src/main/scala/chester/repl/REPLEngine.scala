@@ -115,7 +115,7 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
   }
 
   def typeCheck(expr: Expr): TyckResult[?, Judge] = {
-    Cker.check(expr)
+    Tycker.check(expr)
   }
 
   def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {

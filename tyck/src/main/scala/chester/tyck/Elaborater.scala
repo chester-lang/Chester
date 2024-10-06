@@ -321,7 +321,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
   }
 }
 
-object Cker extends DefaultImpl with ProvideMutable {
+object Tycker extends DefaultImpl with ProvideMutable {
 }
 
-export Cker.{check, TyckMeta, FinalReference}
+export Tycker.{check, TyckMeta, FinalReference}

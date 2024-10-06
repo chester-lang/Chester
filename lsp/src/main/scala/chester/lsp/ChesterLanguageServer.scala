@@ -1,27 +1,21 @@
 package chester.lsp
 
-import org.log4s.*
 import chester.error.*
 import chester.parser.*
-import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.*
 import chester.utils.{StringIndex, WithUTF16}
-import fastparse.Parsed
-import org.eclipse.lsp4j.*
-import org.eclipse.lsp4j.services.*
-
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.jdk.CollectionConverters.*
-import scala.compiletime.uninitialized
 import io.github.iltotore.iron.*
-
-import java.util.concurrent.CompletableFuture
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import org.slf4j.simple.SimpleLogger
+import org.eclipse.lsp4j.services.*
+import org.log4s.*
 
 import java.util.List as JList
+import java.util.concurrent.CompletableFuture
+import scala.collection.mutable
+import scala.compiletime.uninitialized
+import scala.jdk.CollectionConverters.*
 
 class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
   enableDebug()
@@ -159,7 +153,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
     parseResult match {
       case Right(parsedExpr) =>
-        val tyckResult = Cker.check(parsedExpr)
+        val tyckResult = Tycker.check(parsedExpr)
 
         // Generate diagnostics from the TyckResult
         val diagnostics = tyckResult match {

@@ -1,12 +1,12 @@
 package chester.resolve
 
-import chester.syntax.accociativity.*
-import chester.syntax.*
-import chester.syntax.concrete.*
 import chester.error.*
+import chester.syntax.*
+import chester.syntax.accociativity.*
+import chester.syntax.concrete.*
 import chester.tyck.Reporter
-import scalax.collection.immutable.Graph
 import scalax.collection.edges.DiEdge
+import scalax.collection.immutable.Graph
 
 import scala.collection.mutable
 

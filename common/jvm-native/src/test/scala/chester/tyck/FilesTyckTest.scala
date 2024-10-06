@@ -22,7 +22,7 @@ class FilesTyckTest extends FunSuite {
 
       Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
-          Cker.check(parsedBlock) match {
+          Tycker.check(parsedBlock) match {
             case TyckResult.Success(result, status, warnings) =>
               val actual = StringPrinter.render(result.wellTyped)(using PrettierOptions.Default)
 
