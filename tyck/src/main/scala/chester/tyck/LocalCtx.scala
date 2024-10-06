@@ -84,8 +84,10 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                        knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
                        imports: Imports = Imports.Empty,
                        modules: ResolvingModules = ResolvingModules.Empty,
-                       operators: OperatorsContext = OperatorsContext.Default
+                       operators: OperatorsContext = OperatorsContext.Default,
+                       currentModule: ModuleRef = DefaultModule,
                      ) {
+    def updateModule(module: ModuleRef): LocalCtx = copy(currentModule = module)
     def getKnown(x: MaybeVarCall): Option[TyAndVal] =
       knownMap.get(x.uniqId.asInstanceOf[UniqIdOf[? <: MaybeVarCall]])
 
@@ -117,6 +119,10 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
   }
 
   case class Global(references: SeqId[Reference])
+  
+  object Global {
+    def create[Ck](using state: StateAbility[Ck]): Global = Global(state.addCell(CollectionCell[Reference]()))
+  }
 
   object LocalCtx {
     def default[Ck](using state: StateAbility[Ck]): LocalCtx = {

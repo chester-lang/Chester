@@ -291,8 +291,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
       }
     }
     implicit val ctx: LocalCtx = LocalCtx.default
-    val references = able.addCell(CollectionCell[Reference]())
-    implicit val recording: Global = Global(references)
+    implicit val recording: Global = Global.create
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     var judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readUnstable(effects1).get)
@@ -304,7 +303,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
       }
     }
-    val symbols = able.readUnstable(references).get.map { ref =>
+    val symbols = able.readUnstable(recording.references).get.map { ref =>
       val call = able.readStable(ref.callAsMaybeVarCall).get
       val definedOn = able.readStable(ref.definedOn).get
       val referencedOn = able.readUnstable(ref.referencedOn).get
@@ -325,13 +324,43 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
   def checkTop(fileName: String,expr: Expr)(using reporter: Reporter[Problem]):chester.syntax.TAST = {
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
-    implicit val ctx: LocalCtx = LocalCtx.default
+    implicit var ctx: LocalCtx = LocalCtx.default
     val (module, block) : (ModuleRef, Block) = resolve(expr) match {
       case b@Block(head+:heads, tail, meta) => resolve(head) match {
         case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
         case stmt => (DefaultModule, b)
       }
       case expr => (DefaultModule, Block(Vector(), Some(expr), expr.meta))
+    }
+    ctx = ctx.updateModule(module)
+    val ty = newType
+    val effects = newEffects
+    implicit val recording: Global = Global.create
+    val wellTyped = elabBlock(block, ty, effects)
+    able.naiveZonk(Vector(ty, effects))
+    var judge = Judge(wellTyped, able.readStable(ty).get, able.readUnstable(effects).get)
+    boundary {
+      while (true) {
+        val metas = judge.collectMeta
+        if (metas.isEmpty) break()
+        able.naiveZonk(metas.map(x => x.unsafeRead[CellId[Term]]))
+        judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
+      }
+    }
+    val symbols = able.readUnstable(recording.references).get.map { ref =>
+      val call = able.readStable(ref.callAsMaybeVarCall).get
+      val definedOn = able.readStable(ref.definedOn).get
+      val referencedOn = able.readUnstable(ref.referencedOn).get
+      FinalReference(call, ref.id, definedOn, referencedOn)
+    }
+
+    // Generate warnings for unused variables
+    symbols.foreach { symbol =>
+      if (symbol.referencedOn.isEmpty) {
+        // The variable is defined but not referenced
+        val warning = UnusedVariableWarning(symbol.call, symbol.definedOn)
+        reporter.apply(warning)
+      }
     }
     ???
   }
