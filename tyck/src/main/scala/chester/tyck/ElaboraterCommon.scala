@@ -177,8 +177,30 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         }
       case _ => rhs
     }
-    if (lhsResolved == rhsResolved) return true
-    return false // TODO
+    if(lhsResolved == rhsResolved) return true
+
+    (lhsResolved, rhsResolved) match {
+      case (Type(level1, _), Type(level2, _)) =>
+        level1 == level2
+
+      case (ListType(elem1, _), ListType(elem2, _)) =>
+        tryUnify(elem1, elem2)
+
+      case (Identifier(name1, _), Identifier(name2, _)) =>
+        name1 == name2
+
+      case (IntegerLiteral(value1, _), IntegerLiteral(value2, _)) =>
+        value1 == value2
+
+      case (StringLiteral(value1, _), StringLiteral(value2, _)) =>
+        value1 == value2
+
+      case (Union(types1, _), Union(types2, _)) => ???
+
+      case (Intersection(types1, _), Intersection(types2, _)) => ???
+
+      case _ => false
+    }
   }
 
 
