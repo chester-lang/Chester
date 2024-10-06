@@ -5,6 +5,7 @@ object Const {
   val Data: String = "data"
   val Trait: String = "trait"
   val Implement: String = "implement"
+  val Import: String = "import"
   val Arrow2: String = "=>"
   val Arrow: String = "->"
   val Let: String = "let"

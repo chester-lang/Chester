@@ -181,3 +181,8 @@ case class ObjectFieldMismatch(
     missingInLHSDoc <> missingInRHSDoc
   }
 }
+
+case class InvalidImportSyntax(cause: Expr) extends TyckError {
+  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    t"Invalid syntax in import statement: ${cause.toDoc}"
+}

@@ -648,6 +648,13 @@ case class ReturnStmt(expr: Expr, meta: Option[ExprMeta] = None) extends Stmt {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
 }
 
+
+case class ImportStmt(module: Vector[Name], meta: Option[ExprMeta]) extends Stmt {
+  override def toDoc(implicit options: PrettierOptions): Doc = group(Doc.text("import ") <> module.map(_.toDoc).reduce(_ <> Doc.text(".") <> _))
+
+  override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr = copy(meta = updater(meta))
+}
+
 case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = this
 

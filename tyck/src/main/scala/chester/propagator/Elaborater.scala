@@ -183,6 +183,10 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             ctx = ctx.add(ContextItem(name, id, localv, ty, Some(r))).knownAdd(id, TyAndVal(ty, wellTyped))
             Vector(LetStmtTerm(name, wellTyped, ty))
           }
+          case importStmt:ImportStmt => {
+            ck.reporter.apply(NotImplemented(importStmt))
+            Vector()
+          }
           case expr => {
             implicit val localCtx: LocalCtx = ctx
             val ty = newType

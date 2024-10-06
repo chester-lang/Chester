@@ -285,14 +285,24 @@ case object SimpleDesalt {
       val desugaredLhs = desugar(lhs)
       val desugaredRhs = desugar(rhs)
       TypeAnotationNoEffects(desugaredLhs, desugaredRhs, meta)
+    case opSeq @ OpSeq(Vector(Identifier(Const.Import, _), some), meta) =>
+      Some(some) match {
+        case Some(qualifiedName) =>
+          val modulePath = ObjectDesalt.desugarQualifiedName(qualifiedName.asInstanceOf[QualifiedName])
+          ImportStmt(modulePath, meta)
+        case None =>
+          val error = InvalidImportSyntax(opSeq)
+          reporter(error)
+          DesaltFailed(opSeq, error, meta)
+      }
     case default => default
   }
 
   @tailrec
   private def unwrap(e: Expr)(using reporter: Reporter[TyckProblem]): Expr = e match {
     case Block(Vector(), Some(tail), _) => unwrap(desugar(tail))
-    case Tuple(Vector(term), _) => unwrap(desugar(term))
-    case _ => e
+    case Tuple(Vector(term), _)         => unwrap(desugar(term))
+    case _                              => e
   }
 
   def desugarUnwrap(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr = unwrap(desugar(expr))
@@ -300,4 +310,3 @@ case object SimpleDesalt {
 case object OpSeqDesalt {
   def desugar(expr: Expr): Expr = ???
 }
-
