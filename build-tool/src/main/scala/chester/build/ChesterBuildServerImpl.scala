@@ -1,10 +1,15 @@
 package chester.build
 
-import ch.epfl.scala.bsp4j._
-import org.log4s._
+import ch.epfl.scala.bsp4j.*
+import org.log4s.*
+
 import java.util.concurrent.CompletableFuture
 import java.util.Collections
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
+import java.nio.file.Paths
+import java.nio.file.Files
+import chester.parser.{FileNameAndContent, Parser}
+import chester.tyck.{TyckResult, Tycker}
 
 class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
 
@@ -38,6 +43,17 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     )
 
     logger.debug(s"Build initialized with capabilities: $capabilities")
+
+    // After initialization, read the package.chester file
+    val packageFile = Paths.get("package.chester")
+    if (Files.exists(packageFile)) {
+      val content = Files.readString(packageFile)
+      // Parse the content and store necessary information
+    } else {
+      logger.error("package.chester file not found.")
+      // Handle error appropriately
+    }
+
     CompletableFuture.completedFuture(result)
   }
 
@@ -58,9 +74,37 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
   }
 
   override def workspaceBuildTargets(): CompletableFuture[WorkspaceBuildTargetsResult] = {
-    logger.info("Received workspaceBuildTargets request")
-    // Return the list of build targets in the workspace
-    CompletableFuture.failedFuture(new NotImplementedError("workspaceBuildTargets is not implemented yet"))
+    CompletableFuture.supplyAsync(() => {
+      val targets = new java.util.ArrayList[BuildTarget]()
+
+
+      val btCapabilities = new BuildTargetCapabilities()
+      btCapabilities.setCanCompile(true)
+      btCapabilities.setCanTest(true)
+      btCapabilities.setCanRun(false)
+
+      val mainTarget = new BuildTarget(
+        new BuildTargetIdentifier("src/main/chester"),
+        java.util.Collections.singletonList("chester"),
+        java.util.Collections.emptyList(),
+        java.util.Collections.emptyList(),
+        btCapabilities
+      )
+      mainTarget.setBaseDirectory("src/main/chester")
+      targets.add(mainTarget)
+
+      val testTarget = new BuildTarget(
+        new BuildTargetIdentifier("src/test/chester"),
+        java.util.Collections.singletonList("chester"),
+        java.util.Collections.singletonList(mainTarget.getId.getUri),
+        java.util.Collections.emptyList(),
+        btCapabilities
+      )
+      testTarget.setBaseDirectory("src/test/chester")
+      targets.add(testTarget)
+
+      new WorkspaceBuildTargetsResult(targets)
+    })
   }
 
   override def buildTargetSources(params: SourcesParams): CompletableFuture[SourcesResult] = {
@@ -84,8 +128,23 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
   }
 
   override def buildTargetCompile(params: CompileParams): CompletableFuture[CompileResult] = {
-    logger.info(s"Received buildTargetCompile request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetCompile is not implemented yet"))
+    CompletableFuture.supplyAsync(() => {
+      logger.info(s"Received buildTargetCompile request with params: $params")
+      try {
+        // Call the type checking and object generation methods
+        typeCheckSources()
+        generateObjects()
+
+        val result = new CompileResult(StatusCode.OK)
+        logger.info("Compilation succeeded.")
+        result
+      } catch {
+        case e: Exception =>
+          logger.error(s"Compilation failed. ${e}")
+          val result = new CompileResult(StatusCode.ERROR)
+          result
+      }
+    })
   }
 
   override def buildTargetTest(params: TestParams): CompletableFuture[TestResult] = {
@@ -133,11 +192,56 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
   // Implement ChesterBuildServer methods
 
   override def buildTargetChesterOptions(params: ChesterOptionsParams): CompletableFuture[ChesterOptionsResult] = {
-    logger.info(s"Received buildTargetChesterOptions request with params: $params")
-    // Implement logic to provide Chester-specific compiler options
+    CompletableFuture.supplyAsync(() => {
+      logger.info(s"Received buildTargetChesterOptions request with params: $params")
 
-    // Placeholder implementation
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetChesterOptions is not implemented yet"))
+      val items = params.targets.asScala.map { targetId =>
+        // Define compiler options, classpath, and class directory for each target
+        val options = Seq("-option1", "-option2").asJava
+        val classpath = Seq("lib/dependency1", "lib/dependency2").asJava
+        val classDirectory = s"out/${targetId.getUri}"
+
+        new ChesterOptionsItem(
+          targetId,
+          options,
+          classpath,
+          classDirectory
+        )
+      }.asJava
+
+      new ChesterOptionsResult(items)
+    })
   }
 
+  def typeCheckSources(): Unit = {
+    val sourceDirs = Seq(
+      Paths.get("src/main/chester"),
+      Paths.get("src/test/chester")
+    )
+
+    sourceDirs.foreach { dir =>
+      if (Files.exists(dir) && Files.isDirectory(dir)) {
+        Files.walk(dir).forEach { path =>
+          if (Files.isRegularFile(path) && path.toString.endsWith(".chester")) {
+            val content = Files.readString(path)
+            Parser.parseTopLevel(FileNameAndContent(path.toString, content)) match {
+              case Right(parsedBlock) =>
+                Tycker.check(parsedBlock) match {
+                  case TyckResult.Success(result, _, _) =>
+                    logger.info(s"Type checking succeeded for file: $path")
+                  case TyckResult.Failure(errors, _, _, _) =>
+                    logger.error(s"Type checking failed for file: $path with errors: $errors")
+                }
+              case Left(error) =>
+                logger.error(s"Parsing failed for file: $path with error: $error")
+            }
+          }
+        }
+      } else {
+        logger.warn(s"Source directory not found or is not a directory: $dir")
+      }
+    }
+  }
+
+  def generateObjects(): Unit = ()
 }
