@@ -807,6 +807,9 @@ lazy val buildTool = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
     nativeImageOutput := file("target") / "chester-build",
     commonSettings,
     libraryDependencies ++= Seq(
+      "org.log4s" %%% "log4s" % "1.10.0",
+      "org.slf4j" % "slf4j-api" % "2.0.16",
+      "org.slf4j" % "slf4j-simple" % "2.0.16",
       "ch.epfl.scala" % "bsp4j" % "2.2.0-M4.TEST",
     )
   )
