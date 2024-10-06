@@ -154,6 +154,23 @@ sealed trait Term extends ToDoc derives ReadWriter {
       case x => x
     }
   }
+
+  def collectMeta: Vector[MetaTerm] = {
+    this match {
+      case term: MetaTerm => return Vector(term)
+      case _ =>
+    }
+    var result = Vector.empty[MetaTerm]
+    inspect { x => result ++= x.collectMeta }
+    result
+  }
+
+  def replaceMeta(f: MetaTerm => Term): Term = thisOr {
+    this match {
+      case term: MetaTerm => f(term)
+      case _ => descent(_.replaceMeta(f))
+    }
+  }
 }
 
 // allow write, not allow read
@@ -175,21 +192,6 @@ case class MetaTerm(impl: MetaTermHold[?], meta: OptionTermMeta = None) extends 
 
 object MetaTerm {
   def from[T](x: T): MetaTerm = MetaTerm(MetaTermHold(x))
-}
-
-extension (t: Term) {
-  def collectMeta: Vector[MetaTerm] = {
-    var result = Vector.empty[MetaTerm]
-    t.foreach {
-      case x: MetaTerm => result = result :+ x
-      case _ =>
-    }
-    result
-  }
-  def replaceMeta(f: MetaTerm => Term): Term = t.descentRecursive {
-    case x: MetaTerm => f(x)
-    case x => x
-  }
 }
 
 case class ListTerm(terms: Vector[Term], meta: OptionTermMeta = None) extends Term derives ReadWriter {
@@ -626,15 +628,15 @@ extension (e: EffectsM) {
 case class Effects(effects: Map[LocalV, Term], meta: OptionTermMeta = None) extends ToDoc with Term derives ReadWriter {
   override def toDoc(implicit options: PrettierOptions): Doc = Doc.wrapperlist(Docs.`{`, Docs.`}`, ",")(effects.map { case (k, v) => k.toDoc <+> Docs.`:` <+> v.toDoc })
 
-  def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => effect -> f(names) })
+  def descent(f: Term => Term): Effects = Effects(effects.map { case (effect, names) => f(effect).asInstanceOf[LocalV] -> f(names) })
 
   def isEmpty: Boolean = (effects eq NoEffect.effects) || effects.isEmpty
 
   def nonEmpty: Boolean = (effects ne NoEffect.effects) && effects.nonEmpty
 
-  def collectMeta = effects.flatMap((a, b) => a.collectMeta ++ b.collectMeta)
+  override def collectMeta = effects.flatMap((a, b) => a.collectMeta ++ b.collectMeta).toVector
 
-  def replaceMeta(f: MetaTerm => Term): Effects = Effects(effects.map { case (a, b) => a.replaceMeta(f).asInstanceOf[LocalV] -> b.replaceMeta(f) })
+  override def replaceMeta(f: MetaTerm => Term): Effects = Effects(effects.map { case (a, b) => a.replaceMeta(f).asInstanceOf[LocalV] -> b.replaceMeta(f) })
 }
 
 object Effects {
@@ -675,6 +677,7 @@ case class LocalV(name: Name, ty: Term, uniqId: UniqIdOf[LocalV], meta: OptionTe
 
 case class ToplevelV(id: AbsoluteRef, ty: Term, uniqId: UniqIdOf[ToplevelV], meta: OptionTermMeta = None) extends MaybeVarCall with HasUniqId {
   override def name: Name = id.name
+
   override def toDoc(implicit options: PrettierOptions): Doc = group(id.toDoc <+> Docs.`.` <+> ty.toDoc)
 
   override def descent(f: Term => Term): ToplevelV = thisOr(copy(ty = f(ty)))
@@ -773,8 +776,8 @@ case class Annotation(term: Term, ty: Option[Term], effects: Option[EffectsM], m
 }
 
 // TODO: tuple?
-def UnitType(meta: OptionTermMeta = None) = ObjectType(Vector.empty, meta=meta)
-def UnitTerm(meta: OptionTermMeta = None) = ObjectTerm(Vector.empty, meta=meta)
+def UnitType(meta: OptionTermMeta = None) = ObjectType(Vector.empty, meta = meta)
+def UnitTerm(meta: OptionTermMeta = None) = ObjectTerm(Vector.empty, meta = meta)
 
 sealed trait ErasedType extends TypeTerm derives ReadWriter {
   override def descent(f: Term => Term): ErasedType = this
