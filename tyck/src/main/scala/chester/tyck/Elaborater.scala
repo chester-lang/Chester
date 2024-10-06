@@ -2,6 +2,7 @@ package chester.tyck
 
 import cats.implicits.*
 import chester.error.*
+import chester.parser.ParserSource
 import chester.resolve.{SimpleDesalt, resolveOpSeq}
 import chester.syntax.Name
 import chester.syntax.concrete.*
@@ -9,6 +10,7 @@ import chester.syntax.core.*
 import chester.tyck.*
 import chester.utils.*
 import chester.utils.propagator.*
+import chester.syntax.*
 
 import scala.language.implicitConversions
 import scala.util.boundary
@@ -213,14 +215,6 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   given ckToReport(using ck: Tyck): Reporter[TyckProblem] = ck.reporter
 
-  case class TyckMeta(
-                      symbols: Seq[FinalReference] = Vector.empty[FinalReference]
-                    )
-
-  object TyckMeta {
-    val Empty: TyckMeta = TyckMeta()
-  }
-
   // TODO: untested
   def elabObjectExpr(
                       expr: ObjectExpr,
@@ -319,9 +313,20 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     }
     TyckResult0(TyckMeta(symbols), judge, reporter.getReports)
   }
+  
+  def parseCheckTAST(source: ParserSource, ignoreLocation: Boolean = false)(using reporter: Reporter[Problem]): chester.syntax.TAST = ???
 }
 
 object Tycker extends DefaultImpl with ProvideMutable {
 }
 
-export Tycker.{check, TyckMeta, FinalReference}
+export Tycker.{check, parseCheckTAST}
+
+
+case class TyckMeta(
+                     symbols: Seq[FinalReference] = Vector.empty[FinalReference]
+                   )
+
+object TyckMeta {
+  val Empty: TyckMeta = TyckMeta()
+}
