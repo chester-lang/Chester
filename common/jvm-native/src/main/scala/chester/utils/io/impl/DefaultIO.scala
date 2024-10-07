@@ -30,45 +30,47 @@ implicit object DefaultRunner extends Runner[Id] {
   override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
 }
 
-object DefaultPathOps extends PathOps[os.Path] {
-  override inline def of(path: String): os.Path = Path(path)
+object DefaultPathOps extends PathOps[os.FilePath] {
+  override inline def of(path: String): os.FilePath = FilePath(path)
 
-  override inline def join(p1: os.Path, p2: String): os.Path = p1 / os.SubPath(p2)
+  override inline def join(p1: os.FilePath, p2: String): os.FilePath = (p1 / os.SubPath(p2)).asInstanceOf[os.FilePath]
 
-  override inline def asString(p: os.Path): String = p.toString
+  override inline def asString(p: os.FilePath): String = p.toString
 }
 
 implicit object DefaultIO extends IO[Id] {
-  type Path = os.Path
+  type Path = os.FilePath
 
   override inline def pathOps = DefaultPathOps
 
   override inline def println(x: String): Unit = Predef.println(x)
 
-  override inline def readString(path: Path): String = os.read(path)
+  def pwd: os.Path = os.pwd
+
+  override inline def readString(path: Path): String = os.read(path.resolveFrom(pwd))
 
   override inline def writeString(path: Path, content: String, append: Boolean = false): Unit = {
     if (append) {
-      os.write.append(path, content)
+      os.write.append(path.resolveFrom(pwd), content)
     } else {
-      os.write(path, content)
+      os.write(path.resolveFrom(pwd), content)
     }
   }
   
   override inline def write(path: Path, content: Array[Byte]): Unit = {
-    os.write(path, content)
+    os.write(path.resolveFrom(pwd), content)
   }
 
   override inline def removeWhenExists(path: Path): Boolean = {
-    os.remove(path, true)
+    os.remove(path.resolveFrom(pwd), true)
   }
 
-  override inline def getHomeDir: Path = Path(java.nio.file.Paths.get(System.getProperty("user.home")))
+  override inline def getHomeDir: Path = FilePath(java.nio.file.Paths.get(System.getProperty("user.home")))
 
-  override inline def exists(path: Path): Boolean = os.exists(path)
+  override inline def exists(path: Path): Boolean = os.exists(path.resolveFrom(pwd))
 
   override inline def createDirRecursiveIfNotExists(path: Path): Unit = {
-    os.makeDir.all(path)
+    os.makeDir.all(path.resolveFrom(pwd))
   }
 
   override inline def downloadToFile(url: String, path: Path): Unit =
@@ -82,5 +84,5 @@ implicit object DefaultIO extends IO[Id] {
     Files.setPosixFilePermissions(path.toNIO, perms)
   }
 
-  override inline def getAbsolutePath(path: Path): Path = path
+  override inline def getAbsolutePath(path: Path): Path = path.resolveFrom(pwd)
 }
