@@ -18,7 +18,7 @@ import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.typedarray.Uint8Array
 import scala.util.Try
 
-implicit object DefaultRunner extends Runner[Future] {
+implicit object DefaultRunner extends Runner[Future] with Spawn[Future] {
   inline override def doTry[T](IO: Future[T]): Future[Try[T]] = IO.transformWith(result => Future.successful(result))
 
   inline override def spawn(x: => Future[Unit]): Unit = x.recover { e =>

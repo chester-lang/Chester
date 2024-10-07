@@ -9,14 +9,14 @@ import chester.parser.{FilePath, FilePathImpl}
 import chester.repl.REPLEngine
 import chester.tyck.Reporter
 import chester.utils.env.Environment
-import chester.utils.io.Runner
+import chester.utils.io.{Runner, Spawn}
 import chester.utils.term.{Terminal, TerminalInit}
 
 import java.nio.file.{Files, Paths}
 
 object Program {
-  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl): Unit ={
-    Runner.spawn {
+  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F]): Unit ={
+    Spawn.spawn {
       (new Program[F]).run(config)
     }
   }

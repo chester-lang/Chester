@@ -4,9 +4,11 @@ import cats.Monad
 
 import scala.util.Try
 
-trait Runner[F[_]] extends Monad[F] {
+trait Spawn[F[_]] {
   def spawn(x: => F[Unit]): Unit
+}
 
+trait Runner[F[_]] extends Monad[F] {
   def doTry[T](IO: F[T]): F[Try[T]]
 }
 
@@ -52,7 +54,10 @@ object Runner {
 
   inline def doTry[F[_], T](inline IO: F[T])(using inline runner: Runner[F]): F[Try[T]] = runner.doTry(IO)
 
-  inline def spawn[F[_]](inline x: => F[Unit])(using inline runner: Runner[F]): Unit = runner.spawn(x)
+}
+
+object Spawn {
+  inline def spawn[F[_]](inline x: => F[Unit])(using inline spawn: Spawn[F]): Unit = spawn.spawn(x)
 }
 
 object IO {

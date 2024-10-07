@@ -623,9 +623,17 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     scalacOptions ++= (if (supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
   .jsSettings(
-    scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.CommonJSModule)
-    },
+  )
+
+lazy val nodejs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("nodejs"))
+  .dependsOn(js)
+  .settings(
+    name := "nodejs",
+    commonSettings,
+  )
+  .jsSettings(
   )
 
 addCommandAlias("cliReadline", "set ThisBuild / enableCliReadline := true;")
@@ -658,6 +666,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
       "org.jline" % "jline" % "3.27.0",
     )
   )
+  .jsConfigure(_.dependsOn(nodejs.js))
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
@@ -890,7 +899,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, lspTs, buildProtocol, buildTool, up, truffle, js, site, docs)
+    lsp, lspTs, buildProtocol, buildTool, up, truffle, js, nodejs, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version

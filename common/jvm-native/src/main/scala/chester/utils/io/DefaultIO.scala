@@ -10,7 +10,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.annotation.tailrec
 import scala.util.Try
 
-implicit object DefaultRunner extends Runner[Id] {
+implicit object DefaultRunner extends Runner[Id] with Spawn[Id] {
   override inline def pure[A](x: A): A = x
 
   override inline def flatMap[A, B](fa: A)(f: A => B): B = f(fa)
