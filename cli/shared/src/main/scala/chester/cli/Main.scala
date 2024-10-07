@@ -5,10 +5,15 @@ import chester.error.*
 import chester.error.Problem.Severity
 import chester.integrity.IntegrityCheck
 import chester.parser.*
-import chester.repl.spawnREPLEngine
+import chester.repl.{REPLEngine}
 import chester.tyck.Reporter
 import chester.utils.fileExists
+import chester.utils.io.Runner
+import chester.utils.term.{Terminal, TerminalInit}
 import scopt.OParser
+import chester.utils.env.DefaultEnv
+import chester.utils.io.*
+import chester.utils.term.*
 
 import java.nio.file.{Files, Paths}
 
@@ -83,76 +88,37 @@ object Main {
     }
 
     // Parse the arguments
-    OParser.parse(parser, args, Config()) match {
-      case Some(config) =>
-        config.command match {
-          case "run" =>
-            config.input match {
-              case None => spawnREPLEngine()
-              case Some("-") => spawnREPLEngine()
-              case Some(fileOrDir) => runFileOrDirectory(fileOrDir)
-            }
-          case "integrity" =>
-            runIntegrityCheck()
-          case "compile" =>
-            config.input match {
-              case Some(inputFile) =>
-                val outputFile = config.output.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
-                compileFile(inputFile, outputFile)
-              case None =>
-                println("No input file provided to compile.")
-            }
-          case _ =>
-            spawnREPLEngine() // Default action if no valid command is provided
-        }
-      case _ =>
-      // Arguments are bad, error message will have been displayed
-    }
-  }
 
-  // Evaluate from file or directory
-  def runFileOrDirectory(fileOrDir: String): Unit = {
-    println(s"Running from $fileOrDir...")
-    // Implement your logic here
-  }
-
-  def runIntegrityCheck(): Unit = {
-    println("Running integrity check...")
-    IntegrityCheck()
-  }
-
-  // Implement the compileFile method
-  def compileFile(inputFile: String, outputFile: String): Unit = {
-    val source = FilePath(inputFile)
-    implicit object reporter extends Reporter[Problem] {
-      private var varErrors: Boolean = false
-      private var varWarnings: Boolean = false
-
-      override def apply(problem: Problem): Unit = {
-        problem.severity match {
-          case Severity.Error =>
-            varErrors = true
-            println(s"Error: ${problem}")
-          case Severity.Warning =>
-            varWarnings = true
-            println(s"Warning: ${problem}")
-          case _ =>
-            println(s"Info: ${problem}")
-        }
+    Runner.spawn {
+      val program = new Program
+      OParser.parse(parser, args, Config()) match {
+        case Some(config) =>
+          config.command match {
+            case "run" =>
+              config.input match {
+                case None => program.spawnREPLEngine()
+                case Some("-") => program.spawnREPLEngine()
+                case Some(fileOrDir) => program.runFileOrDirectory(fileOrDir)
+              }
+            case "integrity" =>
+              program.runIntegrityCheck()
+            case "compile" =>
+              config.input match {
+                case Some(inputFile) =>
+                  val outputFile = config.output.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
+                  program.compileFile(inputFile, outputFile)
+                case None =>
+                  println("No input file provided to compile.")
+                  program.noop()
+              }
+            case _ =>
+              program.spawnREPLEngine() // Default action if no valid command is provided
+          }
+        case _ =>
+        // Arguments are bad, error message will have been displayed
+          program.noop()
       }
-
-      def hasErrors: Boolean = varErrors
-      def hasWarnings: Boolean = varWarnings
-    }
-
-    val tast = parseCheckTAST(source)
-
-    if (reporter.hasErrors) {
-      println(s"Compilation failed with errors.")
-    } else {
-      val outputPath = Paths.get(outputFile)
-      Files.write(outputPath, tast.writeBinary)
-      println(s"Compiled $inputFile to $outputFile")
     }
   }
+
 }
