@@ -22,7 +22,7 @@ lazy val chesterPlugin =
       ),
       // Exclude LSP4J dependencies
       libraryDependencies ++= Seq(
-        ("com.github.chester-lang.chester" %% "lsp" % "0.0.4")
+        ("com.github.chester-lang.chester" %% "lsp" % "f7cc2f4464")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j.jsonrpc"),
         "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5"

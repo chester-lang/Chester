@@ -3,6 +3,6 @@ jdk:
 before_install:
   - echo before
 install:
-  - sbt publishM2
+  - sbt rootJVM/publishM2
 env:
   MYVAR: "custom environment variable"
