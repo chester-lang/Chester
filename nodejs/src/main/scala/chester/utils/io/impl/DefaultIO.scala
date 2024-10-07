@@ -11,6 +11,7 @@ import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 import scala.concurrent.ExecutionContext.Implicits.global
 import typings.std.global.fetch
+import  scala.scalajs.js.typedarray.TypedArrayBuffer
 
 implicit object DefaultIO extends IO[Future] {
   type Path = String
@@ -21,7 +22,13 @@ implicit object DefaultIO extends IO[Future] {
 
   inline override def readString(path: String): Future[String] = fsPromisesMod.readFile(path, BufferEncoding.utf8)
   
-  inline override def read(path: String): Future[Array[Byte]] = fsPromisesMod.readFile(path).map(_.toArray)
+  // TODO: maybe use https://stackoverflow.com/questions/75031248/scala-js-convert-uint8array-to-arraybyte
+  inline override def read(path: String): Future[Array[Byte]] = for {
+    buffer <- fsPromisesMod.readFile(path)
+    b = buffer.asInstanceOf[Uint8Array]
+    arr = new Array[Short](b.length)
+    _ = b.copyToArray(arr)
+  } yield arr.map(_.toByte)
 
   inline override def writeString(path: String, content: String, append: Boolean = false): Future[Unit] = {
     if (append) {
