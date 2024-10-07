@@ -19,7 +19,6 @@ class FileParserTest extends FunSuite {
       val expectedFile = testDir.resolve(s"$baseName.expected")
 
       val expectedExists = Files.exists(expectedFile)
-      FilePathImplJVM.load
 
       Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
