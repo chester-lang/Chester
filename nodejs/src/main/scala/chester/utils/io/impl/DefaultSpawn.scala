@@ -1,6 +1,6 @@
-package chester.io
+package chester.utils.io.impl
 
-import chester.utils.io.{Runner, Spawn}
+import chester.utils.io.*
 import typings.node.processMod
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

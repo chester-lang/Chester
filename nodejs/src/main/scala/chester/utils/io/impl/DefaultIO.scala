@@ -1,14 +1,16 @@
-package chester.io
+package chester.utils.io.impl
 
-import chester.utils.io.{IO, PathOpsString}
+import chester.utils.io.*
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
 import typings.node.{fsMod, fsPromisesMod, osMod, pathMod}
-
+import scala.scalajs.js.Thenable.Implicits.*
 import java.io.IOException
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
+import scala.concurrent.ExecutionContext.Implicits.global
+import typings.std.global.fetch
 
 implicit object DefaultIO extends IO[Future] {
   type Path = String
@@ -26,8 +28,10 @@ implicit object DefaultIO extends IO[Future] {
       fsPromisesMod.writeFile(path, content)
     }
   }
+  
+  def bytesToJS(bytes: Array[Byte]): Uint8Array = Uint8Array.of(bytes.map(_.toShort)*)
 
-  inline override def write(path: String, content: Array[Byte]): Future[Unit] = fsPromisesMod.writeFile(path, new Uint8Array(content))
+  inline override def write(path: String, content: Array[Byte]): Future[Unit] = fsPromisesMod.writeFile(path, bytesToJS)
 
   inline override def removeWhenExists(path: String): Future[Boolean] =
     fsPromisesMod.unlink(path).map(_ => true).recover { case e: js.JavaScriptException => false }

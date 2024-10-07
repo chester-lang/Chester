@@ -1,12 +1,12 @@
-package chester.utils.io
+package chester.utils.io.impl
 
 import cats.*
 import cats.free.*
 import cats.instances.future.*
+import chester.utils.io.*
 import typings.node.*
 import typings.node.bufferMod.global.BufferEncoding
 import typings.node.fsMod.MakeDirectoryOptions
-import typings.std.global.fetch
 
 import java.io.IOException
 import scala.annotation.tailrec
@@ -18,13 +18,8 @@ import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.typedarray.Uint8Array
 import scala.util.Try
 
-implicit object DefaultRunner extends Runner[Future] with Spawn[Future] {
+implicit object DefaultRunner extends Runner[Future] {
   inline override def doTry[T](IO: Future[T]): Future[Try[T]] = IO.transformWith(result => Future.successful(result))
-
-  inline override def spawn(x: => Future[Unit]): Unit = x.recover { e =>
-    e.printStackTrace()
-    processMod.^.exit(1)
-  }
 
   override inline def pure[A](x: A): Future[A] = Future.successful(x)
 

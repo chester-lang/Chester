@@ -8,11 +8,10 @@ import chester.parser.*
 import chester.repl.{REPLEngine}
 import chester.tyck.Reporter
 import chester.utils.fileExists
-import chester.utils.io.Runner
-import chester.utils.term.{Terminal, TerminalInit}
 import scopt.OParser
 import chester.utils.env.DefaultEnv
 import chester.utils.io.*
+import chester.utils.io.impl.*
 import chester.utils.term.*
 
 import java.nio.file.{Files, Paths}
