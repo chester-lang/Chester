@@ -31,7 +31,7 @@ implicit object DefaultRunner extends Runner[Id] {
 object DefaultPathOps extends PathOps[os.Path] {
   override inline def of(path: String): os.Path = Path(path)
 
-  override inline def join(p1: os.Path, p2: String): os.Path = p1 / p2
+  override inline def join(p1: os.Path, p2: String): os.Path = p1 / os.SubPath(p2)
 
   override inline def asString(p: os.Path): String = p.toString
 }
