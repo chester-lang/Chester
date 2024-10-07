@@ -681,28 +681,6 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     scalacOptions ++= (if ((ThisBuild / enableCliReadline).value) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:readline") else Seq())
   )
 
-lazy val up = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("up"))
-  .jvmEnablePlugins(NativeImagePlugin)
-  .dependsOn(common)
-  .settings(
-    name := "up",
-    Compile / mainClass := Some("chester.up.Main"),
-    assembly / assemblyOutputPath := file("target") / "chesterup.jar",
-    libraryDependencies ++= Seq(
-      "com.github.scopt" %%% "scopt" % "4.1.0"
-    ),
-    commonSettings
-  )
-  .jvmSettings(
-    commonJvmLibSettings,
-    nativeImageOutput := file("target") / "chesterup",
-    graalvmSettings,
-  ).jsSettings(
-    scalaJSUseMainModuleInitializer := true
-  )
-
 lazy val js = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("js"))
@@ -899,7 +877,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     core,
     common,
     cli,
-    lsp, lspTs, buildProtocol, buildTool, up, truffle, js, nodejs, site, docs)
+    lsp, lspTs, buildProtocol, buildTool, truffle, js, nodejs, site, docs)
   .settings(
     name := "ChesterRoot",
     scalaVersion := scala3Version
