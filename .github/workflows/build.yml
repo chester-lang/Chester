@@ -214,21 +214,41 @@ jobs:
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe,
           ./vscode/chester-language-support-*.vsix
 
-    # Add OS name to artifacts
-    - name: Add OS name to artifacts (Unix)
-      if: runner.os != 'Windows'
+    # Add OS name to artifacts and create archives (Unix)
+    - name: Add OS name to artifacts and create tar.gz (Unix)
+      if: runner.os != 'Windows' && startsWith(github.ref, 'refs/tags/')
       run: |
-        mv ./target/chester ./target/chester-${{ matrix.os_name }}
-        mv ./target/chester-lsp ./target/chester-lsp-${{ matrix.os_name }}
-        mv ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out-${{ matrix.os_name }}
+        # Rename artifacts with OS name
+        cp ./target/chester ./target/chester-${{ matrix.os_name }}
+        cp ./target/chester-lsp ./target/chester-lsp-${{ matrix.os_name }}
+        cp ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out-${{ matrix.os_name }}
+        
+        # Create tar.gz archive
+        tar -czvf chester-${{ matrix.os_name }}.tar.gz \
+          -C ./target chester chester-lsp
 
-    - name: Add OS name to artifacts (Windows)
-      if: runner.os == 'Windows'
+        # Generate checksum for the tar.gz file
+        shasum -a 256 chester-${{ matrix.os_name }}.tar.gz > chester-${{ matrix.os_name }}.tar.gz.sha256
+
+    # Add OS name to artifacts and create archives (Windows)
+    - name: Add OS name to artifacts and create zip (Windows)
+      shell: pwsh
+      if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
       run: |
-        mv ./target/chester.exe ./target/chester-${{ matrix.os_name }}.exe
-        mv ./target/chester-lsp.exe ./target/chester-lsp-${{ matrix.os_name }}.exe
-        mv ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out-${{ matrix.os_name }}.exe
+        # Rename artifacts with OS name
+        cp .\target\chester.exe .\target\chester-${{ matrix.os_name }}.exe
+        cp .\target\chester-lsp.exe .\target\chester-lsp-${{ matrix.os_name }}.exe
+        cp .\cli\native\target\scala-${{ env.SCALA_VERSION }}\chester-out.exe .\cli\native\target\scala-${{ env.SCALA_VERSION }}\chester-out-${{ matrix.os_name }}.exe
+        
+        # Create zip archive
+        Compress-Archive -Path `
+          .\target\chester.exe,`
+          .\target\chester-lsp.exe,`
+          -DestinationPath chester-${{ matrix.os_name }}.zip
 
+        # Generate checksum for the zip file
+        Get-FileHash -Algorithm SHA256 chester-${{ matrix.os_name }}.zip | `
+          Select-Object -ExpandProperty Hash > chester-${{ matrix.os_name }}.zip.sha256
     # Create or Update Releases when a tag is pushed
     - name: Create or Update GitHub Release Tag for Unix
       if: runner.os != 'Windows' && startsWith(github.ref, 'refs/tags/')
@@ -246,7 +266,9 @@ jobs:
           ./target/chester-${{ matrix.os_name }},
           ./target/chester-lsp-${{ matrix.os_name }},
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out-${{ matrix.os_name }},
-          ./vscode/chester-language-support-*.vsix
+          ./vscode/chester-language-support-*.vsix,
+          ./chester-${{ matrix.os_name }}.tar.gz,
+          ./chester-${{ matrix.os_name }}.tar.gz.sha256
 
     - name: Create or Update GitHub Release Tag for Windows
       if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
@@ -264,4 +286,6 @@ jobs:
           ./target/chester-${{ matrix.os_name }}.exe,
           ./target/chester-lsp-${{ matrix.os_name }}.exe,
           ./cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out-${{ matrix.os_name }}.exe,
-          ./vscode/chester-language-support-*.vsix
+          ./vscode/chester-language-support-*.vsix,
+          ./chester-${{ matrix.os_name }}.zip,
+          ./chester-${{ matrix.os_name }}.zip.sha256
