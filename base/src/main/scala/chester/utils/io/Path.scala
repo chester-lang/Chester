@@ -3,13 +3,13 @@ package chester.utils.io
 trait PathOps[T] {
   def of(path: String): T
 
-  def join(p1: T, p2: T): T
+  def join(p1: T, p2: String): T
 
   def asString(p: T): String
 }
 
 extension [T](p: T)(using ops: PathOps[T]) {
-  inline def /(inline p2: T): T = ops.join(p, p2)
+  inline def /(inline p2: String): T = ops.join(p, p2)
 }
 
 implicit inline def stringToPath[T](inline path: String)(using inline ops: PathOps[T]): T = ops.of(path)

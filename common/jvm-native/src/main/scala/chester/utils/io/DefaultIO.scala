@@ -3,6 +3,7 @@ package chester.utils.io
 import cats.{Id, Monad}
 import chester.utils.io.*
 import chester.utils.term.*
+import _root_.os.*
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}
@@ -27,66 +28,53 @@ implicit object DefaultRunner extends Runner[Id] {
   override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
 }
 
-object DefaultPathOps extends PathOps[java.nio.file.Path] {
-  override inline def of(path: String): java.nio.file.Path = Paths.get(path)
+object DefaultPathOps extends PathOps[os.Path] {
+  override inline def of(path: String): os.Path = Path(path)
 
-  override inline def join(p1: java.nio.file.Path, p2: java.nio.file.Path): java.nio.file.Path = p1.resolve(p2)
+  override inline def join(p1: os.Path, p2: String): os.Path = p1 / p2
 
-  override inline def asString(p: java.nio.file.Path): String = p.toString
+  override inline def asString(p: os.Path): String = p.toString
 }
 
 implicit object DefaultIO extends IO[Id] {
-  type Path = java.nio.file.Path
+  type Path = os.Path
 
   override inline def pathOps = DefaultPathOps
 
   override inline def println(x: String): Unit = Predef.println(x)
 
-  override inline def readString(path: Path): String = new String(Files.readAllBytes(path), StandardCharsets.UTF_8)
+  override inline def readString(path: Path): String = os.read(path)
 
   override inline def writeString(path: Path, content: String, append: Boolean = false): Unit = {
-    val options = if (append) {
-      Array(StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+    if (append) {
+      os.write.append(path, content)
     } else {
-      Array(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-    }
-    val outputStream = Files.newOutputStream(path, options*)
-    try {
-      outputStream.write(content.getBytes(StandardCharsets.UTF_8))
-    } finally {
-      outputStream.close()
+      os.write(path, content)
     }
   }
 
   override inline def removeWhenExists(path: Path): Boolean = {
-    try {
-      Files.delete(path)
-      true
-    } catch {
-      case _: java.nio.file.NoSuchFileException => false
-    }
+    os.remove(path, true)
   }
 
-  override inline def getHomeDir: Path = java.nio.file.Paths.get(System.getProperty("user.home"))
+  override inline def getHomeDir: Path = Path(java.nio.file.Paths.get(System.getProperty("user.home")))
 
-  override inline def exists(path: Path): Boolean = Files.exists(path)
+  override inline def exists(path: Path): Boolean = os.exists(path)
 
   override inline def createDirRecursiveIfNotExists(path: Path): Unit = {
-    if (!Files.exists(path)) {
-      Files.createDirectories(path)
-    }
+    os.makeDir.all(path)
   }
 
   override inline def downloadToFile(url: String, path: Path): Unit =
-    FileDownloader.downloadFile(url, path)
+    FileDownloader.downloadFile(url, path.toNIO)
 
   override inline def chmodExecutable(path: Path): Unit = {
-    val perms = Files.getPosixFilePermissions(path)
+    val perms = Files.getPosixFilePermissions(path.toNIO)
     perms.add(java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)
     perms.add(java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE)
     perms.add(java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE)
-    Files.setPosixFilePermissions(path, perms)
+    Files.setPosixFilePermissions(path.toNIO, perms)
   }
 
-  override inline def getAbsolutePath(path: Path): Path = path.toAbsolutePath
+  override inline def getAbsolutePath(path: Path): Path = path
 }
