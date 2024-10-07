@@ -103,7 +103,7 @@ val baseDeps = Seq(
 
 commonSettings
 
-ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.3-SNAPSHOT")
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.4")
 ThisBuild / organization := "com.github.chester-lang"
 
 ThisBuild / assemblyMergeStrategy := {
@@ -613,12 +613,12 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     commonJvmLibSettings,
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.7",
+      "com.lihaoyi" %%% "os-lib" % "0.10.7",
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "os-lib" % "0.10.7",
+      "com.lihaoyi" %%% "os-lib" % "0.10.7",
     ),
     scalacOptions ++= (if (supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )
