@@ -45,7 +45,8 @@ implicit object DefaultIO extends IO[Id] {
 
   override inline def println(x: String): Unit = Predef.println(x)
 
-  def pwd: os.Path = os.pwd
+  // https://github.com/com-lihaoyi/os-lib/issues/318
+  def pwd: os.Path = os.Path(java.nio.file.Paths.get(".").toAbsolutePath)
 
   override inline def readString(path: Path): String = os.read(path.resolveFrom(pwd))
   
