@@ -9,20 +9,19 @@ import chester.parser.{FilePath, FilePathImpl}
 import chester.repl.REPLEngine
 import chester.tyck.Reporter
 import chester.utils.env.Environment
-import chester.utils.io.{Runner, Spawn}
+import chester.utils.io.{IO, Runner, Spawn, stringToPath, summonPathOpsFromIO, write}
 import chester.utils.term.{Terminal, TerminalInit}
-
-import java.nio.file.{Files, Paths}
+import cats.implicits.*
 
 object Program {
-  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F]): Unit ={
+  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F], io: IO[F]): Unit ={
     Spawn.spawn {
       (new Program[F]).run(config)
     }
   }
 }
 
-class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl) {
+class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, io: IO[F]) {
   def run(config: Option[Config]) : F[Unit] = {
     config match {
       case Some(config) =>
@@ -103,12 +102,14 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
 
     if (reporter.hasErrors) {
       println(s"Compilation failed with errors.")
+      Runner.pure(())
     } else {
-      val outputPath = Paths.get(outputFile)
-      Files.write(outputPath, tast.writeBinary)
-      println(s"Compiled $inputFile to $outputFile")
+      val outputPath = stringToPath(outputFile)
+      for {
+        _ <- IO.write(outputPath, tast.writeBinary)
+        _ <- IO.println(s"Compiled $inputFile to $outputFile")
+      } yield ()
     }
 
-    Runner.pure(())
   }
 }

@@ -52,6 +52,10 @@ implicit object DefaultIO extends IO[Id] {
       os.write(path, content)
     }
   }
+  
+  override inline def write(path: Path, content: Array[Byte]): Unit = {
+    os.write(path, content)
+  }
 
   override inline def removeWhenExists(path: Path): Boolean = {
     os.remove(path, true)

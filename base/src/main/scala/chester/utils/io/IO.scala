@@ -30,6 +30,8 @@ trait IO[F[_]] {
 
   def writeString(path: Path, content: String, append: Boolean = false): F[Unit]
 
+  def write(path: Path, content: Array[Byte]): F[Unit]
+
   def removeWhenExists(path: Path): F[Boolean]
 
   def getHomeDir: F[Path]
@@ -67,6 +69,7 @@ object IO {
 extension [F[_]](_io: IO.type)(using io: IO[F]) {
   inline def readString(inline path: io.Path): F[String] = io.readString(path)
   inline def writeString(inline path: io.Path, inline content: String, inline append: Boolean = false): F[Unit] = io.writeString(path, content, append)
+  inline def write(inline path: io.Path, inline content: Array[Byte]): F[Unit] = io.write(path, content)
   inline def removeWhenExists(inline path: io.Path): F[Boolean] = io.removeWhenExists(path)
   inline def getHomeDir: F[io.Path] = io.getHomeDir
   inline def exists(inline path: io.Path): F[Boolean] = io.exists(path)
