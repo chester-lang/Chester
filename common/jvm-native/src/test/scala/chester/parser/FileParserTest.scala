@@ -19,13 +19,13 @@ class FileParserTest extends FunSuite {
 
       Parser.parseTopLevel(FilePath(inputFile.toString), ignoreLocation = true) match {
         case Right(parsedBlock) =>
-          val actual: String = pprint.apply(parsedBlock, width = 128, height = Integer.MAX_VALUE).plainText
+          val actual: String = pprint.apply(parsedBlock, width = 128, height = Integer.MAX_VALUE).plainText.replace("\r\n", "\n")
 
           if (!expectedExists) {
             Files.write(expectedFile, actual.getBytes)
             println(s"Created expected file: $expectedFile")
           } else {
-            val expected = Files.readString(expectedFile, StandardCharsets.UTF_8)
+            val expected = Files.readString(expectedFile, StandardCharsets.UTF_8).replace("\r\n", "\n")
             assertEquals(actual, expected)
           }
 
