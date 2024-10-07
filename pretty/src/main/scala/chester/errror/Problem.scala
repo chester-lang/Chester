@@ -9,26 +9,26 @@ object Problem {
   }
 
   enum Severity derives ReadWriter {
-    case ERROR, GOAL, WARN, INFO
+    case Error, Goal, Warning, Info
   }
 }
 
 trait WithServerity extends Any {
-  def level: Problem.Severity
+  def severity: Problem.Severity
 
-  final def isError: Boolean = level == Problem.Severity.ERROR
+  final def isError: Boolean = severity == Problem.Severity.Error
 }
 
 trait Problem extends ToDoc with WithServerity {
   def stage: Problem.Stage
 }
 
-private case class ProblemSer(stage: Problem.Stage, level: Problem.Severity, message: Doc) extends Problem derives ReadWriter {
+private case class ProblemSer(stage: Problem.Stage, severity: Problem.Severity, message: Doc) extends Problem derives ReadWriter {
   override def toDoc(using options: PrettierOptions): Doc = message
 }
 
 private object ProblemSer {
-  def from(problem: Problem): ProblemSer = ProblemSer(problem.stage, problem.level, problem.toDoc(using PrettierOptions.Default))
+  def from(problem: Problem): ProblemSer = ProblemSer(problem.stage, problem.severity, problem.toDoc(using PrettierOptions.Default))
 }
 
 object ProblemUpickle {

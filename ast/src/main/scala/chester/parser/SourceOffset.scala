@@ -9,7 +9,7 @@ import io.github.iltotore.iron.upickle.given
 import chester.utils.doc.{Doc, PrettierOptions}
 
 case class ParseError(message: String, index: Pos) extends Problem {
-  override def level: Problem.Severity = Problem.Severity.ERROR
+  override def severity: Problem.Severity = Problem.Severity.Error
   override def stage: Problem.Stage = Problem.Stage.PARSE
 
   override def toDoc(using options: PrettierOptions): Doc = Doc.text(message)

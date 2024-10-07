@@ -60,11 +60,11 @@ sealed trait TyckProblem extends Problem derives ReadWriter {
 }
 
 sealed trait TyckError extends TyckProblem derives ReadWriter {
-  final override def level: Problem.Severity = Problem.Severity.ERROR
+  final override def severity: Problem.Severity = Problem.Severity.Error
 }
 
 sealed trait TyckWarning extends TyckProblem derives ReadWriter {
-  final override def level: Problem.Severity = Problem.Severity.WARN
+  final override def severity: Problem.Severity = Problem.Severity.Warning
 }
 
 case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr) extends TyckWarning {

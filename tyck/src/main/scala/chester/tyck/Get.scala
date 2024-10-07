@@ -35,10 +35,10 @@ class ReporterTrackError[T<:Problem](x: Reporter[T]) extends Reporter[T] {
 
   def apply(value: T): Unit = {
     x.apply(value)
-    if value.level == Severity.ERROR then errorVar = true
-    if value.level == Severity.WARN then warnVar = true
-    if value.level == Severity.GOAL then goalVar = true
-    if value.level == Severity.INFO then infoVar = true
+    if value.severity == Severity.Error then errorVar = true
+    if value.severity == Severity.Warning then warnVar = true
+    if value.severity == Severity.Goal then goalVar = true
+    if value.severity == Severity.Info then infoVar = true
   }
 
   def hasError: Boolean = errorVar
