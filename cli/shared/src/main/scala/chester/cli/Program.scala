@@ -1,10 +1,11 @@
 package chester.cli
 
+import chester.cli.Main.Config
 import chester.core.parseCheckTAST
 import chester.error.Problem
 import chester.error.Problem.Severity
 import chester.integrity.IntegrityCheck
-import chester.parser.FilePath
+import chester.parser.{FilePath, FilePathImpl}
 import chester.repl.REPLEngine
 import chester.tyck.Reporter
 import chester.utils.env.Environment
@@ -13,7 +14,44 @@ import chester.utils.term.{Terminal, TerminalInit}
 
 import java.nio.file.{Files, Paths}
 
-class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment) {
+object Program {
+  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl): Unit ={
+    Runner.spawn {
+      (new Program[F]).run(config)
+    }
+  }
+}
+
+class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl) {
+  def run(config: Option[Config]) : F[Unit] = {
+    config match {
+      case Some(config) =>
+        config.command match {
+          case "run" =>
+            config.input match {
+              case None => this.spawnREPLEngine()
+              case Some("-") => this.spawnREPLEngine()
+              case Some(fileOrDir) => this.runFileOrDirectory(fileOrDir)
+            }
+          case "integrity" =>
+            this.runIntegrityCheck()
+          case "compile" =>
+            config.input match {
+              case Some(inputFile) =>
+                val outputFile = config.output.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
+                this.compileFile(inputFile, outputFile)
+              case None =>
+                println("No input file provided to compile.")
+                this.noop()
+            }
+          case _ =>
+            this.spawnREPLEngine() // Default action if no valid command is provided
+        }
+      case _ =>
+        // Arguments are bad, error message will have been displayed
+        this.noop()
+    }
+  }
   def noop(): F[Unit] = {
     Runner.pure(())
   }

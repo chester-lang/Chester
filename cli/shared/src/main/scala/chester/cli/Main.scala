@@ -89,36 +89,7 @@ object Main {
 
     // Parse the arguments
 
-    Runner.spawn {
-      val program = new Program
-      OParser.parse(parser, args, Config()) match {
-        case Some(config) =>
-          config.command match {
-            case "run" =>
-              config.input match {
-                case None => program.spawnREPLEngine()
-                case Some("-") => program.spawnREPLEngine()
-                case Some(fileOrDir) => program.runFileOrDirectory(fileOrDir)
-              }
-            case "integrity" =>
-              program.runIntegrityCheck()
-            case "compile" =>
-              config.input match {
-                case Some(inputFile) =>
-                  val outputFile = config.output.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
-                  program.compileFile(inputFile, outputFile)
-                case None =>
-                  println("No input file provided to compile.")
-                  program.noop()
-              }
-            case _ =>
-              program.spawnREPLEngine() // Default action if no valid command is provided
-          }
-        case _ =>
-        // Arguments are bad, error message will have been displayed
-          program.noop()
-      }
-    }
+    Program.spawn (OParser.parse(parser, args, Config()))
   }
 
 }

@@ -16,11 +16,6 @@ import scala.scalajs.js.annotation.*
 import scala.util.*
 
 implicit object FilePathImplJVM extends FilePathImpl {
-  def load: Unit = {}
-
-  require(impl == null, "FilePathImplJVM is already loaded")
-  impl = this
-
   override def readContent(fileName: String): Either[ParseError, String] = {
     Try(readFileFrom(fileName)) match {
       case Success(content) =>

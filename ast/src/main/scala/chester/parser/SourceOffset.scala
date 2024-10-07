@@ -26,27 +26,22 @@ case class FileNameAndContent(fileName: String, content: String) extends ParserS
 }
 
 trait FilePathImpl {
-  def load: Unit
   def readContent(fileName: String): Either[ParseError, String]
 
   def absolute(fileName: String): String
 }
 
-private var impl: FilePathImpl = null
-
 object FilePath {
   def apply(fileName: String)(using used: FilePathImpl): FilePath = {
-    used.load
-    new FilePath(fileName)
-  }
-  def from(fileName: String)(using used: FilePathImpl): FilePath = {
-    used.load
-    val path = if (impl == null) fileName else impl.absolute(fileName)
-    new FilePath(path)
+    val path = used.absolute(fileName)
+    val result = new FilePath(path)
+    result.impl = used
+    result
   }
 }
 
 case class FilePath private (fileName: String) extends ParserSource {
+  private[chester] var impl: FilePathImpl = null
   override lazy val readContent: Either[ParseError, String] = {
     if (impl == null) Left(ParseError("No FilePathImpl provided", Pos.Zero))
     else impl.readContent(fileName)
