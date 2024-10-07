@@ -10,6 +10,7 @@ import chester.utils.doc.*
 import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.*
+import chester.utils.io.impl.*
 import chester.utils.term.*
 import typings.xtermPty.mod.Slave
 import typings.xtermReadline.mod.Readline
