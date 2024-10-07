@@ -10,7 +10,11 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.annotation.tailrec
 import scala.util.Try
 
-implicit object DefaultRunner extends Runner[Id] with Spawn[Id] {
+implicit object DefaultSpawn extends Spawn[Id] {
+  override inline def spawn(x: => Unit): Unit = x
+}
+
+implicit object DefaultRunner extends Runner[Id] {
   override inline def pure[A](x: A): A = x
 
   override inline def flatMap[A, B](fa: A)(f: A => B): B = f(fa)
@@ -22,8 +26,6 @@ implicit object DefaultRunner extends Runner[Id] with Spawn[Id] {
     case Left(a1) => tailRecM(a1)(f)
     case Right(b) => b
   }
-
-  override inline def spawn(x: => Unit): Unit = x
 
   override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
 }
