@@ -30,10 +30,10 @@ implicit object DefaultRunner extends Runner[Id] {
   override inline def doTry[T](IO: Id[T]): Try[T] = Try(IO)
 }
 
-object DefaultPathOps extends PathOps[os.FilePath] {
-  override inline def of(path: String): os.FilePath = FilePath(path)
+object DefaultPathOps extends PathOps[_root_.os.FilePath] {
+  override inline def of(path: String): _root_.os.FilePath = FilePath(path)
 
-  override inline def join(p1: os.FilePath, p2: String): os.FilePath = (p1 / os.SubPath(p2)).asInstanceOf[os.FilePath]
+  override inline def join(p1: os.FilePath, p2: String): _root_.os.FilePath = (p1 / os.SubPath(p2)).asInstanceOf[os.FilePath]
 
   override inline def asString(p: os.FilePath): String = p.toString
 }

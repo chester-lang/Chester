@@ -36,9 +36,8 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
             }
           case IntegrityConfig =>
             this.runIntegrityCheck()
-          case CompileConfig(inputFile, outputOpt) =>
-            val outputFile = outputOpt.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
-            this.compileFile(inputFile, outputFile)
+          case CompileConfig(inputs, targetDir) =>
+            this.compileFiles(inputs, targetDir)
           case DecompileConfig(inputFile) =>
             this.decompileFile(inputFile)
         }
@@ -71,44 +70,55 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
     Runner.pure(())
   }
 
-  // Implement the compileFile method
-  def compileFile(inputFile: String, outputFile: String): F[Unit] = {
-    val source = FilePath(inputFile)
-    implicit object reporter extends Reporter[Problem] {
-      private var varErrors: Boolean = false
-      private var varWarnings: Boolean = false
-
-      override def apply(problem: Problem): Unit = {
-        problem.severity match {
-          case Severity.Error =>
-            varErrors = true
-            println(s"Error: ${problem}")
-          case Severity.Warning =>
-            varWarnings = true
-            println(s"Warning: ${problem}")
-          case _ =>
-            println(s"Info: ${problem}")
-        }
-      }
-
-      def hasErrors: Boolean = varErrors
-
-      def hasWarnings: Boolean = varWarnings
+  def compileFiles(inputs: Seq[String], targetDir: String): F[Unit] = {
+    inputs.foldLeft(Runner.pure(())) { (acc, inputFile) =>
+      acc.flatMap(_ => this.compileFile(inputFile, targetDir))
     }
+  }
 
-    val tast = parseCheckTAST(source)
-
-    if (reporter.hasErrors) {
-      println(s"Compilation failed with errors.")
+  def compileFile(inputFile: String, targetDir: String): F[Unit] = {
+    // Expected input file extension
+    val expectedExtension = ".chester"
+    
+    if (!inputFile.endsWith(expectedExtension)) {
+      println(s"Error: Input file '$inputFile' does not have the expected '$expectedExtension' extension.")
       Runner.pure(())
     } else {
-      val outputPath = stringToPath(outputFile)
-      for {
-        _ <- IO.write(outputPath, tast.writeBinary)
-        _ <- IO.println(s"Compiled $inputFile to $outputFile")
-      } yield ()
-    }
+      // Generate output file name by replacing the extension
+      val outputFileName = inputFile.stripSuffix(expectedExtension) + ".tast"
+      val outputPath = io.pathOps.join(io.pathOps.of(targetDir), outputFileName)
 
+      val source = FilePath(inputFile)
+
+      implicit object reporter extends Reporter[Problem] {
+        private var varErrors: Boolean = false
+
+        override def apply(problem: Problem): Unit = problem.severity match {
+          case Severity.Error =>
+            varErrors = true
+            println(s"Error: $problem")
+          case Severity.Warning =>
+            println(s"Warning: $problem")
+          case _ =>
+            println(s"Info: $problem")
+        }
+
+        def hasErrors: Boolean = varErrors
+      }
+
+      val tast = parseCheckTAST(source)
+
+      if (reporter.hasErrors) {
+        println(s"Compilation failed for $inputFile with errors.")
+        Runner.pure(())
+      } else {
+        for {
+          _ <- IO.createDirRecursiveIfNotExists(io.pathOps.of(targetDir))
+          _ <- IO.write(outputPath, upickle.default.writeBinary(tast))
+          _ <- IO.println(s"Compiled $inputFile to $outputPath")
+        } yield ()
+      }
+    }
   }
 
   def decompileFile(inputFile: String): F[Unit] = {

@@ -22,17 +22,21 @@ object Main {
 
   case object IntegrityConfig extends Config
 
-  case class CompileConfig(input: String, output: Option[String]) extends Config
+  case class CompileConfig(
+    inputs: Seq[String],
+    targetDir: String = "."
+  ) extends Config
 
   // Add this new case class for decompilation
   case class DecompileConfig(input: String) extends Config
 
   // Parsing state class with default command set to "run"
   case class CliConfig(
-                        command: String = "run", // Default command is "run"
-                        input: Option[String] = None,
-                        output: Option[String] = None
-                      )
+    command: String = "run", // Default command is "run"
+    input: Option[String] = None,
+    inputs: Seq[String] = Seq(),
+    targetDir: String = "."
+  )
 
   def main(args: Array[String]): Unit = {
 
@@ -67,20 +71,22 @@ object Main {
         // Command for "compile"
         cmd("compile")
           .action((_, c) => c.copy(command = "compile"))
-          .text("Compile a Chester source file")
+          .text("Compile Chester source files")
           .children(
-            arg[String]("input")
+            arg[String]("inputs...")
+              .unbounded()
               .required()
               .validate {
                 case path if fileExists(path) => success
                 case path => failure(s"Invalid input. Provide a valid file. Provided: $path")
               }
-              .action((x, c) => c.copy(input = Some(x)))
-              .text("Input source file."),
-            opt[String]("output")
+              .action((x, c) => c.copy(inputs = c.inputs :+ x))
+              .text("Input source files."),
+            opt[String]("target-dir")
+              .abbr("d")
               .optional()
-              .action((x, c) => c.copy(output = Some(x)))
-              .text("Output binary file (defaults to input file with .tast extension)")
+              .action((x, c) => c.copy(targetDir = x))
+              .text("Target directory for compiled outputs (defaults to current directory).")
           ),
 
         // Command for "decompile"
@@ -118,12 +124,11 @@ object Main {
           case "integrity" =>
             IntegrityConfig
           case "compile" =>
-            cliConfig.input match {
-              case Some(inputFile) =>
-                CompileConfig(inputFile, cliConfig.output)
-              case None =>
-                println("Error: Input file is required for compile command.")
-                return
+            if (cliConfig.inputs.nonEmpty) {
+              CompileConfig(cliConfig.inputs, cliConfig.targetDir)
+            } else {
+              println("Error: At least one input file is required for compile command.")
+              return
             }
           // Add this case for decompile
           case "decompile" =>
@@ -147,25 +152,6 @@ object Main {
           // Arguments are bad, error message will have been displayed
           Program.spawn(None)
         }
-    }
-  }
-
-  // Helper sealed trait for parsing
-  sealed trait ParsedCommand {
-    def toConfig: Config
-  }
-
-  object ParsedCommand {
-    case class Run(input: Option[String]) extends ParsedCommand {
-      def toConfig: Config = RunConfig(input)
-    }
-
-    case object Integrity extends ParsedCommand {
-      def toConfig: Config = IntegrityConfig
-    }
-
-    case class Compile(input: String, output: Option[String]) extends ParsedCommand {
-      def toConfig: Config = CompileConfig(input, output)
     }
   }
 }
