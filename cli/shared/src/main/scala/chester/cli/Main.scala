@@ -116,7 +116,7 @@ object Main {
     }
 
     // Parse the arguments
-    OParser.parse(parser, args, CliConfig()) match {
+    OParser.parse(parser, argsPlatform(args), CliConfig()) match {
       case Some(cliConfig) =>
         val config: Config = cliConfig.command match {
           case "run" =>

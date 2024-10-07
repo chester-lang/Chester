@@ -18,16 +18,16 @@ jobs:
         include:
           - os: ubuntu-20.04
             release_name: snapshot-linux
-            os_name: linux-amd64
+            os_name: linux-x86_64
           - os: windows-2022
             release_name: snapshot-windows
-            os_name: windows-amd64
+            os_name: windows-x86_64
           - os: macos-14
             release_name: snapshot-macos
-            os_name: macos-arm64
+            os_name: macos-aarch64
           - os: macos-12
             release_name: snapshot-macos-intel
-            os_name: macos-amd64
+            os_name: macos-x86_64
 
     env:
       SCALA_VERSION: '3.5.2-RC1'
