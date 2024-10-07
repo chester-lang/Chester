@@ -48,6 +48,8 @@ implicit object DefaultIO extends IO[Id] {
   def pwd: os.Path = os.pwd
 
   override inline def readString(path: Path): String = os.read(path.resolveFrom(pwd))
+  
+  override inline def read(path: Path): Array[Byte] = os.read.bytes(path.resolveFrom(pwd))
 
   override inline def writeString(path: Path, content: String, append: Boolean = false): Unit = {
     if (append) {

@@ -20,6 +20,8 @@ implicit object DefaultIO extends IO[Future] {
   inline override def println(x: String): Future[Unit] = Future.successful(Predef.println(x))
 
   inline override def readString(path: String): Future[String] = fsPromisesMod.readFile(path, BufferEncoding.utf8)
+  
+  inline override def read(path: String): Future[Array[Byte]] = fsPromisesMod.readFile(path).map(_.toArray)
 
   inline override def writeString(path: String, content: String, append: Boolean = false): Future[Unit] = {
     if (append) {

@@ -1,6 +1,6 @@
 package chester.cli
 
-import chester.cli.Main.{Config, RunConfig, IntegrityConfig, CompileConfig}
+import chester.cli.Main.*
 import chester.core.parseCheckTAST
 import chester.error.Problem
 import chester.error.Problem.Severity
@@ -9,12 +9,14 @@ import chester.parser.{FilePath, FilePathImpl}
 import chester.repl.REPLEngine
 import chester.tyck.Reporter
 import chester.utils.env.Environment
-import chester.utils.io.{IO, Runner, Spawn, stringToPath, summonPathOpsFromIO, write}
+import chester.utils.io.*
 import chester.utils.term.{Terminal, TerminalInit}
 import cats.implicits.*
+import chester.syntax.TASTPackage.TAST
+import chester.utils.doc.*
 
 object Program {
-  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F], io: IO[F]): Unit ={
+  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F], io: IO[F]): Unit = {
     Spawn.spawn {
       (new Program[F]).run(config)
     }
@@ -22,7 +24,7 @@ object Program {
 }
 
 class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, io: IO[F]) {
-  def run(configOpt: Option[Config]) : F[Unit] = {
+  def run(configOpt: Option[Config]): F[Unit] = {
     configOpt match {
       case Some(config) =>
         config match {
@@ -37,15 +39,19 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
           case CompileConfig(inputFile, outputOpt) =>
             val outputFile = outputOpt.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
             this.compileFile(inputFile, outputFile)
+          case DecompileConfig(inputFile) =>
+            this.decompileFile(inputFile)
         }
       case None =>
         // Arguments are bad, error message will have been displayed
         this.noop()
     }
   }
+
   def noop(): F[Unit] = {
     Runner.pure(())
   }
+
   def spawnREPLEngine(): F[Unit] = {
     Terminal.runTerminal(TerminalInit.Default) {
       REPLEngine[F]
@@ -103,5 +109,24 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
       } yield ()
     }
 
+  }
+
+  def decompileFile(inputFile: String): F[Unit] = {
+    val inputPath = stringToPath(inputFile)
+    for {
+      fileExists <- IO.exists(inputPath)
+      _ <- if (fileExists) {
+        for {
+          bytes <- IO.read(inputPath)
+          tast <- Runner.pure(upickle.default.readBinary[TAST](bytes))
+          // Use `toDoc` and `FansiPrettyPrinter` to render the TAST
+          doc = tast.ast.toDoc(using PrettierOptions.Default)
+          rendered = FansiPrettyPrinter.render(doc, maxWidth = 80).render
+          _ <- IO.println(rendered)
+        } yield ()
+      } else {
+        IO.println(s"Error: File $inputFile does not exist.")
+      }
+    } yield ()
   }
 }

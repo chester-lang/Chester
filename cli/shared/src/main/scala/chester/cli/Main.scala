@@ -24,12 +24,15 @@ object Main {
 
   case class CompileConfig(input: String, output: Option[String]) extends Config
 
+  // Add this new case class for decompilation
+  case class DecompileConfig(input: String) extends Config
+
   // Parsing state class with default command set to "run"
   case class CliConfig(
-    command: String = "run", // Default command is "run"
-    input: Option[String] = None,
-    output: Option[String] = None
-  )
+                        command: String = "run", // Default command is "run"
+                        input: Option[String] = None,
+                        output: Option[String] = None
+                      )
 
   def main(args: Array[String]): Unit = {
 
@@ -80,8 +83,22 @@ object Main {
               .text("Output binary file (defaults to input file with .tast extension)")
           ),
 
-        // Handle case where user might omit "run" and just provide input directly
-        arg[String]("input")
+        // Command for "decompile"
+        cmd("decompile")
+          .action((_, c) => c.copy(command = "decompile"))
+          .text("Decompile a .tast binary file")
+          .children(
+            arg[String]("input")
+              .required()
+              .validate {
+                case path if fileExists(path) => success
+                case path => failure(s"Invalid input. Provide a valid .tast file. Provided: $path")
+              }
+              .action((x, c) => c.copy(input = Some(x)))
+              .text("Input .tast binary file.")
+          ),
+          // Handle case where user might omit "run" and just provide input directly
+          arg[String] ("input")
           .optional()
           .validate {
             case "-" => success
@@ -89,7 +106,6 @@ object Main {
             case path => failure(s"Invalid input. Provide '-' for stdin, or a valid file/directory. Provided: $path")
           }
           .action((x, c) => c.copy(input = Some(x)))
-          .text("Input file or directory. Use '-' for stdin.")
       )
     }
 
@@ -107,6 +123,15 @@ object Main {
                 CompileConfig(inputFile, cliConfig.output)
               case None =>
                 println("Error: Input file is required for compile command.")
+                return
+            }
+          // Add this case for decompile
+          case "decompile" =>
+            cliConfig.input match {
+              case Some(inputFile) =>
+                DecompileConfig(inputFile)
+              case None =>
+                println("Error: Input file is required for decompile command.")
                 return
             }
           case _ =>

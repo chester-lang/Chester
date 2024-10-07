@@ -92,13 +92,13 @@ implicit class DocOps(doc: Doc) extends AnyVal {
 }
 
 implicit class DocPrinterOps[T <: DocPrinter](val printer: T) extends AnyVal {
-  def render(doc: Doc, w: Width = maxWidth): printer.Layout = doc.render(w)(using printer)
+  def render(doc: Doc, maxWidth: Width = maxWidth): printer.Layout = doc.render(maxWidth)(using printer)
 
   def render(doc: ToDoc)(using options: PrettierOptions): printer.Layout = Doc.render(doc)(using options, printer)
 
-  def render(doc: ToDoc, w: Width)(using options: PrettierOptions): printer.Layout = Doc.render(doc, w)(using options, printer)
+  def render(doc: ToDoc, maxWidth: Width)(using options: PrettierOptions): printer.Layout = Doc.render(doc, maxWidth)(using options, printer)
 
-  def renderToDocument(doc: Doc, w: Width = maxWidth): printer.Document = doc.renderToDocument(w)(using printer)
+  def renderToDocument(doc: Doc, maxWidth: Width = maxWidth): printer.Document = doc.renderToDocument(maxWidth)(using printer)
 }
 
 trait ToDoc extends Any {

@@ -27,6 +27,8 @@ trait IO[F[_]] {
   def println(x: String): F[Unit]
 
   def readString(path: Path): F[String]
+  
+  def read(path: Path): F[Array[Byte]]
 
   def writeString(path: Path, content: String, append: Boolean = false): F[Unit]
 
@@ -68,6 +70,7 @@ object IO {
 
 extension [F[_]](_io: IO.type)(using io: IO[F]) {
   inline def readString(inline path: io.Path): F[String] = io.readString(path)
+  inline def read(inline path: io.Path): F[Array[Byte]] = io.read(path)
   inline def writeString(inline path: io.Path, inline content: String, inline append: Boolean = false): F[Unit] = io.writeString(path, content, append)
   inline def write(inline path: io.Path, inline content: Array[Byte]): F[Unit] = io.write(path, content)
   inline def removeWhenExists(inline path: io.Path): F[Boolean] = io.removeWhenExists(path)
