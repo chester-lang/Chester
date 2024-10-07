@@ -4,217 +4,29 @@ Block(
       clauses = Vector(
         ObjectExprClause(
           key = DotCall(
-            expr = Identifier(
-              name = "x",
-              meta = Some(
-                value = ExprMeta(
-                  sourcePos = Some(
-                    value = SourcePos(
-                      source = SourceOffset(
-                        source = FilePath(fileName = "parserTests/table.chester"),
-                        linesOffset = 0,
-                        posOffset = WithUTF16(i = 0, utf16 = 0)
-                      ),
-                      range = RangeInFile(
-                        start = Pos(index = WithUTF16(i = 2, utf16 = 2), line = 0, column = WithUTF16(i = 2, utf16 = 2)),
-                        end = Pos(index = WithUTF16(i = 3, utf16 = 3), line = 0, column = WithUTF16(i = 3, utf16 = 3))
-                      )
-                    )
-                  ),
-                  commentInfo = None
-                )
-              )
-            ),
-            field = Identifier(
-              name = "x",
-              meta = Some(
-                value = ExprMeta(
-                  sourcePos = Some(
-                    value = SourcePos(
-                      source = SourceOffset(
-                        source = FilePath(fileName = "parserTests/table.chester"),
-                        linesOffset = 0,
-                        posOffset = WithUTF16(i = 0, utf16 = 0)
-                      ),
-                      range = RangeInFile(
-                        start = Pos(index = WithUTF16(i = 4, utf16 = 4), line = 0, column = WithUTF16(i = 4, utf16 = 4)),
-                        end = Pos(index = WithUTF16(i = 5, utf16 = 5), line = 0, column = WithUTF16(i = 5, utf16 = 5))
-                      )
-                    )
-                  ),
-                  commentInfo = None
-                )
-              )
-            ),
+            expr = Identifier(name = "x", meta = None),
+            field = Identifier(name = "x", meta = None),
             telescope = Vector(),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/table.chester"),
-                      linesOffset = 0,
-                      posOffset = WithUTF16(i = 0, utf16 = 0)
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = WithUTF16(i = 3, utf16 = 3), line = 0, column = WithUTF16(i = 3, utf16 = 3)),
-                      end = Pos(index = WithUTF16(i = 5, utf16 = 5), line = 0, column = WithUTF16(i = 5, utf16 = 5))
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
+            meta = None
           ),
-          value = IntegerLiteral(
-            value = 0,
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/table.chester"),
-                      linesOffset = 0,
-                      posOffset = WithUTF16(i = 0, utf16 = 0)
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = WithUTF16(i = 8, utf16 = 8), line = 0, column = WithUTF16(i = 8, utf16 = 8)),
-                      end = Pos(index = WithUTF16(i = 9, utf16 = 9), line = 0, column = WithUTF16(i = 9, utf16 = 9))
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          )
+          value = IntegerLiteral(value = 0, meta = None)
         ),
         ObjectExprClause(
-          key = Identifier(
-            name = "y",
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/table.chester"),
-                      linesOffset = 0,
-                      posOffset = WithUTF16(i = 0, utf16 = 0)
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = WithUTF16(i = 11, utf16 = 11), line = 0, column = WithUTF16(i = 11, utf16 = 11)),
-                      end = Pos(index = WithUTF16(i = 12, utf16 = 12), line = 0, column = WithUTF16(i = 12, utf16 = 12))
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
-          ),
+          key = Identifier(name = "y", meta = None),
           value = ObjectExpr(
             clauses = Vector(
               ObjectExprClauseOnValue(
-                key = StringLiteral(
-                  value = "x",
-                  meta = Some(
-                    value = ExprMeta(
-                      sourcePos = Some(
-                        value = SourcePos(
-                          source = SourceOffset(
-                            source = FilePath(fileName = "parserTests/table.chester"),
-                            linesOffset = 0,
-                            posOffset = WithUTF16(i = 0, utf16 = 0)
-                          ),
-                          range = RangeInFile(
-                            start = Pos(index = WithUTF16(i = 17, utf16 = 17), line = 0, column = WithUTF16(i = 17, utf16 = 17)),
-                            end = Pos(index = WithUTF16(i = 20, utf16 = 20), line = 0, column = WithUTF16(i = 20, utf16 = 20))
-                          )
-                        )
-                      ),
-                      commentInfo = None
-                    )
-                  )
-                ),
-                value = IntegerLiteral(
-                  value = 1,
-                  meta = Some(
-                    value = ExprMeta(
-                      sourcePos = Some(
-                        value = SourcePos(
-                          source = SourceOffset(
-                            source = FilePath(fileName = "parserTests/table.chester"),
-                            linesOffset = 0,
-                            posOffset = WithUTF16(i = 0, utf16 = 0)
-                          ),
-                          range = RangeInFile(
-                            start = Pos(index = WithUTF16(i = 24, utf16 = 24), line = 0, column = WithUTF16(i = 24, utf16 = 24)),
-                            end = Pos(index = WithUTF16(i = 25, utf16 = 25), line = 0, column = WithUTF16(i = 25, utf16 = 25))
-                          )
-                        )
-                      ),
-                      commentInfo = None
-                    )
-                  )
-                )
+                key = StringLiteral(value = "x", meta = None),
+                value = IntegerLiteral(value = 1, meta = None)
               )
             ),
-            meta = Some(
-              value = ExprMeta(
-                sourcePos = Some(
-                  value = SourcePos(
-                    source = SourceOffset(
-                      source = FilePath(fileName = "parserTests/table.chester"),
-                      linesOffset = 0,
-                      posOffset = WithUTF16(i = 0, utf16 = 0)
-                    ),
-                    range = RangeInFile(
-                      start = Pos(index = WithUTF16(i = 15, utf16 = 15), line = 0, column = WithUTF16(i = 15, utf16 = 15)),
-                      end = Pos(index = WithUTF16(i = 27, utf16 = 27), line = 0, column = WithUTF16(i = 27, utf16 = 27))
-                    )
-                  )
-                ),
-                commentInfo = None
-              )
-            )
+            meta = None
           )
         )
       ),
-      meta = Some(
-        value = ExprMeta(
-          sourcePos = Some(
-            value = SourcePos(
-              source = SourceOffset(
-                source = FilePath(fileName = "parserTests/table.chester"),
-                linesOffset = 0,
-                posOffset = WithUTF16(i = 0, utf16 = 0)
-              ),
-              range = RangeInFile(
-                start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
-                end = Pos(index = WithUTF16(i = 29, utf16 = 29), line = 0, column = WithUTF16(i = 29, utf16 = 29))
-              )
-            )
-          ),
-          commentInfo = None
-        )
-      )
+      meta = None
     )
   ),
   tail = None,
-  meta = Some(
-    value = ExprMeta(
-      sourcePos = Some(
-        value = SourcePos(
-          source = SourceOffset(
-            source = FilePath(fileName = "parserTests/table.chester"),
-            linesOffset = 0,
-            posOffset = WithUTF16(i = 0, utf16 = 0)
-          ),
-          range = RangeInFile(
-            start = Pos(index = WithUTF16(i = 0, utf16 = 0), line = 0, column = WithUTF16(i = 0, utf16 = 0)),
-            end = Pos(index = WithUTF16(i = 29, utf16 = 29), line = 0, column = WithUTF16(i = 29, utf16 = 29))
-          )
-        )
-      ),
-      commentInfo = None
-    )
-  )
+  meta = None
 )
