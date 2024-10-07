@@ -366,12 +366,9 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
       problems = reporter.getSeverityMap
     )
   }
-
-  def parseCheckTAST(source: ParserSource, ignoreLocation: Boolean = false)(using reporter: Reporter[Problem]): chester.syntax.TAST = ???
 }
 
 object Tycker extends DefaultImpl with ProvideMutable {
 }
 
-export Tycker.{check, parseCheckTAST}
-
+export Tycker.{check, checkTop}

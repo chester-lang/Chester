@@ -23,6 +23,10 @@ class VectorReporter[T] extends Reporter[T] {
 
 case class SeverityMap(error: Boolean, goal: Boolean, warn: Boolean, info: Boolean) derives ReadWriter
 
+object SeverityMap {
+  def Empty: SeverityMap = SeverityMap(error=false, goal=false, warn=false, info=false)
+}
+
 class ReporterTrackError[T<:Problem](x: Reporter[T]) extends Reporter[T] {
   private var errorVar = false
   private var warnVar = false
