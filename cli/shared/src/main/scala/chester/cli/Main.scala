@@ -5,7 +5,7 @@ import chester.error.*
 import chester.error.Problem.Severity
 import chester.integrity.IntegrityCheck
 import chester.parser.*
-import chester.repl.{REPLEngine}
+import chester.repl.REPLEngine
 import chester.tyck.Reporter
 import chester.utils.fileExists
 import scopt.OParser
@@ -14,19 +14,26 @@ import chester.utils.io.*
 import chester.utils.io.impl.*
 import chester.utils.term.*
 
-import java.nio.file.{Files, Paths}
-
 object Main {
 
-  case class Config(
+  sealed trait Config
+
+  case class RunConfig(input: Option[String]) extends Config
+
+  case object IntegrityConfig extends Config
+
+  case class CompileConfig(input: String, output: Option[String]) extends Config
+
+  // Parsing state class with default command set to "run"
+  case class CliConfig(
     command: String = "run", // Default command is "run"
     input: Option[String] = None,
-    output: Option[String] = None // Added output option
+    output: Option[String] = None
   )
 
   def main(args: Array[String]): Unit = {
 
-    val builder = OParser.builder[Config]
+    val builder = OParser.builder[CliConfig]
     val parser = {
       import builder._
       OParser.sequence(
@@ -40,12 +47,12 @@ object Main {
           .children(
             arg[String]("input")
               .optional()
-              .action((x, c) => c.copy(input = Some(x)))
               .validate {
                 case "-" => success
                 case path if fileExists(path) => success
                 case path => failure(s"Invalid input. Provide '-' for stdin, or a valid file/directory. Provided: $path")
               }
+              .action((x, c) => c.copy(input = Some(x)))
               .text("Input file or directory. Use '-' for stdin.")
           ),
 
@@ -61,11 +68,11 @@ object Main {
           .children(
             arg[String]("input")
               .required()
-              .action((x, c) => c.copy(input = Some(x)))
               .validate {
                 case path if fileExists(path) => success
                 case path => failure(s"Invalid input. Provide a valid file. Provided: $path")
               }
+              .action((x, c) => c.copy(input = Some(x)))
               .text("Input source file."),
             opt[String]("output")
               .optional()
@@ -74,21 +81,66 @@ object Main {
           ),
 
         // Handle case where user might omit "run" and just provide input directly
-        arg[String]("<input>")
+        arg[String]("input")
           .optional()
-          .action((x, c) => c.copy(command = "run", input = Some(x)))
           .validate {
             case "-" => success
             case path if fileExists(path) => success
             case path => failure(s"Invalid input. Provide '-' for stdin, or a valid file/directory. Provided: $path")
           }
+          .action((x, c) => c.copy(input = Some(x)))
           .text("Input file or directory. Use '-' for stdin.")
       )
     }
 
     // Parse the arguments
-
-    Program.spawn (OParser.parse(parser, args, Config()))
+    OParser.parse(parser, args, CliConfig()) match {
+      case Some(cliConfig) =>
+        val config: Config = cliConfig.command match {
+          case "run" =>
+            RunConfig(cliConfig.input)
+          case "integrity" =>
+            IntegrityConfig
+          case "compile" =>
+            cliConfig.input match {
+              case Some(inputFile) =>
+                CompileConfig(inputFile, cliConfig.output)
+              case None =>
+                println("Error: Input file is required for compile command.")
+                return
+            }
+          case _ =>
+            println("Invalid command")
+            return
+        }
+        Program.spawn(Some(config))
+      case None =>
+        // If parsing fails, default to "run" command when no args are provided
+        if (args.isEmpty) {
+          Program.spawn(Some(RunConfig(None)))
+        } else {
+          // Arguments are bad, error message will have been displayed
+          Program.spawn(None)
+        }
+    }
   }
 
+  // Helper sealed trait for parsing
+  sealed trait ParsedCommand {
+    def toConfig: Config
+  }
+
+  object ParsedCommand {
+    case class Run(input: Option[String]) extends ParsedCommand {
+      def toConfig: Config = RunConfig(input)
+    }
+
+    case object Integrity extends ParsedCommand {
+      def toConfig: Config = IntegrityConfig
+    }
+
+    case class Compile(input: String, output: Option[String]) extends ParsedCommand {
+      def toConfig: Config = CompileConfig(input, output)
+    }
+  }
 }

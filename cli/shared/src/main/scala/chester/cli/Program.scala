@@ -1,6 +1,6 @@
 package chester.cli
 
-import chester.cli.Main.Config
+import chester.cli.Main.{Config, RunConfig, IntegrityConfig, CompileConfig}
 import chester.core.parseCheckTAST
 import chester.error.Problem
 import chester.error.Problem.Severity
@@ -22,31 +22,23 @@ object Program {
 }
 
 class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, io: IO[F]) {
-  def run(config: Option[Config]) : F[Unit] = {
-    config match {
+  def run(configOpt: Option[Config]) : F[Unit] = {
+    configOpt match {
       case Some(config) =>
-        config.command match {
-          case "run" =>
-            config.input match {
+        config match {
+          case RunConfig(inputOpt) =>
+            inputOpt match {
               case None => this.spawnREPLEngine()
               case Some("-") => this.spawnREPLEngine()
               case Some(fileOrDir) => this.runFileOrDirectory(fileOrDir)
             }
-          case "integrity" =>
+          case IntegrityConfig =>
             this.runIntegrityCheck()
-          case "compile" =>
-            config.input match {
-              case Some(inputFile) =>
-                val outputFile = config.output.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
-                this.compileFile(inputFile, outputFile)
-              case None =>
-                println("No input file provided to compile.")
-                this.noop()
-            }
-          case _ =>
-            this.spawnREPLEngine() // Default action if no valid command is provided
+          case CompileConfig(inputFile, outputOpt) =>
+            val outputFile = outputOpt.getOrElse(inputFile.replaceAll("\\.chester$", ".tast"))
+            this.compileFile(inputFile, outputFile)
         }
-      case _ =>
+      case None =>
         // Arguments are bad, error message will have been displayed
         this.noop()
     }
