@@ -277,7 +277,8 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     ),
     libraryDependencies ++= Seq(
       //"it.unimi.dsi" % "fastutil" % "8.5.14",
-    )
+    ),
+    libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
@@ -608,7 +609,6 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
   )
   .jvmSettings(
     commonJvmLibSettings,
-    libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "os-lib" % "0.11.0",
     ),
