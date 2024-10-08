@@ -8,7 +8,10 @@ import upickle.default.*
 import scala.collection.mutable
 
 trait SymbolCollector {
-  def referencedOn(expr: Expr): Unit
+  def referencedOn(expr: Expr): Unit = ()
+}
+
+object NoopSymbolCollector extends SymbolCollector {
 }
 
 trait SemanticCollector {
@@ -19,9 +22,7 @@ trait SemanticCollector {
 
   def newSymbol(call: MaybeVarCall,
                  id: UniqIdOf[? <: MaybeVarCall],
-                 definedOn: Expr) : SymbolCollector = new SymbolCollector {
-    override def referencedOn(expr: Expr): Unit = ()
-  }
+                 definedOn: Expr) : SymbolCollector = NoopSymbolCollector
 }
 
 private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] = rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
