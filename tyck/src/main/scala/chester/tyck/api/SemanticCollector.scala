@@ -12,9 +12,16 @@ trait SymbolCollector {
 }
 
 trait SemanticCollector {
+  // TODO: semantic highlighting?
+  def highlightLetDef(expr: Expr): Unit = ()
+  def highlightLiteral(expr: Expr): Unit = ()
+
+
   def newSymbol(call: MaybeVarCall,
                  id: UniqIdOf[? <: MaybeVarCall],
-                 definedOn: Expr) : SymbolCollector
+                 definedOn: Expr) : SymbolCollector = new SymbolCollector {
+    override def referencedOn(expr: Expr): Unit = ()
+  }
 }
 
 private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] = rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
@@ -46,11 +53,6 @@ class VectorSemanticCollector extends SemanticCollector {
 }
 
 object NoopSemanticCollector extends SemanticCollector {
-  override def newSymbol(call: MaybeVarCall,
-                         id: UniqIdOf[? <: MaybeVarCall],
-                         definedOn: Expr): SymbolCollector = new SymbolCollector {
-    override def referencedOn(expr: Expr): Unit = ()
-  }
 }
 
 class UnusedVariableWarningWrapper(x: SemanticCollector) extends SemanticCollector {
