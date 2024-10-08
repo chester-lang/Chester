@@ -6,28 +6,28 @@ import chester.syntax.core.*
 
 trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
-    expr: DesaltFunctionCall,
-    ty: CellId[Term],
-    effects: CIdOf[EffectsCell]
-  )(using
-    ctx: LocalCtx,
-    parameter: Global,
-    ck: Tyck,
-    state: StateAbility[Tyck]
-  ): Term
+                        expr: DesaltFunctionCall,
+                        ty: CellId[Term],
+                        effects: CIdOf[EffectsCell]
+                      )(using
+                        ctx: LocalCtx,
+                        parameter: Global,
+                        ck: Tyck,
+                        state: StateAbility[Tyck]
+                      ): Term
 }
 
 trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
-    expr: DesaltFunctionCall,
-    ty: CellId[Term],
-    effects: CIdOf[EffectsCell]
-  )(using
-    ctx: LocalCtx,
-    parameter: Global,
-    ck: Tyck,
-    state: StateAbility[Tyck]
-  ): Term = {
+                                 expr: DesaltFunctionCall,
+                                 ty: CellId[Term],
+                                 effects: CIdOf[EffectsCell]
+                               )(using
+                                 ctx: LocalCtx,
+                                 parameter: Global,
+                                 ck: Tyck,
+                                 state: StateAbility[Tyck]
+                               ): Term = {
 
     // Elaborate the function expression to get its term and type
     val functionTy = newType
@@ -36,9 +36,9 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     // Elaborate the arguments in the telescopes
     val callings = expr.telescopes.map { telescope =>
       val callingArgs = telescope.args.map { arg =>
-        val argTy = newType
+        val argTy = newTypeTerm
         val argTerm = elab(arg.expr, argTy, effects)
-        CallingArgTerm(argTerm, arg.name.map(_.name), arg.vararg)
+        CallingArgTerm(argTerm, argTy, arg.name.map(_.name), arg.vararg)
       }
       Calling(callingArgs, telescope.implicitly)
     }
@@ -61,12 +61,12 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   }
 
   case class UnifyFunctionCall(
-    functionTy: CellId[Term],
-    callings: Vector[Calling],
-    resultTy: CellId[Term],
-    cause: Expr
-  )(using localCtx: LocalCtx)
-      extends Propagator[Tyck] {
+                                functionTy: CellId[Term],
+                                callings: Vector[Calling],
+                                resultTy: CellId[Term],
+                                cause: Expr
+                              )(using localCtx: LocalCtx)
+    extends Propagator[Tyck] {
 
     override val readingCells: Set[CellId[?]] = Set(functionTy)
     override val writingCells: Set[CellId[?]] = Set(resultTy)
@@ -97,13 +97,13 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyTelescopes(
-      expected: Vector[TelescopeTerm],
-      actual: Vector[Calling],
-      cause: Expr
-    )(using
-      state: StateAbility[Tyck],
-      ck: Tyck
-    ): Unit = {
+                         expected: Vector[TelescopeTerm],
+                         actual: Vector[Calling],
+                         cause: Expr
+                       )(using
+                         state: StateAbility[Tyck],
+                         ck: Tyck
+                       ): Unit = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
         val argTypes = actual.flatMap(_.args.map(_.value))
@@ -118,13 +118,13 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyArgs(
-      expectedArgs: Vector[ArgTerm],
-      actualArgs: Vector[CallingArgTerm],
-      cause: Expr
-    )(using
-      state: StateAbility[Tyck],
-      ck: Tyck
-    ): Unit = {
+                   expectedArgs: Vector[ArgTerm],
+                   actualArgs: Vector[CallingArgTerm],
+                   cause: Expr
+                 )(using
+                   state: StateAbility[Tyck],
+                   ck: Tyck
+                 ): Unit = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
         ck.reporter(FunctionCallArgumentMismatchError(expectedArgs.length, actualArgs.length, cause))
@@ -133,7 +133,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
 
       expectedArgs.zip(actualArgs).foreach { case (expectedArg, actualArg) =>
         // Unify argument types
-        unify(actualArg.value, expectedArg.ty, cause)
+        unify(expectedArg.ty, actualArg.ty, cause)
       }
     }
 
