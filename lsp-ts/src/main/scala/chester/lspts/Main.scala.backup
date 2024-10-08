@@ -1,0 +1,70 @@
+package chester.lspts
+
+import typings.vscodeLanguageserver
+import typings.vscodeLanguageserver.mod.{createConnection, ProposedFeatures, TextDocuments}
+import typings.vscodeLanguageserverProtocol.mod._
+import typings.vscodeLanguageserverTextdocument.mod.TextDocument
+import typings.vscodeJsonrpc.mod.CancellationToken
+
+import scala.scalajs.js
+import scala.scalajs.js.annotation._
+import scala.scalajs.js.JSConverters._
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+
+object Main {
+  def main(args: Array[String]): Unit = {
+    // ScalablyTyped failed to generate the correct type for createConnection
+    // export function createConnection(options?: ConnectionStrategy | ConnectionOptions): Connection;
+    val connection = vscodeLanguageserver.mod.^.asInstanceOf[js.Dynamic].applyDynamic("createConnection")(ProposedFeatures.all).asInstanceOf[_root_.typings.vscodeLanguageserver.libCommonServerMod.Connection]
+
+    // Create a text document manager
+    val documents = new TextDocuments[TextDocument](typings.vscodeLanguageserverTextdocument.mod.TextDocument)
+
+    // On initialize
+    connection.onInitialize((params: InitializeParams) => {
+      println("Initializing Language Server")
+
+      val capabilities = ServerCapabilities().asInstanceOf[ServerCapabilities[js.Any]]
+      capabilities.textDocumentSync = TextDocumentSyncKind.Incremental
+      capabilities.hoverProvider = true
+      capabilities.completionProvider = CompletionOptions(resolveProvider = false)
+      capabilities.definitionProvider = true
+
+      InitializeResult(capabilities)
+    })
+
+    // Register handlers for document events
+    documents.onDidOpen((change: DidOpenTextDocumentParams) => {
+      val doc = change.textDocument
+      println(s"Document opened: ${doc.uri}")
+    })
+
+    documents.onDidChangeContent((change: DidChangeTextDocumentParams) => {
+      val doc = documents.get(change.textDocument.uri)
+      println(s"Document changed: ${doc.uri}")
+      // Validate the document here if needed
+    })
+
+    // On hover
+    connection.onHover((params: TextDocumentPositionParams, token: CancellationToken) => {
+      val doc = documents.get(params.textDocument.uri)
+      val content = s"Hover over line ${params.position.line}, character ${params.position.character}"
+      val hoverContent = MarkupContent(kind = MarkupKind.PlainText, value = content)
+      Hover(contents = hoverContent)
+    })
+
+    // On completion
+    connection.onCompletion((params: CompletionParams, token: CancellationToken) => {
+      // Provide completion items here
+      js.Array(
+        CompletionItem(label = "Hello", kind = CompletionItemKind.Text),
+        CompletionItem(label = "World", kind = CompletionItemKind.Text)
+      )
+    })
+
+    // Make the text document manager listen on the connection
+    documents.listen(connection)
+    // Listen on the connection
+    connection.listen()
+  }
+}

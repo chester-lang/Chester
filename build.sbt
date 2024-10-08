@@ -765,7 +765,7 @@ lazy val lsp = crossProject(JVMPlatform).withoutSuffixFor(JVMPlatform)
 lazy val lspTs = crossProject(JSPlatform).withoutSuffixFor(JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("lsp-ts"))
-  .dependsOn(common)
+  .dependsOn(common, nodejs)
   .settings(
     name := "lsp-ts",
     commonSettings
