@@ -2,6 +2,29 @@
 
 https://www.the-lingo.org - note that the domain is subject to change
 
+## Get Started
+
+1. Install [Proto](https://moonrepo.dev/docs/proto/install) to manage Chester versions.
+
+```bash
+curl -fsSL https://moonrepo.dev/install/proto.sh | bash
+```
+
+Windows
+
+```powershell
+irm https://moonrepo.dev/install/proto.ps1 | iex
+```
+
+2. Use Proto to install Chester.
+
+```bash
+proto plugin add --global chester "https://github.com/chester-lang/chester/raw/refs/heads/main/proto.toml"
+proto install chester
+```
+
+## Example
+
 It might look like?
 
 ```chester
