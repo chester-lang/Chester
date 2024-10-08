@@ -1,6 +1,6 @@
 # A TOML plugin for Chester:
 
-name = "Chester"
+name = "chester"
 type = "cli"
 
 [platform.linux]
@@ -16,8 +16,8 @@ download-file = "chester-{os}-{arch}.zip"
 checksum-file = "chester-{os}-{arch}.zip.sha256"
 
 [install]
-download-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{download-file}"
-checksum-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{checksum-file}"
+download-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{download_file}"
+checksum-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{checksum_file}"
 
 [install.primary]
 exe-path = "chester"
