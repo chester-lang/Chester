@@ -1,0 +1,5 @@
+let fa(x) = x;
+let f(x:Integer) = x;
+f(0);
+def g(x) = x;
+g(0);

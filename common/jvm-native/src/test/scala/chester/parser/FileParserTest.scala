@@ -8,7 +8,7 @@ import munit.FunSuite
 import java.nio.charset.StandardCharsets
 
 class FileParserTest extends FunSuite {
-  val (testDir, inputFiles) = getInputFiles("parserTests")
+  val (testDir, inputFiles) = getInputFiles("tests/parser")
 
   inputFiles.foreach { inputFile =>
     val baseName = inputFile.getFileName.toString.stripSuffix(".chester")

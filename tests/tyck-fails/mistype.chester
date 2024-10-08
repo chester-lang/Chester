@@ -1,0 +1,2 @@
+def f(x: String) = x;
+f(1);
