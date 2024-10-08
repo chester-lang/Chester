@@ -112,6 +112,7 @@ object Main {
             case path => failure(s"Invalid input. Provide '-' for stdin, or a valid file/directory. Provided: $path")
           }
           .action((x, c) => c.copy(input = Some(x)))
+            .hidden()
       )
     }
 

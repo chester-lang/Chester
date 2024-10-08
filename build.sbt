@@ -64,12 +64,12 @@ val commonSettings = Seq(
 )
 val commonVendorSettings = Seq(
   scalaVersion := scala3Version,
-  scalacOptions ++= Seq("-java-output-version", "8"),
+  scalacOptions ++= Seq("-java-output-version", "11"),
   scalacOptions += "-nowarn",
 )
 val scala2VendorSettings = Seq(
   scalaVersion := scala2Version,
-  scalacOptions ++= Seq("-java-output-version", "8"),
+  scalacOptions ++= Seq("-java-output-version", "11"),
   scalacOptions += "-nowarn",
 )
 val cpsSettings = Seq(
@@ -78,7 +78,7 @@ val cpsSettings = Seq(
 )
 val commonJvmLibSettings = Seq(
   //scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
-  scalacOptions ++= Seq("-java-output-version", "8"),
+  scalacOptions ++= Seq("-java-output-version", "11"),
 )
 val graalvmSettings = Seq(
   nativeImageVersion := graalJdkVersion,

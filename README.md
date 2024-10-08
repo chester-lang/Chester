@@ -6,6 +6,8 @@ https://www.the-lingo.org - note that the domain is subject to change
 
 1. Install [Proto](https://moonrepo.dev/docs/proto/install) to manage Chester versions.
 
+Linux, macOS, WSL
+
 ```bash
 curl -fsSL https://moonrepo.dev/install/proto.sh | bash
 ```
