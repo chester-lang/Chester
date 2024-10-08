@@ -19,6 +19,7 @@ trait SemanticCollector {
 
 private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] = rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
 
+// TODO: handle when call's ty is MetaTerm
 case class CollectedSymbol(call: MaybeVarCall,
                            id: UniqIdOf[? <: MaybeVarCall],
                            definedOn: Expr,
