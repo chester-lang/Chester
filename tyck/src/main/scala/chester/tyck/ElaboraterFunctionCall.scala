@@ -7,28 +7,28 @@ import chester.tyck.api.SemanticCollector
 
 trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
-                        expr: DesaltFunctionCall,
-                        ty: CellId[Term],
-                        effects: CIdOf[EffectsCell]
-                      )(using
-                        ctx: LocalCtx,
-                        parameter: SemanticCollector,
-                        ck: Tyck,
-                        state: StateAbility[Tyck]
-                      ): Term
+    expr: DesaltFunctionCall,
+    ty: CellId[Term],
+    effects: CIdOf[EffectsCell]
+  )(using
+    ctx: LocalCtx,
+    parameter: SemanticCollector,
+    ck: Tyck,
+    state: StateAbility[Tyck]
+  ): Term
 }
 
 trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
-                                 expr: DesaltFunctionCall,
-                                 ty: CellId[Term],
-                                 effects: CIdOf[EffectsCell]
-                               )(using
-                                 ctx: LocalCtx,
-                                 parameter: SemanticCollector,
-                                 ck: Tyck,
-                                 state: StateAbility[Tyck]
-                               ): Term = {
+    expr: DesaltFunctionCall,
+    ty: CellId[Term],
+    effects: CIdOf[EffectsCell]
+  )(using
+    ctx: LocalCtx,
+    parameter: SemanticCollector,
+    ck: Tyck,
+    state: StateAbility[Tyck]
+  ): Term = {
 
     // Elaborate the function expression to get its term and type
     val functionTy = newType
@@ -44,47 +44,52 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       Calling(callingArgs, telescope.implicitly)
     }
 
-    // Create the function call term
-    val functionCallTerm = FCallTerm(functionTerm, callings.toVector)
+    // Create a placeholder for the function call term
+    val functionCallTerm = newMeta
 
     // Create a new type variable for the function's result type
     val resultTy = newType
 
-    // Add a propagator to unify the function type with the arguments
+    // Add a propagator to unify the function type with the arguments and construct the function call term
     state.addPropagator(
-      UnifyFunctionCall(functionTy, callings.toVector, resultTy, expr)
+      UnifyFunctionCall(functionTy, callings.toVector, resultTy, expr, functionTerm, functionCallTerm)
     )
 
     // Unify the result type with the expected type
     unify(ty, resultTy, expr)
 
-    functionCallTerm
+    toTerm(functionCallTerm)
   }
 
   case class UnifyFunctionCall(
-                                functionTy: CellId[Term],
-                                callings: Vector[Calling],
-                                resultTy: CellId[Term],
-                                cause: Expr
-                              )(using localCtx: LocalCtx)
+    functionTy: CellId[Term],
+    callings: Vector[Calling],
+    resultTy: CellId[Term],
+    cause: Expr,
+    functionTerm: Term,
+    functionCallTerm: CellId[Term]
+  )(using localCtx: LocalCtx)
     extends Propagator[Tyck] {
 
     override val readingCells: Set[CellId[?]] = Set(functionTy)
-    override val writingCells: Set[CellId[?]] = Set(resultTy)
-    override val zonkingCells: Set[CellId[?]] = Set(resultTy)
+    override val writingCells: Set[CellId[?]] = Set(resultTy, functionCallTerm)
+    override val zonkingCells: Set[CellId[?]] = Set(resultTy, functionCallTerm)
 
     override def run(using state: StateAbility[Tyck], ck: Tyck): Boolean = {
-      val read = state.readStable(functionTy)
-      read match {
+      val readFunctionTy = state.readStable(functionTy)
+      readFunctionTy match {
         case Some(FunctionType(telescopes, retTy, _, _)) =>
           // Unify the arguments with the function's parameters
           unifyTelescopes(telescopes, callings, cause)
           // Unify the result type
           unify(resultTy, retTy, cause)
+          // Now we can construct the function call term
+          val fCallTerm = FCallTerm(functionTerm, callings)
+          state.fill(functionCallTerm, fCallTerm)
           true
         case Some(Meta(id)) =>
           // If the function type is a meta variable, delay until it is known
-          state.addPropagator(UnifyFunctionCall(id, callings, resultTy, cause))
+          state.addPropagator(UnifyFunctionCall(id, callings, resultTy, cause, functionTerm, functionCallTerm))
           true
         case Some(other) =>
           // Report specific function call unification error
@@ -98,13 +103,13 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyTelescopes(
-                         expected: Vector[TelescopeTerm],
-                         actual: Vector[Calling],
-                         cause: Expr
-                       )(using
-                         state: StateAbility[Tyck],
-                         ck: Tyck
-                       ): Unit = {
+      expected: Vector[TelescopeTerm],
+      actual: Vector[Calling],
+      cause: Expr
+    )(using
+      state: StateAbility[Tyck],
+      ck: Tyck
+    ): Unit = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
         val argTypes = actual.flatMap(_.args.map(_.value))
@@ -119,13 +124,13 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyArgs(
-                   expectedArgs: Vector[ArgTerm],
-                   actualArgs: Vector[CallingArgTerm],
-                   cause: Expr
-                 )(using
-                   state: StateAbility[Tyck],
-                   ck: Tyck
-                 ): Unit = {
+      expectedArgs: Vector[ArgTerm],
+      actualArgs: Vector[CallingArgTerm],
+      cause: Expr
+    )(using
+      state: StateAbility[Tyck],
+      ck: Tyck
+    ): Unit = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
         ck.reporter(FunctionCallArgumentMismatchError(expectedArgs.length, actualArgs.length, cause))
