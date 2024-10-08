@@ -103,7 +103,7 @@ val baseDeps = Seq(
 
 commonSettings
 
-ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.4")
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.5")
 ThisBuild / organization := "com.github.chester-lang"
 
 ThisBuild / assemblyMergeStrategy := {
