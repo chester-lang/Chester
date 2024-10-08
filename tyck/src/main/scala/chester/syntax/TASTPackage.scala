@@ -4,9 +4,10 @@ import chester.syntax.*
 import chester.syntax.core.{BlockTerm, Effects, Term}
 import chester.tyck.SeverityMap
 import chester.utils.*
-import com.eed3si9n.ifdef.*
 import upickle.default.*
 import upickle.default as upickle
+
+import scala.collection.immutable.HashMap
 
 object TASTPackage {
   onNativeImageBuildTime {
@@ -27,6 +28,21 @@ object TASTPackage {
     def readString(str: String): TAST = upickle.read[TAST](str)
   }
 
+  case class LoadedModules(map: HashMap[ModuleRef, Vector[TAST]] = HashMap()) extends AnyVal {
+    def add(tast: TAST): LoadedModules = {
+      if (map.contains(tast.module) && map.apply(tast.module).exists(_.fileName == tast.fileName)) {
+        throw new IllegalArgumentException(s"Module ${tast.module} already loaded from file ${tast.fileName}")
+      } else {
+        val newTASTs = map.getOrElse(tast.module, Vector()) :+ tast
+        LoadedModules(map.updated(tast.module, newTASTs))
+      }
+    }
+  }
+
+  object LoadedModules {
+    val Empty: LoadedModules = LoadedModules()
+  }
+
 }
 
-export TASTPackage.TAST
+export TASTPackage.*

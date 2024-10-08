@@ -69,7 +69,7 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                        contextItems: Map[UniqIdOf[? <: MaybeVarCall], ContextItem] = Map.empty[UniqIdOf[? <: MaybeVarCall], ContextItem],
                        knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
                        imports: Imports = Imports.Empty,
-                       modules: ResolvingModules = ResolvingModules.Empty,
+                       loadedModules: LoadedModules = LoadedModules.Empty,
                        operators: OperatorsContext = OperatorsContext.Default,
                        currentModule: ModuleRef = DefaultModule,
                      ) {
