@@ -16,8 +16,8 @@ download-file = "chester-{os}-{arch}.zip"
 checksum-file = "chester-{os}-{arch}.zip.sha256"
 
 [install]
-download-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{download_file}"
-checksum-url = "https://github.com/chester-lang/chester/releases/download/v{version}/{checksum_file}"
+download-url = "https://github.com/chester-lang/chester/releases/download/{version}/{download_file}"
+checksum-url = "https://github.com/chester-lang/chester/releases/download/{version}/{checksum_file}"
 
 [install.primary]
 exe-path = "chester"
