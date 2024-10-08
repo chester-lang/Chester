@@ -82,20 +82,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-sbt-
 
-    - name: SBT Clean
-      run: sbt clean
-      # for some reason clean calls stImport and stImport usually fails at first run
-      continue-on-error: true
-
-    # maybe test will fail on the first try because of stImport, the typescript to scala thing.
-    - name: Run Tests
-      uses: nick-fields/retry@v3
-      with:
-        timeout_minutes: 25
-        max_attempts: 3
-        shell: bash
-        command: sbt test
-
     - name: Build Common JAR with SBT
       run: sbt common/assembly
 
@@ -243,7 +229,7 @@ jobs:
         # Create zip archive
         Compress-Archive -Path `
           .\target\chester.exe,`
-          .\target\chester-lsp.exe,`
+          .\target\chester-lsp.exe `
           -DestinationPath chester-${{ matrix.os_name }}.zip
 
         # Generate checksum for the zip file
@@ -289,3 +275,11 @@ jobs:
           ./vscode/chester-language-support-*.vsix,
           ./chester-${{ matrix.os_name }}.zip,
           ./chester-${{ matrix.os_name }}.zip.sha256
+
+    - name: Run Tests
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 3
+        shell: bash
+        command: sbt test
