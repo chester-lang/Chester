@@ -3,7 +3,7 @@ package chester.lsp
 import chester.error.*
 import chester.parser.*
 import chester.syntax.core.*
-import chester.syntax.tyck.{FinalReference, TyckMeta}
+import chester.tyck.api.*
 import chester.tyck.*
 import chester.utils.{StringIndex, WithUTF16}
 import io.github.iltotore.iron.*
@@ -56,11 +56,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     val text = params.getTextDocument.getText
 
     // Process the document and get TyckResult and diagnostics
-    val (tyckResult, diagnostics) = processDocument(uri, text)
+    val (tyckResult, collected, diagnostics) = processDocument(uri, text)
 
     // Store the DocumentInfo in the documents map
     documents.synchronized {
-      documents(uri) = DocumentInfo(content = text, tyckResult = tyckResult)
+      documents(uri) = DocumentInfo(content = text, symbols = collected, tyckResult = tyckResult)
     }
 
     // Publish diagnostics
@@ -76,12 +76,12 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     val updatedText = applyChanges(uri, changes)
 
     // Process the updated document
-    val (tyckResult, diagnostics) = processDocument(uri, updatedText)
+    val (tyckResult,collected,  diagnostics) = processDocument(uri, updatedText)
 
     // Update the DocumentInfo with the new content and TyckResult
     documents.synchronized {
       documents.get(uri).foreach { _ =>
-        documents(uri) = DocumentInfo(content = updatedText, tyckResult = tyckResult)
+        documents(uri) = DocumentInfo(content = updatedText,symbols = collected, tyckResult = tyckResult)
       }
     }
 
@@ -149,12 +149,13 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
   }
 
-  def processDocument(uri: String, text: String): (TyckResult[TyckMeta, Judge], List[Diagnostic]) = {
+  def processDocument(uri: String, text: String): (TyckResult[Unit, Judge],Vector[CollectedSymbol], List[Diagnostic]) = {
     val parseResult = Parser.parseTopLevel(FileNameAndContent(uri, text))
+    val collecter = new VectorSemanticCollector()
 
     parseResult match {
       case Right(parsedExpr) =>
-        val tyckResult = Tycker.check(parsedExpr)
+        val tyckResult = Tycker.check(parsedExpr, sementicCollector = collecter)
 
         // Generate diagnostics from the TyckResult
         val diagnostics = tyckResult match {
@@ -204,7 +205,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
             (errorDiagnostics ++ warningDiagnostics).toList
         }
 
-        (tyckResult, diagnostics)
+        (tyckResult,collecter.get, diagnostics)
 
       case Left(parseError) =>
         val range = new Range(
@@ -218,10 +219,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           "ChesterLanguageServer"
         )
         val tyckResult = TyckResult(
-          state = TyckMeta.Empty,
+          state = (),
           result = Judge(ErrorTerm(parseError), ErrorTerm(parseError), NoEffect)
         )
-        (tyckResult, List(diagnostic))
+        (tyckResult, Vector(), List(diagnostic))
     }
   }
 
@@ -465,7 +466,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
       val allSymbols = documents.synchronized {
-        documents.values.flatMap(_.tyckResult.state.symbols).toList
+        documents.values.flatMap(_.symbols).toList
       }
 
       val matchingSymbols = allSymbols.filter { symbol =>
@@ -477,7 +478,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     })
   }
 
-  private def tyckSymbolToLSP(symbol: FinalReference): SymbolInformation = {
+  private def tyckSymbolToLSP(symbol: CollectedSymbol): SymbolInformation = {
     val sp = symbol.definedOn.sourcePos.get
     val location = new Location(
       sp.fileName,
@@ -497,7 +498,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
 case class DocumentInfo(
                          content: String,
-                         tyckResult: TyckResult[TyckMeta, Judge],
+                         symbols: Vector[CollectedSymbol],
+                         tyckResult: TyckResult[Unit, Judge],
                        ) {
-  def symbols = tyckResult.state.symbols
 }

@@ -11,7 +11,7 @@ import chester.tyck.*
 import chester.utils.*
 import chester.utils.propagator.*
 import chester.syntax.*
-import chester.syntax.tyck.{FinalReference, TyckMeta}
+import chester.tyck.api.{NoopSemanticCollector, SemanticCollector, UnusedVariableWarningWrapper}
 
 import scala.language.implicitConversions
 import scala.util.boundary
@@ -21,26 +21,26 @@ type Tyck = Get[TyckProblem, Unit]
 
 trait Elaborater extends ProvideCtx with ElaboraterCommon {
 
-  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = {
     // Create a new type cell representing the kind Typeω (the type of types)
     val kindType = literal(Typeω: Term)
 
     elab(expr, kindType, toEffectsCell(NoEffect))
   }
 
-  def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
+  def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     toId(checkType(expr))
   }
 
-  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term =
+  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term =
     expr match {
       case Some(expr) => checkType(expr)
       case None => Meta(newType)
     }
 
-  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term
+  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term
 
-  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
+  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     val term = elab(expr, ty, effects)
     toId(term)
   }
@@ -56,7 +56,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
     cell
   }
 
-  def elabBlock(expr: Block, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): BlockTerm = {
+  def elabBlock(expr: Block, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): BlockTerm = {
     val ty = toId(readMetaVar(toTerm(ty0)))
     val Block(heads0, tail, meta) = expr
     val heads = heads0.map(resolve)
@@ -72,8 +72,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           val tyandval = TyAndVal.create()
           val id = UniqId.generate[LocalV]
           val localv = newLocalv(name, tyandval.ty, id, meta)
-          val r = Reference.create(localv, id, expr)
-          state.add(parameter.references, r)
+          val r = parameter.newSymbol(localv, id, expr)
           DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty, Some(r)))
       }
       val defsMap = defs.map(info => (info.expr, info)).toMap
@@ -116,8 +115,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
             case None => newTypeTerm
           }
           val localv = newLocalv(name, ty, id, meta)
-          val r = Reference.create(localv, id, expr)
-          state.add(parameter.references, r)
+          val r = parameter.newSymbol(localv, id, expr)
           val wellTyped = elab(expr.body.get, ty, effects)
           ctx = ctx.add(ContextItem(name, id, localv, ty, Some(r))).knownAdd(id, TyAndVal(ty, wellTyped))
           Vector(LetStmtTerm(name, wellTyped, ty))
@@ -142,14 +140,14 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
   }
 
   /** ty is lhs */
-  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = toTerm {
+  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr) match {
       case expr@Identifier(name, meta) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
             if (c.reference.isDefined) {
-              state.add(c.reference.get.referencedOn, expr)
+              c.reference.get.referencedOn(expr)
             }
             state.addPropagator(Unify(ty, c.tyId, expr))
             c.ref
@@ -231,7 +229,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
                       effects: CIdOf[EffectsCell]
                     )(using
                       localCtx: LocalCtx,
-                      parameter: Global,
+                      parameter: SemanticCollector,
                       ck: Tyck,
                       state: StateAbility[Tyck]
                     ): Term = {
@@ -267,7 +265,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
 trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction with ProvideElaboraterFunctionCall {
 
-  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None): TyckResult[TyckMeta, Judge] = {
+  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None, sementicCollector: SemanticCollector = NoopSemanticCollector): TyckResult[Unit, Judge] = {
+    implicit val collecter: UnusedVariableWarningWrapper = new UnusedVariableWarningWrapper(sementicCollector)
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
@@ -291,13 +290,12 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
       }
     }
     implicit val ctx: LocalCtx = LocalCtx.default
-    implicit val recording: Global = Global.create
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
     val judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readUnstable(effects1).get)
-    val (finalJudge, meta) = finalizeJudge(judge)
+    val finalJudge = finalizeJudge(judge)
 
-    TyckResult0(meta, finalJudge, reporter.getReports)
+    TyckResult0((), finalJudge, reporter.getReports)
 
   }
 
@@ -305,8 +303,8 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
                      judge0: Judge
                    )(using ck: Tyck,
                      able: StateAbility[Tyck],
-                     recording: Global,
-                     reporter: Reporter[TyckProblem]): (Judge, TyckMeta) = {
+                     recording: SemanticCollector,
+                     reporter: Reporter[TyckProblem]): Judge = {
     var judge = judge0
     boundary {
       while (true) {
@@ -316,26 +314,11 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
       }
     }
-
-    val symbols = able.readUnstable(recording.references).get.map { ref =>
-      val call = able.readStable(ref.callAsMaybeVarCall).get
-      val definedOn = able.readStable(ref.definedOn).get
-      val referencedOn = able.readUnstable(ref.referencedOn).get
-      FinalReference(call, ref.id, definedOn, referencedOn)
-    }
-
-    // Generate warnings for unused variables
-    symbols.foreach { symbol =>
-      if (symbol.referencedOn.isEmpty) {
-        val warning = UnusedVariableWarning(symbol.call, symbol.definedOn)
-        reporter.apply(warning)
-      }
-    }
-
-    (judge, TyckMeta(symbols))
+    judge
   }
 
-  def checkTop(fileName: String, expr: Expr, reporter0: Reporter[Problem]): chester.syntax.TAST = {
+  def checkTop(fileName: String, expr: Expr, reporter0: Reporter[Problem], sementicCollector: SemanticCollector = NoopSemanticCollector): chester.syntax.TAST = {
+    implicit val collecter: UnusedVariableWarningWrapper = new UnusedVariableWarningWrapper(sementicCollector)
     implicit val reporter: ReporterTrackError[Problem] = new ReporterTrackError(reporter0)
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
@@ -350,17 +333,15 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     ctx = ctx.updateModule(module)
     val ty = newType
     val effects = newEffects
-    implicit val recording: Global = Global.create
     val wellTyped = elabBlock(block, ty, effects)
     able.naiveZonk(Vector(ty, effects))
     val judge = Judge(wellTyped, able.readStable(ty).get, able.readUnstable(effects).get)
-    val (finalJudge, meta) = finalizeJudge(judge)
+    val finalJudge= finalizeJudge(judge)
 
     TAST(
       fileName = fileName,
       module = module,
       ast = finalJudge.wellTyped.asInstanceOf[BlockTerm],
-      meta = meta,
       ty = finalJudge.ty,
       effects = finalJudge.effects,
       problems = reporter.getSeverityMap

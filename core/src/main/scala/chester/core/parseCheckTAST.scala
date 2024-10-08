@@ -4,12 +4,12 @@ import chester.error.*
 import chester.parser.*
 import chester.syntax.*
 import chester.syntax.core.*
-import chester.syntax.tyck.*
 import chester.tyck.*
+import chester.tyck.api.{NoopSemanticCollector, SemanticCollector}
 
 def parseCheckTAST(
                     source: ParserSource,
-                    ignoreLocation: Boolean = false
+                    ignoreLocation: Boolean = false, sementicCollector: SemanticCollector = NoopSemanticCollector
                   )(using reporter: Reporter[Problem]): chester.syntax.TAST = {
   // Parse the source code into an Expr using parseTopLevel
   Parser.parseTopLevel(source, ignoreLocation) match {
@@ -25,10 +25,9 @@ def parseCheckTAST(
         fileName = source.fileName,
         module = DefaultModule,
         ast = BlockTerm(Vector.empty, UnitTerm()),
-        meta = TyckMeta(Vector.empty),
         ty = UnitType(),
         effects = NoEffect,
-        problems = SeverityMap.Empty.copy(error=true)
+        problems = SeverityMap.Empty.copy(error = true)
       )
   }
 }

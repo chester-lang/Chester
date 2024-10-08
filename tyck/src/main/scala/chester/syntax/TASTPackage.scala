@@ -2,7 +2,6 @@ package chester.syntax
 
 import chester.syntax.*
 import chester.syntax.core.{BlockTerm, Effects, Term}
-import chester.syntax.tyck.TyckMeta
 import chester.tyck.SeverityMap
 import com.eed3si9n.ifdef.*
 import upickle.default.*
@@ -19,7 +18,7 @@ object TASTPackage {
   // Typed Abstract Syntax Trees
   // files
   // TODO: handle SourcePos for performance and file size, especially avoid duplicated SourceOffset
-  case class TAST(fileName: String, module: ModuleRef, ast: BlockTerm, meta: TyckMeta, ty: Term, effects: Effects, problems: SeverityMap)derives ReadWriter {
+  case class TAST(fileName: String, module: ModuleRef, ast: BlockTerm, ty: Term, effects: Effects, problems: SeverityMap)derives ReadWriter {
     def writeBinary: Array[Byte] = upickle.writeBinary[TAST](this)
 
     def readBinary(bytes: Array[Byte]): TAST = upickle.readBinary[TAST](bytes)

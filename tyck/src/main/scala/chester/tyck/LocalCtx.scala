@@ -6,6 +6,7 @@ import chester.syntax.concrete.{Expr, ResolvingModules}
 import chester.syntax.core.*
 import chester.syntax.{Name, QualifiedIDString}
 import chester.tyck.BuiltIn.BuiltinItem
+import chester.tyck.api.SymbolCollector
 import chester.utils.propagator.*
 
 
@@ -17,7 +18,7 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
                           uniqId: UniqIdOf[? <: MaybeVarCall],
                           ref: MaybeVarCall,
                           ty: CellIdOr[Term],
-                          reference: Option[Reference] = None
+                          reference: Option[SymbolCollector] = None
                         ) {
     def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
 
@@ -54,21 +55,6 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
 
     def create[Ck]()(using state: StateAbility[Ck]): TyAndVal = {
       TyAndVal(state.addCell(OnceCell[Term]()), state.addCell(OnceCell[Term]()))
-    }
-  }
-
-  case class Reference(
-                        call: CellId[? <: MaybeVarCall],
-                        id: UniqIdOf[? <: MaybeVarCall],
-                        definedOn: CellId[Expr],
-                        referencedOn: SeqId[Expr]
-                      ) {
-    def callAsMaybeVarCall: CellId[MaybeVarCall] = call.asInstanceOf[CellId[MaybeVarCall]]
-  }
-
-  object Reference {
-    def create[T <: MaybeVarCall](call: CellIdOr[T], ref: UniqIdOf[T], definedOn: CellIdOr[Expr])(using state: StateAbility[?]): Reference = {
-      Reference(state.toId(call), ref, state.toId(definedOn), state.addCell(CollectionCell[Expr]()))
     }
   }
 
@@ -116,12 +102,6 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
       }
       copy(map = newMap, contextItems = newContextItems)
     }
-  }
-
-  case class Global(references: SeqId[Reference])
-  
-  object Global {
-    def create[Ck](using state: StateAbility[Ck]): Global = Global(state.addCell(CollectionCell[Reference]()))
   }
 
   object LocalCtx {

@@ -2,20 +2,20 @@ package chester.tyck
 
 import chester.syntax.concrete.*
 import chester.syntax.core.*
+import chester.tyck.api.SemanticCollector
 
 trait ElaboraterFunction extends ProvideCtx with Elaborater {
-  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term
+  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term
 }
 
 trait ProvideElaboraterFunction extends ElaboraterFunction {
-  def elabArg(arg: Arg, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): ArgTerm = {
+  def elabArg(arg: Arg, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): ArgTerm = {
     require(arg.decorations.isEmpty, "decorations are not supported yet")
     val ty = elabTy(arg.ty)
     val default = arg.exprOrDefault.map(elab(_, ty, effects))
     val id = UniqId.generate[LocalV]
     val bind = newLocalv(arg.name.name, ty, id, arg.meta)
-    val r = Reference.create(bind, id, arg)
-    state.add(parameter.references, r)
+    val r = parameter.newSymbol(bind, id, arg)
     localCtx.update(_.add(ContextItem(arg.name.name, id, bind, ty, Some(r))))
     default match {
       case Some(defaultValue) =>
@@ -25,7 +25,7 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     }
   }
 
-  def elabTelescope(telescope: DefTelescope, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): TelescopeTerm = {
+  def elabTelescope(telescope: DefTelescope, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): TelescopeTerm = {
     // Process each argument in the telescope, updating the context
     val argTerms = telescope.args.map { arg =>
       elabArg(arg, effects)
@@ -34,7 +34,7 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     TelescopeTerm(argTerms, telescope.implicitly)
   }
 
-  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: Global, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = {
     // Start with a mutable local context based on the current context
     val mutableCtx = new MutableLocalCtx(ctx)
 

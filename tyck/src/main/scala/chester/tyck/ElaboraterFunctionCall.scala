@@ -3,6 +3,7 @@ package chester.tyck
 import chester.error.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
+import chester.tyck.api.SemanticCollector
 
 trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
@@ -11,7 +12,7 @@ trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
                         effects: CIdOf[EffectsCell]
                       )(using
                         ctx: LocalCtx,
-                        parameter: Global,
+                        parameter: SemanticCollector,
                         ck: Tyck,
                         state: StateAbility[Tyck]
                       ): Term
@@ -24,7 +25,7 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
                                  effects: CIdOf[EffectsCell]
                                )(using
                                  ctx: LocalCtx,
-                                 parameter: Global,
+                                 parameter: SemanticCollector,
                                  ck: Tyck,
                                  state: StateAbility[Tyck]
                                ): Term = {
