@@ -37,5 +37,10 @@
         "title": "プレイグラウンド",
         "output": "出力",
         "runCode": "実行"
+    },
+    "CommunityPage": {
+        "title": "コミュニティ",
+        "introText": "チェスターコミュニティページへようこそ！",
+        "joinDiscord": "Discordサーバーに参加する"
     }
 }

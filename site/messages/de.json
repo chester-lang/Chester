@@ -24,5 +24,10 @@
         "title": "Playground",
         "output": "Ausgabe",
         "runCode": "Ausführen"
+    },
+    "CommunityPage": {
+        "title": "Gemeinschaft",
+        "introText": "Willkommen auf der Chester Community-Seite!",
+        "joinDiscord": "Treten Sie unserem Discord-Server bei"
     }
 }

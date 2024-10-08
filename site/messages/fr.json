@@ -40,5 +40,10 @@
         "title": "Terrain de jeu",
         "output": "Sortie",
         "runCode": "Exécuter"
+    },
+    "CommunityPage": {
+        "title": "Communauté",
+        "introText": "Bienvenue sur la page de la communauté Chester !",
+        "joinDiscord": "Rejoignez notre serveur Discord"
     }
 }

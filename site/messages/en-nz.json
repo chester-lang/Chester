@@ -11,12 +11,12 @@
     },
     "Header": {
         "home": "Home",
-        "download": "Download",
         "getStarted": "Get Started",
         "playground": "Playground",
         "documentation": "Documentation",
         "close": "Close",
-        "menu": "Menu"
+        "menu": "Menu",
+        "community": "Community"
     },
     "GetStartedPage": {
         "title": "Get Started with Chester",
@@ -28,15 +28,14 @@
         "step2Title": "2. Use Proto to install Chester",
         "step2Description": "After installing Proto, you can install Chester by running the following commands:"
     },
-    "DownloadPage": {
-        "title": "Download Chester",
-        "introText": "Download Chester for your operating system.",
-        "downloadFor": "Download for {platform}",
-        "cliSingleFile": "CLI Single File Executable"
-    },
     "PlaygroundPage": {
         "title": "Playground",
         "output": "Output",
         "runCode": "Run"
+    },
+    "CommunityPage": {
+        "title": "Community",
+        "introText": "Welcome to the Chester community page!",
+        "joinDiscord": "Join our Discord server"
     }
 }
