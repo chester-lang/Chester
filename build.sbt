@@ -264,12 +264,10 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
     commonSettings,
     baseDeps,
   )
-  .jvmConfigure(_.dependsOn(scalaGraph.jvm))
   .jvmSettings(
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
-      //"org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.1", // for scala-graph
+      "org.scala-graph" %%% "graph-core" % "2.0.2",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
@@ -293,8 +291,7 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSu
   .nativeConfigure(_.dependsOn(ironNative.native, scalaGraph.native))
   .jsSettings(
     libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.1", // for scala-graph
+      "org.scala-graph" %%% "graph-core" % "2.0.2",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude("com.lihaoyi", "upickle_3"),
@@ -613,12 +610,12 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutS
     commonJvmLibSettings,
     libraryDependencies += "org.graalvm.sdk" % "nativeimage" % graalvmVersion,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "os-lib" % "0.10.7",
+      "com.lihaoyi" %%% "os-lib" % "0.11.0",
     ),
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "os-lib" % "0.10.7",
+      "com.lihaoyi" %%% "os-lib" % "0.11.0",
     ),
     scalacOptions ++= (if (supportNativeBuildForTermux) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:scalaNativeForTermux") else Seq()),
   )

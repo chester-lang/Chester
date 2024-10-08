@@ -23,20 +23,20 @@ object Main {
   case object IntegrityConfig extends Config
 
   case class CompileConfig(
-    inputs: Seq[String],
-    targetDir: String = "."
-  ) extends Config
+                            inputs: Seq[String],
+                            targetDir: String = "."
+                          ) extends Config
 
   // Add this new case class for decompilation
   case class DecompileConfig(input: String) extends Config
 
   // Parsing state class with default command set to "run"
   case class CliConfig(
-    command: String = "run", // Default command is "run"
-    input: Option[String] = None,
-    inputs: Seq[String] = Seq(),
-    targetDir: String = "."
-  )
+                        command: String = "run", // Default command is "run"
+                        input: Option[String] = None,
+                        inputs: Seq[String] = Seq(),
+                        targetDir: String = "."
+                      )
 
   def main(args: Array[String]): Unit = {
 
@@ -103,8 +103,8 @@ object Main {
               .action((x, c) => c.copy(input = Some(x)))
               .text("Input .tast binary file.")
           ),
-          // Handle case where user might omit "run" and just provide input directly
-          arg[String] ("input")
+        // Handle case where user might omit "run" and just provide input directly
+        arg[String]("input")
           .optional()
           .validate {
             case "-" => success
@@ -112,7 +112,7 @@ object Main {
             case path => failure(s"Invalid input. Provide '-' for stdin, or a valid file/directory. Provided: $path")
           }
           .action((x, c) => c.copy(input = Some(x)))
-            .hidden()
+          .hidden()
       )
     }
 
