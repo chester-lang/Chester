@@ -3,18 +3,17 @@ package chester.syntax
 import chester.syntax.*
 import chester.syntax.core.{BlockTerm, Effects, Term}
 import chester.tyck.SeverityMap
+import chester.utils.*
 import com.eed3si9n.ifdef.*
 import upickle.default.*
 import upickle.default as upickle
 
 object TASTPackage {
-  // TODO: actually use this?
-  @ifdef("graalvm-upickle-init")
-  private def useYou:ReadWriter[TAST] = readwriter[TAST]
-  @ifndef("graalvm-upickle-init")
-  private def useYou:ReadWriter[TAST] = null
+  onNativeImageBuildTime {
+    // it will be lazy val in the JVM bytecode, if we are building a native image, it will be calculated at build time.
+    readwriter[TAST]
+  }
 
-  useYou
   // Typed Abstract Syntax Trees
   // files
   // TODO: handle SourcePos for performance and file size, especially avoid duplicated SourceOffset
