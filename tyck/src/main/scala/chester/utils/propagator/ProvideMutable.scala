@@ -199,6 +199,7 @@ trait ProvideMutable extends ProvideImpl {
           tryFallback = 0
         }
       }
+      tickAll
     }
   }
 }

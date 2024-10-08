@@ -17,7 +17,6 @@ trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   ): Term
 }
 
-// TODO: incorrect, fix this
 trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
     expr: DesaltFunctionCall,
@@ -71,16 +70,16 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
 
     override val readingCells: Set[CellId[?]] = Set(functionTy)
     override val writingCells: Set[CellId[?]] = Set(resultTy)
-    override val zonkingCells: Set[CellId[?]] = Set(functionTy, resultTy)
+    override val zonkingCells: Set[CellId[?]] = Set(resultTy)
 
     override def run(using state: StateAbility[Tyck], ck: Tyck): Boolean = {
-      state.readStable(functionTy) match {
+      val read = state.readStable(functionTy)
+      read match {
         case Some(FunctionType(telescopes, retTy, _, _)) =>
           // Unify the arguments with the function's parameters
-          if (unifyTelescopes(telescopes, callings, cause)) {
-            // Unify the result type
-            unify(resultTy, retTy, cause)
-          }
+          unifyTelescopes(telescopes, callings, cause)
+          // Unify the result type
+          unify(resultTy, retTy, cause)
           true
         case Some(Meta(id)) =>
           // If the function type is a meta variable, delay until it is known
@@ -104,16 +103,16 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     )(using
       state: StateAbility[Tyck],
       ck: Tyck
-    ): Boolean = {
+    ): Unit = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
         val argTypes = actual.flatMap(_.args.map(_.value))
         val functionType = FunctionType(expected, newTypeTerm)
         ck.reporter(FunctionCallArityMismatchError(expected.length, actual.length, cause))
-        return false
+        return
       }
 
-      expected.zip(actual).forall { case (expectedTele, actualCalling) =>
+      expected.zip(actual).foreach { case (expectedTele, actualCalling) =>
         unifyArgs(expectedTele.args, actualCalling.args, cause)
       }
     }
@@ -125,23 +124,21 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     )(using
       state: StateAbility[Tyck],
       ck: Tyck
-    ): Boolean = {
+    ): Unit = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
         ck.reporter(FunctionCallArgumentMismatchError(expectedArgs.length, actualArgs.length, cause))
-        return false
+        return
       }
 
       expectedArgs.zip(actualArgs).foreach { case (expectedArg, actualArg) =>
         // Unify argument types
         unify(actualArg.value, expectedArg.ty, cause)
       }
-      true
     }
 
     override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], ck: Tyck): ZonkResult = {
-      // Implement zonking logic if needed
-      ZonkResult.NotYet
+      ZonkResult.Require(Vector(functionTy))
     }
   }
 }
