@@ -20,7 +20,13 @@
     },
     "GetStartedPage": {
         "title": "Tīmata me Chester",
-        "introText": "Nau mai ki Chester! Whāia ēnei hipanga hei tīmatanga mō tōu reo hōtaka hou."
+        "introText": "Nau mai ki Chester! Whāia ēnei hipanga hei tīmatanga mō tōu reo hōtaka hou.",
+        "step1Title": "1. Tāutahia te Proto hei whakahaere i ngā putanga o Chester",
+        "step1Description": "Ko te Proto he taputapu hei āwhina i a koe ki te whakahaere i ngā putanga rerekē o Chester. Whakamahia ngā whakahau e whai ake nei i runga i tō punaha whakahaere hei tāuta i te Proto:",
+        "linuxMacOSWSL": "Linux, macOS, WSL",
+        "windows": "Windows",
+        "step2Title": "2. Whakamahia te Proto ki te tāuta i a Chester",
+        "step2Description": "Whai muri i te tāutanga o te Proto, ka taea e koe te tāuta i a Chester mā te whakahaere i ngā whakahau e whai ake nei:"
     },
     "DownloadPage": {
         "title": "Tikiake Chester",

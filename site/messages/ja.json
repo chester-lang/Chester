@@ -20,12 +20,18 @@
     },
     "GetStartedPage": {
         "title": "チェスターを始める",
-        "introText": "チェスターへようこそ！この新しいプログラミング言語を始めるための手順に従ってください。"
+        "introText": "チェスターへようこそ！この新しいプログラミング言語を始めるための手順に従ってください。",
+        "step1Title": "1. Chester のバージョン管理のために Proto をインストールする",
+        "step1Description": "Proto は、異なるバージョンの Chester を管理するためのツールです。お使いのオペレーティングシステムに基づいて、以下のコマンドを使用して Proto をインストールしてください：",
+        "linuxMacOSWSL": "Linux、macOS、WSL",
+        "windows": "Windows",
+        "step2Title": "2. Proto を使用して Chester をインストールする",
+        "step2Description": "Proto をインストールした後、以下のコマンドを実行して Chester をインストールできます："
     },
     "DownloadPage": {
         "title": "チェスターをダウンロード",
         "introText": "お使いのオペレーティングシステム用のチェスターをダウンロードしてください。",
-        "downloadFor": "{platform}用のダウンロード"
+        "downloadFor": "{platform} 用のダウンロード"
     },
     "PlaygroundPage": {
         "title": "プレイグラウンド",

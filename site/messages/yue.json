@@ -20,11 +20,17 @@
     },
     "GetStartedPage": {
         "title": "開始用 Chester",
-        "introText": "歡迎嚟到 Chester！跟住呢幾個步驟嚟開始用你嘅新編程語言啦。"
+        "introText": "歡迎嚟到 Chester！跟住呢幾個步驟嚟開始用你嘅新編程語言啦。",
+        "step1Title": "1. 安裝 Proto 去管理 Chester 版本",
+        "step1Description": "Proto 係一個工具，幫你管理唔同版本嘅 Chester。根據你嘅操作系統，用以下命令去安裝 Proto：",
+        "linuxMacOSWSL": "Linux、macOS、WSL",
+        "windows": "Windows",
+        "step2Title": "2. 用 Proto 去安裝 Chester",
+        "step2Description": "安裝咗 Proto 之後，你可以運行以下命令去安裝 Chester："
     },
     "DownloadPage": {
         "title": "下載 Chester",
-        "introText": "下載 Chester 適用於你嘅操作系統。",
+        "introText": "下載適用於你嘅操作系統嘅 Chester。",
         "downloadFor": "下載 {platform} 版"
     },
     "PlaygroundPage": {

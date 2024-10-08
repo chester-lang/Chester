@@ -1,7 +1,13 @@
 {
     "GetStartedPage": {
         "title": "Chester starten",
-        "introText": "Willkommen bei Chester! Folgen Sie diesen Schritten, um mit Ihrer neuen Programmiersprache zu beginnen."
+        "introText": "Willkommen bei Chester! Folgen Sie diesen Schritten, um mit Ihrer neuen Programmiersprache zu beginnen.",
+        "step1Title": "1. Installieren Sie Proto, um Chester-Versionen zu verwalten",
+        "step1Description": "Proto ist ein Tool, mit dem Sie verschiedene Versionen von Chester verwalten können. Installieren Sie Proto mit den folgenden Befehlen, basierend auf Ihrem Betriebssystem:",
+        "linuxMacOSWSL": "Linux, macOS, WSL",
+        "windows": "Windows",
+        "step2Title": "2. Verwenden Sie Proto, um Chester zu installieren",
+        "step2Description": "Nach der Installation von Proto können Sie Chester mit den folgenden Befehlen installieren:"
     },
     "Home": {
         "title": "Chester: Eine Programmiersprache"
@@ -11,7 +17,7 @@
     },
     "DownloadPage": {
         "title": "Chester herunterladen",
-        "introText": "Chester für Ihr Betriebssystem herunterladen.",
+        "introText": "Laden Sie Chester für Ihr Betriebssystem herunter.",
         "downloadFor": "Chester für {platform} herunterladen"
     },
     "PlaygroundPage": {

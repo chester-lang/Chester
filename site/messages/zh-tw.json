@@ -20,7 +20,13 @@
     },
     "GetStartedPage": {
         "title": "開始使用 Chester",
-        "introText": "歡迎使用 Chester！請按照以下步驟開始使用您的新程式設計語言。"
+        "introText": "歡迎使用 Chester！請按照以下步驟開始使用您的新程式設計語言。",
+        "step1Title": "1. 安裝 Proto 管理 Chester 版本",
+        "step1Description": "Proto 是一個幫助您管理不同版本 Chester 的工具。根據您的操作系統，使用以下命令安裝 Proto：",
+        "linuxMacOSWSL": "Linux、macOS、WSL",
+        "windows": "Windows",
+        "step2Title": "2. 使用 Proto 安裝 Chester",
+        "step2Description": "安裝 Proto 後，您可以運行以下命令來安裝 Chester："
     },
     "DownloadPage": {
         "title": "下載 Chester",

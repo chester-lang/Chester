@@ -1,9 +1,13 @@
 {
+    "metadata": {
+        "title": "Chester",
+        "description": "Chester : Un Langage de Programmation"
+    },
     "Home": {
-        "title": "Chester: A Programming Language"
+        "title": "Chester : Un Langage de Programmation"
     },
     "Footer": {
-        "footer": "Chester: A Programming Language © {year}"
+        "footer": "Chester : Un Langage de Programmation © {year}"
     },
     "Header": {
         "home": "Accueil",
@@ -15,15 +19,21 @@
         "menu": "Menu"
     },
     "LocaleSwitcher": {
-        "locale": "{locale, select, fr {français} en_nz {anglais} zh_tw {chinois traditionnel} zh_sg {chinois singapourien} de {allemand} other {inconnu}}"
+        "locale": "{locale, select, fr {français} en_nz {anglais} zh_tw {chinois traditionnel} zh_sg {chinois simplifié} de {allemand} other {inconnu}}"
     },
-    "metadata": {
-        "title": "Chester",
-        "description": "Chester : Un Langage de Programmation"
+    "GetStartedPage": {
+        "title": "Commencer avec Chester",
+        "introText": "Bienvenue sur Chester ! Suivez ces étapes pour commencer avec votre nouveau langage de programmation.",
+        "step1Title": "1. Installez Proto pour gérer les versions de Chester",
+        "step1Description": "Proto est un outil qui vous aide à gérer différentes versions de Chester. Installez Proto en utilisant les commandes suivantes selon votre système d'exploitation :",
+        "linuxMacOSWSL": "Linux, macOS, WSL",
+        "windows": "Windows",
+        "step2Title": "2. Utilisez Proto pour installer Chester",
+        "step2Description": "Après avoir installé Proto, vous pouvez installer Chester en exécutant les commandes suivantes :"
     },
     "DownloadPage": {
         "title": "Télécharger Chester",
-        "introText": "Télécharger Chester pour votre système d'exploitation.",
+        "introText": "Téléchargez Chester pour votre système d'exploitation.",
         "downloadFor": "Télécharger pour {platform}"
     },
     "PlaygroundPage": {

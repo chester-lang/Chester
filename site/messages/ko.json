@@ -20,7 +20,13 @@
     },
     "GetStartedPage": {
         "title": "체스터 시작하기",
-        "introText": "체스터에 오신 것을 환영합니다! 새로운 프로그래밍 언어를 시작하려면 다음 단계를 따르세요."
+        "introText": "체스터에 오신 것을 환영합니다! 새로운 프로그래밍 언어를 시작하려면 다음 단계를 따르세요.",
+        "step1Title": "1. 체스터 버전 관리를 위한 Proto 설치",
+        "step1Description": "Proto는 체스터의 다양한 버전을 관리하는 데 도움이 되는 도구입니다. 사용 중인 운영 체제에 따라 다음 명령을 사용하여 Proto를 설치하세요:",
+        "linuxMacOSWSL": "Linux, macOS, WSL",
+        "windows": "Windows",
+        "step2Title": "2. Proto를 사용하여 체스터 설치",
+        "step2Description": "Proto를 설치한 후 다음 명령을 실행하여 체스터를 설치할 수 있습니다:"
     },
     "DownloadPage": {
         "title": "체스터 다운로드",

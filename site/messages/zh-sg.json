@@ -20,11 +20,17 @@
     },
     "GetStartedPage": {
         "title": "开始使用 Chester",
-        "introText": "欢迎使用 Chester！请按照以下步骤开始使用您的新编程语言。"
+        "introText": "欢迎使用 Chester！请按照以下步骤开始使用您的新编程语言。",
+        "step1Title": "1. 安装 Proto 来管理 Chester 版本",
+        "step1Description": "Proto 是一款帮助您管理不同版本 Chester 的工具。根据您的操作系统，使用以下命令安装 Proto：",
+        "linuxMacOSWSL": "Linux、macOS、WSL",
+        "windows": "Windows",
+        "step2Title": "2. 使用 Proto 安装 Chester",
+        "step2Description": "安装 Proto 后，您可以运行以下命令来安装 Chester："
     },
     "DownloadPage": {
         "title": "下载 Chester",
-        "introText": "下载 Chester 以用于您的操作系统。",
+        "introText": "下载适用于您的操作系统的 Chester。",
         "downloadFor": "下载 {platform}"
     },
     "PlaygroundPage": {
