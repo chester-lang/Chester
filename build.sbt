@@ -81,7 +81,7 @@ val commonJvmLibSettings = Seq(
   scalacOptions ++= Seq("-java-output-version", "11")
 )
 
-val NativeImageOptions = sys.env.get("NATIVE_IMAGE_OPTIONS")map(_.split(" ").toList).getOrElse(List[String]())
+val NativeImageOptions = sys.env.get("NATIVE_IMAGE_OPTIONS").map(_.split(" ").toList).getOrElse(List[String]())
 
 val graalvmSettings = Seq(
   nativeImageVersion := graalJdkVersion,
