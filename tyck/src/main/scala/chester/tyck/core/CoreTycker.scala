@@ -23,11 +23,10 @@ case class CoreTycker(reporter: Reporter[TyckError]) {
       val elementType = inferCommonType(terms)
       ListType(elementType)
     case ObjectTerm(clauses, _) =>
-      val fieldTypes = clauses.map {
-        case ObjectClauseValueTerm(key, value, _) =>
-          val keyType = inferNoEffect(key)
-          val valueType = inferNoEffect(value)
-          ObjectClauseValueTerm(key, valueType)
+      val fieldTypes = clauses.map { case ObjectClauseValueTerm(key, value, _) =>
+        val keyType = inferNoEffect(key)
+        val valueType = inferNoEffect(value)
+        ObjectClauseValueTerm(key, valueType)
       }
       ObjectType(fieldTypes)
     case lv: LocalV =>

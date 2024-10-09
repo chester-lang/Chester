@@ -13,8 +13,7 @@ package kiama2.output
 
 import PrettyPrinterTypes.Width
 
-/** The sides that an expression may appear on inside another expression or
-  * associativities that infix operators can have.
+/** The sides that an expression may appear on inside another expression or associativities that infix operators can have.
   */
 abstract class Side
 
@@ -42,8 +41,7 @@ case object Prefix extends Fixity
   */
 case object Postfix extends Fixity
 
-/** The binary operator occurs in infix position (i.e., between its two
-  * operands).
+/** The binary operator occurs in infix position (i.e., between its two operands).
   */
 case class Infix(side: Side) extends Fixity
 
@@ -51,13 +49,10 @@ case class Infix(side: Side) extends Fixity
   */
 sealed trait PrettyExpression[Doc]
 
-implicit class PrettyExpressionDoc[Doc](val doc: Doc)
-    extends PrettyExpression[Doc]
+implicit class PrettyExpressionDoc[Doc](val doc: Doc) extends PrettyExpression[Doc]
 
-/** An expression that contains an operator. Defines `priority` to relate the
-  * operator to other operators (lower number is higher priority, no default).
-  * Also defines `fixity` to specify the relationship between the operator and
-  * its operand(s) (no default).
+/** An expression that contains an operator. Defines `priority` to relate the operator to other operators (lower number is higher priority, no
+  * default). Also defines `fixity` to specify the relationship between the operator and its operand(s) (no default).
   */
 sealed trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
   def priority: Int
@@ -65,9 +60,8 @@ sealed trait PrettyOperatorExpression[Doc] extends PrettyExpression[Doc] {
   def fixity: Fixity
 }
 
-/** Binary expressions that are to be pretty-printed. `left` and `right` give
-  * the two operand expressions and `op` the string that is to be used as the
-  * output of the operator.
+/** Binary expressions that are to be pretty-printed. `left` and `right` give the two operand expressions and `op` the string that is to be used as
+  * the output of the operator.
   */
 trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
   def left: PrettyExpression[Doc]
@@ -77,8 +71,7 @@ trait PrettyBinaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
   def right: PrettyExpression[Doc]
 }
 
-/** Unary expressions that are to be pretty-printed. `exp` gives the operand
-  * expressions and `op` the string that is to be used as the output of the
+/** Unary expressions that are to be pretty-printed. `exp` gives the operand expressions and `op` the string that is to be used as the output of the
   * operator.
   */
 trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
@@ -87,11 +80,9 @@ trait PrettyUnaryExpression[Doc] extends PrettyOperatorExpression[Doc] {
   def exp: PrettyExpression[Doc]
 }
 
-/** A pretty-printer with support for pretty-printing expressions with minimal
-  * parenthesisation.
+/** A pretty-printer with support for pretty-printing expressions with minimal parenthesisation.
   *
-  * Based on algorithm in "Unparsing expressions with prefix and postfix
-  * operators", Ramsey, SP&E, 28 (12), October 1998. We have not implemented
+  * Based on algorithm in "Unparsing expressions with prefix and postfix operators", Ramsey, SP&E, 28 (12), October 1998. We have not implemented
   * support for arbitrary arity infix operators.
   */
 trait ParenPrettyPrinter extends AbstractPrettyPrinter {
@@ -133,8 +124,7 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
         d.doc
     }
 
-  /** Optionally parenthesise an operator expression based on the precedence
-    * relation with an outer expression's operator.
+  /** Optionally parenthesise an operator expression based on the precedence relation with an outer expression's operator.
     */
   def bracket(
       outer: PrettyOperatorExpression[Doc],
@@ -145,8 +135,7 @@ trait ParenPrettyPrinter extends AbstractPrettyPrinter {
     if (noparens(outer, inner, side)) d else parens(d)
   }
 
-  /** Return true if the inner expression should not be parenthesised when
-    * appearing on the given side with the outer expression.
+  /** Return true if the inner expression should not be parenthesised when appearing on the given side with the outer expression.
     */
   def noparens(
       outer: PrettyOperatorExpression[Doc],

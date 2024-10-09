@@ -70,14 +70,13 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     val effects = newEffects
 
     // Elaborate each telescope and collect TelescopeTerms
-    val telescopeTerms: Vector[TelescopeTerm] = expr.telescope.map {
-      telescope =>
-        elabTelescope(telescope, effects)(using
-          mutableCtx,
-          parameter,
-          ck,
-          state
-        )
+    val telescopeTerms: Vector[TelescopeTerm] = expr.telescope.map { telescope =>
+      elabTelescope(telescope, effects)(using
+        mutableCtx,
+        parameter,
+        ck,
+        state
+      )
     }
 
     // Process the return type, if provided

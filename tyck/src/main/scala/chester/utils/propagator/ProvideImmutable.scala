@@ -27,8 +27,7 @@ trait ProvideImmutable extends ProvideImpl {
   override def stateAbilityImpl[Ability]: StateAbility[Ability] =
     StateCells[Ability]()
 
-  class StateCells[Ability](var state: State[Ability] = State[Ability]())
-      extends StateAbility[Ability] {
+  class StateCells[Ability](var state: State[Ability] = State[Ability]()) extends StateAbility[Ability] {
     override def stable: Boolean = state.stable
 
     override def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T] =
@@ -61,8 +60,7 @@ trait ProvideImmutable extends ProvideImpl {
         propagator: T
     )(using more: Ability): PIdOf[T] = {
       val uniqId = UniqId.generate[T]
-      state =
-        state.copy(propagators = state.propagators.updated(uniqId, propagator))
+      state = state.copy(propagators = state.propagators.updated(uniqId, propagator))
       if (propagator.run(using this, more)) {
         state = state.copy(propagators = state.propagators.removed(uniqId))
       }
@@ -73,9 +71,7 @@ trait ProvideImmutable extends ProvideImpl {
       val didChanged = state.didChanged
       state = state.copy(didChanged = Vector.empty)
       state.propagators
-        .filter((_, propagator) =>
-          propagator.readingCells.exists(didChanged.contains)
-        )
+        .filter((_, propagator) => propagator.readingCells.exists(didChanged.contains))
         .foreach { case (pid, propagator) =>
           if (state.propagators.contains(pid)) {
             val done = propagator.run(using this, more)
@@ -90,9 +86,7 @@ trait ProvideImmutable extends ProvideImpl {
         cells: Vector[CIdOf[Cell[?]]]
     ): Vector[Propagator[Ability]] = {
       state.propagators
-        .filter((_, propagator) =>
-          propagator.zonkingCells.exists(cells.contains)
-        )
+        .filter((_, propagator) => propagator.zonkingCells.exists(cells.contains))
         .values
         .toVector
     }
@@ -110,12 +104,8 @@ trait ProvideImmutable extends ProvideImpl {
         } else {
           cells.filter(id => !state.cells(id).hasStableValue)
         }
-        val xs = state.propagators.filter((_, propagator) =>
-          propagator.zonkingCells.exists(cellsToZonk.contains)
-        )
-        val uncorvedCells = cellsToZonk.filter(id =>
-          !xs.values.exists(_.zonkingCells.contains(id))
-        )
+        val xs = state.propagators.filter((_, propagator) => propagator.zonkingCells.exists(cellsToZonk.contains))
+        val uncorvedCells = cellsToZonk.filter(id => !xs.values.exists(_.zonkingCells.contains(id)))
         if (uncorvedCells.nonEmpty) {
           throw new IllegalStateException(
             s"Cells $uncorvedCells are not covered by any propagator"

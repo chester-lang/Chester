@@ -9,10 +9,7 @@ import scala.language.implicitConversions
 
 type DocPrinter = ParenPrettyPrinter & StylePrettyPrinter
 
-implicit object StringPrinter
-    extends StringPrettyPrinter
-    with ParenPrettyPrinter
-    with StylePrettyPrinter {}
+implicit object StringPrinter extends StringPrettyPrinter with ParenPrettyPrinter with StylePrettyPrinter {}
 
 sealed trait Doc extends ToDoc derives ReadWriter {
   final inline implicit def getDoc(using printer: DocPrinter): printer.Doc =
@@ -101,16 +98,7 @@ val hardline = text("\n") // TODO: CRLF?
 object Doc {
   def indented(doc: ToDoc)(using options: PrettierOptions): Doc = doc.indented()
 
-  export chester.utils.doc.{
-    renderToDocument,
-    render,
-    text,
-    group,
-    wrapperlist,
-    empty,
-    concat,
-    hardline
-  }
+  export chester.utils.doc.{renderToDocument, render, text, group, wrapperlist, empty, concat, hardline}
 }
 
 implicit class DocOps(doc: Doc) extends AnyVal {
@@ -220,8 +208,7 @@ extension (self: ToDoc)(using options: PrettierOptions) {
     */
   def <>(other: ToDoc): Doc = `$<>`(self, other)
 
-  /** Return the concatenation of this document with the argument using a
-    * `space` separator.
+  /** Return the concatenation of this document with the argument using a `space` separator.
     */
   def <+>(other: ToDoc): Doc = `$<+>`(self, other)
   def <+?>[A <: ToDoc](tuple: (Boolean, A)): Doc = <+?>[A](tuple._1, tuple._2)
@@ -233,23 +220,19 @@ extension (self: ToDoc)(using options: PrettierOptions) {
   def <+?>[A <: ToDoc](pred: A => Boolean, other: A): Doc =
     if pred(other) then self <+> other else self
 
-  /** Return the concatenation of this document with the argument using a
-    * `softline` separator.
+  /** Return the concatenation of this document with the argument using a `softline` separator.
     */
   def </>(other: ToDoc): Doc = `$</>`(self, other)
 
-  /** Return the concatenation of this document with the argument using a
-    * `softbreak` separator.
+  /** Return the concatenation of this document with the argument using a `softbreak` separator.
     */
   def <\>(other: ToDoc): Doc = `$<\\>`(self, other)
 
-  /** Return the concatenation of this document with the argument using a `line`
-    * separator.
+  /** Return the concatenation of this document with the argument using a `line` separator.
     */
   def <@>(other: ToDoc): Doc = `$<@>`(self, other)
 
-  /** Return the concatenation of this document with the argument using a
-    * `linebreak` separator.
+  /** Return the concatenation of this document with the argument using a `linebreak` separator.
     */
   def <@@>(other: ToDoc): Doc = `$<@@>`(self, other)
 

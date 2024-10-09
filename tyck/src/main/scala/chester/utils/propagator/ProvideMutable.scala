@@ -71,12 +71,10 @@ trait ProvideMutable extends ProvideImpl {
       didSomething = true
       val id = new HoldPropagator[T](uniqId, propagator)
       for (cell <- propagator.zonkingCells) {
-        cell.zonkingPropagators =
-          cell.zonkingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
+        cell.zonkingPropagators = cell.zonkingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
       }
       for (cell <- propagator.readingCells) {
-        cell.readingPropagators =
-          cell.readingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
+        cell.readingPropagators = cell.readingPropagators :+ id.asInstanceOf[PIdOf[Propagator[?]]]
       }
       if (propagator.run(using this, more)) {
         id.alive = false
@@ -94,9 +92,7 @@ trait ProvideMutable extends ProvideImpl {
           for (p <- id.readingPropagators) {
             require(p.uniqId == uniqId)
             if (p.alive) {
-              if (
-                p.store.asInstanceOf[Propagator[Ability]].run(using this, more)
-              ) {
+              if (p.store.asInstanceOf[Propagator[Ability]].run(using this, more)) {
                 didSomething = true
                 p.alive = false
               }

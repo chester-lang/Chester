@@ -75,8 +75,7 @@ sealed trait TyckWarning extends TyckProblem derives ReadWriter {
   final override def severity: Problem.Severity = Problem.Severity.Warning
 }
 
-case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr)
-    extends TyckWarning {
+case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr) extends TyckWarning {
   override def toDoc(implicit
       options: PrettierOptions = PrettierOptions.Default
   ): Doc =
@@ -143,8 +142,7 @@ case class UnknownOperator(override val cause: Expr) extends OpInfoError {
     t"Unknown operator."
 }
 
-case class PrecedenceCycleDetected(groups: Iterable[PrecedenceGroup])
-    extends OpInfoError {
+case class PrecedenceCycleDetected(groups: Iterable[PrecedenceGroup]) extends OpInfoError {
   override def toDoc(implicit options: PrettierOptions): Doc =
     t"Precedence cycle detected among groups: ${groups.map(_.name).mkString(" -> ")}"
 }

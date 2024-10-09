@@ -85,8 +85,7 @@ object aliases:
       Tag.materializeCFuncPtr2[CInt, CInt, CInt]
     inline def apply(inline o: CFuncPtr2[CInt, CInt, CInt]): rl_command_func_t =
       o
-    extension (v: rl_command_func_t)
-      inline def value: CFuncPtr2[CInt, CInt, CInt] = v
+    extension (v: rl_command_func_t) inline def value: CFuncPtr2[CInt, CInt, CInt] = v
 
   /** [bindgen] header: /usr/include/readline/rltypedefs.h
     */
@@ -97,8 +96,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr2[CString, CInt, CString]
     ): rl_compentry_func_t = o
-    extension (v: rl_compentry_func_t)
-      inline def value: CFuncPtr2[CString, CInt, CString] = v
+    extension (v: rl_compentry_func_t) inline def value: CFuncPtr2[CString, CInt, CString] = v
 
   /** [bindgen] header: /usr/include/readline/rltypedefs.h
     */
@@ -109,8 +107,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr1[Ptr[CString], CInt]
     ): rl_compignore_func_t = o
-    extension (v: rl_compignore_func_t)
-      inline def value: CFuncPtr1[Ptr[CString], CInt] = v
+    extension (v: rl_compignore_func_t) inline def value: CFuncPtr1[Ptr[CString], CInt] = v
 
   /** [bindgen] header: /usr/include/readline/rltypedefs.h
     */
@@ -121,8 +118,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr3[CString, CInt, CInt, Ptr[CString]]
     ): rl_completion_func_t = o
-    extension (v: rl_completion_func_t)
-      inline def value: CFuncPtr3[CString, CInt, CInt, Ptr[CString]] = v
+    extension (v: rl_completion_func_t) inline def value: CFuncPtr3[CString, CInt, CInt, Ptr[CString]] = v
 
   /** [bindgen] header: /usr/include/readline/rltypedefs.h
     */
@@ -275,8 +271,7 @@ object structs:
       ____ptr
     extension (struct: UNDO_LIST)
       def next: Ptr[undo_list] = struct._1.asInstanceOf[Ptr[undo_list]]
-      def next_=(value: Ptr[undo_list]): Unit = !struct.at1 =
-        value.asInstanceOf[Ptr[Byte]]
+      def next_=(value: Ptr[undo_list]): Unit = !struct.at1 = value.asInstanceOf[Ptr[Byte]]
       def start: CInt = struct._2
       def start_=(value: CInt): Unit = !struct.at2 = value
       def end: CInt = struct._3
@@ -470,8 +465,7 @@ object structs:
       def lastfunc: Ptr[rl_command_func_t] =
         !struct.at(offsets(10)).asInstanceOf[Ptr[Ptr[rl_command_func_t]]]
       def lastfunc_=(value: Ptr[rl_command_func_t]): Unit =
-        !struct.at(offsets(10)).asInstanceOf[Ptr[Ptr[rl_command_func_t]]] =
-          value
+        !struct.at(offsets(10)).asInstanceOf[Ptr[Ptr[rl_command_func_t]]] = value
       def insmode: CInt = !struct.at(offsets(11)).asInstanceOf[Ptr[CInt]]
       def insmode_=(value: CInt): Unit =
         !struct.at(offsets(11)).asInstanceOf[Ptr[CInt]] = value
@@ -505,23 +499,19 @@ object structs:
       def entryfunc: Ptr[rl_compentry_func_t] =
         !struct.at(offsets(21)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]]
       def entryfunc_=(value: Ptr[rl_compentry_func_t]): Unit =
-        !struct.at(offsets(21)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]] =
-          value
+        !struct.at(offsets(21)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]] = value
       def menuentryfunc: Ptr[rl_compentry_func_t] =
         !struct.at(offsets(22)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]]
       def menuentryfunc_=(value: Ptr[rl_compentry_func_t]): Unit =
-        !struct.at(offsets(22)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]] =
-          value
+        !struct.at(offsets(22)).asInstanceOf[Ptr[Ptr[rl_compentry_func_t]]] = value
       def ignorefunc: Ptr[rl_compignore_func_t] =
         !struct.at(offsets(23)).asInstanceOf[Ptr[Ptr[rl_compignore_func_t]]]
       def ignorefunc_=(value: Ptr[rl_compignore_func_t]): Unit =
-        !struct.at(offsets(23)).asInstanceOf[Ptr[Ptr[rl_compignore_func_t]]] =
-          value
+        !struct.at(offsets(23)).asInstanceOf[Ptr[Ptr[rl_compignore_func_t]]] = value
       def attemptfunc: Ptr[rl_completion_func_t] =
         !struct.at(offsets(24)).asInstanceOf[Ptr[Ptr[rl_completion_func_t]]]
       def attemptfunc_=(value: Ptr[rl_completion_func_t]): Unit =
-        !struct.at(offsets(24)).asInstanceOf[Ptr[Ptr[rl_completion_func_t]]] =
-          value
+        !struct.at(offsets(24)).asInstanceOf[Ptr[Ptr[rl_completion_func_t]]] = value
       def wordbreakchars: CString =
         !struct.at(offsets(25)).asInstanceOf[Ptr[CString]]
       def wordbreakchars_=(value: CString): Unit =
@@ -548,10 +538,8 @@ object structs:
       res(2) = align(res(1) + sizeof[CInt].toInt, alignmentof[CInt].toInt)
       res(3) = align(res(2) + sizeof[CInt].toInt, alignmentof[CInt].toInt)
       res(4) = align(res(3) + sizeof[CInt].toInt, alignmentof[CString].toInt)
-      res(5) =
-        align(res(4) + sizeof[CString].toInt, alignmentof[Ptr[UNDO_LIST]].toInt)
-      res(6) =
-        align(res(5) + sizeof[Ptr[UNDO_LIST]].toInt, alignmentof[CString].toInt)
+      res(5) = align(res(4) + sizeof[CString].toInt, alignmentof[Ptr[UNDO_LIST]].toInt)
+      res(6) = align(res(5) + sizeof[Ptr[UNDO_LIST]].toInt, alignmentof[CString].toInt)
       res(7) = align(res(6) + sizeof[CString].toInt, alignmentof[CInt].toInt)
       res(8) = align(res(7) + sizeof[CInt].toInt, alignmentof[CInt].toInt)
       res(9) = align(res(8) + sizeof[CInt].toInt, alignmentof[Keymap].toInt)
@@ -567,12 +555,9 @@ object structs:
       res(13) = align(res(12) + sizeof[CInt].toInt, alignmentof[CString].toInt)
       res(14) = align(res(13) + sizeof[CString].toInt, alignmentof[CInt].toInt)
       res(15) = align(res(14) + sizeof[CInt].toInt, alignmentof[CInt].toInt)
-      res(16) =
-        align(res(15) + sizeof[CInt].toInt, alignmentof[Ptr[FILE]].toInt)
-      res(17) =
-        align(res(16) + sizeof[Ptr[FILE]].toInt, alignmentof[Ptr[FILE]].toInt)
-      res(18) =
-        align(res(17) + sizeof[Ptr[FILE]].toInt, alignmentof[CString].toInt)
+      res(16) = align(res(15) + sizeof[CInt].toInt, alignmentof[Ptr[FILE]].toInt)
+      res(17) = align(res(16) + sizeof[Ptr[FILE]].toInt, alignmentof[Ptr[FILE]].toInt)
+      res(18) = align(res(17) + sizeof[Ptr[FILE]].toInt, alignmentof[CString].toInt)
       res(19) = align(res(18) + sizeof[CString].toInt, alignmentof[CInt].toInt)
       res(20) = align(res(19) + sizeof[CInt].toInt, alignmentof[CInt].toInt)
       res(21) = align(
@@ -623,8 +608,7 @@ object structs:
       ____ptr
     extension (struct: undo_list)
       def next: Ptr[undo_list] = struct._1.asInstanceOf[Ptr[undo_list]]
-      def next_=(value: Ptr[undo_list]): Unit = !struct.at1 =
-        value.asInstanceOf[Ptr[Byte]]
+      def next_=(value: Ptr[undo_list]): Unit = !struct.at1 = value.asInstanceOf[Ptr[Byte]]
       def start: CInt = struct._2
       def start_=(value: CInt): Unit = !struct.at2 = value
       def end: CInt = struct._3

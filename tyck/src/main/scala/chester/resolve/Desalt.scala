@@ -150,8 +150,7 @@ private object ObjectDesalt {
       case (acc, (k +: ks, v)) =>
         val nestedObj = acc.clauses
           .collectFirst {
-            case ObjectExprClause(id: Identifier, obj: ObjectExpr)
-                if id.name == k =>
+            case ObjectExprClause(id: Identifier, obj: ObjectExpr) if id.name == k =>
               obj
           }
           .getOrElse(ObjectExpr(Vector.empty))
@@ -215,12 +214,11 @@ case object StmtDesalt {
     else
       xs.head match {
         case identifier: Identifier =>
-          xs.tail.traverse(MatchDeclarationTelescope.unapply).map {
-            telescopes =>
-              DefinedFunction(
-                identifier,
-                NonEmptyVector.fromVectorUnsafe(telescopes)
-              )
+          xs.tail.traverse(MatchDeclarationTelescope.unapply).map { telescopes =>
+            DefinedFunction(
+              identifier,
+              NonEmptyVector.fromVectorUnsafe(telescopes)
+            )
           }
         case _ => None
       }
@@ -330,8 +328,8 @@ case object SimpleDesalt {
       case block @ Block(heads, tail, _)
           if heads.exists(_.isInstanceOf[DesaltCaseClause]) ||
             tail.exists(_.isInstanceOf[DesaltCaseClause]) =>
-        val clauses = (heads ++ tail.toVector).collect {
-          case clause: DesaltCaseClause => clause
+        val clauses = (heads ++ tail.toVector).collect { case clause: DesaltCaseClause =>
+          clause
         }
         if (clauses.length != heads.length + tail.size) {
           val error = ExpectFullCaseBlock(block)

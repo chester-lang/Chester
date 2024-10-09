@@ -123,18 +123,17 @@ def REPLEngine[F[_]](using
       }
     }
 
-  def handleExpression(line: String): F[Unit] = InTerminal.getHistory.flatMap {
-    history =>
-      ParserEngine.parseInput(history, line) match {
-        case Right(parsedExpr) =>
-          typeCheck(parsedExpr) match {
-            case TyckResult.Success(judge, _, _) =>
-              InTerminal.writeln(prettyPrintJudgeWellTyped(judge))
-            case TyckResult.Failure(errors, _, _, _) => printErrors(errors)
-          }
-        case Left(error) =>
-          InTerminal.writeln(s"Parse Error: ${error.message}")
-      }
+  def handleExpression(line: String): F[Unit] = InTerminal.getHistory.flatMap { history =>
+    ParserEngine.parseInput(history, line) match {
+      case Right(parsedExpr) =>
+        typeCheck(parsedExpr) match {
+          case TyckResult.Success(judge, _, _) =>
+            InTerminal.writeln(prettyPrintJudgeWellTyped(judge))
+          case TyckResult.Failure(errors, _, _, _) => printErrors(errors)
+        }
+      case Left(error) =>
+        InTerminal.writeln(s"Parse Error: ${error.message}")
+    }
   }
 
   def typeCheck(expr: Expr): TyckResult[?, Judge] = {

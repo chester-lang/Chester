@@ -21,8 +21,7 @@ sealed trait ParserSource derives ReadWriter {
   def readContent: Either[ParseError, String]
 }
 
-case class FileNameAndContent(fileName: String, content: String)
-    extends ParserSource derives ReadWriter {
+case class FileNameAndContent(fileName: String, content: String) extends ParserSource derives ReadWriter {
   override def readContent: Either[ParseError, String] = Right(content)
 }
 

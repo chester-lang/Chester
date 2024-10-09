@@ -6,8 +6,7 @@ import chester.uniqid.*
 import scala.collection.immutable.HashMap
 
 @deprecated("deprecated")
-case class TyckedSpace(modules: HashMap[QualifiedIDString, TyckedModule])
-    extends AnyVal
+case class TyckedSpace(modules: HashMap[QualifiedIDString, TyckedModule]) extends AnyVal
 
 @deprecated("deprecated")
 case class TyckedModule(
@@ -29,8 +28,7 @@ sealed trait TyckedDefinitionNamed extends TyckedDefinition {
 }
 
 @deprecated("deprecated")
-case class TyckedExpression(judge: Judge, meta: Option[TermMeta] = None)
-    extends TyckedDefinition
+case class TyckedExpression(judge: Judge, meta: Option[TermMeta] = None) extends TyckedDefinition
 
 @deprecated("deprecated")
 case class RecordMember()

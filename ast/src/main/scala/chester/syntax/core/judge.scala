@@ -2,8 +2,7 @@ package chester.syntax.core
 import chester.uniqid.*
 import upickle.default.*
 
-case class Judge(wellTyped: Term, ty: Term, effects: Effects = NoEffect)
-    extends ContainsUniqId derives ReadWriter {
+case class Judge(wellTyped: Term, ty: Term, effects: Effects = NoEffect) extends ContainsUniqId derives ReadWriter {
   def toMaybe: JudgeMaybeEffect = JudgeMaybeEffect(wellTyped, ty, Some(effects))
   def substitute(from: TermWithUniqId, to: Term): Judge = Judge(
     wellTyped.substitute(from, to),

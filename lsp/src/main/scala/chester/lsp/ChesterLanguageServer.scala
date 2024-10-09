@@ -18,10 +18,7 @@ import scala.collection.mutable
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 
-class ChesterLanguageServer
-    extends LanguageServer
-    with TextDocumentService
-    with WorkspaceService {
+class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
   enableDebug()
   private val logger = getLogger
 
@@ -413,9 +410,7 @@ class ChesterLanguageServer
               logger.debug(s"Source position obtained: $sourcePos")
               val symbolOpt = document.symbols.find { sym =>
                 positionWithin(sym.definedOn.sourcePos.get, sourcePos) ||
-                sym.referencedOn.exists(ref =>
-                  positionWithin(ref.sourcePos.get, sourcePos)
-                )
+                sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
@@ -492,9 +487,7 @@ class ChesterLanguageServer
                 positionWithin(
                   sym.definedOn.sourcePos.get,
                   sourcePos
-                ) || sym.referencedOn.exists(ref =>
-                  positionWithin(ref.sourcePos.get, sourcePos)
-                )
+                ) || sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
               }
               symbolOpt match {
                 case Some(symbolInfo) =>

@@ -43,9 +43,8 @@ case class ParserInternal(
   def comment: P[Unit] = P("//" ~ CharPred(_ != '\n').rep ~ nEnd)
 
   def commentOneLine: P[Comment] =
-    PwithMeta("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map {
-      case (content, meta) =>
-        Comment(content, CommentType.OneLine, meta.flatMap(_.sourcePos))
+    PwithMeta("//" ~ CharPred(_ != '\n').rep.! ~ ("\n" | End)).map { case (content, meta) =>
+      Comment(content, CommentType.OneLine, meta.flatMap(_.sourcePos))
     }
 
   def allComment: P[Comment] = P(commentOneLine)
@@ -65,9 +64,7 @@ case class ParserInternal(
   )
 
   def lineEnding1: P[Vector[Comment]] = P(
-    commentOneLine.map(Vector(_)) | (CharsWhileIn(" \t\r").? ~ nEnd).map(x =>
-      Vector()
-    )
+    commentOneLine.map(Vector(_)) | (CharsWhileIn(" \t\r").? ~ nEnd).map(x => Vector())
   )
 
   def lineNonEndingSpace: P[Unit] = P((CharsWhileIn(" \t\r")))
@@ -213,8 +210,8 @@ case class ParserInternal(
     Identifier(name, meta)
   }
 
-  def infixIdentifier: P[Identifier] = P(operatorId.withMeta).map {
-    case (name, meta) => Identifier(name, meta)
+  def infixIdentifier: P[Identifier] = P(operatorId.withMeta).map { case (name, meta) =>
+    Identifier(name, meta)
   }
 
   def signed: P[String] = P("".!) // P(CharIn("+\\-").?.!)
@@ -232,18 +229,16 @@ case class ParserInternal(
   ).!
 
   def integerLiteral: P[ParsedExpr] =
-    P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withMeta.map {
-      case (sign, value, meta) =>
-        val actualValue =
-          if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
-          else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
-          else BigInt(sign + value)
-        IntegerLiteral(actualValue, meta)
+    P(signed ~ (hexLiteral | binLiteral | decLiteral).!).withMeta.map { case (sign, value, meta) =>
+      val actualValue =
+        if (value.startsWith("0x")) BigInt(sign + value.drop(2), 16)
+        else if (value.startsWith("0b")) BigInt(sign + value.drop(2), 2)
+        else BigInt(sign + value)
+      IntegerLiteral(actualValue, meta)
     }
 
-  def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withMeta).map {
-    case (sign, (value, meta)) =>
-      RationalLiteral(BigDecimal(sign + value), meta)
+  def doubleLiteral: P[ParsedExpr] = P(signed ~ expLiteral.withMeta).map { case (sign, (value, meta)) =>
+    RationalLiteral(BigDecimal(sign + value), meta)
   }
 
   def escapeSequence: P[String] = P("\\" ~ CharIn("rnt\\\"").!).map {
@@ -318,9 +313,8 @@ case class ParserInternal(
     "@" ~ identifier ~ callingZeroOrMore()
   )
 
-  def annotated: P[AnnotatedExpr] = PwithMeta(annotation ~ parse()).map {
-    case (annotation, telescope, expr, meta) =>
-      AnnotatedExpr(annotation, telescope, expr, meta)
+  def annotated: P[AnnotatedExpr] = PwithMeta(annotation ~ parse()).map { case (annotation, telescope, expr, meta) =>
+    AnnotatedExpr(annotation, telescope, expr, meta)
   }
 
   case class ParsingContext(
@@ -360,9 +354,8 @@ case class ParserInternal(
       function: ParsedExpr,
       p: Option[ExprMeta] => Option[ExprMeta],
       ctx: ParsingContext = ParsingContext()
-  ): P[FunctionCall] = PwithMeta(callingOnce(ctx = ctx)).map {
-    case (telescope, meta) =>
-      FunctionCall(function, telescope, p(meta))
+  ): P[FunctionCall] = PwithMeta(callingOnce(ctx = ctx)).map { case (telescope, meta) =>
+    FunctionCall(function, telescope, p(meta))
   }
 
   def dotCall(
@@ -437,15 +430,12 @@ case class ParserInternal(
     (maybeSpace ~ qualifiedName ~ maybeSpace ~ "=" ~ maybeSpace ~ parse() ~ maybeSpace)
       .map(ObjectExprClause)
 
-  def objectClause1: P[ObjectClause] = (maybeSpace ~ parse(ctx =
-    ParsingContext(dontallowOpSeq = true)
-  ) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace)
-    .map(ObjectExprClauseOnValue)
+  def objectClause1: P[ObjectClause] =
+    (maybeSpace ~ parse(ctx = ParsingContext(dontallowOpSeq = true)) ~ maybeSpace ~ "=>" ~ maybeSpace ~ parse() ~ maybeSpace)
+      .map(ObjectExprClauseOnValue)
 
   def objectParse: P[ParsedExpr] = PwithMeta(
-    "{" ~ (objectClause0 | objectClause1).rep(sep =
-      comma
-    ) ~ comma.? ~ maybeSpace ~ "}"
+    "{" ~ (objectClause0 | objectClause1).rep(sep = comma) ~ comma.? ~ maybeSpace ~ "}"
   ).map { (fields, meta) =>
     ObjectExpr(fields.toVector, meta)
   }
@@ -457,12 +447,11 @@ case class ParserInternal(
   }
 
   def opSeqGettingExprs(ctx: ParsingContext): P[Vector[ParsedExpr]] =
-    P(maybeSpace ~ parse(ctx = ctx.copy(inOpSeq = true)) ~ Index).flatMap {
-      (expr, index) =>
-        val itWasBlockEnding = p.input(index - 1) == '}'
-        ((!lineEnding).checkOn(
-          itWasBlockEnding && ctx.newLineAfterBlockMeansEnds
-        ) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
+    P(maybeSpace ~ parse(ctx = ctx.copy(inOpSeq = true)) ~ Index).flatMap { (expr, index) =>
+      val itWasBlockEnding = p.input(index - 1) == '}'
+      ((!lineEnding).checkOn(
+        itWasBlockEnding && ctx.newLineAfterBlockMeansEnds
+      ) ~ opSeqGettingExprs(ctx = ctx).map(expr +: _)) | Pass(Vector(expr))
     }
 
   private def combineMeta(

@@ -80,8 +80,7 @@ class ShellMonad(using val shell: Shell) {
 
   def FStrDeclare(variable: shell.Var[shell.Str]) = FStrStore(variable, "")
 
-  case class FStrStore(variable: shell.Var[shell.Str], value: shell.Str)
-      extends F[shell.Str] {
+  case class FStrStore(variable: shell.Var[shell.Str], value: shell.Str) extends F[shell.Str] {
     override def flatMap[U](f: shell.Str => F[U]): F[U] =
       FStatementAppend(shell.store(variable, value), f(variable))
   }
@@ -92,8 +91,7 @@ class ShellMonad(using val shell: Shell) {
 
   def FIntDeclare(variable: shell.Var[shell.IntNum]) = FIntStore(variable, 0)
 
-  case class FIntStore(variable: shell.Var[shell.IntNum], value: shell.IntNum)
-      extends F[shell.IntNum] {
+  case class FIntStore(variable: shell.Var[shell.IntNum], value: shell.IntNum) extends F[shell.IntNum] {
     override def flatMap[U](f: shell.IntNum => F[U]): F[U] =
       FStatementAppend(shell.store(variable, value), f(variable))
   }
@@ -110,8 +108,7 @@ class ShellMonad(using val shell: Shell) {
       FStatementAppend(value, f(()))
   }
 
-  case class FStatementAppend[T](value: shell.Statement, result: F[T])
-      extends F[T] {
+  case class FStatementAppend[T](value: shell.Statement, result: F[T]) extends F[T] {
     override def flatMap[U](f: T => F[U]): F[U] =
       FStatementAppend(value, result.flatMap(f))
   }
@@ -127,5 +124,4 @@ extension [Cond](cond: Cond)(using shell: Shell, ev: Cond <:< shell.Condition)
   def ||(other: shell.Condition): shell.Condition = shell.or(cond, other)
   def unary_! : shell.Condition = shell.not(cond)
 
-extension (sc: StringContext)(using shell: Shell)
-  def sh(args: shell.Str*): shell.Str = shell.template(sc, args*)
+extension (sc: StringContext)(using shell: Shell) def sh(args: shell.Str*): shell.Str = shell.template(sc, args*)

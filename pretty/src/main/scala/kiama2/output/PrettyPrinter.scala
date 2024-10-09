@@ -29,13 +29,11 @@ object PrettyPrinterTypes {
     */
   type Width = Int
 
-  /** A link between a value and a range. Used for the representation of
-    * mappings between pretty-printed values and their printed representations.
+  /** A link between a value and a range. Used for the representation of mappings between pretty-printed values and their printed representations.
     */
   sealed abstract class Link
 
-  /** Link a value to a target range. Ultimately, the source will be from the
-    * position of the value.
+  /** Link a value to a target range. Ultimately, the source will be from the position of the value.
     */
   case class LinkValue(value: Any, to: Range) extends Link
 
@@ -53,10 +51,8 @@ object PrettyPrinterTypes {
 
 }
 
-/** The interface of a pretty printer using combinators from Swierstra and
-  * Chitil (Linear, bounded, functional pretty-printing, Journal of Functional
-  * Programming, 19 (1), 2009) and Leijen's PPrint library. The latter is a
-  * version of Wadler's library which was inspired by an earlier library by
+/** The interface of a pretty printer using combinators from Swierstra and Chitil (Linear, bounded, functional pretty-printing, Journal of Functional
+  * Programming, 19 (1), 2009) and Leijen's PPrint library. The latter is a version of Wadler's library which was inspired by an earlier library by
   * Hughes.
   */
 trait PrettyPrinterBase {
@@ -70,17 +66,12 @@ trait PrettyPrinterBase {
     */
   type Layout
 
-  /** A pretty-printed document, consisting of layout for the pretty-printed
-    * representation and associated links. The link information maps
-    * pretty-printed values to the offset ranges at which their printed
-    * representation occurs in the layout. In other words, for a given value `v`
-    * the start of the position range will be the offset at which the
-    * pretty-printed representation of `v` starts in the layout. The end of the
-    * range is where that representation finishes. It is possible for a value to
-    * be linked to more than one range.
+  /** A pretty-printed document, consisting of layout for the pretty-printed representation and associated links. The link information maps
+    * pretty-printed values to the offset ranges at which their printed representation occurs in the layout. In other words, for a given value `v` the
+    * start of the position range will be the offset at which the pretty-printed representation of `v` starts in the layout. The end of the range is
+    * where that representation finishes. It is possible for a value to be linked to more than one range.
     *
-    * See the `link` combinator for information on how to specify the
-    * association between a value and the document that represents it.
+    * See the `link` combinator for information on how to specify the association between a value and the document that represents it.
     */
   case class Document(layout: Layout, links: Links)
 
@@ -92,8 +83,7 @@ trait PrettyPrinterBase {
     */
   val defaultWidth = 75
 
-  /** The operations provided by a pretty-printable document that don't depend
-    * on the document's representation type.
+  /** The operations provided by a pretty-printable document that don't depend on the document's representation type.
     */
   trait DocOps {
 
@@ -103,32 +93,27 @@ trait PrettyPrinterBase {
 
     // Extended operations, defined in terms of the basic operations.
 
-    /** Return the concatenation of this document with the argument using a
-      * `space` separator.
+    /** Return the concatenation of this document with the argument using a `space` separator.
       */
     def <+>(e: Doc): Doc =
       this <> space <> e
 
-    /** Return the concatenation of this document with the argument using a
-      * `softline` separator.
+    /** Return the concatenation of this document with the argument using a `softline` separator.
       */
     def </>(e: Doc): Doc =
       this <> softline <> e
 
-    /** Return the concatenation of this document with the argument using a
-      * `softbreak` separator.
+    /** Return the concatenation of this document with the argument using a `softbreak` separator.
       */
     def <\>(e: Doc): Doc =
       this <> softbreak <> e
 
-    /** Return the concatenation of this document with the argument using a
-      * `line` separator.
+    /** Return the concatenation of this document with the argument using a `line` separator.
       */
     def <@>(e: Doc): Doc =
       this <> line <> e
 
-    /** Return the concatenation of this document with the argument using a
-      * `linebreak` separator.
+    /** Return the concatenation of this document with the argument using a `linebreak` separator.
       */
     def <@@>(e: Doc): Doc =
       this <> linebreak <> e
@@ -151,8 +136,7 @@ trait PrettyPrinterBase {
 
   // Output functions
 
-  /** Pretty print a document assuming a given output medium width. In the paper
-    * the width is the first parameter, but here we put it second so we can
+  /** Pretty print a document assuming a given output medium width. In the paper the width is the first parameter, but here we put it second so we can
     * provide a default value.
     */
   def pretty(d: Doc, w: Width = defaultWidth): Document
@@ -170,72 +154,59 @@ trait PrettyPrinterBase {
   // Basic combinators.  Thse need to be implemented for a specific
   // instantiation of `Doc`.
 
-  /** Convert a string to a document. The string should not contain any newline
-    * characters. Use `line` instead.
+  /** Convert a string to a document. The string should not contain any newline characters. Use `line` instead.
     */
   implicit def text(t: String): Doc
 
-  /** A document representing a potential line break. Behaves like a space
-    * character if the break is omitted by a group.
+  /** A document representing a potential line break. Behaves like a space character if the break is omitted by a group.
     */
   def line: Doc
 
-  /** A document representing a potential line break. Behaves like an empty
-    * string if the break is omitted by a group.
+  /** A document representing a potential line break. Behaves like an empty string if the break is omitted by a group.
     */
   def linebreak: Doc
 
-  /** A document representing a potential line break. Behaves like the string
-    * `repl` if the break is omitted by a group.
+  /** A document representing a potential line break. Behaves like the string `repl` if the break is omitted by a group.
     */
   def line(repl: String): Doc
 
-  /** A document representing a choice among different ways to print a
-    * structure.
+  /** A document representing a choice among different ways to print a structure.
     */
   def group(d: Doc): Doc
 
-  /** An empty document. This is a left and right unit for the concatenation
-    * method. Called `nil` in the paper.
+  /** An empty document. This is a left and right unit for the concatenation method. Called `nil` in the paper.
     */
   def emptyDoc: Doc
 
-  /** Nest a document by an indentation increment on top of the current nesting.
-    * In the paper version, the indentation parameter comes first, but we put it
-    * second here so that it can be given a default value.
+  /** Nest a document by an indentation increment on top of the current nesting. In the paper version, the indentation parameter comes first, but we
+    * put it second here so that it can be given a default value.
     */
   def nest(d: Doc, j: Indent = defaultIndent): Doc
 
-  /** Return the document produced by `f` when it is passed the column at which
-    * rendering is currently placed.
+  /** Return the document produced by `f` when it is passed the column at which rendering is currently placed.
     */
   def column(f: Int => Doc): Doc
 
-  /** Return the document produced by `f` when it is passed the nesting level
-    * (indentation) of the current line.
+  /** Return the document produced by `f` when it is passed the nesting level (indentation) of the current line.
     */
   def nesting(f: Int => Doc): Doc
 
   // Positioned documents
 
-  /** Return a document that prints as `d` but also records the fact that the
-    * printed representation of `d` is linked to `n`. The positions of that
-    * pretty-printed representation can be retrieved via the position
-    * information in the `Document` returned when this `Doc` is pretty-printed.
+  /** Return a document that prints as `d` but also records the fact that the printed representation of `d` is linked to `n`. The positions of that
+    * pretty-printed representation can be retrieved via the position information in the `Document` returned when this `Doc` is pretty-printed.
     */
   def link(n: AnyRef, d: Doc): Doc
 
-  /** Return a document that prints as `d` but also records the fact that the
-    * printed representation of `d` is linked to the range from `f` to `t`.
+  /** Return a document that prints as `d` but also records the fact that the printed representation of `d` is linked to the range from `f` to `t`.
     */
   def linkRange(f: Int, t: Int, d: Doc): Doc
 
   // Extended combinators that are implemented in terms of the basic
   // combinators and the representation-independent document operations.
 
-  /** Convert a string to a document. The string is allowed to contain newline
-    * characters. If no newlines are included, it is best to use `text` directly
-    * instead.
+  /** Convert a string to a document. The string is allowed to contain newline characters. If no newlines are included, it is best to use `text`
+    * directly instead.
     */
   def string(s: String): Doc =
     if (s.isEmpty) {
@@ -258,20 +229,17 @@ trait PrettyPrinterBase {
     else
       text(c.toString)
 
-  /** Return a document that behaves like `space` if the resulting output fits
-    * the page, otherwise it behaves like `line`.
+  /** Return a document that behaves like `space` if the resulting output fits the page, otherwise it behaves like `line`.
     */
   def softline: Doc =
     group(line)
 
-  /** Return a document that behaves like `empty` if the resulting output fits
-    * the page, otherwise it behaves like `line`.
+  /** Return a document that behaves like `empty` if the resulting output fits the page, otherwise it behaves like `line`.
     */
   def softbreak: Doc =
     group(linebreak)
 
-  /** Return a document representing `n` spaces if `n` s greater than zero,
-    * otherwise return an empty document.
+  /** Return a document representing `n` spaces if `n` s greater than zero, otherwise return an empty document.
     */
   def spaces(n: Int): Doc =
     if (n <= 0)
@@ -279,9 +247,8 @@ trait PrettyPrinterBase {
     else
       text(" " * n)
 
-  /** Return a document that pretty-prints a list in Scala notation, inserting
-    * line breaks between elements as necessary. The same as calling `seq` with
-    * a prefix of `"List"` and passing all other arguments through.
+  /** Return a document that pretty-prints a list in Scala notation, inserting line breaks between elements as necessary. The same as calling `seq`
+    * with a prefix of `"List"` and passing all other arguments through.
     */
   def list[T](
       l: List[T],
@@ -292,10 +259,8 @@ trait PrettyPrinterBase {
   ): Doc =
     seq(l, prefix, elemToDoc, sep, sepfn)
 
-  /** Return a document that pretty-prints a sequence in Scala notation,
-    * inserting line breaks between elements as necessary. The same as
-    * pretty-printing the prefix followed by a space, then using `arguments` to
-    * pretty-print the content of the sequence, passing all other arguments
+  /** Return a document that pretty-prints a sequence in Scala notation, inserting line breaks between elements as necessary. The same as
+    * pretty-printing the prefix followed by a space, then using `arguments` to pretty-print the content of the sequence, passing all other arguments
     * through.
     */
   def seq[T](
@@ -307,10 +272,8 @@ trait PrettyPrinterBase {
   ): Doc =
     text(prefix) <> arguments(l, elemToDoc, sep, sepfn)
 
-  /** Return a document that pretty-prints a sequence as a Scala argument list.
-    * The arguments are parenthesized and pretty-printed using `sepfn` (default:
-    * `lsep`). Each element of the list is pretty-printed using `elemToDoc`
-    * (default: `value`). The separator defaults to a comma.
+  /** Return a document that pretty-prints a sequence as a Scala argument list. The arguments are parenthesized and pretty-printed using `sepfn`
+    * (default: `lsep`). Each element of the list is pretty-printed using `elemToDoc` (default: `value`). The separator defaults to a comma.
     */
   def arguments[T](
       l: Seq[T],
@@ -320,12 +283,9 @@ trait PrettyPrinterBase {
   ): Doc =
     parens(group(nest(sepfn(l map elemToDoc, sep))))
 
-  /** Generic pretty-printer document for any type of value. If `a` is a
-    * `Vector`, `Map`, `List` or `Product`, print it in a prefix list style,
-    * with the exception that `Nil` prints as `Nil`. Tuples are pretty-printed
-    * using arrow notation. Strings are pretty-printed surrounded by double
-    * quotes. If none of these cases apply, use `value` on `a`. `null` prints as
-    * `null`.
+  /** Generic pretty-printer document for any type of value. If `a` is a `Vector`, `Map`, `List` or `Product`, print it in a prefix list style, with
+    * the exception that `Nil` prints as `Nil`. Tuples are pretty-printed using arrow notation. Strings are pretty-printed surrounded by double
+    * quotes. If none of these cases apply, use `value` on `a`. `null` prints as `null`.
     */
   def any(a: Any): Doc =
     link(
@@ -364,15 +324,13 @@ trait PrettyPrinterBase {
 
   // Extended combinator set
 
-  /** Return a document that concatenates the documents in the given sequence
-    * either horizontally with `<+>` if they fit in the output medium width, or
-    * if not, vertically with `<@>`.
+  /** Return a document that concatenates the documents in the given sequence either horizontally with `<+>` if they fit in the output medium width,
+    * or if not, vertically with `<@>`.
     */
   def sep(ds: Seq[Doc]): Doc =
     group(vsep(ds))
 
-  /** Return a document that is the result of folding `f` over the sequence
-    * `ds`. Returns the empty document is `ds` is empty.
+  /** Return a document that is the result of folding `f` over the sequence `ds`. Returns the empty document is `ds` is empty.
     */
   def folddoc(ds: Seq[Doc], f: (Doc, Doc) => Doc) =
     if (ds.isEmpty)
@@ -380,58 +338,48 @@ trait PrettyPrinterBase {
     else
       ds.tail.foldLeft(ds.head)(f)
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<+>`.
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<+>`.
     */
   def hsep(ds: Seq[Doc]): Doc =
     folddoc(ds, (_ <+> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<+>`. Separates documents with the given separator
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<+>`. Separates documents with the given separator
     * before the `<+>`.
     */
   def hsep(ds: Seq[Doc], sep: Doc): Doc =
     folddoc(ds, (_ <> sep <+> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * vertically with `<@>`.
+  /** Return a document that concatenates the documents in the given sequence vertically with `<@>`.
     */
   def vsep(ds: Seq[Doc]): Doc =
     folddoc(ds, (_ <@> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * vertically with `<@>`. Separates documents with the given separator before
-    * the `<@>`.
+  /** Return a document that concatenates the documents in the given sequence vertically with `<@>`. Separates documents with the given separator
+    * before the `<@>`.
     */
   def vsep(ds: Seq[Doc], sep: Doc): Doc =
     folddoc(ds, (_ <> sep <@> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<+>` as long as they fit the output width, then inserts
-    * a `line` and continues with the rest of the sequence.
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<+>` as long as they fit the output width, then
+    * inserts a `line` and continues with the rest of the sequence.
     */
   def fillsep(ds: Seq[Doc]): Doc =
     folddoc(ds, (_ </> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<+>` as long as they fit the output width, then inserts
-    * a `line` and continues with the rest of the sequence. Separates documents
-    * with the given separator before the `<+>`.
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<+>` as long as they fit the output width, then
+    * inserts a `line` and continues with the rest of the sequence. Separates documents with the given separator before the `<+>`.
     */
   def fillsep(ds: Seq[Doc], sep: Doc): Doc =
     folddoc(ds, (_ <> sep </> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * and separates adjacent documents with `sep` with no space around the
+  /** Return a document that concatenates the documents in the given sequence and separates adjacent documents with `sep` with no space around the
     * separator.
     */
   def ssep(ds: Seq[Doc], sep: Doc): Doc =
     folddoc(ds, (_ <> sep <> _))
 
-  /** Return a pretty-printer document for a separated sequence. `sep` is the
-    * separator. Line breaks are allowed before the sequence and after the
-    * separators between the elements of the sequence. The before line break
-    * turns into nothing if omitted. The internal line breaks turn into `space`
+  /** Return a pretty-printer document for a separated sequence. `sep` is the separator. Line breaks are allowed before the sequence and after the
+    * separators between the elements of the sequence. The before line break turns into nothing if omitted. The internal line breaks turn into `space`
     * if omitted.
     */
   def lsep(ds: Seq[Doc], sep: Doc): Doc =
@@ -440,11 +388,9 @@ trait PrettyPrinterBase {
     else
       linebreak <> folddoc(ds, _ <> sep <@> _)
 
-  /** Return a pretty-printer document for a separated sequence. `sep` is the
-    * separator. Line breaks are allowed before the separators between the
-    * elements of the sequence and at the end. A `space` is inserted after each
-    * separator. The internal line breaks turn into `space` if omitted. The end
-    * line break turns into nothing if omitted.
+  /** Return a pretty-printer document for a separated sequence. `sep` is the separator. Line breaks are allowed before the separators between the
+    * elements of the sequence and at the end. A `space` is inserted after each separator. The internal line breaks turn into `space` if omitted. The
+    * end line break turns into nothing if omitted.
     */
   def lsep2(ds: Seq[Doc], sep: Doc): Doc =
     if (ds.isEmpty)
@@ -452,11 +398,9 @@ trait PrettyPrinterBase {
     else
       folddoc(ds, _ <@@> sep <+> _) <> linebreak
 
-  /** Return a pretty-printer document for a sequence where each element is
-    * terminated by `term`. Line breaks are allowed before the sequence and
-    * after the terminator between the elements of the sequence. The before line
-    * break turns into nothing if omitted. The internal line breaks turn into
-    * `space` if omitted.
+  /** Return a pretty-printer document for a sequence where each element is terminated by `term`. Line breaks are allowed before the sequence and
+    * after the terminator between the elements of the sequence. The before line break turns into nothing if omitted. The internal line breaks turn
+    * into `space` if omitted.
     */
   def lterm(ds: Seq[Doc], term: Doc): Doc =
     if (ds.isEmpty)
@@ -464,82 +408,68 @@ trait PrettyPrinterBase {
     else
       linebreak <> folddoc(ds, _ <> term <@> _) <> term
 
-  /** Return a document that concatenates the documents in the given sequence
-    * either horizontally with `<>` if they fit in the output medium width, or
+  /** Return a document that concatenates the documents in the given sequence either horizontally with `<>` if they fit in the output medium width, or
     * if not, vertically with `<@@>`.
     */
   def cat(ds: Seq[Doc]): Doc =
     group(vcat(ds))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<>`.
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<>`.
     */
   def hcat(ds: Seq[Doc]): Doc =
     folddoc(ds, (_ <> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * vertically with `<@@>`.
+  /** Return a document that concatenates the documents in the given sequence vertically with `<@@>`.
     */
   def vcat(ds: Seq[Doc]): Doc =
     folddoc(ds, (_ <@@> _))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * horizontally with `<>` until they don't fit the output width, then inserts
-    * a line break and continues to the end of the sequence.
+  /** Return a document that concatenates the documents in the given sequence horizontally with `<>` until they don't fit the output width, then
+    * inserts a line break and continues to the end of the sequence.
     */
   def fillcat(ds: Seq[Doc]): Doc =
     folddoc(ds, (l: Doc, r: Doc) => (l <> group(linebreak <> r)))
 
-  /** Return a document that concatenates the documents in the given sequence
-    * and terminates each document with `term`.
+  /** Return a document that concatenates the documents in the given sequence and terminates each document with `term`.
     */
   def sterm(ds: Seq[Doc], term: Doc): Doc =
     cat(ds map (_ <> term))
 
-  /** Return a document that is like `d` but whose second and subsequent lines
-    * have hanging indentation of `i` spaces (defaults to the default
-    * indentation). In other words, the first line is indented at the current
-    * nesting level and the remaining lines are indented `i` spaces more.
+  /** Return a document that is like `d` but whose second and subsequent lines have hanging indentation of `i` spaces (defaults to the default
+    * indentation). In other words, the first line is indented at the current nesting level and the remaining lines are indented `i` spaces more.
     */
   def hang(d: Doc, i: Indent = defaultIndent): Doc =
     align(nest(d, i))
 
-  /** Return a document that is `d` but with the first line indented by `i` more
-    * spaces.
+  /** Return a document that is `d` but with the first line indented by `i` more spaces.
     */
   def indent(d: Doc, i: Indent = defaultIndent): Doc =
     hang(spaces(i) <> d, i)
 
-  /** Return a document that renders `d` with the nesting level set to the
-    * current indentation column.
+  /** Return a document that renders `d` with the nesting level set to the current indentation column.
     */
   def align(d: Doc): Doc =
     column(k => nesting(i => nest(d, k - i)))
 
-  /** Return a document that renders `d` beside the document obtained by running
-    * `f` on the width of `d`.
+  /** Return a document that renders `d` beside the document obtained by running `f` on the width of `d`.
     */
   def width(d: Doc, f: Int => Doc): Doc =
     column(k1 => d <> column(k2 => f(k2 - k1)))
 
-  /** Return a document that pads `d` out to a width of `p`. If `d` already has
-    * a width greater than or equal to `d`, don't add any padding. This
+  /** Return a document that pads `d` out to a width of `p`. If `d` already has a width greater than or equal to `d`, don't add any padding. This
     * combinator is called `fill` in the PPrint library.
     */
   def padto(p: Int, d: Doc): Doc =
     width(d, w => spaces(p - w))
 
-  /** As for `padto` but if the document width is already greater than or equal
-    * to `p`, insert a possible line break and new nesting level instead of not
-    * adding any padding. This combinator is called `fillBreak` in the PPrint
-    * library.
+  /** As for `padto` but if the document width is already greater than or equal to `p`, insert a possible line break and new nesting level instead of
+    * not adding any padding. This combinator is called `fillBreak` in the PPrint library.
     */
   def padtobreak(p: Int, d: Doc): Doc =
     width(d, w => if (w > p) nest(linebreak, p) else spaces(p - w))
 
-  /** Return a document representing a value formatted using `toString` and the
-    * `string` combinator. As a special case, if the value is a null reference
-    * it is formatted as `null`.
+  /** Return a document representing a value formatted using `toString` and the `string` combinator. As a special case, if the value is a null
+    * reference it is formatted as `null`.
     */
   def value(v: Any): Doc =
     if (v == null)
@@ -547,8 +477,7 @@ trait PrettyPrinterBase {
     else
       string(v.toString)
 
-  /** Return a document that encloses a given document `d` between two
-    * occurrences of another document `b`.
+  /** Return a document that encloses a given document `d` between two occurrences of another document `b`.
     */
   def surround(d: Doc, b: Doc): Doc =
     b <> d <> b
@@ -563,32 +492,27 @@ trait PrettyPrinterBase {
   def dquotes(d: Doc): Doc =
     surround(d, dquote)
 
-  /** Return a document that encloses a given document between left and right
-    * documents.
+  /** Return a document that encloses a given document between left and right documents.
     */
   def enclose(l: Doc, d: Doc, r: Doc): Doc =
     l <> d <> r
 
-  /** Return a document that encloses a given document between left and right
-    * braces.
+  /** Return a document that encloses a given document between left and right braces.
     */
   def braces(d: Doc): Doc =
     enclose(lbrace, d, rbrace)
 
-  /** Return a document that encloses a given document between left and right
-    * parentheses.
+  /** Return a document that encloses a given document between left and right parentheses.
     */
   def parens(d: Doc): Doc =
     enclose(lparen, d, rparen)
 
-  /** Return a document that encloses a given document between left and right
-    * angle brackets.
+  /** Return a document that encloses a given document between left and right angle brackets.
     */
   def angles(d: Doc): Doc =
     enclose(langle, d, rangle)
 
-  /** Return a document that encloses a given document between left and right
-    * square brackets.
+  /** Return a document that encloses a given document between left and right square brackets.
     */
   def brackets(d: Doc): Doc =
     enclose(lbracket, d, rbracket)
@@ -798,30 +722,16 @@ trait PrettyPrinter extends StringPrettyPrinter {
   def noAttribute: Attribute = ()
 }
 
-/** A pretty-printer implemented using the continuation-based approach from
-  * Section 3.3 of Swierstra, S., and Chitil, O. Linear, bounded, functional
+/** A pretty-printer implemented using the continuation-based approach from Section 3.3 of Swierstra, S., and Chitil, O. Linear, bounded, functional
   * pretty-printing. Journal of Functional Programming 19, 01 (2008), 1–16.
   *
-  * `defaultIndent` specifies the indentation to use if none is specified in
-  * uses of the `nest` method (default: 4). `defaultWidth` specifies the default
-  * output width (default: 75).
+  * `defaultIndent` specifies the indentation to use if none is specified in uses of the `nest` method (default: 4). `defaultWidth` specifies the
+  * default output width (default: 75).
   */
 trait AbstractPrettyPrinter extends PrettyPrinterBase {
 
-  import org.bitbucket.inkytonik.kiama.util.Trampolines.{
-    Done,
-    More,
-    step,
-    Trampoline
-  }
-  import PrettyPrinterTypes.{
-    emptyLinks,
-    Indent,
-    LinkRange,
-    Links,
-    LinkValue,
-    Width
-  }
+  import org.bitbucket.inkytonik.kiama.util.Trampolines.{Done, More, step, Trampoline}
+  import PrettyPrinterTypes.{emptyLinks, Indent, LinkRange, Links, LinkValue, Width}
   import scala.collection.immutable.{Queue, Seq}
   import scala.collection.immutable.Queue.{empty => emptyDq}
   import scala.collection.mutable.StringBuilder
@@ -840,23 +750,19 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
     */
   case class Text(s: String, attr: Attribute = noAttribute) extends Entry
 
-  /** An output entry that indicates the start of a document linked with the
-    * position of value `n`.
+  /** An output entry that indicates the start of a document linked with the position of value `n`.
     */
   case class Start(n: AnyRef) extends Entry
 
-  /** An output entry that indicates the start of a document linked with the
-    * offset `o`.
+  /** An output entry that indicates the start of a document linked with the offset `o`.
     */
   case class StartOffset(o: Int) extends Entry
 
-  /** An output entry that indicates the finish of a document linked with the
-    * position of value `n`.
+  /** An output entry that indicates the finish of a document linked with the position of value `n`.
     */
   case class Finish(n: AnyRef) extends Entry
 
-  /** An output entry that indicates the finish of a document linked with the
-    * offset `o`.
+  /** An output entry that indicates the finish of a document linked with the offset `o`.
     */
   case class FinishOffset(o: Int) extends Entry
 
@@ -980,8 +886,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
   def insert(len: Int, entry: Entry): Doc =
     new Doc((iw: IW) => {
       val out =
-        (_: Horizontal) =>
-          (o: Out) => Done((r: Remaining) => output(o, r - len, entry))
+        (_: Horizontal) => (o: Out) => Done((r: Remaining) => output(o, r - len, entry))
       scan(len, out)
     })
 

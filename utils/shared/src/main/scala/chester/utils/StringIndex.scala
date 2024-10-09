@@ -19,9 +19,8 @@ case class StringIndex(val stringList: LazyList[String]) {
 
   private def stringIterator: Iterator[Char] = stringList.iterator.flatten
 
-  lazy val unicodeLength: Int = stringIterator.foldLeft(0)((count, char) =>
-    count + (if (isHighSurrogate(char)) 0 else 1)
-  )
+  lazy val unicodeLength: Int =
+    stringIterator.foldLeft(0)((count, char) => count + (if (isHighSurrogate(char)) 0 else 1))
 
   lazy val charLength: Int = stringIterator.foldLeft(0)((count, _) => count + 1)
 

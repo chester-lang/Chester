@@ -15,8 +15,7 @@ trait ProvideCellId {
   trait Cell[T] {
     def default: Option[T] = None
 
-    /** stable means can only change once from None to a fixed Some value or
-      * always be a fixed value
+    /** stable means can only change once from None to a fixed Some value or always be a fixed value
       */
     def readStable: Option[T]
 
@@ -65,10 +64,7 @@ trait ProvideCellId {
       )
   }
 
-  trait MapCell[A, B]
-      extends UnstableCell[Map[A, B]]
-      with BaseMapCell[A, B]
-      with NoFill[Map[A, B]] {}
+  trait MapCell[A, B] extends UnstableCell[Map[A, B]] with BaseMapCell[A, B] with NoFill[Map[A, B]] {}
 
   case class OnceCell[T](
       value: Option[T] = None,
@@ -90,16 +86,14 @@ trait ProvideCellId {
     }
   }
 
-  case class CollectionCell[T](value: Vector[T] = Vector.empty)
-      extends SeqCell[T] {
+  case class CollectionCell[T](value: Vector[T] = Vector.empty) extends SeqCell[T] {
     override def readUnstable: Option[Vector[T]] = Some(value)
 
     override def add(newValue: T): CollectionCell[T] =
       copy(value = value :+ newValue)
   }
 
-  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B])
-      extends MapCell[A, B] {
+  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B]) extends MapCell[A, B] {
     override def readStable: Option[Map[A, B]] = Some(value)
 
     override def add(key: A, newValue: B): MappingCell[A, B] =

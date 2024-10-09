@@ -81,8 +81,7 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     System.exit(0)
   }
 
-  override def workspaceBuildTargets()
-      : CompletableFuture[WorkspaceBuildTargetsResult] = {
+  override def workspaceBuildTargets(): CompletableFuture[WorkspaceBuildTargetsResult] = {
     CompletableFuture.supplyAsync(() => {
       val targets = new java.util.ArrayList[BuildTarget]()
 

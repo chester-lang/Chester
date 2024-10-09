@@ -10,10 +10,7 @@ import chester.utils.*
 import chester.utils.propagator.CommonPropagator
 import chester.uniqid.*
 
-trait ElaboraterCommon
-    extends ProvideCtx
-    with ElaboraterBase
-    with CommonPropagator[Tyck] {
+trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Tyck] {
 
   trait EffectsCell extends Cell[Effects] {
     def requireEffect(
@@ -50,9 +47,7 @@ trait ElaboraterCommon
     override def readUnstable: Option[Effects] = Some(Effects(effects))
   }
 
-  case class FixedEffectsCell(effects: Effects)
-      extends EffectsCell
-      with NoFill[Effects] {
+  case class FixedEffectsCell(effects: Effects) extends EffectsCell with NoFill[Effects] {
     override def readStable: Option[Effects] = Some(effects)
   }
 
@@ -69,8 +64,7 @@ trait ElaboraterCommon
     reuse(expr, result)
   }
 
-  type Literals = Expr &
-    (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
+  type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
   case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using
       localCtx: LocalCtx
@@ -310,8 +304,7 @@ trait ElaboraterCommon
     cell
   }
 
-  def newEffectsTerm(using ck: Tyck, state: StateAbility[Tyck]): Effects |
-    MetaTerm = {
+  def newEffectsTerm(using ck: Tyck, state: StateAbility[Tyck]): Effects | MetaTerm = {
     Meta(newEffects)
   }
 
@@ -384,8 +377,7 @@ trait ElaboraterCommon
         ck.reporter.apply(TypeMismatch(lhs, rhs, cause)) // TODO
 
       // Structural unification for TupleType
-      case (TupleType(types1, _), TupleType(types2, _))
-          if types1.length == types2.length =>
+      case (TupleType(types1, _), TupleType(types2, _)) if types1.length == types2.length =>
         types1.zip(types2).foreach { case (t1, t2) =>
           unify(t1, t2, cause)
         }
@@ -430,8 +422,7 @@ trait ElaboraterCommon
   }
 
   /** t is rhs, listT is lhs */
-  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(
-      using
+  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(using
       ck: Tyck,
       localCtx: LocalCtx
   ) extends Propagator[Tyck] {
@@ -505,8 +496,7 @@ trait ElaboraterBase extends CommonPropagator[Tyck] {
       }
     }
 
-    def apply[T <: Term](x: CellId[T])(using state: StateAbility[Tyck]): T |
-      MetaTerm = {
+    def apply[T <: Term](x: CellId[T])(using state: StateAbility[Tyck]): T | MetaTerm = {
       state.readUnstable(x) match {
         case Some(x @ Meta(id)) => rec(id, x).asInstanceOf[T | MetaTerm]
         case Some(x)            => x
@@ -541,8 +531,7 @@ trait ElaboraterBase extends CommonPropagator[Tyck] {
     LocalV(name, toTerm(ty), id, m)
   }
 
-  def toTerm[T <: Term](x: CellIdOr[T])(using state: StateAbility[Tyck]): T |
-    MetaTerm = x match {
+  def toTerm[T <: Term](x: CellIdOr[T])(using state: StateAbility[Tyck]): T | MetaTerm = x match {
     case x: Term =>
       x match {
         case Meta(x) => Meta(x).asInstanceOf[T | MetaTerm]

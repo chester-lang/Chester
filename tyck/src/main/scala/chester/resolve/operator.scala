@@ -85,13 +85,9 @@ def determineOpType(
 
   if (possibleTypes.contains(OpType.Infix) && isPrevOperand && isNextOperand) {
     OpType.Infix
-  } else if (
-    possibleTypes.contains(OpType.Prefix) && !isPrevOperand && isNextOperand
-  ) {
+  } else if (possibleTypes.contains(OpType.Prefix) && !isPrevOperand && isNextOperand) {
     OpType.Prefix
-  } else if (
-    possibleTypes.contains(OpType.Postfix) && isPrevOperand && !isNextOperand
-  ) {
+  } else if (possibleTypes.contains(OpType.Postfix) && isPrevOperand && !isNextOperand) {
     OpType.Postfix
   } else if (possibleTypes.contains(OpType.Operand)) {
     OpType.Operand

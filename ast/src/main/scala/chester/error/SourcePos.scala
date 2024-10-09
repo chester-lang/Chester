@@ -11,8 +11,7 @@ import io.github.iltotore.iron.upickle.given
 
 import scala.annotation.tailrec
 
-case class Pos(index: WithUTF16, line: Int :| Positive0, column: WithUTF16)
-    derives ReadWriter
+case class Pos(index: WithUTF16, line: Int :| Positive0, column: WithUTF16) derives ReadWriter
 
 object Pos {
   val Zero = Pos(WithUTF16.Zero, 0, WithUTF16.Zero)
@@ -43,33 +42,31 @@ object FileContent {
   )
 }
 
-case class SourcePos(source: SourceOffset, range: RangeInFile)
-    derives ReadWriter {
+case class SourcePos(source: SourceOffset, range: RangeInFile) derives ReadWriter {
   lazy val fileContent = source.readContent.toOption.map(
     FileContent(_, source.linesOffset, source.posOffset)
   )
   val fileName = source.fileName
 
   // Method to extract all lines within the range with line numbers
-  def getLinesInRange: Option[Vector[(Int, String)]] = fileContent map {
-    fileContent =>
-      val startLine = range.start.line - fileContent.lineOffset
-      val endLine = range.end.line - fileContent.lineOffset
-      val contentString = FileContent.convertToString(fileContent)
-      val lines = contentString.split('\n').toVector
+  def getLinesInRange: Option[Vector[(Int, String)]] = fileContent map { fileContent =>
+    val startLine = range.start.line - fileContent.lineOffset
+    val endLine = range.end.line - fileContent.lineOffset
+    val contentString = FileContent.convertToString(fileContent)
+    val lines = contentString.split('\n').toVector
 
-      // Assert that the start and end lines are within valid bounds
-      assert(
-        startLine >= 0 && endLine < lines.length,
-        s"Invalid line range: startLine=$startLine, endLine=$endLine, totalLines=${lines.length}"
-      )
+    // Assert that the start and end lines are within valid bounds
+    assert(
+      startLine >= 0 && endLine < lines.length,
+      s"Invalid line range: startLine=$startLine, endLine=$endLine, totalLines=${lines.length}"
+    )
 
-      // Slice the lines and keep their line numbers
-      lines.zipWithIndex
-        .slice(startLine, endLine + 1)
-        .map { case (line, index) =>
-          (fileContent.lineOffset + index + 1, line)
-        } // Line numbers are 1-based
+    // Slice the lines and keep their line numbers
+    lines.zipWithIndex
+      .slice(startLine, endLine + 1)
+      .map { case (line, index) =>
+        (fileContent.lineOffset + index + 1, line)
+      } // Line numbers are 1-based
   }
 
   def combine(other: SourcePos): SourcePos = {

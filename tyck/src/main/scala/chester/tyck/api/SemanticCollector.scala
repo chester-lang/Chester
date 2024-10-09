@@ -25,8 +25,7 @@ trait SemanticCollector {
   ): SymbolCollector = NoopSymbolCollector
 }
 
-private implicit inline def rwUniqIDOfVar[T]
-    : ReadWriter[UniqIdOf[? <: MaybeVarCall]] =
+private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] =
   rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
 
 // TODO: handle when call's ty is MetaTerm
@@ -62,8 +61,7 @@ class VectorSemanticCollector extends SemanticCollector {
 
 object NoopSemanticCollector extends SemanticCollector {}
 
-class UnusedVariableWarningWrapper(x: SemanticCollector)
-    extends SemanticCollector {
+class UnusedVariableWarningWrapper(x: SemanticCollector) extends SemanticCollector {
   private var unusedVariables: Vector[CollectedSymbol] = Vector()
   override def newSymbol(
       call: MaybeVarCall,

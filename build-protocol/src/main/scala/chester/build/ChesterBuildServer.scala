@@ -7,8 +7,7 @@ import scala.beans.BeanProperty
 
 trait ChesterBuildServer {
 
-  /** The build target chester options request is sent from the client to the
-    * server to query for the list of compiler options necessary to compile a
+  /** The build target chester options request is sent from the client to the server to query for the list of compiler options necessary to compile a
     * given list of targets.
     */
   @JsonRequest("buildTarget/chesterOptions")

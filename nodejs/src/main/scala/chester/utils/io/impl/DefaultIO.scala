@@ -51,8 +51,8 @@ implicit object DefaultIO extends IO[Future] {
     fsPromisesMod.writeFile(path, bytesToJS)
 
   inline override def removeWhenExists(path: String): Future[Boolean] =
-    fsPromisesMod.unlink(path).map(_ => true).recover {
-      case e: js.JavaScriptException => false
+    fsPromisesMod.unlink(path).map(_ => true).recover { case e: js.JavaScriptException =>
+      false
     }
 
   inline override def getHomeDir: Future[String] =

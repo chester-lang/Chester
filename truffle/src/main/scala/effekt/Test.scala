@@ -28,11 +28,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.{Option => _, _}
 import com.oracle.truffle.api.frame._
 import com.oracle.truffle.api.nodes._
-import com.oracle.truffle.api.TruffleLanguage.{
-  Env,
-  Registration,
-  ParsingRequest
-}
+import com.oracle.truffle.api.TruffleLanguage.{Env, Registration, ParsingRequest}
 import com.oracle.truffle.api.nodes.Node.{Child, Children}
 import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.{Context => Ctx}
@@ -99,8 +95,7 @@ object FortyTwo extends Exp[Int] {
 }
 
 // a node that adds the two children
-final class Add(@child var lhs: Exp[Int], @child var rhs: Exp[Int])
-    extends Exp[Int] {
+final class Add(@child var lhs: Exp[Int], @child var rhs: Exp[Int]) extends Exp[Int] {
   final def apply(frame: VirtualFrame): Int =
     lhs.apply(frame) + rhs.apply(frame)
 }

@@ -51,8 +51,7 @@ object TASTPackage {
     def readString(str: String): TAST = upickle.read[TAST](str)
   }
 
-  case class LoadedModules(map: HashMap[ModuleRef, Vector[TAST]] = HashMap())
-      extends AnyVal {
+  case class LoadedModules(map: HashMap[ModuleRef, Vector[TAST]] = HashMap()) extends AnyVal {
     def add(tast: TAST): LoadedModules = {
       if (
         map.contains(tast.module) && map

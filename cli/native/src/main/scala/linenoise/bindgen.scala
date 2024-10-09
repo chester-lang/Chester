@@ -19,9 +19,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr3[CString, Ptr[linenoiseCompletions], Ptr[Byte], Unit]
     ): linenoiseCompletionCallback = o
-    extension (v: linenoiseCompletionCallback)
-      inline def value
-          : CFuncPtr3[CString, Ptr[linenoiseCompletions], Ptr[Byte], Unit] = v
+    extension (v: linenoiseCompletionCallback) inline def value: CFuncPtr3[CString, Ptr[linenoiseCompletions], Ptr[Byte], Unit] = v
 
   /** [bindgen] header: linenoise.h
     */
@@ -32,8 +30,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr2[Ptr[Byte], Ptr[Byte], Unit]
     ): linenoiseFreeHintsCallback = o
-    extension (v: linenoiseFreeHintsCallback)
-      inline def value: CFuncPtr2[Ptr[Byte], Ptr[Byte], Unit] = v
+    extension (v: linenoiseFreeHintsCallback) inline def value: CFuncPtr2[Ptr[Byte], Ptr[Byte], Unit] = v
 
   /** [bindgen] header: linenoise.h
     */
@@ -45,9 +42,7 @@ object aliases:
     inline def apply(
         inline o: CFuncPtr4[CString, Ptr[CInt], Ptr[CInt], Ptr[Byte], CString]
     ): linenoiseHintsCallback = o
-    extension (v: linenoiseHintsCallback)
-      inline def value
-          : CFuncPtr4[CString, Ptr[CInt], Ptr[CInt], Ptr[Byte], CString] = v
+    extension (v: linenoiseHintsCallback) inline def value: CFuncPtr4[CString, Ptr[CInt], Ptr[CInt], Ptr[Byte], CString] = v
 
   type size_t = libc.stddef.size_t
   object size_t:

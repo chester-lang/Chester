@@ -21,8 +21,7 @@ extension (id: UniqIdOffset) {
 }
 
 /** start <= x < end */
-case class UniqIdRange(start: UniqIdOffset, end: UniqIdOffset)
-    derives ReadWriter {
+case class UniqIdRange(start: UniqIdOffset, end: UniqIdOffset) derives ReadWriter {
   require(start <= end, s"Invalid range: $start > $end")
 
   def size: Int = end - start

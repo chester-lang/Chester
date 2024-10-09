@@ -24,8 +24,8 @@ inline def CharacterPred(
       if (p(codePoint)) Pass else Fail
     }
 
-inline def CharactersWhile(inline p: Character => Boolean, inline min: Int = 1)(
-    implicit ctx: P[?]
+inline def CharactersWhile(inline p: Character => Boolean, inline min: Int = 1)(implicit
+    ctx: P[?]
 ): P[Unit] =
   CharacterPred(p).rep(min)
 

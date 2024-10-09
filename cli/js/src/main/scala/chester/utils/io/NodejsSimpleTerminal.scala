@@ -8,8 +8,7 @@ import typings.node.{processMod, readlineMod}
 
 import scala.concurrent.{Future, Promise}
 
-class NodejsSimpleTerminal(init: TerminalInit)
-    extends AbstractInTerminal[Future] {
+class NodejsSimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Future] {
   private val rl = readlineMod.createInterface(
     processMod.^.stdin.asInstanceOf,
     processMod.^.stdout.asInstanceOf

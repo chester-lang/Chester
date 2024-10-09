@@ -8,8 +8,7 @@ import scala.util.Try
 
 object facade {
 
-  /** Prompts the user for input using the provided `prompt` string. Returns
-    * `Option[String]`.
+  /** Prompts the user for input using the provided `prompt` string. Returns `Option[String]`.
     */
   def prompt(prompt: String): Option[String] = Zone {
     val cPrompt = toCString(prompt)
@@ -25,8 +24,7 @@ object facade {
     linenoiseHistoryAdd(cLine) == 0
   }
 
-  /** Saves the current history to a file. Returns `true` on success, `false` on
-    * failure.
+  /** Saves the current history to a file. Returns `true` on success, `false` on failure.
     */
   def saveHistory(filename: String): Boolean = Zone {
     val cFilename = toCString(filename)

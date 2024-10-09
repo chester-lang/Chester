@@ -42,9 +42,7 @@ case class CommentInfo(
     commentInEnd: Vector[Comment] = Vector.empty,
     commentEndInThisLine: Vector[Comment] = Vector.empty
 ) derives ReadWriter {
-  if (
-    commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty && commentEndInThisLine.isEmpty
-  ) {
+  if (commentBefore.isEmpty && commentInBegin.isEmpty && commentInEnd.isEmpty && commentEndInThisLine.isEmpty) {
     throw new IllegalArgumentException("At least one comment should be present")
   }
 }
@@ -118,11 +116,7 @@ sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
   def commentAtStart(comment: Comment): Expr = updateMeta {
     case Some(meta) =>
       Some(
-        meta.copy(commentInfo =
-          meta.commentInfo.map(info =>
-            info.copy(commentBefore = info.commentBefore :+ comment)
-          )
-        )
+        meta.copy(commentInfo = meta.commentInfo.map(info => info.copy(commentBefore = info.commentBefore :+ comment)))
       )
     case None => Some(ExprMeta(None, Some(CommentInfo(Vector(comment)))))
   }
@@ -132,11 +126,7 @@ sealed trait Expr extends WithPos with ToDoc derives ReadWriter {
     updateMeta {
       case Some(meta) =>
         Some(
-          meta.copy(commentInfo =
-            meta.commentInfo.map(info =>
-              info.copy(commentBefore = info.commentBefore ++ comment)
-            )
-          )
+          meta.copy(commentInfo = meta.commentInfo.map(info => info.copy(commentBefore = info.commentBefore ++ comment)))
         )
       case None => Some(ExprMeta(None, Some(CommentInfo(comment))))
     }
@@ -153,8 +143,7 @@ sealed trait ParsedExpr extends Expr derives ReadWriter
 
 sealed trait MaybeSaltedExpr extends Expr derives ReadWriter
 
-case class Identifier(name: String, meta: Option[ExprMeta] = None)
-    extends ParsedExpr derives ReadWriter {
+case class Identifier(name: String, meta: Option[ExprMeta] = None) extends ParsedExpr derives ReadWriter {
   override def toString: String = meta.flatMap(_.sourcePos) match {
     case None      => s"Identifier(\"${encodeString(name)}\")"
     case Some(pos) => s"Identifier(\"${encodeString(name)}\", ${pos.toString})"
@@ -197,9 +186,7 @@ case class ResolvedLocalVar(
   )
 }
 
-case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None)
-    extends ParsedExpr
-    with MaybeSaltedExpr {
+case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedExpr with MaybeSaltedExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     OpSeq(seq.map(operator), meta)
   }
@@ -398,11 +385,9 @@ sealed trait MaybeTelescope extends Expr derives ReadWriter {
   )
 }
 
-sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr
-    derives ReadWriter
+sealed trait ParsedMaybeTelescope extends MaybeTelescope with ParsedExpr derives ReadWriter
 
-case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None)
-    extends ParsedMaybeTelescope {
+case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): Tuple = thisOr {
     Tuple(terms.map(operator), meta)
   }
@@ -536,8 +521,7 @@ object QualifiedName {
 
 sealed trait Literal extends ParsedExpr derives ReadWriter
 
-case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None)
-    extends Literal {
+case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr =
     copy(meta = updater(meta))
 
@@ -545,8 +529,7 @@ case class IntegerLiteral(value: BigInt, meta: Option[ExprMeta] = None)
     Doc.text(value.toString)
 }
 
-case class RationalLiteral(value: Rational, meta: Option[ExprMeta] = None)
-    extends Literal {
+case class RationalLiteral(value: Rational, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr =
     copy(meta = updater(meta))
 
@@ -554,8 +537,7 @@ case class RationalLiteral(value: Rational, meta: Option[ExprMeta] = None)
     Doc.text(value.toString)
 }
 
-case class StringLiteral(value: String, meta: Option[ExprMeta] = None)
-    extends Literal {
+case class StringLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def toString: String = meta.flatMap(_.sourcePos) match {
     case None => s"StringLiteral(\"${encodeString(value)}\")"
     case Some(pos) =>
@@ -569,8 +551,7 @@ case class StringLiteral(value: String, meta: Option[ExprMeta] = None)
     Doc.text("\"" + encodeString(value) + "\"")
 }
 
-case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None)
-    extends Literal {
+case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None) extends Literal {
   override def updateMeta(updater: Option[ExprMeta] => Option[ExprMeta]): Expr =
     copy(meta = updater(meta))
 
@@ -580,8 +561,7 @@ case class SymbolLiteral(value: String, meta: Option[ExprMeta] = None)
   def toIdentifier: Identifier = Identifier(value, meta)
 }
 
-case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None)
-    extends ParsedMaybeTelescope {
+case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends ParsedMaybeTelescope {
   override def descent(operator: Expr => Expr): ListExpr = thisOr {
     ListExpr(terms.map(operator), meta)
   }
@@ -594,8 +574,7 @@ case class ListExpr(terms: Vector[Expr], meta: Option[ExprMeta] = None)
     Doc.wrapperlist("[", "]", ", ")(terms)
 }
 
-case class HoleExpr(description: String, meta: Option[ExprMeta] = None)
-    extends Expr {
+case class HoleExpr(description: String, meta: Option[ExprMeta] = None) extends Expr {
   override def updateMeta(
       updater: Option[ExprMeta] => Option[ExprMeta]
   ): HoleExpr = copy(meta = updater(meta))
@@ -605,8 +584,7 @@ case class HoleExpr(description: String, meta: Option[ExprMeta] = None)
   )
 }
 
-case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None)
-    extends DesaltExpr {
+case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) extends DesaltExpr {
   override def descent(operator: Expr => Expr): Expr = thisOr {
     TypeAnnotation(operator(expr), operator(ty), meta)
   }
@@ -655,11 +633,9 @@ sealed trait ObjectClause derives ReadWriter {
   }
 }
 
-case class ObjectExprClause(key: QualifiedName, value: Expr)
-    extends ObjectClause {}
+case class ObjectExprClause(key: QualifiedName, value: Expr) extends ObjectClause {}
 
-case class ObjectExprClauseOnValue(key: Expr, value: Expr)
-    extends ObjectClause {}
+case class ObjectExprClauseOnValue(key: Expr, value: Expr) extends ObjectClause {}
 
 object ObjectExprClause {
   def apply(key: QualifiedName, value: Expr): ObjectExprClause =
@@ -842,8 +818,7 @@ sealed trait DesaltPattern extends DesaltExpr derives ReadWriter {
   def bindings: Vector[Identifier] = Vector.empty
 }
 
-case class PatternCompare(literal: Expr, meta: Option[ExprMeta])
-    extends DesaltPattern {
+case class PatternCompare(literal: Expr, meta: Option[ExprMeta]) extends DesaltPattern {
   override def updateMeta(
       updater: Option[ExprMeta] => Option[ExprMeta]
   ): PatternCompare = copy(meta = updater(meta))
@@ -851,8 +826,7 @@ case class PatternCompare(literal: Expr, meta: Option[ExprMeta])
   override def toDoc(implicit options: PrettierOptions): Doc = literal.toDoc
 }
 
-case class PatternBind(name: Identifier, meta: Option[ExprMeta])
-    extends DesaltPattern {
+case class PatternBind(name: Identifier, meta: Option[ExprMeta]) extends DesaltPattern {
   override def updateMeta(
       updater: Option[ExprMeta] => Option[ExprMeta]
   ): PatternBind = copy(meta = updater(meta))
@@ -1057,8 +1031,7 @@ case class ImportStmt(module: ModuleRef, meta: Option[ExprMeta]) extends Stmt {
     copy(meta = updater(meta))
 }
 
-case class ModuleStmt(module: ModuleRef, meta: Option[ExprMeta] = None)
-    extends Stmt {
+case class ModuleStmt(module: ModuleRef, meta: Option[ExprMeta] = None) extends Stmt {
   override def toDoc(implicit options: PrettierOptions): Doc = group(
     Doc.text("module") <+> module.toDoc
   )
@@ -1067,8 +1040,7 @@ case class ModuleStmt(module: ModuleRef, meta: Option[ExprMeta] = None)
     copy(meta = updater(meta))
 }
 
-case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None)
-    extends Expr {
+case class BuiltinExpr(builtin: Builtin, meta: Option[ExprMeta] = None) extends Expr {
   override def descent(operator: Expr => Expr): Expr = this
 
   override def updateMeta(

@@ -8,8 +8,7 @@ import typings.xtermXterm.mod
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
-final class InXterm(terminal: mod.Terminal, init: TerminalInit)
-    extends InTerminalNoHistory[Future] {
+final class InXterm(terminal: mod.Terminal, init: TerminalInit) extends InTerminalNoHistory[Future] {
 
   inline override def writeln(line: fansi.Str): Future[Unit] = {
     val promise = Promise[Unit]()

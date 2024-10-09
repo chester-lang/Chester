@@ -21,6 +21,4 @@ trait ColorfulPrettyPrinter extends StylePrettyPrinter {
   override def BuilderResult(builder: Builder): Layout = builder
 }
 
-object ColorfulPrettyPrinter
-    extends ColorfulPrettyPrinter
-    with ParenPrettyPrinter
+object ColorfulPrettyPrinter extends ColorfulPrettyPrinter with ParenPrettyPrinter
