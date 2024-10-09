@@ -1,7 +1,6 @@
 package chester.syntax.accociativity
 
 import chester.syntax.*
-import chester.syntax.concrete.stmt.QualifiedID
 import upickle.default.*
 
 case class OperatorsContext(

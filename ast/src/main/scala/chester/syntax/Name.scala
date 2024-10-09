@@ -1,6 +1,5 @@
 package chester.syntax
 
-import cats.data.NonEmptyVector
 import chester.utils.*
 import chester.utils.doc.{ToDoc, *}
 import upickle.default.*

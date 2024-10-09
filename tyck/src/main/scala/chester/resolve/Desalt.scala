@@ -6,11 +6,7 @@ import chester.error.*
 import chester.syntax.{Const, ModuleRef}
 import chester.syntax.concrete.*
 import chester.tyck.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 
 import scala.annotation.tailrec

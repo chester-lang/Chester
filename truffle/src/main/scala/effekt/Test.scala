@@ -24,13 +24,10 @@
  */
 package example
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.{Option => _, _}
 import com.oracle.truffle.api.frame._
-import com.oracle.truffle.api.nodes._
-import com.oracle.truffle.api.TruffleLanguage.{Env, Registration, ParsingRequest}
-import com.oracle.truffle.api.nodes.Node.{Child, Children}
-import com.oracle.truffle.api.source.Source
+import com.oracle.truffle.api.TruffleLanguage.{Env, ParsingRequest}
+import com.oracle.truffle.api.nodes.Node.Child
 import org.graalvm.polyglot.{Context => Ctx}
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.VirtualFrame

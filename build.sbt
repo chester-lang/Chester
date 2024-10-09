@@ -4,6 +4,14 @@ import sbt.librarymanagement.InclExclRule
 
 import scala.scalanative.build.*
 
+inThisBuild(
+  List(
+    semanticdbEnabled := true, // enable SemanticDB
+    semanticdbVersion := scalafixSemanticdb.revision // only required for Scala 2.x
+
+  )
+)
+
 val scala3Version = "3.5.2-RC1"
 val scala2Version = "2.13.15"
 
@@ -49,6 +57,13 @@ val commonSettings = Seq(
       "-Wunused:privates",
       "-experimental"
     ),
+  // scalafix
+  scalacOptions += {
+    if (scalaVersion.value.startsWith("2.12"))
+      "-Ywarn-unused-import"
+    else
+      "-Wunused:imports"
+  },
   scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % "1.0.2" % Test,
@@ -148,6 +163,7 @@ lazy val kiamaCore = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     commonVendorSettings
   )
+  .disablePlugins(ScalafixPlugin)
   .jvmSettings(commonJvmLibSettings)
 
 // kiama fork from effekt - https://github.com/effekt-lang/kiama
@@ -158,6 +174,7 @@ lazy val effektKiama = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     commonVendorSettings
   )
+  .disablePlugins(ScalafixPlugin)
   .jvmSettings(
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
@@ -183,6 +200,7 @@ lazy val ironNative = crossProject(NativePlatform)
   .settings(
     commonVendorSettings
   )
+  .disablePlugins(ScalafixPlugin)
   .nativeSettings(
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "upickle" % "4.0.2",
@@ -204,6 +222,7 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Full)
   .in(file("vendor/spire-native"))
+  .disablePlugins(ScalafixPlugin)
   .settings(
     scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
     commonVendorSettings,

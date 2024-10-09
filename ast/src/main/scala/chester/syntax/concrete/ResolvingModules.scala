@@ -2,7 +2,6 @@ package chester.syntax.concrete
 
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
-import chester.syntax.core.stmt.TyckedModule
 
 import scala.collection.immutable.HashMap
 

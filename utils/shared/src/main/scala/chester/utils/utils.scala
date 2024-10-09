@@ -1,7 +1,6 @@
 package chester.utils
 
 import fastparse.ParserInput
-import io.github.iltotore.iron.constraint.all.MinLength
 
 def encodeString(x: String): String = x
   .replace("\\", "\\\\")

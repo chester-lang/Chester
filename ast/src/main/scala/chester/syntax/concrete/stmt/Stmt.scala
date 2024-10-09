@@ -2,7 +2,6 @@ package chester.syntax.concrete.stmt
 
 import chester.error._
 import chester.syntax.Name
-import chester.syntax.concrete.{Expr, ExprMeta}
 import upickle.default._
 
 @deprecated("Create new module representation")

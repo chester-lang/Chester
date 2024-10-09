@@ -11,10 +11,7 @@
 
 package kiama2.output
 
-import PrettyPrinterTypes.{LinkRange, LinkValue, Links, Width, emptyLinks}
-import org.bitbucket.inkytonik.kiama.util.Trampolines.Done
 
-import scala.collection.immutable.Queue.empty as emptyDq
 import scala.language.implicitConversions
 
 /** Common type definitions for all pretty-printers.
@@ -734,7 +731,6 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
   import PrettyPrinterTypes.{emptyLinks, Indent, LinkRange, Links, LinkValue, Width}
   import scala.collection.immutable.{Queue, Seq}
   import scala.collection.immutable.Queue.{empty => emptyDq}
-  import scala.collection.mutable.StringBuilder
 
   // Internal data types
 

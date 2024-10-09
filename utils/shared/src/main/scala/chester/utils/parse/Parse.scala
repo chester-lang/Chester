@@ -3,7 +3,6 @@ package chester.utils.parse
 import fastparse.*
 import fastparse.NoWhitespace.*
 
-import java.lang.Character.{isDigit, isLetter}
 
 type Character = Int
 

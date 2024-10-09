@@ -2,16 +2,12 @@ package chester.parser
 
 import chester.error.*
 import chester.syntax.concrete.*
-import chester.utils.io.*
-import chester.utils.parse.*
 import chester.utils.term.*
 import chester.utils.{StringIndex, WithUTF16, platformUseCRLF}
 import fastparse.*
-import fastparse.NoWhitespace.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.*
 
-import java.lang.Character.{isDigit, isLetter}
 import scala.util.*
 
 object ParserEngine {

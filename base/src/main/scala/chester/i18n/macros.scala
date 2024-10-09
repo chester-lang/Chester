@@ -1,6 +1,5 @@
 package chester.i18n
 
-import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.quoted.*
 
 trait T {

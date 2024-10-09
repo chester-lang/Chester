@@ -1,6 +1,5 @@
 package chester.utils.propagator
 
-import chester.syntax.core
 import chester.uniqid.*
 
 trait ProvideImmutable extends ProvideImpl {

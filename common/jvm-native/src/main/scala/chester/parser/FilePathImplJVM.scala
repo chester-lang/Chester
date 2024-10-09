@@ -1,18 +1,9 @@
 package chester.parser
 
 import chester.error.*
-import chester.parser.*
-import chester.syntax.IdentifierRules.*
-import chester.syntax.QualifiedIDString
-import chester.syntax.concrete.*
 import chester.utils.*
-import chester.utils.parse.*
-import fastparse.*
-import fastparse.NoWhitespace.*
 
-import java.nio.file.{Files, Paths}
-import scala.collection.immutable
-import scala.scalajs.js.annotation.*
+import java.nio.file.Paths
 import scala.util.*
 
 implicit object FilePathImplJVM extends FilePathImpl {

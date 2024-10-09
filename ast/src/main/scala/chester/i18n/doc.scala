@@ -1,6 +1,5 @@
 package chester.i18n
 
-import chester.i18n.Language
 import chester.utils.doc.{PrettierOptions, PrettierOptionsKey}
 
 case object LanguageKey extends PrettierOptionsKey[Language] {

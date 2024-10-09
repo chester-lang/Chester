@@ -1,6 +1,6 @@
 package chester.tyck.core
 
-import chester.error.{TyckError, TyckProblem, UnsupportedTermError}
+import chester.error.{TyckError, UnsupportedTermError}
 import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*

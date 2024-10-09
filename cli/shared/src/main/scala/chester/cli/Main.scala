@@ -1,21 +1,13 @@
 package chester.cli
 
-import chester.core.parseCheckTAST
-import chester.error.*
-import chester.error.Problem.Severity
-import chester.integrity.IntegrityCheck
 import chester.parser.*
-import chester.repl.REPLEngine
-import chester.tyck.Reporter
 import chester.utils.fileExists
 import scopt.OParser
 import chester.utils.env.DefaultEnv
 import chester.utils.io.*
 import chester.utils.io.impl.*
-import chester.utils.term.*
 
 // Import the generated BuildInfo object
-import chester.cli.BuildInfo
 
 object Main {
 

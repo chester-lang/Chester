@@ -11,14 +11,6 @@ import chester.syntax.core.*
 import chester.syntax.*
 import chester.utils.doc.*
 import upickle.default.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.constraint.collection.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.upickle.given
 import chester.utils.*
 import spire.math.Rational
 import chester.utils.impls.*

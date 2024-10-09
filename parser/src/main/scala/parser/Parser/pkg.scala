@@ -1,23 +1,13 @@
 package chester.parser.Parser
-import chester.error.*
 import chester.parser.*
-import chester.syntax.IdentifierRules.*
 import chester.syntax.QualifiedIDString
 import chester.syntax.concrete.*
-import chester.utils.parse.*
-import chester.utils.{StringIndex, parserInputToLazyList}
+import chester.utils.StringIndex
 import fastparse.*
-import fastparse.NoWhitespace.*
-import upickle.default.*
 import chester.error.*
-import chester.utils.WithUTF16
 import io.github.iltotore.iron.*
-import io.github.iltotore.iron.constraint.all.*
-import io.github.iltotore.iron.upickle.given
 
-import java.nio.file.{Files, Paths}
 import scala.collection.immutable
-import scala.scalajs.js.annotation.*
 import scala.util.*
 
 private def parseFromSource[T](

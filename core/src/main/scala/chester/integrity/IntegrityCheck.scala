@@ -2,7 +2,6 @@ package chester.integrity
 
 import chester.parser.{FileNameAndContent, Parser}
 import chester.syntax.concrete.*
-import chester.syntax.core.*
 
 // Test that the binary is still performing well when compiled differently.
 object IntegrityCheck {

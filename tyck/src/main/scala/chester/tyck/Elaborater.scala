@@ -2,9 +2,6 @@ package chester.tyck
 
 import cats.implicits.*
 import chester.error.*
-import chester.parser.ParserSource
-import chester.resolve.{SimpleDesalt, resolveOpSeq}
-import chester.syntax.Name
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.*

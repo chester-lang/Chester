@@ -1,6 +1,5 @@
 package chester.error
 
-import chester.doc.*
 import chester.i18n.*
 import chester.syntax.Name
 import chester.syntax.accociativity.*

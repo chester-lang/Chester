@@ -1,12 +1,10 @@
 package chester.utils.io.impl
 
-import cats.{Id, Monad}
+import cats.Id
 import chester.utils.io.*
-import chester.utils.term.*
 import _root_.os.*
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.nio.file.Files
 import scala.annotation.tailrec
 import scala.util.Try
 

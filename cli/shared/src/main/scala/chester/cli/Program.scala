@@ -11,7 +11,6 @@ import chester.tyck.Reporter
 import chester.utils.env.Environment
 import chester.utils.io.*
 import chester.utils.term.{Terminal, TerminalInit}
-import cats.implicits.*
 import chester.syntax.TASTPackage.TAST
 import chester.utils.doc.*
 

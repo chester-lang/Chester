@@ -2,9 +2,8 @@ package chester.tyck
 
 import chester.syntax.accociativity.OperatorsContext
 import chester.syntax.*
-import chester.syntax.concrete.{Expr, ResolvingModules}
 import chester.syntax.core.*
-import chester.syntax.{Name, QualifiedIDString}
+import chester.syntax.Name
 import chester.tyck.BuiltIn.BuiltinItem
 import chester.tyck.api.SymbolCollector
 import chester.utils.propagator.*

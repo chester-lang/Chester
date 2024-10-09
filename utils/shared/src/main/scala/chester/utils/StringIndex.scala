@@ -1,11 +1,9 @@
 package chester.utils
 
 import fastparse.ParserInput
-import upickle.default.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.constraint.numeric.*
-import io.github.iltotore.iron.upickle.given
 
 case class LineAndColumn(
     val line: Int :| Positive0,
