@@ -963,19 +963,3 @@ def UnitType(meta: OptionTermMeta = None) =
   ObjectType(Vector.empty, meta = meta)
 def UnitTerm(meta: OptionTermMeta = None) =
   ObjectTerm(Vector.empty, meta = meta)
-
-sealed trait ErasedType extends TypeTerm derives ReadWriter {
-  override def descent(f: Term => Term): ErasedType = this
-}
-
-case class ErasedInteger(meta: OptionTermMeta = None) extends ErasedType
-
-case class ErasedString(meta: OptionTermMeta = None) extends ErasedType
-
-case class ErasedList(meta: OptionTermMeta = None) extends ErasedType
-
-case class ErasedTuple(meta: OptionTermMeta = None) extends ErasedType
-
-case class ErasedObject(meta: OptionTermMeta = None) extends ErasedType
-
-case class ErasedErasedType(meta: OptionTermMeta = None) extends ErasedType
