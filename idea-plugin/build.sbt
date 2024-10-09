@@ -6,7 +6,7 @@ lazy val chesterPlugin =
     .enablePlugins(SbtIdeaPlugin)
     .settings(
       name := "ChesterLanguageSupport",
-      version := "0.0.7",
+      version := "0.0.8",
       scalaVersion := "3.5.2-RC1",
       ThisBuild / intellijPluginName := "Chester Language Support",
       ThisBuild / intellijBuild := "242.23339.11",
