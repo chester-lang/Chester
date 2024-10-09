@@ -62,6 +62,7 @@ trait RerangeUniqId extends Any {
 }
 
 trait ContainsUniqId extends Any with CollectUniqId with RerangeUniqId {
+  lazy val uniqIdRange: UniqIdRange = UniqId.calculateRange(this)
 
 }
 
@@ -105,7 +106,7 @@ object UniqId {
   }
 
   def giveNewRange[T <: ContainsUniqId](x: T): (oldRange: UniqIdRange, newRange: UniqIdRange, result: T) = {
-    val currentRange = calculateRange(x)
+    val currentRange = x.uniqIdRange
     val newRange = requireRange(currentRange.size)
     val reranger: RerangerU = new RerangerU {
       override def apply[T](id: UniqIdOf[T]): UniqIdOf[T] = id.rerange(currentRange, newRange)
