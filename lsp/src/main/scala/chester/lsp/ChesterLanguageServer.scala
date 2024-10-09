@@ -530,9 +530,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   override def symbol(
       params: WorkspaceSymbolParams
-  ): CompletableFuture[
-    Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]
-  ] = {
+  ): CompletableFuture[Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
       val allSymbols = documents.synchronized {
@@ -546,20 +544,22 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         }
         .map(tyckSymbolToLSP)
 
-      Either.forLeft(matchingSymbols.asJava)
+      // Return the list of WorkspaceSymbol wrapped in an Either
+      Either.forRight[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]](matchingSymbols.asJava)
     })
   }
 
-  private def tyckSymbolToLSP(symbol: CollectedSymbol): SymbolInformation = {
+  private def tyckSymbolToLSP(symbol: CollectedSymbol): WorkspaceSymbol = {
     val sp = symbol.definedOn.sourcePos.get
     val location = new Location(
       sp.fileName,
       rangeFromSourcePos(sp)
     )
-    new SymbolInformation(
+
+    new WorkspaceSymbol(
       symbol.name.toString,
       SymbolKind.Variable,
-      location
+      Either.forLeft(location)
     )
   }
 
