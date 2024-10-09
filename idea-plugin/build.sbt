@@ -5,7 +5,7 @@ lazy val chesterPlugin =
     .enablePlugins(SbtIdeaPlugin)
     .settings(
       name := "ChesterLanguageSupport",
-      version := "0.0.4",
+      version := "0.0.7",
       scalaVersion := "3.5.2-RC1",
       ThisBuild / intellijPluginName := "Chester Language Support",
       ThisBuild / intellijBuild      := "242.23339.11",
@@ -22,7 +22,7 @@ lazy val chesterPlugin =
       ),
       // Exclude LSP4J dependencies
       libraryDependencies ++= Seq(
-        ("com.github.chester-lang.chester" %% "lsp" % "7b3fda8f48")
+        ("com.github.chester-lang.chester" %% "lsp" % "0.0.7")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j")
           .exclude("org.eclipse.lsp4j", "org.eclipse.lsp4j.jsonrpc"),
         "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5"
@@ -31,5 +31,11 @@ lazy val chesterPlugin =
       Test / unmanagedResourceDirectories    += baseDirectory.value / "testResources",
       intellijVMOptions ~= { options =>
         options.add("--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED")
+      },
+      Compile / resourceGenerators += Def.task {
+        val logoSource = baseDirectory.value / ".." / "resources" / "chester-logo.svg"
+        val logoTarget = baseDirectory.value / "resources" / "META-INF" / "pluginIcon.svg"
+        IO.copyFile(logoSource, logoTarget)
+        Seq(logoTarget)
       }
     )
