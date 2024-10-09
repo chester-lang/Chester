@@ -1,3 +1,4 @@
+// reads env: NATIVE_IMAGE_OPTIONS, VERSION
 import org.scalajs.linker.interface.OutputPatterns
 import sbt.librarymanagement.InclExclRule
 
@@ -79,10 +80,14 @@ val commonJvmLibSettings = Seq(
   // scalacOptions ++= (if (jdk17) Seq("-Xmacro-settings:com.eed3si9n.ifdef.declare:jdk17") else Seq()),
   scalacOptions ++= Seq("-java-output-version", "11")
 )
+
+val NativeImageOptions = sys.env.getOrElse("NATIVE_IMAGE_OPTIONS", "").split(" ").toList
+
 val graalvmSettings = Seq(
   nativeImageVersion := graalJdkVersion,
   nativeImageOptions := nativeImageOption,
-  nativeImageJvm := graalVm
+  nativeImageJvm := graalVm,
+  nativeImageOptions ++= NativeImageOptions
 )
 
 val baseDeps = Seq(
