@@ -26,13 +26,21 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
 
   // Implement BuildServer methods
 
-  override def buildInitialize(params: InitializeBuildParams): CompletableFuture[InitializeBuildResult] = {
+  override def buildInitialize(
+      params: InitializeBuildParams
+  ): CompletableFuture[InitializeBuildResult] = {
     logger.info(s"Received buildInitialize request with params: $params")
 
     val capabilities = new BuildServerCapabilities()
-    capabilities.setCompileProvider(new CompileProvider(Collections.singletonList("chester")))
-    capabilities.setTestProvider(new TestProvider(Collections.singletonList("chester")))
-    capabilities.setRunProvider(new RunProvider(Collections.singletonList("chester")))
+    capabilities.setCompileProvider(
+      new CompileProvider(Collections.singletonList("chester"))
+    )
+    capabilities.setTestProvider(
+      new TestProvider(Collections.singletonList("chester"))
+    )
+    capabilities.setRunProvider(
+      new RunProvider(Collections.singletonList("chester"))
+    )
     // Set other capabilities as needed
 
     val result = new InitializeBuildResult(
@@ -73,10 +81,10 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     System.exit(0)
   }
 
-  override def workspaceBuildTargets(): CompletableFuture[WorkspaceBuildTargetsResult] = {
+  override def workspaceBuildTargets()
+      : CompletableFuture[WorkspaceBuildTargetsResult] = {
     CompletableFuture.supplyAsync(() => {
       val targets = new java.util.ArrayList[BuildTarget]()
-
 
       val btCapabilities = new BuildTargetCapabilities()
       btCapabilities.setCanCompile(true)
@@ -107,27 +115,53 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     })
   }
 
-  override def buildTargetSources(params: SourcesParams): CompletableFuture[SourcesResult] = {
+  override def buildTargetSources(
+      params: SourcesParams
+  ): CompletableFuture[SourcesResult] = {
     logger.info(s"Received buildTargetSources request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetSources is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetSources is not implemented yet")
+    )
   }
 
-  override def buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture[InverseSourcesResult] = {
-    logger.info(s"Received buildTargetInverseSources request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetInverseSources is not implemented yet"))
+  override def buildTargetInverseSources(
+      params: InverseSourcesParams
+  ): CompletableFuture[InverseSourcesResult] = {
+    logger.info(
+      s"Received buildTargetInverseSources request with params: $params"
+    )
+    CompletableFuture.failedFuture(
+      new NotImplementedError(
+        "buildTargetInverseSources is not implemented yet"
+      )
+    )
   }
 
-  override def buildTargetDependencySources(params: DependencySourcesParams): CompletableFuture[DependencySourcesResult] = {
-    logger.info(s"Received buildTargetDependencySources request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetDependencySources is not implemented yet"))
+  override def buildTargetDependencySources(
+      params: DependencySourcesParams
+  ): CompletableFuture[DependencySourcesResult] = {
+    logger.info(
+      s"Received buildTargetDependencySources request with params: $params"
+    )
+    CompletableFuture.failedFuture(
+      new NotImplementedError(
+        "buildTargetDependencySources is not implemented yet"
+      )
+    )
   }
 
-  override def buildTargetResources(params: ResourcesParams): CompletableFuture[ResourcesResult] = {
+  override def buildTargetResources(
+      params: ResourcesParams
+  ): CompletableFuture[ResourcesResult] = {
     logger.info(s"Received buildTargetResources request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetResources is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetResources is not implemented yet")
+    )
   }
 
-  override def buildTargetCompile(params: CompileParams): CompletableFuture[CompileResult] = {
+  override def buildTargetCompile(
+      params: CompileParams
+  ): CompletableFuture[CompileResult] = {
     CompletableFuture.supplyAsync(() => {
       logger.info(s"Received buildTargetCompile request with params: $params")
       try {
@@ -147,36 +181,64 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     })
   }
 
-  override def buildTargetTest(params: TestParams): CompletableFuture[TestResult] = {
+  override def buildTargetTest(
+      params: TestParams
+  ): CompletableFuture[TestResult] = {
     logger.info(s"Received buildTargetTest request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetTest is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetTest is not implemented yet")
+    )
   }
 
-  override def buildTargetRun(params: RunParams): CompletableFuture[RunResult] = {
+  override def buildTargetRun(
+      params: RunParams
+  ): CompletableFuture[RunResult] = {
     logger.info(s"Received buildTargetRun request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetRun is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetRun is not implemented yet")
+    )
   }
 
-  override def buildTargetCleanCache(params: CleanCacheParams): CompletableFuture[CleanCacheResult] = {
+  override def buildTargetCleanCache(
+      params: CleanCacheParams
+  ): CompletableFuture[CleanCacheResult] = {
     logger.info(s"Received buildTargetCleanCache request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetCleanCache is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetCleanCache is not implemented yet")
+    )
   }
 
   // Implementing missing methods from BuildServer interface
 
-  override def buildTargetDependencyModules(params: DependencyModulesParams): CompletableFuture[DependencyModulesResult] = {
-    logger.info(s"Received buildTargetDependencyModules request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetDependencyModules is not implemented yet"))
+  override def buildTargetDependencyModules(
+      params: DependencyModulesParams
+  ): CompletableFuture[DependencyModulesResult] = {
+    logger.info(
+      s"Received buildTargetDependencyModules request with params: $params"
+    )
+    CompletableFuture.failedFuture(
+      new NotImplementedError(
+        "buildTargetDependencyModules is not implemented yet"
+      )
+    )
   }
 
-  override def buildTargetOutputPaths(params: OutputPathsParams): CompletableFuture[OutputPathsResult] = {
+  override def buildTargetOutputPaths(
+      params: OutputPathsParams
+  ): CompletableFuture[OutputPathsResult] = {
     logger.info(s"Received buildTargetOutputPaths request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("buildTargetOutputPaths is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("buildTargetOutputPaths is not implemented yet")
+    )
   }
 
-  override def debugSessionStart(params: DebugSessionParams): CompletableFuture[DebugSessionAddress] = {
+  override def debugSessionStart(
+      params: DebugSessionParams
+  ): CompletableFuture[DebugSessionAddress] = {
     logger.info(s"Received debugSessionStart request with params: $params")
-    CompletableFuture.failedFuture(new NotImplementedError("debugSessionStart is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("debugSessionStart is not implemented yet")
+    )
   }
 
   override def onRunReadStdin(params: ReadParams): Unit = {
@@ -186,14 +248,20 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
 
   override def workspaceReload(): CompletableFuture[Object] = {
     logger.info("Received workspaceReload request")
-    CompletableFuture.failedFuture(new NotImplementedError("workspaceReload is not implemented yet"))
+    CompletableFuture.failedFuture(
+      new NotImplementedError("workspaceReload is not implemented yet")
+    )
   }
 
   // Implement ChesterBuildServer methods
 
-  override def buildTargetChesterOptions(params: ChesterOptionsParams): CompletableFuture[ChesterOptionsResult] = {
+  override def buildTargetChesterOptions(
+      params: ChesterOptionsParams
+  ): CompletableFuture[ChesterOptionsResult] = {
     CompletableFuture.supplyAsync(() => {
-      logger.info(s"Received buildTargetChesterOptions request with params: $params")
+      logger.info(
+        s"Received buildTargetChesterOptions request with params: $params"
+      )
 
       val items = params.targets.asScala.map { targetId =>
         // Define compiler options, classpath, and class directory for each target
@@ -224,16 +292,20 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
         Files.walk(dir).forEach { path =>
           if (Files.isRegularFile(path) && path.toString.endsWith(".chester")) {
             val content = Files.readString(path)
-            Parser.parseTopLevel(FileNameAndContent(path.toString, content)) match {
+            Parser
+              .parseTopLevel(FileNameAndContent(path.toString, content)) match {
               case Right(parsedBlock) =>
                 Tycker.check(parsedBlock) match {
                   case TyckResult.Success(result, _, _) =>
                     logger.info(s"Type checking succeeded for file: $path")
                   case TyckResult.Failure(errors, _, _, _) =>
-                    logger.error(s"Type checking failed for file: $path with errors: $errors")
+                    logger.error(
+                      s"Type checking failed for file: $path with errors: $errors"
+                    )
                 }
               case Left(error) =>
-                logger.error(s"Parsing failed for file: $path with error: $error")
+                logger
+                  .error(s"Parsing failed for file: $path with error: $error")
             }
           }
         }

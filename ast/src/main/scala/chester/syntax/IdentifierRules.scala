@@ -21,17 +21,20 @@ object IdentifierRules {
 
   def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
 
-  def isMiddleWordingSymbol(x: Character) = AllowedMiddleWordingSymbols.contains(x)
+  def isMiddleWordingSymbol(x: Character) =
+    AllowedMiddleWordingSymbols.contains(x)
 
   def identifierFirst(x: Character) = isWording(x) || isWordingSymbol(x)
 
-  def identifierMiddle(x: Character) = identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
+  def identifierMiddle(x: Character) =
+    identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
 
   def identifierEnd(x: Character) = identifierFirst(x) || isDigit(x)
 
   def operatorIdentifierFirst(x: Character) = isOperatorSymbol(x)
 
-  def operatorIdentifierRest(x: Character) = isOperatorSymbol(x) || isWordingSymbol(x)
+  def operatorIdentifierRest(x: Character) =
+    isOperatorSymbol(x) || isWordingSymbol(x)
 
   def strIsOperator(s: String): Boolean = {
     val codepoints = s.getCodePoints

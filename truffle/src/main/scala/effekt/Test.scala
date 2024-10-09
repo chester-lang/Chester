@@ -25,13 +25,17 @@
 package example
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
-import com.oracle.truffle.api.{ Option => _, _ }
+import com.oracle.truffle.api.{Option => _, _}
 import com.oracle.truffle.api.frame._
 import com.oracle.truffle.api.nodes._
-import com.oracle.truffle.api.TruffleLanguage.{ Env, Registration, ParsingRequest }
-import com.oracle.truffle.api.nodes.Node.{ Child, Children }
+import com.oracle.truffle.api.TruffleLanguage.{
+  Env,
+  Registration,
+  ParsingRequest
+}
+import com.oracle.truffle.api.nodes.Node.{Child, Children}
 import com.oracle.truffle.api.source.Source
-import org.graalvm.polyglot.{ Context => Ctx }
+import org.graalvm.polyglot.{Context => Ctx}
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.*
@@ -66,12 +70,13 @@ object ExampleLang {
     // this forces a call to createContext
     ctx.initialize("example")
     ctx.enter()
-    val res = try {
-      f(ExampleLang.INSTANCE)
-    } finally {
-      ctx.leave()
-      ctx.close()
-    }
+    val res =
+      try {
+        f(ExampleLang.INSTANCE)
+      } finally {
+        ctx.leave()
+        ctx.close()
+      }
     res
   }
 
@@ -82,7 +87,6 @@ object ExampleLang {
   type child = Child @field
 }
 import ExampleLang.child
-
 
 // this is an abstract class to enforce the inheritance to Node
 abstract class Exp[@specialized +T] extends Node {
@@ -95,14 +99,14 @@ object FortyTwo extends Exp[Int] {
 }
 
 // a node that adds the two children
-final class Add(@child var lhs: Exp[Int], @child var rhs: Exp[Int]) extends Exp[Int] {
+final class Add(@child var lhs: Exp[Int], @child var rhs: Exp[Int])
+    extends Exp[Int] {
   final def apply(frame: VirtualFrame): Int =
     lhs.apply(frame) + rhs.apply(frame)
 }
 object Add {
   def apply(lhs: Exp[Int], rhs: Exp[Int]) = new Add(lhs, rhs)
 }
-
 
 // Construction an example AST
 // ---------------------------
@@ -142,10 +146,11 @@ class TestRootNode(language: ExampleLang) extends RootNode(language) {
 //     result += ((42 + 42) + (42 + 42)) + ((42 + 42) + (42 + 42))
 //   }
 // }
-final class SomeFun(language : ExampleLang) extends RootNode(language)  {
+final class SomeFun(language: ExampleLang) extends RootNode(language) {
 
   @child private var repeating = new DummyLoop
-  @child private var loop: LoopNode = Truffle.getRuntime.createLoopNode(repeating)
+  @child private var loop: LoopNode =
+    Truffle.getRuntime.createLoopNode(repeating)
 
   override def execute(frame: VirtualFrame): Integer = {
     loop.execute(frame)
@@ -157,8 +162,9 @@ final class SomeFun(language : ExampleLang) extends RootNode(language)  {
 class DummyLoop extends Node with RepeatingNode {
   // This will be constant folded
   @child private var child = Add(
-      Add(Add(FortyTwo, FortyTwo), Add(FortyTwo, FortyTwo)),
-      Add(Add(FortyTwo, FortyTwo), Add(FortyTwo, FortyTwo)))
+    Add(Add(FortyTwo, FortyTwo), Add(FortyTwo, FortyTwo)),
+    Add(Add(FortyTwo, FortyTwo), Add(FortyTwo, FortyTwo))
+  )
 
   private var count = 10000
   var result = 0

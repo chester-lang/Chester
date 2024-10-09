@@ -25,30 +25,44 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 
 @JSExportTopLevel("startRepl")
 def startRepl(terminal: Terminal): js.Promise[Unit] = {
-  XtermTerminal(terminal).runTerminal(TerminalInit.Default, {
-    implicit val env: Environment = BrowserEnv
-    REPLEngine
-  }).toJSPromise
+  XtermTerminal(terminal)
+    .runTerminal(
+      TerminalInit.Default, {
+        implicit val env: Environment = BrowserEnv
+        REPLEngine
+      }
+    )
+    .toJSPromise
 }
 
 @JSExportTopLevel("startReplPty")
 def startReplPty(pty: Slave): js.Promise[Unit] = {
-  XtermPty(pty).runTerminal(TerminalInit.Default, {
-    implicit val env: Environment = BrowserEnv
-    REPLEngine
-  }).toJSPromise
+  XtermPty(pty)
+    .runTerminal(
+      TerminalInit.Default, {
+        implicit val env: Environment = BrowserEnv
+        REPLEngine
+      }
+    )
+    .toJSPromise
 }
 
 @JSExportTopLevel("startReplReadline")
 def startReplReadline(rl: Readline): js.Promise[Unit] = {
-  XtermReadline(rl).runTerminal(TerminalInit.Default, {
-    implicit val env: Environment = BrowserEnv
-    REPLEngine
-  }).toJSPromise
+  XtermReadline(rl)
+    .runTerminal(
+      TerminalInit.Default, {
+        implicit val env: Environment = BrowserEnv
+        REPLEngine
+      }
+    )
+    .toJSPromise
 }
 
-
-inline private def runFileFuture(content: String, lightMode: Boolean): Future[String] = {
+inline private def runFileFuture(
+    content: String,
+    lightMode: Boolean
+): Future[String] = {
   Future.successful(runFileTopLevel(content, lightMode))
 }
 

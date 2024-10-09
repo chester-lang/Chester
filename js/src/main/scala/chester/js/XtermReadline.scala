@@ -14,7 +14,6 @@ import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-
 def setTimeoutThen: Future[Unit] = {
   val promise = Promise[Unit]()
   setTimeout(() => promise.success(()), 0)
@@ -33,7 +32,10 @@ final class InXtermReadline(rl: Readline) extends InTerminalNoHistory[Future] {
 }
 
 case class XtermReadline(rl: Readline) extends Terminal[Future] {
-  def runTerminal[T](init: TerminalInit, block: InTerminal[Future] ?=> Future[T]): Future[T] = {
+  def runTerminal[T](
+      init: TerminalInit,
+      block: InTerminal[Future] ?=> Future[T]
+  ): Future[T] = {
     block(using InXtermReadline(rl))
   }
 }

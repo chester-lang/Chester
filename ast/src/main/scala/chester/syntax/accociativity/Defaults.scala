@@ -4,7 +4,10 @@ import chester.syntax.*
 import chester.syntax.concrete.stmt.QualifiedID
 import upickle.default.*
 
-case class OperatorsContext(opinfos: InfixDefitions, groups: PrecedenceGroupCtx) {
+case class OperatorsContext(
+    opinfos: InfixDefitions,
+    groups: PrecedenceGroupCtx
+) {
   def resolveInfix(name: Name): Option[Infix] = opinfos.resolveInfix(name)
 
   def resolvePrefix(name: Name): Option[Prefix] = opinfos.resolvePrefix(name)
@@ -33,28 +36,34 @@ object InfixDefitions {
   def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
     val (infix, other) = opinfos.partition {
       case Infix(name, _) => true
-      case _ => false
+      case _              => false
     }
     val (prefix, other2) = other.partition {
       case Prefix(name) => true
-      case _ => false
+      case _            => false
     }
     val (postfix, other3) = other2.partition {
       case Postfix(name) => true
-      case _ => false
+      case _             => false
     }
     if (other3.nonEmpty) {
-      throw new IllegalArgumentException(s"Unknown operator type: ${other3.head}")
+      throw new IllegalArgumentException(
+        s"Unknown operator type: ${other3.head}"
+      )
     }
-    DefaultInfixDefinitions(infix.collect { case i@Infix(name, group) => name -> i }.toMap, prefix.collect { case p@Prefix(name) => name -> p }.toMap, postfix.collect { case p@Postfix(name) => name -> p }.toMap)
+    DefaultInfixDefinitions(
+      infix.collect { case i @ Infix(name, group) => name -> i }.toMap,
+      prefix.collect { case p @ Prefix(name) => name -> p }.toMap,
+      postfix.collect { case p @ Postfix(name) => name -> p }.toMap
+    )
   }
 }
 
 case class DefaultInfixDefinitions(
-                                    infixOperators: Map[Name, Infix] = Map.empty,
-                                    prefixOperators: Map[Name, Prefix] = Map.empty,
-                                    postfixOperators: Map[Name, Postfix] = Map.empty
-                                  ) extends InfixDefitions {
+    infixOperators: Map[Name, Infix] = Map.empty,
+    prefixOperators: Map[Name, Prefix] = Map.empty,
+    postfixOperators: Map[Name, Postfix] = Map.empty
+) extends InfixDefitions {
 
   // Map from operator symbols to their corresponding precedence groups
   private val operatorGroups: Map[Char, PrecedenceGroup] = Map(
@@ -95,26 +104,38 @@ case class DefaultInfixDefinitions(
   override def addOpInfo(opInfo: OpInfo): InfixDefitions = opInfo match {
     case infix: Infix =>
       if (infixOperators.contains(infix.name)) {
-        throw new IllegalArgumentException(s"Operator ${infix.name} already defined")
+        throw new IllegalArgumentException(
+          s"Operator ${infix.name} already defined"
+        )
       }
       if (operatorGroups.contains(infix.name.head)) {
-        throw new IllegalArgumentException(s"Operator ${infix.name} is a default operator")
+        throw new IllegalArgumentException(
+          s"Operator ${infix.name} is a default operator"
+        )
       }
       copy(infixOperators = infixOperators + (infix.name -> infix))
     case prefix: Prefix =>
       if (prefixOperators.contains(prefix.name)) {
-        throw new IllegalArgumentException(s"Operator ${prefix.name} already defined")
+        throw new IllegalArgumentException(
+          s"Operator ${prefix.name} already defined"
+        )
       }
       if (prefixes.contains(prefix.name.head)) {
-        throw new IllegalArgumentException(s"Operator ${prefix.name} is a default operator")
+        throw new IllegalArgumentException(
+          s"Operator ${prefix.name} is a default operator"
+        )
       }
       copy(prefixOperators = prefixOperators + (prefix.name -> prefix))
     case postfix: Postfix =>
       if (postfixOperators.contains(postfix.name)) {
-        throw new IllegalArgumentException(s"Operator ${postfix.name} already defined")
+        throw new IllegalArgumentException(
+          s"Operator ${postfix.name} already defined"
+        )
       }
       if (postfixes.contains(postfix.name.head)) {
-        throw new IllegalArgumentException(s"Operator ${postfix.name} is a default operator")
+        throw new IllegalArgumentException(
+          s"Operator ${postfix.name} is a default operator"
+        )
       }
       copy(postfixOperators = postfixOperators + (postfix.name -> postfix))
     case _ => ???
@@ -132,37 +153,43 @@ case class DefaultInfixDefinitions(
 
   override def resolvePrefix(name: Name): Option[Prefix] = {
     val firstCharOption = name.headOption
-    firstCharOption.flatMap { firstChar =>
-      if (prefixes.contains(firstChar)) {
-        Some(Prefix(name))
-      } else {
-        None
+    firstCharOption
+      .flatMap { firstChar =>
+        if (prefixes.contains(firstChar)) {
+          Some(Prefix(name))
+        } else {
+          None
+        }
       }
-    }.orElse(prefixOperators.get(name))
+      .orElse(prefixOperators.get(name))
   }
 
   override def resolvePostfix(name: Name): Option[Postfix] = {
     val firstCharOption = name.headOption
-    firstCharOption.flatMap { firstChar =>
-      if (postfixes.contains(firstChar)) {
-        Some(Postfix(name))
-      } else {
-        None
+    firstCharOption
+      .flatMap { firstChar =>
+        if (postfixes.contains(firstChar)) {
+          Some(Postfix(name))
+        } else {
+          None
+        }
       }
-    }.orElse(postfixOperators.get(name))
+      .orElse(postfixOperators.get(name))
   }
 }
 
-val defaultPrecedenceGroup = PrecedenceGroupCtx(Map(
-  Names.Multiplicative.name -> multiplicativeGroup,
-  Names.Additive.name -> additiveGroup,
-  Names.Range.name -> rangeGroup,
-  Names.Relational.name -> relationalGroup,
-  Names.Equality.name -> equalityGroup,
-  Names.LogicalAnd.name -> logicalAndGroup,
-  Names.LogicalXor.name -> logicalXorGroup,
-  Names.LogicalOr.name -> logicalOrGroup
-))
+val defaultPrecedenceGroup = PrecedenceGroupCtx(
+  Map(
+    Names.Multiplicative.name -> multiplicativeGroup,
+    Names.Additive.name -> additiveGroup,
+    Names.Range.name -> rangeGroup,
+    Names.Relational.name -> relationalGroup,
+    Names.Equality.name -> equalityGroup,
+    Names.LogicalAnd.name -> logicalAndGroup,
+    Names.LogicalXor.name -> logicalXorGroup,
+    Names.LogicalOr.name -> logicalOrGroup
+  )
+)
 
 case class PrecedenceGroupCtx(precedenceGroups: Map[Name, PrecedenceGroup]) {
   def groups: Seq[PrecedenceGroup] = precedenceGroups.values.toVector
@@ -180,7 +207,9 @@ object Names {
   val Default = QualifiedIDString.from("Default")
 }
 
-lazy val DefaultPrecedenceGroup: PrecedenceGroup = PrecedenceGroup(Names.Default)
+lazy val DefaultPrecedenceGroup: PrecedenceGroup = PrecedenceGroup(
+  Names.Default
+)
 
 // Define the precedence groups with their associativity and precedence
 lazy val logicalOrGroup: PrecedenceGroup = PrecedenceGroup(

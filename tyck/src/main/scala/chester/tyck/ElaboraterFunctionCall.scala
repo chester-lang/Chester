@@ -7,27 +7,27 @@ import chester.tyck.api.SemanticCollector
 
 trait ElaboraterFunctionCall extends ProvideCtx with Elaborater {
   def elabFunctionCall(
-    expr: DesaltFunctionCall,
-    ty: CellId[Term],
-    effects: CIdOf[EffectsCell]
+      expr: DesaltFunctionCall,
+      ty: CellId[Term],
+      effects: CIdOf[EffectsCell]
   )(using
-    ctx: LocalCtx,
-    parameter: SemanticCollector,
-    ck: Tyck,
-    state: StateAbility[Tyck]
+      ctx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
   ): Term
 }
 
 trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   override def elabFunctionCall(
-    expr: DesaltFunctionCall,
-    ty: CellId[Term],
-    effects: CIdOf[EffectsCell]
+      expr: DesaltFunctionCall,
+      ty: CellId[Term],
+      effects: CIdOf[EffectsCell]
   )(using
-    ctx: LocalCtx,
-    parameter: SemanticCollector,
-    ck: Tyck,
-    state: StateAbility[Tyck]
+      ctx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
   ): Term = {
 
     // Elaborate the function expression to get its term and type
@@ -52,7 +52,14 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
 
     // Add a propagator to unify the function type with the arguments and construct the function call term
     state.addPropagator(
-      UnifyFunctionCall(functionTy, callings.toVector, resultTy, expr, functionTerm, functionCallTerm)
+      UnifyFunctionCall(
+        functionTy,
+        callings.toVector,
+        resultTy,
+        expr,
+        functionTerm,
+        functionCallTerm
+      )
     )
 
     // Unify the result type with the expected type
@@ -62,14 +69,14 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
   }
 
   case class UnifyFunctionCall(
-    functionTy: CellId[Term],
-    callings: Vector[Calling],
-    resultTy: CellId[Term],
-    cause: Expr,
-    functionTerm: Term,
-    functionCallTerm: CellId[Term]
+      functionTy: CellId[Term],
+      callings: Vector[Calling],
+      resultTy: CellId[Term],
+      cause: Expr,
+      functionTerm: Term,
+      functionCallTerm: CellId[Term]
   )(using localCtx: LocalCtx)
-    extends Propagator[Tyck] {
+      extends Propagator[Tyck] {
 
     override val readingCells: Set[CellId[?]] = Set(functionTy)
     override val writingCells: Set[CellId[?]] = Set(resultTy, functionCallTerm)
@@ -89,7 +96,16 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
           true
         case Some(Meta(id)) =>
           // If the function type is a meta variable, delay until it is known
-          state.addPropagator(UnifyFunctionCall(id, callings, resultTy, cause, functionTerm, functionCallTerm))
+          state.addPropagator(
+            UnifyFunctionCall(
+              id,
+              callings,
+              resultTy,
+              cause,
+              functionTerm,
+              functionCallTerm
+            )
+          )
           true
         case Some(other) =>
           // Report specific function call unification error
@@ -103,18 +119,20 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyTelescopes(
-      expected: Vector[TelescopeTerm],
-      actual: Vector[Calling],
-      cause: Expr
+        expected: Vector[TelescopeTerm],
+        actual: Vector[Calling],
+        cause: Expr
     )(using
-      state: StateAbility[Tyck],
-      ck: Tyck
+        state: StateAbility[Tyck],
+        ck: Tyck
     ): Unit = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
         val argTypes = actual.flatMap(_.args.map(_.value))
         val functionType = FunctionType(expected, newTypeTerm)
-        ck.reporter(FunctionCallArityMismatchError(expected.length, actual.length, cause))
+        ck.reporter(
+          FunctionCallArityMismatchError(expected.length, actual.length, cause)
+        )
         return
       }
 
@@ -124,16 +142,22 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     }
 
     def unifyArgs(
-      expectedArgs: Vector[ArgTerm],
-      actualArgs: Vector[CallingArgTerm],
-      cause: Expr
+        expectedArgs: Vector[ArgTerm],
+        actualArgs: Vector[CallingArgTerm],
+        cause: Expr
     )(using
-      state: StateAbility[Tyck],
-      ck: Tyck
+        state: StateAbility[Tyck],
+        ck: Tyck
     ): Unit = {
       // Check that the number of arguments matches
       if (expectedArgs.length != actualArgs.length) {
-        ck.reporter(FunctionCallArgumentMismatchError(expectedArgs.length, actualArgs.length, cause))
+        ck.reporter(
+          FunctionCallArgumentMismatchError(
+            expectedArgs.length,
+            actualArgs.length,
+            cause
+          )
+        )
         return
       }
 
@@ -143,7 +167,9 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
       }
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], ck: Tyck): ZonkResult = {
+    override def naiveZonk(
+        needed: Vector[CellId[?]]
+    )(using state: StateAbility[Tyck], ck: Tyck): ZonkResult = {
       ZonkResult.Require(Vector(functionTy))
     }
   }

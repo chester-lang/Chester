@@ -13,6 +13,9 @@ addSbtPlugin("com.eed3si9n.ifdef" % "sbt-ifdef" % "0.3.0")
 //addSbtPlugin("com.47deg"  % "sbt-microsites" % "1.4.4")
 //addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.7")
 //addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.1.1")
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.3")
 //addSbtPlugin("com.github.sbt" % "sbt-proguard" % "0.5.0")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.12.0")
+
+// cli tools
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.3")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")

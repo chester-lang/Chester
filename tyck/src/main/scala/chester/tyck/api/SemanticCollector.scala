@@ -11,35 +11,42 @@ trait SymbolCollector {
   def referencedOn(expr: Expr): Unit = ()
 }
 
-object NoopSymbolCollector extends SymbolCollector {
-}
+object NoopSymbolCollector extends SymbolCollector {}
 
 trait SemanticCollector {
   // TODO: semantic highlighting?
   def highlightLetDef(expr: Expr): Unit = ()
   def highlightLiteral(expr: Expr): Unit = ()
 
-
-  def newSymbol(call: MaybeVarCall,
-                 id: UniqIdOf[? <: MaybeVarCall],
-                 definedOn: Expr) : SymbolCollector = NoopSymbolCollector
+  def newSymbol(
+      call: MaybeVarCall,
+      id: UniqIdOf[? <: MaybeVarCall],
+      definedOn: Expr
+  ): SymbolCollector = NoopSymbolCollector
 }
 
-private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] = rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
+private implicit inline def rwUniqIDOfVar[T]
+    : ReadWriter[UniqIdOf[? <: MaybeVarCall]] =
+  rwUniqIDOf.asInstanceOf[ReadWriter[UniqIdOf[? <: MaybeVarCall]]]
 
 // TODO: handle when call's ty is MetaTerm
-case class CollectedSymbol(call: MaybeVarCall,
-                           id: UniqIdOf[? <: MaybeVarCall],
-                           definedOn: Expr,
-                           referencedOn: Vector[Expr]) derives ReadWriter {
+case class CollectedSymbol(
+    call: MaybeVarCall,
+    id: UniqIdOf[? <: MaybeVarCall],
+    definedOn: Expr,
+    referencedOn: Vector[Expr]
+) derives ReadWriter {
   def name: Name = call.name
 }
 
 class VectorSemanticCollector extends SemanticCollector {
-  private var builder: mutable.ArrayDeque[CollectedSymbol] = new mutable.ArrayDeque[CollectedSymbol]()
-  override def newSymbol(call: MaybeVarCall,
-                          id: UniqIdOf[? <: MaybeVarCall],
-                          definedOn: Expr): SymbolCollector = {
+  private var builder: mutable.ArrayDeque[CollectedSymbol] =
+    new mutable.ArrayDeque[CollectedSymbol]()
+  override def newSymbol(
+      call: MaybeVarCall,
+      id: UniqIdOf[? <: MaybeVarCall],
+      definedOn: Expr
+  ): SymbolCollector = {
     val index = builder.length
     builder.append(CollectedSymbol(call, id, definedOn, Vector()))
     assert(builder.length == index + 1)
@@ -53,14 +60,16 @@ class VectorSemanticCollector extends SemanticCollector {
   def get: Vector[CollectedSymbol] = builder.toVector
 }
 
-object NoopSemanticCollector extends SemanticCollector {
-}
+object NoopSemanticCollector extends SemanticCollector {}
 
-class UnusedVariableWarningWrapper(x: SemanticCollector) extends SemanticCollector {
+class UnusedVariableWarningWrapper(x: SemanticCollector)
+    extends SemanticCollector {
   private var unusedVariables: Vector[CollectedSymbol] = Vector()
-  override def newSymbol(call: MaybeVarCall,
-                          id: UniqIdOf[? <: MaybeVarCall],
-                          definedOn: Expr): SymbolCollector = {
+  override def newSymbol(
+      call: MaybeVarCall,
+      id: UniqIdOf[? <: MaybeVarCall],
+      definedOn: Expr
+  ): SymbolCollector = {
     val symbolCollector = x.newSymbol(call, id, definedOn)
     val c = CollectedSymbol(call, id, definedOn, Vector())
     unusedVariables = unusedVariables :+ c
@@ -71,5 +80,6 @@ class UnusedVariableWarningWrapper(x: SemanticCollector) extends SemanticCollect
       }
     }
   }
-  def foreachUnused(f: CollectedSymbol => Unit): Unit = unusedVariables.foreach(f)
+  def foreachUnused(f: CollectedSymbol => Unit): Unit =
+    unusedVariables.foreach(f)
 }

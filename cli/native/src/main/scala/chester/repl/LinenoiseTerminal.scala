@@ -83,7 +83,10 @@ class LinenoiseTerminal(init: TerminalInit) extends InTerminal[Id] {
 }
 
 object LinenoiseTerminal extends Terminal[Id] {
-  override def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+  override def runTerminal[T](
+      init: TerminalInit,
+      block: InTerminal[Id] ?=> T
+  ): T = {
     val terminal = new LinenoiseTerminal(init)
     try {
       block(using terminal)

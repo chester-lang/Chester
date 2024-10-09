@@ -4,7 +4,8 @@ import cats.Id
 import chester.utils.io.*
 import fansi.Str
 
-class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id]) extends AbstractInTerminal[Id] {
+class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id])
+    extends AbstractInTerminal[Id] {
   override inline def initHistory = Vector()
 
   override inline def readALine(prompt: Str): String = {
@@ -16,7 +17,10 @@ class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id]) extends Abstr
 }
 
 class SimpleTerminalFactory(using runner: Runner[Id]) extends Terminal[Id] {
-  inline def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+  inline def runTerminal[T](
+      init: TerminalInit,
+      block: InTerminal[Id] ?=> T
+  ): T = {
     val terminal = new SimpleTerminal(init)
     block(using terminal)
   }

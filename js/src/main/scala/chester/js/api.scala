@@ -7,8 +7,11 @@ import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.doc.*
 
 def runFileTopLevel(content: String, lightMode: Boolean): String = {
-  implicit val options: PrettierOptions = PrettierOptions.Default.updated(LightMode, lightMode)
-  Parser.parseTopLevel(FileNameAndContent("playground.chester", content)) match {
+  implicit val options: PrettierOptions =
+    PrettierOptions.Default.updated(LightMode, lightMode)
+  Parser.parseTopLevel(
+    FileNameAndContent("playground.chester", content)
+  ) match {
     case Right(parsedBlock) =>
       Tycker.check(parsedBlock) match {
         case TyckResult.Success(result, status, warnings) =>

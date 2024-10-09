@@ -12,12 +12,13 @@ private def tMacro(sc: Expr[StringContext])(using Quotes): Expr[T] = {
   println(System.getProperty("user.dir"))
   println("aaa")
   // it works
-  //Files.write(Paths.get("/Users/.../test.output"), sc.show.getBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+  // Files.write(Paths.get("/Users/.../test.output"), sc.show.getBytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
   '{
     new T {
       def t(args: Any*)(implicit lang: Language): String = {
         $sc.s(args*)
       }
-    } }
+    }
+  }
 }
 implicit inline def t(inline sc: StringContext): T = ${ tMacro('sc) }

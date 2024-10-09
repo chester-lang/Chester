@@ -1,3 +1,3 @@
 package chester.utils
 
-inline def onNativeImageBuildTime(f: =>Unit): Unit = ()
+inline def onNativeImageBuildTime(f: => Unit): Unit = ()

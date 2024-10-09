@@ -7,10 +7,11 @@ import java.nio.file.{Files, Path, Paths}
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
-def getInputFiles(testDir: String): (Path, Seq[Path] ) = {
+def getInputFiles(testDir: String): (Path, Seq[Path]) = {
   val path = Paths.get(testDir)
 
-  val inputFiles = Files.list(path)
+  val inputFiles = Files
+    .list(path)
     .iterator()
     .asScala
     .filter(_.toString.endsWith(".chester"))

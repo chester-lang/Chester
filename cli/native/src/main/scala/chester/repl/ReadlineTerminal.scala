@@ -37,7 +37,7 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
   override def writeln(line: fansi.Str): Unit = {
     println(line.render)
   }
-  
+
   override def readline(info: TerminalInfo): ReadLineResult = {
     var prompt = info.defaultPrompt
     var continue = true
@@ -59,12 +59,16 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
           currentInputs += "\n" + line
         }
 
-        facade.add_history(line) // GNU Readline can only handle one line entry in history
+        facade.add_history(
+          line
+        ) // GNU Readline can only handle one line entry in history
         val status = info.checkInputStatus(currentInputs)
 
         status match {
           case Complete =>
-            val prev = facade.history_get(facade.history_base + facade.history_length - 1)
+            val prev = facade.history_get(
+              facade.history_base + facade.history_length - 1
+            )
             if (prev == null || prev != line) {
               writeHistory() // Manage history based on existence
             }
@@ -94,7 +98,10 @@ class ReadlineTerminal(init: TerminalInit) extends InTerminal[Id] {
 }
 
 object ReadlineTerminal extends Terminal[Id] {
-  override def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+  override def runTerminal[T](
+      init: TerminalInit,
+      block: InTerminal[Id] ?=> T
+  ): T = {
     val terminal = new ReadlineTerminal(init)
     try {
       block(using terminal)

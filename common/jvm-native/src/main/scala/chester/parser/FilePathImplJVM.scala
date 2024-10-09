@@ -21,10 +21,12 @@ implicit object FilePathImplJVM extends FilePathImpl {
       case Success(content) =>
         Right(content)
       case Failure(exception) =>
-        Left(ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero))
+        Left(
+          ParseError(s"Failed to read file: ${exception.getMessage}", Pos.Zero)
+        )
     }
   }
 
-  override def absolute(fileName: String): String = Paths.get(fileName).toAbsolutePath.toString
+  override def absolute(fileName: String): String =
+    Paths.get(fileName).toAbsolutePath.toString
 }
-

@@ -10,36 +10,38 @@ import chester.tyck.api.SymbolCollector
 import chester.utils.propagator.*
 import chester.uniqid.*
 
-
-
 trait ProvideCtx extends ProvideCellId with ElaboraterBase {
 
   case class ContextItem(
-                          name: Name,
-                          uniqId: UniqIdOf[? <: MaybeVarCall],
-                          ref: MaybeVarCall,
-                          ty: CellIdOr[Term],
-                          reference: Option[SymbolCollector] = None
-                        ) {
+      name: Name,
+      uniqId: UniqIdOf[? <: MaybeVarCall],
+      ref: MaybeVarCall,
+      ty: CellIdOr[Term],
+      reference: Option[SymbolCollector] = None
+  ) {
     def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
 
     def tyTerm(using state: StateAbility[Tyck]): Term = toTerm(ty)
   }
 
   object ContextItem {
-    def builtin[Ck](item: BuiltinItem)(using state: StateAbility[Ck]): (TyAndVal, ContextItem) = {
+    def builtin[Ck](
+        item: BuiltinItem
+    )(using state: StateAbility[Ck]): (TyAndVal, ContextItem) = {
       val varId = UniqId.generate[ToplevelV]
       val name = ToplevelV(AbsoluteRef(BuiltinModule, item.id), item.ty, varId)
       val ty1 = state.toId(item.ty)
-      (TyAndVal(ty1, state.toId(item.value)),
-        ContextItem(item.id, varId, name, ty1))
+      (
+        TyAndVal(ty1, state.toId(item.value)),
+        ContextItem(item.id, varId, name, ty1)
+      )
     }
   }
 
   case class TyAndVal(
-                       ty: CellIdOr[Term],
-                       value: CellIdOr[Term]
-                     ) {
+      ty: CellIdOr[Term],
+      value: CellIdOr[Term]
+  ) {
     def tyId(using state: StateAbility[Tyck]): CellId[Term] = toId(ty)
 
     def valueId(using state: StateAbility[Tyck]): CellId[Term] = toId(value)
@@ -50,7 +52,9 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
   }
 
   object TyAndVal {
-    def create[Ck](ty: Term, value: Term)(using state: StateAbility[Ck]): TyAndVal = {
+    def create[Ck](ty: Term, value: Term)(using
+        state: StateAbility[Ck]
+    ): TyAndVal = {
       TyAndVal(literal(ty), literal(value))
     }
 
@@ -66,14 +70,17 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
   }
 
   case class LocalCtx(
-                       map: Map[Name, UniqIdOf[? <: MaybeVarCall]] = Map.empty[Name, UniqIdOf[? <: MaybeVarCall]],
-                       contextItems: Map[UniqIdOf[? <: MaybeVarCall], ContextItem] = Map.empty[UniqIdOf[? <: MaybeVarCall], ContextItem],
-                       knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
-                       imports: Imports = Imports.Empty,
-                       loadedModules: LoadedModules = LoadedModules.Empty,
-                       operators: OperatorsContext = OperatorsContext.Default,
-                       currentModule: ModuleRef = DefaultModule,
-                     ) {
+      map: Map[Name, UniqIdOf[? <: MaybeVarCall]] =
+        Map.empty[Name, UniqIdOf[? <: MaybeVarCall]],
+      contextItems: Map[UniqIdOf[? <: MaybeVarCall], ContextItem] =
+        Map.empty[UniqIdOf[? <: MaybeVarCall], ContextItem],
+      knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] =
+        Map.empty[UniqIdOf[? <: MaybeVarCall], TyAndVal],
+      imports: Imports = Imports.Empty,
+      loadedModules: LoadedModules = LoadedModules.Empty,
+      operators: OperatorsContext = OperatorsContext.Default,
+      currentModule: ModuleRef = DefaultModule
+  ) {
     def updateModule(module: ModuleRef): LocalCtx = copy(currentModule = module)
     def getKnown(x: MaybeVarCall): Option[TyAndVal] =
       knownMap.get(x.uniqId.asInstanceOf[UniqIdOf[? <: MaybeVarCall]])
@@ -81,9 +88,12 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
     def get(id: Name): Option[ContextItem] =
       map.get(id).flatMap(uniqId => contextItems.get(uniqId))
 
-    def knownAdd(id: UniqIdOf[? <: MaybeVarCall], y: TyAndVal): LocalCtx = knownAdd(Seq(id -> y))
+    def knownAdd(id: UniqIdOf[? <: MaybeVarCall], y: TyAndVal): LocalCtx =
+      knownAdd(Seq(id -> y))
 
-    def knownAdd(seq: Seq[(UniqIdOf[? <: MaybeVarCall], TyAndVal)]): LocalCtx = {
+    def knownAdd(
+        seq: Seq[(UniqIdOf[? <: MaybeVarCall], TyAndVal)]
+    ): LocalCtx = {
       val newKnownMap = seq.foldLeft(knownMap) { (acc, item) =>
         assert(!acc.contains(item._1), s"Duplicate key ${item._1}")
         acc + item
@@ -110,7 +120,10 @@ trait ProvideCtx extends ProvideCellId with ElaboraterBase {
       val items = BuiltIn.builtinItems.map(ContextItem.builtin)
       val map = items.map(item => item._2.name -> item._2.uniqId).toMap
       val contextItems = items.map(item => item._2.uniqId -> item._2).toMap
-      val knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = items.map(item => item._2.uniqId -> item._1).toMap.asInstanceOf[Map[UniqIdOf[? <: MaybeVarCall], TyAndVal]]
+      val knownMap: Map[UniqIdOf[? <: MaybeVarCall], TyAndVal] = items
+        .map(item => item._2.uniqId -> item._1)
+        .toMap
+        .asInstanceOf[Map[UniqIdOf[? <: MaybeVarCall], TyAndVal]]
       LocalCtx(map, contextItems, knownMap)
     }
   }

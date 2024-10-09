@@ -26,8 +26,10 @@ object Language {
       None
     }
   }
-  
-  def from(x: String): Language = fromOption(x).getOrElse(throw new IllegalArgumentException(s"Invalid language $x"))
+
+  def from(x: String): Language = fromOption(x).getOrElse(
+    throw new IllegalArgumentException(s"Invalid language $x")
+  )
 }
 
 enum LanguageTag {
@@ -52,17 +54,18 @@ enum RegionTag {
 }
 
 case class RegionTable(table: Map[RegionTag, Map[String, String]]) {
-  private val alternatives: Vector[Map[String, String]] = table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
+  private val alternatives: Vector[Map[String, String]] =
+    table.toSeq.sortBy((_, map) => -map.size).map(_._2).toVector
 
   def get(region: RegionTag, context: String): String = {
     table.get(region).flatMap(_.get(context)) match {
       case Some(value) => return value
-      case None => {}
+      case None        => {}
     }
     alternatives.foreach { map =>
       map.get(context) match {
         case Some(value) => return value
-        case None => {}
+        case None        => {}
       }
     }
     context
@@ -90,19 +93,25 @@ object Template {
   }
 
   def applyTemplate(template: String, args: Vector[Any]): String = {
-    if (args.length > 9) throw new IllegalArgumentException("Too many arguments")
+    if (args.length > 9)
+      throw new IllegalArgumentException("Too many arguments")
     var result = template
     val xs = args.map(_.toString)
     for (i <- xs.indices) {
       val newResult = result.replace(s"$${i+1}", xs(i))
-      if (newResult == result) throw new IllegalArgumentException(s"Missing argument ${i + 1} in template $template")
+      if (newResult == result)
+        throw new IllegalArgumentException(
+          s"Missing argument ${i + 1} in template $template"
+        )
       result = newResult
     }
     for (i <- 1 to 9) {
       for (x <- xs) {
-        if (x.contains(s"$${i}")) throw new IllegalArgumentException(s"Unexpected $i in args $args")
+        if (x.contains(s"$${i}"))
+          throw new IllegalArgumentException(s"Unexpected $i in args $args")
       }
-      if (result.contains(s"$${i}")) throw new IllegalArgumentException(s"Missing argument $i in args $args")
+      if (result.contains(s"$${i}"))
+        throw new IllegalArgumentException(s"Missing argument $i in args $args")
     }
     result.replace("$$", "$")
   }

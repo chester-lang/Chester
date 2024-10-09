@@ -11,7 +11,8 @@ opaque type UniqIdOf[+A] = Int
 
 opaque type UniqIdOffset = Int
 
-private implicit val UniqIdOffsetRW: ReadWriter[UniqIdOffset] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+private implicit val UniqIdOffsetRW: ReadWriter[UniqIdOffset] =
+  readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
 
 extension (id: UniqIdOffset) {
   def <=(that: UniqIdOffset): Boolean = id <= that
@@ -20,7 +21,8 @@ extension (id: UniqIdOffset) {
 }
 
 /** start <= x < end */
-case class UniqIdRange(start: UniqIdOffset, end: UniqIdOffset)derives ReadWriter {
+case class UniqIdRange(start: UniqIdOffset, end: UniqIdOffset)
+    derives ReadWriter {
   require(start <= end, s"Invalid range: $start > $end")
 
   def size: Int = end - start
@@ -35,13 +37,17 @@ extension (x: UniqId) {
 extension [T](x: UniqIdOf[T]) {
   def asid: UniqId = x
   def rerange(current: UniqIdRange, target: UniqIdRange): UniqIdOf[T] = {
-    require(current.start <= x && x < current.end, s"Invalid range: $current, $x")
+    require(
+      current.start <= x && x < current.end,
+      s"Invalid range: $current, $x"
+    )
     val offset = x - current.start
     target.start + offset
   }
 }
 
-private val rwUniqID: ReadWriter[UniqIdOf[?]] = readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
+private val rwUniqID: ReadWriter[UniqIdOf[?]] =
+  readwriter[java.lang.Integer].bimap(_.toInt, _.toInt)
 
 implicit inline def rwUniqIDOf[T]: ReadWriter[UniqIdOf[T]] = rwUniqID
 
@@ -70,9 +76,7 @@ trait OnlyHasUniqId extends Any {
   def uniqId: UniqId
 }
 
-trait HasUniqId extends Any with ContainsUniqId with OnlyHasUniqId {
-
-}
+trait HasUniqId extends Any with ContainsUniqId with OnlyHasUniqId {}
 
 object UniqId {
   def generate[T]: UniqIdOf[T] = uniqIdCounter.getAndIncrement()
@@ -92,7 +96,8 @@ object UniqId {
     (UniqIdRange(start, end), result)
   }
 
-  def is(x: Any): Boolean = x.isInstanceOf[Int] || x.isInstanceOf[Integer] || x.isInstanceOf[UniqIdOf[?]]
+  def is(x: Any): Boolean = x.isInstanceOf[Int] || x.isInstanceOf[Integer] || x
+    .isInstanceOf[UniqIdOf[?]]
 
   def calculateRange[T <: ContainsUniqId](x: T): UniqIdRange = {
     val currentRangeCollect = new mutable.ArrayDeque[UniqId]()
@@ -105,11 +110,14 @@ object UniqId {
     UniqIdRange(currentRangeCollect.min, currentRangeCollect.max + 1)
   }
 
-  def giveNewRange[T <: ContainsUniqId](x: T): (oldRange: UniqIdRange, newRange: UniqIdRange, result: T) = {
+  def giveNewRange[T <: ContainsUniqId](
+      x: T
+  ): (oldRange: UniqIdRange, newRange: UniqIdRange, result: T) = {
     val currentRange = x.uniqIdRange
     val newRange = requireRange(currentRange.size)
     val reranger: RerangerU = new RerangerU {
-      override def apply[T](id: UniqIdOf[T]): UniqIdOf[T] = id.rerange(currentRange, newRange)
+      override def apply[T](id: UniqIdOf[T]): UniqIdOf[T] =
+        id.rerange(currentRange, newRange)
     }
     (currentRange, newRange, x.rerangeU(reranger).asInstanceOf[T])
   }

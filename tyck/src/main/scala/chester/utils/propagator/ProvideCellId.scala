@@ -15,7 +15,9 @@ trait ProvideCellId {
   trait Cell[T] {
     def default: Option[T] = None
 
-    /** stable means can only change once from None to a fixed Some value or always be a fixed value */
+    /** stable means can only change once from None to a fixed Some value or
+      * always be a fixed value
+      */
     def readStable: Option[T]
 
     def readUnstable: Option[T] = readStable
@@ -39,22 +41,39 @@ trait ProvideCellId {
   trait BaseMapCell[A, B] {
     def add(key: A, value: B): BaseMapCell[A, B]
   }
-  
+
   trait UnstableCell[T] extends Cell[T] {
-    override def readStable: Option[T] = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
+    override def readStable: Option[T] =
+      throw new UnsupportedOperationException(
+        s"${getClass.getName} is not stable"
+      )
 
-    override def hasStableValue: Boolean = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
+    override def hasStableValue: Boolean =
+      throw new UnsupportedOperationException(
+        s"${getClass.getName} is not stable"
+      )
 
-    override def noStableValue: Boolean = throw new UnsupportedOperationException(s"${getClass.getName} is not stable")
+    override def noStableValue: Boolean =
+      throw new UnsupportedOperationException(
+        s"${getClass.getName} is not stable"
+      )
   }
   trait NoFill[T] extends Cell[T] {
-    override def fill(newValue: T): Cell[T] = throw new UnsupportedOperationException(s"${getClass.getName} cannot be filled")
+    override def fill(newValue: T): Cell[T] =
+      throw new UnsupportedOperationException(
+        s"${getClass.getName} cannot be filled"
+      )
   }
 
-  trait MapCell[A, B] extends UnstableCell[Map[A, B]] with BaseMapCell[A, B] with NoFill[Map[A, B]] {
-  }
+  trait MapCell[A, B]
+      extends UnstableCell[Map[A, B]]
+      with BaseMapCell[A, B]
+      with NoFill[Map[A, B]] {}
 
-  case class OnceCell[T](value: Option[T] = None, override val default: Option[T] = None) extends Cell[T] {
+  case class OnceCell[T](
+      value: Option[T] = None,
+      override val default: Option[T] = None
+  ) extends Cell[T] {
     override def readStable: Option[T] = value
 
     override def fill(newValue: T): OnceCell[T] = {
@@ -71,16 +90,20 @@ trait ProvideCellId {
     }
   }
 
-  case class CollectionCell[T](value: Vector[T] = Vector.empty) extends SeqCell[T] {
+  case class CollectionCell[T](value: Vector[T] = Vector.empty)
+      extends SeqCell[T] {
     override def readUnstable: Option[Vector[T]] = Some(value)
 
-    override def add(newValue: T): CollectionCell[T] = copy(value = value :+ newValue)
+    override def add(newValue: T): CollectionCell[T] =
+      copy(value = value :+ newValue)
   }
 
-  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B]) extends MapCell[A, B] {
+  case class MappingCell[A, B](value: Map[A, B] = Map.empty[A, B])
+      extends MapCell[A, B] {
     override def readStable: Option[Map[A, B]] = Some(value)
 
-    override def add(key: A, newValue: B): MappingCell[A, B] = copy(value = value + (key -> newValue))
+    override def add(key: A, newValue: B): MappingCell[A, B] =
+      copy(value = value + (key -> newValue))
   }
 
   case class LiteralCell[T](value: T) extends Cell[T] {
@@ -88,7 +111,8 @@ trait ProvideCellId {
 
     override def hasStableValue: Boolean = true
 
-    override def fill(newValue: T): LiteralCell[T] = throw new UnsupportedOperationException("LiteralCell cannot be filled")
+    override def fill(newValue: T): LiteralCell[T] =
+      throw new UnsupportedOperationException("LiteralCell cannot be filled")
   }
 
   def literal[T](t: T)(using state: StateAbility[?]): CellId[T] = {
@@ -110,24 +134,33 @@ trait ProvideCellId {
 
     def zonkingCells: Set[CIdOf[Cell[?]]] = Set.empty
 
-    /**
-     * @return true if the propagator finished its work
-     */
+    /** @return
+      *   true if the propagator finished its work
+      */
     def run(using state: StateAbility[Ability], more: Ability): Boolean
 
     /** make a best guess for zonkingCells */
-    def naiveZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult
+    def naiveZonk(
+        needed: Vector[CIdOf[Cell[?]]]
+    )(using state: StateAbility[Ability], more: Ability): ZonkResult
 
-    def naiveFallbackZonk(needed: Vector[CIdOf[Cell[?]]])(using state: StateAbility[Ability], more: Ability): ZonkResult = naiveZonk(needed)
+    def naiveFallbackZonk(
+        needed: Vector[CIdOf[Cell[?]]]
+    )(using state: StateAbility[Ability], more: Ability): ZonkResult =
+      naiveZonk(needed)
   }
 
   trait StateAbility[Ability] {
     def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T]
 
-    def readStable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readStable
-    def readUnstable[U](id: CellId[U]): Option[U] = readCell[Cell[U]](id).get.readUnstable
+    def readStable[U](id: CellId[U]): Option[U] =
+      readCell[Cell[U]](id).get.readStable
+    def readUnstable[U](id: CellId[U]): Option[U] =
+      readCell[Cell[U]](id).get.readUnstable
 
-    protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit
+    protected def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using
+        Ability
+    ): Unit
 
     def fill[T <: Cell[U], U](id: CIdOf[T], f: U)(using Ability): Unit = {
       update[T](id, _.fill(f).asInstanceOf[T])
@@ -137,22 +170,29 @@ trait ProvideCellId {
       update[T](id, _.add(f).asInstanceOf[T])
     }
 
-    def add[T <: MapCell[A, B], A, B](id: CIdOf[T], key: A, value: B)(using Ability): Unit = {
+    def add[T <: MapCell[A, B], A, B](id: CIdOf[T], key: A, value: B)(using
+        Ability
+    ): Unit = {
       update[T](id, _.add(key, value).asInstanceOf[T])
     }
 
     def addCell[T <: Cell[?]](cell: T): CIdOf[T]
 
-    def hasStableValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasStableValue)
+    def hasStableValue[T <: Cell[?]](id: CIdOf[T]): Boolean =
+      readCell(id).exists((x: T) => x.hasStableValue)
 
     def noStableValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasStableValue(id)
 
-    def hasSomeValue[T <: Cell[?]](id: CIdOf[T]): Boolean = readCell(id).exists((x: T) => x.hasSomeValue)
+    def hasSomeValue[T <: Cell[?]](id: CIdOf[T]): Boolean =
+      readCell(id).exists((x: T) => x.hasSomeValue)
 
     def noAnyValue[T <: Cell[?]](id: CIdOf[T]): Boolean = !hasSomeValue(id)
-    def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = ???
+    def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit =
+      ???
 
-    def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T]
+    def addPropagator[T <: Propagator[Ability]](propagator: T)(using
+        more: Ability
+    ): PIdOf[T]
 
     def tick(using more: Ability): Unit
 
@@ -164,7 +204,9 @@ trait ProvideCellId {
       }
     }
 
-    def readingZonkings(cells: Vector[CIdOf[Cell[?]]]): Vector[Propagator[Ability]] = ???
+    def readingZonkings(
+        cells: Vector[CIdOf[Cell[?]]]
+    ): Vector[Propagator[Ability]] = ???
 
     /** make a best guess for those cells */
     def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit

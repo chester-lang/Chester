@@ -11,7 +11,7 @@ object Const {
   val Arrow: String = "->"
   val Let: String = "let"
   val Def: String = "def"
-  val `:`: String = ":"
-  val `=`: String = "="
+  val `:` : String = ":"
+  val `=` : String = "="
   val kw1: Set[String] = Set(Let, Def)
 }

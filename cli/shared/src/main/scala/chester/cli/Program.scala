@@ -16,22 +16,35 @@ import chester.syntax.TASTPackage.TAST
 import chester.utils.doc.*
 
 object Program {
-  def spawn[F[_]](config: Option[Config])(using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, spawn: Spawn[F], io: IO[F]): Unit = {
+  def spawn[F[_]](config: Option[Config])(using
+      runner: Runner[F],
+      terminal: Terminal[F],
+      env: Environment,
+      path: FilePathImpl,
+      spawn: Spawn[F],
+      io: IO[F]
+  ): Unit = {
     Spawn.spawn {
       (new Program[F]).run(config)
     }
   }
 }
 
-class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environment, path: FilePathImpl, io: IO[F]) {
+class Program[F[_]](using
+    runner: Runner[F],
+    terminal: Terminal[F],
+    env: Environment,
+    path: FilePathImpl,
+    io: IO[F]
+) {
   def run(configOpt: Option[Config]): F[Unit] = {
     configOpt match {
       case Some(config) =>
         config match {
           case RunConfig(inputOpt) =>
             inputOpt match {
-              case None => this.spawnREPLEngine()
-              case Some("-") => this.spawnREPLEngine()
+              case None            => this.spawnREPLEngine()
+              case Some("-")       => this.spawnREPLEngine()
               case Some(fileOrDir) => this.runFileOrDirectory(fileOrDir)
             }
           case IntegrityConfig =>
@@ -79,9 +92,11 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
   def compileFile(inputFile: String, targetDir: String): F[Unit] = {
     // Expected input file extension
     val expectedExtension = ".chester"
-    
+
     if (!inputFile.endsWith(expectedExtension)) {
-      println(s"Error: Input file '$inputFile' does not have the expected '$expectedExtension' extension.")
+      println(
+        s"Error: Input file '$inputFile' does not have the expected '$expectedExtension' extension."
+      )
       Runner.pure(())
     } else {
       // Generate output file name by replacing the extension
@@ -125,18 +140,19 @@ class Program[F[_]](using runner: Runner[F], terminal: Terminal[F], env: Environ
     val inputPath = stringToPath(inputFile)
     for {
       fileExists <- IO.exists(inputPath)
-      _ <- if (fileExists) {
-        for {
-          bytes <- IO.read(inputPath)
-          tast <- Runner.pure(upickle.default.readBinary[TAST](bytes))
-          // Use `toDoc` and `FansiPrettyPrinter` to render the TAST
-          doc = tast.ast.toDoc(using PrettierOptions.Default)
-          rendered = FansiPrettyPrinter.render(doc, maxWidth = 80).render
-          _ <- IO.println(rendered)
-        } yield ()
-      } else {
-        IO.println(s"Error: File $inputFile does not exist.")
-      }
+      _ <-
+        if (fileExists) {
+          for {
+            bytes <- IO.read(inputPath)
+            tast <- Runner.pure(upickle.default.readBinary[TAST](bytes))
+            // Use `toDoc` and `FansiPrettyPrinter` to render the TAST
+            doc = tast.ast.toDoc(using PrettierOptions.Default)
+            rendered = FansiPrettyPrinter.render(doc, maxWidth = 80).render
+            _ <- IO.println(rendered)
+          } yield ()
+        } else {
+          IO.println(s"Error: File $inputFile does not exist.")
+        }
     } yield ()
   }
 }

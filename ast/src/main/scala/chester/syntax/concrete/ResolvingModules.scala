@@ -15,28 +15,52 @@ type Hash = Int
 case class ResolvingBlock(statements: Vector[Stmt], expr: Option[Expr])
 
 @deprecated("Create new module representation")
-case class ResolvingModuleFile(id: QualifiedIDString, fileName: FileName, sourceHash: Option[Hash] = None, content: Option[ResolvingBlock] = None, tycked: Option[Nothing] = None) {
+case class ResolvingModuleFile(
+    id: QualifiedIDString,
+    fileName: FileName,
+    sourceHash: Option[Hash] = None,
+    content: Option[ResolvingBlock] = None,
+    tycked: Option[Nothing] = None
+) {
   require(content.isDefined || tycked.isDefined)
 }
 
-
 @deprecated("Create new module representation")
 object ResolvingModuleFile {
-  def apply(id: QualifiedIDString, fileName: FileName, sourceHash: Option[Hash] = None, content: Option[ResolvingBlock] = None, tycked: Option[Nothing] = None): ResolvingModuleFile = {
+  def apply(
+      id: QualifiedIDString,
+      fileName: FileName,
+      sourceHash: Option[Hash] = None,
+      content: Option[ResolvingBlock] = None,
+      tycked: Option[Nothing] = None
+  ): ResolvingModuleFile = {
     new ResolvingModuleFile(id, fileName, sourceHash, content, tycked)
   }
-  def apply(id: QualifiedIDString, fileName: FileName, content: ResolvingBlock): ResolvingModuleFile = {
-    new ResolvingModuleFile(id, fileName, content=Some(content))
+  def apply(
+      id: QualifiedIDString,
+      fileName: FileName,
+      content: ResolvingBlock
+  ): ResolvingModuleFile = {
+    new ResolvingModuleFile(id, fileName, content = Some(content))
   }
 }
 
 @deprecated("Create new module representation")
-case class ResolvingModule(id: QualifiedIDString, resolving: Vector[ResolvingModuleFile])
+case class ResolvingModule(
+    id: QualifiedIDString,
+    resolving: Vector[ResolvingModuleFile]
+)
 
 @deprecated("Create new module representation")
-case class ResolvingModules(modules: HashMap[QualifiedIDString, ResolvingModule]) extends AnyVal {
-  def getOption(id: QualifiedIDString): Option[ResolvingModule] = modules.get(id)
-  def addModuleFile(id: QualifiedIDString, moduleFile: ResolvingModuleFile): ResolvingModules = {
+case class ResolvingModules(
+    modules: HashMap[QualifiedIDString, ResolvingModule]
+) extends AnyVal {
+  def getOption(id: QualifiedIDString): Option[ResolvingModule] =
+    modules.get(id)
+  def addModuleFile(
+      id: QualifiedIDString,
+      moduleFile: ResolvingModuleFile
+  ): ResolvingModules = {
     require(moduleFile.id == id)
     ???
   }
@@ -53,8 +77,7 @@ object ResolvingBlock {
 }
 
 @deprecated("Create new module representation")
-object ResolvingModule {
-}
+object ResolvingModule {}
 
 @deprecated("Create new module representation")
 object ResolvingModules {

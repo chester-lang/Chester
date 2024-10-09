@@ -18,7 +18,10 @@ import scala.collection.mutable
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 
-class ChesterLanguageServer extends LanguageServer with TextDocumentService with WorkspaceService {
+class ChesterLanguageServer
+    extends LanguageServer
+    with TextDocumentService
+    with WorkspaceService {
   enableDebug()
   private val logger = getLogger
 
@@ -32,11 +35,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     logger.info("Language client connected to the server")
   }
 
-  override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
+  override def initialize(
+      params: InitializeParams
+  ): CompletableFuture[InitializeResult] = {
     logger.info(s"Initializing with params: $params")
     val capabilities = new ServerCapabilities()
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
-    capabilities.setCompletionProvider(new CompletionOptions(false, List(".", ":").asJava))
+    capabilities.setCompletionProvider(
+      new CompletionOptions(false, List(".", ":").asJava)
+    )
     capabilities.setHoverProvider(true)
     capabilities.setDefinitionProvider(true)
     capabilities.setReferencesProvider(true)
@@ -60,11 +67,17 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
     // Store the DocumentInfo in the documents map
     documents.synchronized {
-      documents(uri) = DocumentInfo(content = text, symbols = collected, tyckResult = tyckResult)
+      documents(uri) = DocumentInfo(
+        content = text,
+        symbols = collected,
+        tyckResult = tyckResult
+      )
     }
 
     // Publish diagnostics
-    client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
+    client.publishDiagnostics(
+      new PublishDiagnosticsParams(uri, diagnostics.asJava)
+    )
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
@@ -76,20 +89,29 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     val updatedText = applyChanges(uri, changes)
 
     // Process the updated document
-    val (tyckResult,collected,  diagnostics) = processDocument(uri, updatedText)
+    val (tyckResult, collected, diagnostics) = processDocument(uri, updatedText)
 
     // Update the DocumentInfo with the new content and TyckResult
     documents.synchronized {
       documents.get(uri).foreach { _ =>
-        documents(uri) = DocumentInfo(content = updatedText,symbols = collected, tyckResult = tyckResult)
+        documents(uri) = DocumentInfo(
+          content = updatedText,
+          symbols = collected,
+          tyckResult = tyckResult
+        )
       }
     }
 
     // Publish diagnostics
-    client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics.asJava))
+    client.publishDiagnostics(
+      new PublishDiagnosticsParams(uri, diagnostics.asJava)
+    )
   }
 
-  private def applyChanges(uri: String, changes: Seq[TextDocumentContentChangeEvent]): String = {
+  private def applyChanges(
+      uri: String,
+      changes: Seq[TextDocumentContentChangeEvent]
+  ): String = {
     val currentText = documents.synchronized {
       documents.get(uri).map(_.content).getOrElse("")
     }
@@ -102,7 +124,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         // Apply incremental change
         val startOffset = getOffset(text, change.getRange.getStart)
         val endOffset = getOffset(text, change.getRange.getEnd)
-        text.substring(0, startOffset) + change.getText + text.substring(endOffset)
+        text.substring(0, startOffset) + change.getText + text.substring(
+          endOffset
+        )
       }
     }
 
@@ -146,10 +170,15 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     documents.remove(uri)
 
     // Clear diagnostics for the closed document
-    client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava))
+    client.publishDiagnostics(
+      new PublishDiagnosticsParams(uri, List.empty[Diagnostic].asJava)
+    )
   }
 
-  def processDocument(uri: String, text: String): (TyckResult[Unit, Judge],Vector[CollectedSymbol], List[Diagnostic]) = {
+  def processDocument(
+      uri: String,
+      text: String
+  ): (TyckResult[Unit, Judge], Vector[CollectedSymbol], List[Diagnostic]) = {
     val parseResult = Parser.parseTopLevel(FileNameAndContent(uri, text))
     val collecter = new VectorSemanticCollector()
 
@@ -162,9 +191,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           case TyckResult.Success(_, _, warnings) =>
             // Process warnings
             warnings.map { warning =>
-              val range = warning.location.map { pos =>
-                rangeFromSourcePos(pos)
-              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+              val range = warning.location
+                .map { pos =>
+                  rangeFromSourcePos(pos)
+                }
+                .getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
 
               new Diagnostic(
                 range,
@@ -177,9 +208,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           case TyckResult.Failure(errors, warnings, _, _) =>
             // Combine errors and warnings into diagnostics
             val errorDiagnostics = errors.map { error =>
-              val range = error.location.map { pos =>
-                rangeFromSourcePos(pos)
-              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+              val range = error.location
+                .map { pos =>
+                  rangeFromSourcePos(pos)
+                }
+                .getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
 
               new Diagnostic(
                 range,
@@ -190,9 +223,11 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
             }
 
             val warningDiagnostics = warnings.map { warning =>
-              val range = warning.location.map { pos =>
-                rangeFromSourcePos(pos)
-              }.getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
+              val range = warning.location
+                .map { pos =>
+                  rangeFromSourcePos(pos)
+                }
+                .getOrElse(new Range(new Position(0, 0), new Position(0, 0)))
 
               new Diagnostic(
                 range,
@@ -205,7 +240,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
             (errorDiagnostics ++ warningDiagnostics).toList
         }
 
-        (tyckResult,collecter.get, diagnostics)
+        (tyckResult, collecter.get, diagnostics)
 
       case Left(parseError) =>
         val range = new Range(
@@ -226,7 +261,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  override def completion(params: CompletionParams): CompletableFuture[Either[JList[CompletionItem], CompletionList]] = {
+  override def completion(
+      params: CompletionParams
+  ): CompletableFuture[Either[JList[CompletionItem], CompletionList]] = {
     val position = params.getPosition
     val textDocument = params.getTextDocument.getUri
     val completions = provideCompletions(textDocument, position)
@@ -234,7 +271,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     CompletableFuture.completedFuture(Either.forRight(completionList))
   }
 
-  private def provideCompletions(uri: String, position: Position): List[CompletionItem] = {
+  private def provideCompletions(
+      uri: String,
+      position: Position
+  ): List[CompletionItem] = {
     // Implement logic to provide code completions based on the position
     List(new CompletionItem("exampleCompletion"))
   }
@@ -246,7 +286,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     CompletableFuture.completedFuture(new Hover(contents))
   }
 
-  private def provideHoverInformation(uri: String, position: Position): MarkupContent = {
+  private def provideHoverInformation(
+      uri: String,
+      position: Position
+  ): MarkupContent = {
     // Logic to fetch hover information based on position
     val content = new MarkupContent()
     content.setKind("markdown")
@@ -270,16 +313,25 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   // WorkspaceService methods
-  override def didChangeConfiguration(params: DidChangeConfigurationParams): Unit = {
+  override def didChangeConfiguration(
+      params: DidChangeConfigurationParams
+  ): Unit = {
     // Handle workspace configuration change here
   }
 
-  override def didChangeWatchedFiles(params: DidChangeWatchedFilesParams): Unit = {
+  override def didChangeWatchedFiles(
+      params: DidChangeWatchedFilesParams
+  ): Unit = {
     // Handle watched files change event here
   }
 
-  private def sourcePosFromLSP(uri: String, position: Position): Option[SourcePos] = {
-    logger.debug(s"Converting LSP position to source position for URI: $uri at position: $position")
+  private def sourcePosFromLSP(
+      uri: String,
+      position: Position
+  ): Option[SourcePos] = {
+    logger.debug(
+      s"Converting LSP position to source position for URI: $uri at position: $position"
+    )
     documents.synchronized {
       documents.get(uri)
     } match {
@@ -291,17 +343,23 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
         val line = position.getLine
         val utf16Column = position.getCharacter
 
-        logger.debug(s"Calculating offsets for line: $line, UTF-16 column: $utf16Column")
+        logger.debug(
+          s"Calculating offsets for line: $line, UTF-16 column: $utf16Column"
+        )
 
         val lineStartOffset = getLineStartOffset(text, line)
         val charIndexUtf16 = lineStartOffset + utf16Column
 
-        logger.debug(s"Line start offset: $lineStartOffset, char index UTF-16: $charIndexUtf16")
+        logger.debug(
+          s"Line start offset: $lineStartOffset, char index UTF-16: $charIndexUtf16"
+        )
 
-        val codepointIndex = stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
+        val codepointIndex =
+          stringIndex.charIndexToUnicodeIndex(charIndexUtf16.refineUnsafe)
 
         // Get the line and column with both Unicode code points and UTF-16 code units
-        val lineAndColumn = stringIndex.charIndexToLineAndColumnWithUTF16(charIndexUtf16)
+        val lineAndColumn =
+          stringIndex.charIndexToLineAndColumnWithUTF16(charIndexUtf16)
 
         val pos = Pos(
           index = WithUTF16(codepointIndex, charIndexUtf16.refineUnsafe),
@@ -333,8 +391,10 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def definition(
-                           params: DefinitionParams
-                         ): CompletableFuture[Either[JList[? <: Location], JList[? <: LocationLink]]] = {
+      params: DefinitionParams
+  ): CompletableFuture[
+    Either[JList[? <: Location], JList[? <: LocationLink]]
+  ] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -353,7 +413,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
               logger.debug(s"Source position obtained: $sourcePos")
               val symbolOpt = document.symbols.find { sym =>
                 positionWithin(sym.definedOn.sourcePos.get, sourcePos) ||
-                  sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
+                sym.referencedOn.exists(ref =>
+                  positionWithin(ref.sourcePos.get, sourcePos)
+                )
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
@@ -365,7 +427,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                   val locations = java.util.Collections.singletonList(location)
                   Either.forLeft(locations)
                 case None =>
-                  logger.warn(s"No symbol found at position: $sourcePos in document: $uri")
+                  logger.warn(
+                    s"No symbol found at position: $sourcePos in document: $uri"
+                  )
                   if (logger.isTraceEnabled) {
                     logger.trace("Available symbols:")
                     document.symbols.foreach { sym =>
@@ -383,7 +447,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
                   Either.forLeft(java.util.Collections.emptyList())
               }
             case None =>
-              logger.warn(s"Could not obtain source position for URI: $uri at position: $position")
+              logger.warn(
+                s"Could not obtain source position for URI: $uri at position: $position"
+              )
               Either.forLeft(java.util.Collections.emptyList())
           }
         case None =>
@@ -395,8 +461,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 
   private def positionWithin(pos1: SourcePos, pos2: SourcePos): Boolean = {
     pos1.source.fileName == pos2.source.fileName &&
-      comparePositions(pos1.range.start, pos2.range.start) <= 0 &&
-      comparePositions(pos1.range.end, pos2.range.end) >= 0
+    comparePositions(pos1.range.start, pos2.range.start) <= 0 &&
+    comparePositions(pos1.range.end, pos2.range.end) >= 0
   }
 
   private def comparePositions(p1: Pos, p2: Pos): Int = {
@@ -407,7 +473,9 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
     }
   }
 
-  override def references(params: ReferenceParams): CompletableFuture[JList[? <: Location]] = {
+  override def references(
+      params: ReferenceParams
+  ): CompletableFuture[JList[? <: Location]] = {
     CompletableFuture.supplyAsync { () =>
       val uri = params.getTextDocument.getUri
       val position = params.getPosition
@@ -421,11 +489,18 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
           sourcePosFromLSP(uri, position) match {
             case Some(sourcePos) =>
               val symbolOpt = document.symbols.find { sym =>
-                positionWithin(sym.definedOn.sourcePos.get, sourcePos) || sym.referencedOn.exists(ref => positionWithin(ref.sourcePos.get, sourcePos))
+                positionWithin(
+                  sym.definedOn.sourcePos.get,
+                  sourcePos
+                ) || sym.referencedOn.exists(ref =>
+                  positionWithin(ref.sourcePos.get, sourcePos)
+                )
               }
               symbolOpt match {
                 case Some(symbolInfo) =>
-                  val locations = (symbolInfo.referencedOn.flatMap(_.sourcePos) ++ symbolInfo.definedOn.sourcePos).map { refPos =>
+                  val locations = (symbolInfo.referencedOn.flatMap(
+                    _.sourcePos
+                  ) ++ symbolInfo.definedOn.sourcePos).map { refPos =>
                     new Location(refPos.fileName, rangeFromSourcePos(refPos))
                   }
                   new java.util.ArrayList(locations.toList.asJava)
@@ -443,8 +518,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def documentSymbol(
-                               params: DocumentSymbolParams
-                             ): CompletableFuture[JList[Either[SymbolInformation, DocumentSymbol]]] = {
+      params: DocumentSymbolParams
+  ): CompletableFuture[JList[Either[SymbolInformation, DocumentSymbol]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement document symbol lookup logic here
       new java.util.ArrayList[Either[SymbolInformation, DocumentSymbol]]()
@@ -452,8 +527,8 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def codeAction(
-                           params: CodeActionParams
-                         ): CompletableFuture[JList[Either[Command, CodeAction]]] = {
+      params: CodeActionParams
+  ): CompletableFuture[JList[Either[Command, CodeAction]]] = {
     CompletableFuture.supplyAsync(() => {
       // Implement code action logic here
       new java.util.ArrayList[Either[Command, CodeAction]]()
@@ -461,18 +536,22 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
   }
 
   override def symbol(
-                       params: WorkspaceSymbolParams
-                     ): CompletableFuture[Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]] = {
+      params: WorkspaceSymbolParams
+  ): CompletableFuture[
+    Either[JList[? <: SymbolInformation], JList[? <: WorkspaceSymbol]]
+  ] = {
     CompletableFuture.supplyAsync(() => {
       val query = params.getQuery.toLowerCase
       val allSymbols = documents.synchronized {
         documents.values.flatMap(_.symbols).toList
       }
 
-      val matchingSymbols = allSymbols.filter { symbol =>
-        symbol.name.toLowerCase.contains(query) &&
+      val matchingSymbols = allSymbols
+        .filter { symbol =>
+          symbol.name.toLowerCase.contains(query) &&
           symbol.definedOn.sourcePos.nonEmpty
-      }.map(tyckSymbolToLSP)
+        }
+        .map(tyckSymbolToLSP)
 
       Either.forLeft(matchingSymbols.asJava)
     })
@@ -497,8 +576,7 @@ class ChesterLanguageServer extends LanguageServer with TextDocumentService with
 }
 
 case class DocumentInfo(
-                         content: String,
-                         symbols: Vector[CollectedSymbol],
-                         tyckResult: TyckResult[Unit, Judge],
-                       ) {
-}
+    content: String,
+    symbols: Vector[CollectedSymbol],
+    tyckResult: TyckResult[Unit, Judge]
+) {}
