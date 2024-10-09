@@ -1,5 +1,7 @@
 # chester-lang
 
+This project is under development and not usable yet.
+
 https://www.the-lingo.org - note that the domain is subject to change
 
 [VSCode Extension](https://marketplace.visualstudio.com/items?itemName=mio-19.chester-language-support)
