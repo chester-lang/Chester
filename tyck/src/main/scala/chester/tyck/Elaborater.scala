@@ -12,7 +12,7 @@ import chester.utils.*
 import chester.utils.propagator.*
 import chester.syntax.*
 import chester.tyck.api.{NoopSemanticCollector, SemanticCollector, UnusedVariableWarningWrapper}
-
+import chester.uniqid.*
 import scala.language.implicitConversions
 import scala.util.boundary
 import scala.util.boundary.break

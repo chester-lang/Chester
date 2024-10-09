@@ -8,6 +8,7 @@ import chester.syntax.{Name, QualifiedIDString}
 import chester.tyck.BuiltIn.BuiltinItem
 import chester.tyck.api.SymbolCollector
 import chester.utils.propagator.*
+import chester.uniqid.*
 
 
 

@@ -3,6 +3,7 @@ package chester.tyck
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.api.SemanticCollector
+import chester.uniqid.*
 
 trait ElaboraterFunction extends ProvideCtx with Elaborater {
   def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term

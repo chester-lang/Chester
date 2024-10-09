@@ -1,6 +1,6 @@
 package chester.utils.propagator
 
-import chester.syntax.core.{UniqId, UniqIdOf}
+import chester.uniqid.{UniqId, UniqIdOf}
 
 import scala.collection.mutable
 

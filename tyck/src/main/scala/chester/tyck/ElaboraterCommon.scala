@@ -8,6 +8,7 @@ import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
 import chester.utils.propagator.CommonPropagator
+import chester.uniqid.*
 
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Tyck] {
 

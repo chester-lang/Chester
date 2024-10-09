@@ -4,7 +4,7 @@ import chester.syntax.*
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import upickle.default.*
-
+import chester.uniqid.*
 import scala.collection.mutable
 
 trait SymbolCollector {

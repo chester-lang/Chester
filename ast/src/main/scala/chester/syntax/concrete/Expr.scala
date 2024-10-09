@@ -23,6 +23,7 @@ import chester.utils.*
 import spire.math.Rational
 import chester.utils.impls.*
 import chester.error.ProblemUpickle.*
+import chester.uniqid.*
 
 
 enum CommentType derives ReadWriter {

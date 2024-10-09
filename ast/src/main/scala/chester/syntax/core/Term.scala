@@ -12,7 +12,7 @@ import chester.utils.doc.*
 import chester.utils.impls.*
 import spire.math.Rational
 import upickle.default.*
-
+import chester.uniqid.*
 import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
 
