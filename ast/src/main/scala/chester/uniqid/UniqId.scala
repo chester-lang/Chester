@@ -41,8 +41,32 @@ private val rwUniqID: ReadWriter[UniqIdOf[?]] = readwriter[java.lang.Integer].bi
 
 implicit inline def rwUniqIDOf[T]: ReadWriter[UniqIdOf[T]]= rwUniqID
 
-trait HasUniqId extends Any {
+trait CollectorU {
+  def apply[T](x:UniqIdOf[T]): Unit = ()
+}
+
+trait CollectUniqId  extends Any  {
+  def collectU(collector: CollectorU): Unit
+}
+
+trait RerangerU {
+  def apply[T](x:UniqIdOf[T]): UniqIdOf[T] = x
+}
+
+trait RerangeUniqId  extends Any  {
+  def rerangeU(reranger: RerangerU): Any
+}
+
+trait ContainsUniqId extends Any with CollectUniqId with RerangeUniqId {
+
+}
+
+trait OnlyHasUniqId extends Any {
   def uniqId: UniqId
+}
+
+trait HasUniqId extends Any with ContainsUniqId with OnlyHasUniqId {
+
 }
 
 object UniqId {
@@ -54,6 +78,6 @@ object UniqId {
     val end = currentOffset()
     (UniqIdRange(start, end), result)
   }
-  
+
   def is(x: Any): Boolean = x.isInstanceOf[Int] || x.isInstanceOf[Integer] || x.isInstanceOf[UniqIdOf[?]]
 }

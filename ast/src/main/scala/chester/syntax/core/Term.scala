@@ -77,7 +77,7 @@ object Bind {
   def from(bind: LocalV): Bind = Bind(bind, bind.ty)
 }
 
-sealed trait Term extends ToDoc derives ReadWriter {
+sealed trait Term extends ToDoc with ContainsUniqId derives ReadWriter {
   def meta: OptionTermMeta
 
   def sourcePos: Option[SourcePos] = meta.map(_.sourcePos)
@@ -155,10 +155,22 @@ sealed trait Term extends ToDoc derives ReadWriter {
       case _ => descent(_.replaceMeta(f))
     }
   }
+
+  override def collectU(collector: CollectorU): Unit = {
+    inspect(_.collectU(collector))
+  }
+
+  override def rerangeU(reranger: RerangerU): Term = {
+    descent(_.rerangeU(reranger))
+  }
 }
 
 sealed trait TermWithUniqId extends Term with HasUniqId derives ReadWriter {
   override def uniqId: UniqIdOf[Term]
+
+  override def collectU(collector: CollectorU): Unit = ???
+
+  override def rerangeU(reranger: RerangerU): TermWithUniqId = ???
 }
 
 // allow write, not allow read
