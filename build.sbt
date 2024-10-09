@@ -704,12 +704,12 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jvmSettings(
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "os-lib" % "0.11.0"
+      "com.lihaoyi" %%% "os-lib" % "0.11.1"
     )
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "os-lib" % "0.11.0"
+      "com.lihaoyi" %%% "os-lib" % "0.11.1"
     ),
     scalacOptions ++= (if (supportNativeBuildForTermux)
                          Seq(
