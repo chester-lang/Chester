@@ -40,12 +40,12 @@ def REPLEngine[F[_]](using
 
     override def continuationPrompt: fansi.Str = continuationPrompt0
   }
-  
+
   // TODO: Add Out(n) to refer history evaluation
   Vector()
   Vector()
 
-   // add to the environment of evaluation
+  // add to the environment of evaluation
 
   def startF: F[Unit] = {
     for {

@@ -900,6 +900,7 @@ lazy val buildProtocol = crossProject(JVMPlatform)
   )
   .jvmSettings(commonJvmLibSettings)
 
+val jgitVersion = "7.0.0.202409031743-r"
 lazy val buildTool = crossProject(JVMPlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -912,7 +913,10 @@ lazy val buildTool = crossProject(JVMPlatform)
     assembly / assemblyOutputPath := file("target") / "chester-build.jar",
     nativeImageOutput := file("target") / "chester-build",
     commonSettings,
+    graalvmSettings,
     libraryDependencies ++= Seq(
+      "org.eclipse.jgit" % "org.eclipse.jgit" % jgitVersion,
+      "org.eclipse.jgit" % "org.eclipse.jgit.lfs" % jgitVersion
     )
   )
 

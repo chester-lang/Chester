@@ -35,15 +35,15 @@ object InfixDefitions {
   def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
     val (infix, other) = opinfos.partition {
       case Infix(_, _) => true
-      case _              => false
+      case _           => false
     }
     val (prefix, other2) = other.partition {
       case Prefix(_) => true
-      case _            => false
+      case _         => false
     }
     val (postfix, other3) = other2.partition {
       case Postfix(_) => true
-      case _             => false
+      case _          => false
     }
     if (other3.nonEmpty) {
       throw new IllegalArgumentException(

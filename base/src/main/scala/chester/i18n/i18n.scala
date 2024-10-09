@@ -80,7 +80,7 @@ case class TranslationTable(table: Map[LanguageTag, RegionTable]) {
 
 object Template {
   def stringContextToString(sc: StringContext): String = {
-    
+
     val stringbuilder = new StringBuilder()
     for (part <- sc.parts) {
       if (part.isEmpty) {
@@ -98,7 +98,7 @@ object Template {
     var result = template
     val xs = args.map(_.toString)
     for (i <- xs.indices) {
-      val newResult = result.replace(s"$$${i+1}", xs(i))
+      val newResult = result.replace(s"$$${i + 1}", xs(i))
       if (newResult == result)
         throw new IllegalArgumentException(
           s"Missing argument ${i + 1} in template $template"

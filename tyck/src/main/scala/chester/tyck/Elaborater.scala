@@ -398,7 +398,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
       case b @ Block(head +: heads, tail, _) =>
         resolve(head) match {
           case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
-          case _                     => (DefaultModule, b)
+          case _                        => (DefaultModule, b)
         }
       case expr => (DefaultModule, Block(Vector(), Some(expr), expr.meta))
     }

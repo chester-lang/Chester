@@ -319,8 +319,8 @@ case object StmtDesalt {
 case object SimpleDesalt {
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr =
     expr match {
-      case OpSeq(xs, _) if xs.length == 1    => xs.head
-      case _ @ DesaltCaseClauseMatch(x) => x
+      case OpSeq(xs, _) if xs.length == 1 => xs.head
+      case _ @DesaltCaseClauseMatch(x)    => x
       case block @ Block(heads, tail, _)
           if heads.exists(_.isInstanceOf[DesaltCaseClause]) ||
             tail.exists(_.isInstanceOf[DesaltCaseClause]) =>
@@ -334,7 +334,7 @@ case object SimpleDesalt {
         } else {
           DesaltMatching(clauses, block.meta)
         }
-      case _ @ Block(heads, tail, meta) =>
+      case _ @Block(heads, tail, meta) =>
         Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta)
       case DesaltSimpleFunction(func) => func
       case obj: ObjectExpr            => ObjectDesalt.desugarObjectExpr(obj)
