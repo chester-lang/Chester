@@ -2,6 +2,7 @@
     "GetStartedPage": {
         "title": "Chester starten",
         "introText": "Willkommen bei Chester! Folgen Sie diesen Schritten, um mit Ihrer neuen Programmiersprache zu beginnen.",
+        "vsCodeExtensionText": "VSCode-Erweiterung",
         "step1Title": "1. Installieren Sie Proto, um Chester-Versionen zu verwalten",
         "step1Description": "Proto ist ein Tool, mit dem Sie verschiedene Versionen von Chester verwalten können. Installieren Sie Proto mit den folgenden Befehlen, basierend auf Ihrem Betriebssystem:",
         "linuxMacOSWSL": "Linux, macOS, WSL",
