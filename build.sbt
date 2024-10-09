@@ -57,10 +57,6 @@ val commonSettings = Seq(
     "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
     "org.scalacheck" %%% "scalacheck" % "1.18.1" % Test,
     "com.lihaoyi" %%% "pprint" % "0.9.0" % Test
-  ),
-  // https://stackoverflow.com/questions/73822653/scala-2-artifact-in-scala-3-project-conflicting-cross-version-suffixes/73824811#73824811
-  excludeDependencies ++= Seq(
-    "org.scalacheck" % "scalacheck_native0.5_2.13"
   )
 )
 val commonVendorSettings = Seq(
@@ -113,8 +109,7 @@ ThisBuild / assemblyMergeStrategy := {
   case PathList("META-INF", "versions", "9", "module-info.class") =>
     MergeStrategy.discard
   case PathList(
-        "module-info.class" | "plugin.xml" | "plugin.properties" | ".options" |
-        ".api_description"
+        "module-info.class" | "plugin.xml" | "plugin.properties" | ".options" | ".api_description"
       ) =>
     MergeStrategy.discard
   case PathList("META-INF", "eclipse.inf") => MergeStrategy.discard
@@ -226,52 +221,6 @@ lazy val spireNative = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .jvmSettings(commonJvmLibSettings)
 
-// commit 9ee80c0d887acdcf700252a2ff66d08ced2472c5, core
-// add polyfill for java8 StringOpsForJava8 in ToString.Scala
-// EqHashMap & EqHashSet this() patched with () to compile with scala3
-// `protected[this] type Coll = CC[_, Nothing]` commented out
-// causing Scala3 compiler crashing
-// deleted MappingTypedSpec.scala from test because of compilation error
-// deleted scalax.collection.EditingSpec & scalax.time.MicroBenchmarkTest beacuse of failing
-// test moved to _test because of for2_13Use3 breaking the tests
-// find . -name '*.scala-' -delete
-lazy val scalaGraph = crossProject(JSPlatform, JVMPlatform, NativePlatform)
-  .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("vendor/scala-graph"))
-  .settings(
-    scala2VendorSettings,
-    scalacOptions ++= Seq(
-      "-Ytasty-reader"
-    )
-    /*
-  libraryDependencies ++= Seq(
-    "org.scalatest" %%% "scalatest" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
-    "org.scalatest" %%% "scalatest-funsuite" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
-    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.2.19" % Test cross (CrossVersion.for2_13Use3),
-    "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test cross (CrossVersion.for2_13Use3),
-    "org.scalacheck" %%% "scalacheck" % "1.18.1" % Test cross (CrossVersion.for2_13Use3),
-  ),
-     */
-  )
-  .jvmSettings(commonJvmLibSettings)
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % "1.18.1" cross (CrossVersion.for2_13Use3)
-    )
-  )
-  .nativeSettings(
-    libraryDependencies ++= Seq(
-      "org.scalacheck" % "scalacheck_native0.5_2.13" % "1.18.1" % Compile
-    )
-  )
-  .jsSettings(
-    libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % "1.18.1" cross (CrossVersion.for2_13Use3)
-    )
-  )
-// https://stackoverflow.com/questions/52224680/buildt-sbt-exclude-dependencies-from-dependson-submodule/52229391#52229391
-def excl(m: ModuleID): InclExclRule = InclExclRule(m.organization, m.name)
 // split modules trying to increase incremental compilation speed
 lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -280,12 +229,14 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     name := "utils",
     commonSettings,
-    baseDeps
+    baseDeps,
+    libraryDependencies ++= Seq(
+      "org.scala-graph" %%% "graph-core" % "2.0.2"
+    )
   )
   .jvmSettings(
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.2",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude ("com.lihaoyi", "upickle_3")
@@ -300,17 +251,12 @@ lazy val utils = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
-      // "org.scala-graph" %%% "graph-core" % "2.0.1" exclude("org.scalacheck", "scalacheck_2.13") cross (CrossVersion.for3Use2_13),
-      "org.scalacheck" %%% "scalacheck" % "1.18.1" // for scala-graph
-    ),
-    libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "1.1.0"
     )
   )
-  .nativeConfigure(_.dependsOn(ironNative.native, scalaGraph.native))
+  .nativeConfigure(_.dependsOn(ironNative.native))
   .jsSettings(
     libraryDependencies ++= Seq(
-      "org.scala-graph" %%% "graph-core" % "2.0.2",
       "io.github.iltotore" %%% "iron" % "2.6.0",
       "io.github.iltotore" %%% "iron-cats" % "2.6.0",
       "io.github.iltotore" %%% "iron-upickle" % "2.6.0" exclude ("com.lihaoyi", "upickle_3")
@@ -995,7 +941,6 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .aggregate(
     ironNative,
     spireNative,
-    scalaGraph,
     typednode,
     typedstd,
     typedundici,
