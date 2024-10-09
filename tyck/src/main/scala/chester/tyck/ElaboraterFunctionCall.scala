@@ -128,8 +128,8 @@ trait ProvideElaboraterFunctionCall extends ElaboraterFunctionCall {
     ): Unit = {
       // Check that the number of telescopes matches
       if (expected.length != actual.length) {
-        val argTypes = actual.flatMap(_.args.map(_.value))
-        val functionType = FunctionType(expected, newTypeTerm)
+        actual.flatMap(_.args.map(_.value))
+        FunctionType(expected, newTypeTerm)
         ck.reporter(
           FunctionCallArityMismatchError(expected.length, actual.length, cause)
         )

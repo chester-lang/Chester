@@ -21,7 +21,7 @@ object Main {
     logger.trace("Trace enabled")
 
     val serverSocket = new ServerSocket(port)
-    logger.info(s"Server socket created, waiting for client connection...")
+    logger.info("Server socket created, waiting for client connection...")
 
     val clientSocket = serverSocket.accept()
     logger.info(s"Client connected from ${clientSocket.getInetAddress}")

@@ -4,9 +4,9 @@ import cats.implicits.*
 trait CommonPropagator[Ck] extends ProvideCellId {
 
   case class MergeSimple[T](a: CellId[T], b: CellId[T]) extends Propagator[Ck] {
-    override val readingCells = Set(a, b)
-    override val writingCells = Set(a, b)
-    override val zonkingCells = Set(a, b)
+    override val readingCells: Set[CIdOf[Cell[?]]] = Set(a, b)
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(a, b)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(a, b)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       val aVal = state.readStable(a)
@@ -59,8 +59,8 @@ trait CommonPropagator[Ck] extends ProvideCellId {
       result: CellId[U]
   ) extends Propagator[Ck] {
     override val readingCells = xs.toSet
-    override val writingCells = Set(result)
-    override val zonkingCells = Set(result)
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(result)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(result)
 
     override def run(using state: StateAbility[Ck], more: Ck): Boolean = {
       xs.traverse(state.readStable(_)).map(f) match {

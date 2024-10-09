@@ -189,7 +189,7 @@ sealed trait Styling derives ReadWriter {
 implicit inline def StylingToStyle(styling: Styling): Style = styling.toStyle
 
 object Stylings {
-  val Empty = Stylings()
+  val Empty: Stylings = Stylings()
 }
 
 case class Stylings(

@@ -31,7 +31,7 @@ object IntegrityCheck {
   }
 
   private def parseAndCheck(input: String, expected: Expr): Unit = {
-    val resultignored = Parser.parseExpr(
+    Parser.parseExpr(
       FileNameAndContent("testFile", input)
     ) // it must parse with location
     Parser.parseExpr(

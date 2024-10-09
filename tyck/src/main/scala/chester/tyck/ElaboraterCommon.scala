@@ -68,9 +68,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using
       localCtx: LocalCtx
   ) extends Propagator[Tyck] {
-    override val readingCells = Set(lhs, rhs)
-    override val writingCells = Set(lhs, rhs)
-    override val zonkingCells = Set(lhs, rhs)
+    override val readingCells: Set[CIdOf[Cell[?]]] = Set(lhs, rhs)
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(lhs, rhs)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(lhs, rhs)
 
     override def run(using state: StateAbility[Tyck], more: Tyck): Boolean = {
       val lhs = state.readStable(this.lhs)
@@ -119,9 +119,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       cause: Expr
   )(using localCtx: LocalCtx)
       extends Propagator[Tyck] {
-    override val readingCells = Set(lhs) ++ rhs.toSet
-    override val writingCells = Set(lhs)
-    override val zonkingCells = Set(lhs) ++ rhs.toSet
+    override val readingCells: Set[CIdOf[Cell[?]]] = Set(lhs) ++ rhs.toSet
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(lhs)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(lhs) ++ rhs.toSet
 
     override def run(using state: StateAbility[Tyck], more: Tyck): Boolean = {
       val lhsValueOpt = state.readStable(lhs)
@@ -214,9 +214,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case (StringLiteral(value1, _), StringLiteral(value2, _)) =>
         value1 == value2
 
-      case (Union(types1, _), Union(types2, _)) => ???
+      case (Union(_, _), Union(_, _)) => ???
 
-      case (Intersection(types1, _), Intersection(types2, _)) => ???
+      case (Intersection(_, _), Intersection(_, _)) => ???
 
       case _ => false
     }
@@ -225,9 +225,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   case class LiteralType(x: Literals, tyLhs: CellId[Term])(using
       localCtx: LocalCtx
   ) extends Propagator[Tyck] {
-    override val readingCells = Set(tyLhs)
-    override val writingCells = Set(tyLhs)
-    override val zonkingCells = Set(tyLhs)
+    override val readingCells: Set[CIdOf[Cell[?]]] = Set(tyLhs)
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(tyLhs)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(tyLhs)
 
     override def run(using state: StateAbility[Tyck], more: Tyck): Boolean = {
       if (state.noStableValue(tyLhs)) return false
@@ -387,7 +387,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 
       case (LevelFinite(_, _), Levelω(_)) => ()
 
-      case (Union(types1, _), Union(types2, _)) => ???
+      case (Union(_, _), Union(_, _)) => ???
 
       // Base case: types do not match
       case _ =>
@@ -425,9 +425,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       ck: Tyck,
       localCtx: LocalCtx
   ) extends Propagator[Tyck] {
-    override val readingCells = Set(tRhs, listTLhs)
-    override val writingCells = Set(tRhs, listTLhs)
-    override val zonkingCells = Set(listTLhs)
+    override val readingCells: Set[CIdOf[Cell[?]]] = Set(tRhs, listTLhs)
+    override val writingCells: Set[CIdOf[Cell[?]]] = Set(tRhs, listTLhs)
+    override val zonkingCells: Set[CIdOf[Cell[?]]] = Set(listTLhs)
 
     override def run(using state: StateAbility[Tyck], more: Tyck): Boolean = {
       val t1 = state.readStable(this.tRhs)

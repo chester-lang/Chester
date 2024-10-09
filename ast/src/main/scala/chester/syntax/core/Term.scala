@@ -760,7 +760,7 @@ case class Effects(effects: Map[LocalV, Term], meta: OptionTermMeta = None) exte
 
   def nonEmpty: Boolean = (effects ne NoEffect.effects) && effects.nonEmpty
 
-  override def collectMeta =
+  override def collectMeta: Vector[MetaTerm] =
     effects.flatMap((a, b) => a.collectMeta ++ b.collectMeta).toVector
 
   override def replaceMeta(f: MetaTerm => Term): Effects = Effects(effects.map { case (a, b) =>
@@ -849,7 +849,7 @@ case class LetStmtTerm(
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     Doc.text(s"let $name: ") <> ty.toDoc <> Doc.text(
-      s" = "
+      " = "
     ) <> value.toDoc // TODO: fix this
   }
 }
@@ -865,7 +865,7 @@ case class DefStmtTerm(
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
     Doc.text(s"def $name: ") <> ty.toDoc <> Doc.text(
-      s" = "
+      " = "
     ) <> value.toDoc // TODO: fix this
   }
 }

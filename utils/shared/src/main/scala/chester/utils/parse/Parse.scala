@@ -3,7 +3,6 @@ package chester.utils.parse
 import fastparse.*
 import fastparse.NoWhitespace.*
 
-
 type Character = Int
 
 inline def CharacterPred(

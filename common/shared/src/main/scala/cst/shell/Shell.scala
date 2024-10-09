@@ -78,7 +78,7 @@ class ShellMonad(using val shell: Shell) {
     override def flatMap[U](f: shell.Str => F[U]): F[U] = f(value)
   }
 
-  def FStrDeclare(variable: shell.Var[shell.Str]) = FStrStore(variable, "")
+  def FStrDeclare(variable: shell.Var[shell.Str]): FStrStore = FStrStore(variable, "")
 
   case class FStrStore(variable: shell.Var[shell.Str], value: shell.Str) extends F[shell.Str] {
     override def flatMap[U](f: shell.Str => F[U]): F[U] =
@@ -89,7 +89,7 @@ class ShellMonad(using val shell: Shell) {
     override def flatMap[U](f: shell.IntNum => F[U]): F[U] = f(value)
   }
 
-  def FIntDeclare(variable: shell.Var[shell.IntNum]) = FIntStore(variable, 0)
+  def FIntDeclare(variable: shell.Var[shell.IntNum]): FIntStore = FIntStore(variable, 0)
 
   case class FIntStore(variable: shell.Var[shell.IntNum], value: shell.IntNum) extends F[shell.IntNum] {
     override def flatMap[U](f: shell.IntNum => F[U]): F[U] =

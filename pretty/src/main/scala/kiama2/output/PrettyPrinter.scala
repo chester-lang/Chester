@@ -11,7 +11,6 @@
 
 package kiama2.output
 
-
 import scala.language.implicitConversions
 
 /** Common type definitions for all pretty-printers.
@@ -44,7 +43,7 @@ object PrettyPrinterTypes {
 
   /** An empty links mapping.
     */
-  val emptyLinks = List[Link]()
+  val emptyLinks: List[Link] = List[Link]()
 
 }
 
@@ -329,7 +328,7 @@ trait PrettyPrinterBase {
 
   /** Return a document that is the result of folding `f` over the sequence `ds`. Returns the empty document is `ds` is empty.
     */
-  def folddoc(ds: Seq[Doc], f: (Doc, Doc) => Doc) =
+  def folddoc(ds: Seq[Doc], f: (Doc, Doc) => Doc): Doc =
     if (ds.isEmpty)
       emptyDoc
     else
@@ -1029,7 +1028,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
         PPState(emptyLinks, List[Int](), List[Int](), 0, newBuilder)
       ) { case (PPState(x, ss, ts, o, l), e) =>
         e match {
-          case Start(a) =>
+          case Start(_) =>
             PPState(x, ss, o :: ts, o, l)
           case StartOffset(t) =>
             PPState(x, t :: ss, o :: ts, o, l)
@@ -1052,7 +1051,7 @@ trait AbstractPrettyPrinter extends PrettyPrinterBase {
               o,
               l
             )
-          case text @ Text(t, meta) =>
+          case text @ Text(t, _) =>
             PPState(x, ss, ts, o + t.length, l.append(text))
         }
       }

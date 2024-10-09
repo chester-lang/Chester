@@ -25,14 +25,14 @@ case class CoreTycker(reporter: Reporter[TyckError]) {
       ListType(elementType)
     case ObjectTerm(clauses, _) =>
       val fieldTypes = clauses.map { case ObjectClauseValueTerm(key, value, _) =>
-        val keyType = inferNoEffect(key)
+        inferNoEffect(key)
         val valueType = inferNoEffect(value)
         ObjectClauseValueTerm(key, valueType)
       }
       ObjectType(fieldTypes)
     case lv: LocalV =>
       lv.ty
-    case FunctionType(telescope, resultTy, _, _) => Typeω // TODO
+    case FunctionType(_, _, _, _) => Typeω // TODO
     case _ =>
       reporter.apply(UnsupportedTermError(term))
       ErrorTerm(UnsupportedTermError(term))

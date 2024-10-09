@@ -2,7 +2,6 @@ package chester.parser
 
 import chester.syntax.concrete.*
 import munit.Assertions.{assertEquals, fail}
-import munit.FunSuite
 import upickle.default.*
 
 def parseAndCheck(input: String, expected: Expr): Unit = {
@@ -33,7 +32,7 @@ def parseAndCheck(input: String, expected: Expr): Unit = {
 }
 
 def getParsed(input: String): Expr = {
-  val resultignored = Parser.parseExpr(
+  Parser.parseExpr(
     FileNameAndContent("testFile", input)
   ) // it must parse with location
   Parser.parseExpr(

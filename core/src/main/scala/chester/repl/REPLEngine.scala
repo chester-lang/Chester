@@ -40,12 +40,12 @@ def REPLEngine[F[_]](using
 
     override def continuationPrompt: fansi.Str = continuationPrompt0
   }
-  var count = 0
+  
   // TODO: Add Out(n) to refer history evaluation
-  var inputs: Vector[Expr] = Vector()
-  var outputs: Vector[Judge] = Vector()
+  Vector()
+  Vector()
 
-  def Out: Judge = ??? // add to the environment of evaluation
+   // add to the environment of evaluation
 
   def startF: F[Unit] = {
     for {

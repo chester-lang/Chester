@@ -7,7 +7,6 @@ import chester.utils.ponyfill.Files
 import munit.FunSuite
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
 
 class FilesTyckTest extends FunSuite {
   val (testDir, inputFiles) = getInputFiles("tests/tyck")
@@ -21,7 +20,7 @@ class FilesTyckTest extends FunSuite {
       Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
           Tycker.check(parsedBlock) match {
-            case TyckResult.Success(result, status, warnings) =>
+            case TyckResult.Success(result, _, _) =>
               val actual = StringPrinter.render(result.wellTyped)(using
                 PrettierOptions.Default
               )
@@ -37,7 +36,7 @@ class FilesTyckTest extends FunSuite {
                 }
               }
 
-            case TyckResult.Failure(errors, warnings, state, result) =>
+            case TyckResult.Failure(errors, _, _, _) =>
               fail(s"Failed to type check file: $inputFile, errors: $errors")
           }
         case Left(error) =>
@@ -59,9 +58,9 @@ class FilesTyckFailsTest extends FunSuite {
       Parser.parseTopLevel(FilePath(inputFile.toString)) match {
         case Right(parsedBlock) =>
           Tycker.check(parsedBlock) match {
-            case TyckResult.Success(result, status, warnings) =>
+            case TyckResult.Success(_, _, _) =>
               fail(s"Expected file to fail type checking: $inputFile")
-            case TyckResult.Failure(errors, warnings, state, result) =>
+            case TyckResult.Failure(errors, _, _, _) =>
               val actual = errors.map(_.toString).mkString("\n")
 
               if (false) {

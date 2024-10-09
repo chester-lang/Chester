@@ -203,7 +203,7 @@ case object StmtDesalt {
     if (xs.isEmpty) None
     else if (xs.length == 1) xs.head match {
       // TODO: support multiple telescopes
-      case FunctionCall(f: Identifier, MatchDeclarationTelescope(t), meta) =>
+      case FunctionCall(f: Identifier, MatchDeclarationTelescope(t), _) =>
         Some(DefinedFunction(f, Vector(t).assumeNonEmpty))
       case a => PatternDesalt.desugar(a).map(DefinedPattern)
     }
@@ -288,13 +288,13 @@ case object StmtDesalt {
           ty = None,
           effect = None
         )
-      case other => stmt
+      case _ => stmt
     }
   }
 
   def unapply(x: Expr)(using reporter: Reporter[TyckProblem]): Option[Stmt] =
     x match {
-      case opseq @ OpSeq(seq, meta) =>
+      case opseq @ OpSeq(seq, _) =>
         seq.indexWhere {
           case Identifier(id, _) if Const.kw1.contains(id) => true
           case _                                           => false
@@ -320,7 +320,7 @@ case object SimpleDesalt {
   def desugar(expr: Expr)(using reporter: Reporter[TyckProblem]): Expr =
     expr match {
       case OpSeq(xs, _) if xs.length == 1    => xs.head
-      case clause @ DesaltCaseClauseMatch(x) => x
+      case _ @ DesaltCaseClauseMatch(x) => x
       case block @ Block(heads, tail, _)
           if heads.exists(_.isInstanceOf[DesaltCaseClause]) ||
             tail.exists(_.isInstanceOf[DesaltCaseClause]) =>
@@ -334,7 +334,7 @@ case object SimpleDesalt {
         } else {
           DesaltMatching(clauses, block.meta)
         }
-      case block @ Block(heads, tail, meta) =>
+      case _ @ Block(heads, tail, meta) =>
         Block(heads.map(StmtDesalt.desugar), tail.map(StmtDesalt.desugar), meta)
       case DesaltSimpleFunction(func) => func
       case obj: ObjectExpr            => ObjectDesalt.desugarObjectExpr(obj)

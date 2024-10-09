@@ -23,7 +23,7 @@ class JLineTerminal(init: TerminalInit) {
               cursor,
               "Incomplete input, missing matching bracket"
             )
-          case InputStatus.Error(message) => super.parse(line, cursor, context)
+          case InputStatus.Error(_) => super.parse(line, cursor, context)
         }
       }
     }
@@ -54,8 +54,7 @@ class JLineTerminal(init: TerminalInit) {
 
         status match {
           case InputStatus.Complete =>
-            val historySeq =
-              (0 until history.size()).map(history.get(_).toString)
+            (0 until history.size()).map(history.get(_).toString)
             result = LineRead(line)
             continue = false
           case InputStatus.Incomplete =>

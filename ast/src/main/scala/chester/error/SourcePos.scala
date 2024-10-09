@@ -14,7 +14,7 @@ import scala.annotation.tailrec
 case class Pos(index: WithUTF16, line: Int :| Positive0, column: WithUTF16) derives ReadWriter
 
 object Pos {
-  val Zero = Pos(WithUTF16.Zero, 0, WithUTF16.Zero)
+  val Zero: Pos = Pos(WithUTF16.Zero, 0, WithUTF16.Zero)
 }
 
 /** start <= i < end */
@@ -43,7 +43,7 @@ object FileContent {
 }
 
 case class SourcePos(source: SourceOffset, range: RangeInFile) derives ReadWriter {
-  lazy val fileContent = source.readContent.toOption.map(
+  lazy val fileContent: Option[FileContent] = source.readContent.toOption.map(
     FileContent(_, source.linesOffset, source.posOffset)
   )
   val fileName = source.fileName

@@ -80,11 +80,11 @@ case class TranslationTable(table: Map[LanguageTag, RegionTable]) {
 
 object Template {
   def stringContextToString(sc: StringContext): String = {
-    val count = 1
+    
     val stringbuilder = new StringBuilder()
     for (part <- sc.parts) {
       if (part.isEmpty) {
-        stringbuilder.append(s"$${count}")
+        stringbuilder.append("s$$${count}")
       } else {
         stringbuilder.append(part.replace("$", "$$"))
       }
@@ -98,7 +98,7 @@ object Template {
     var result = template
     val xs = args.map(_.toString)
     for (i <- xs.indices) {
-      val newResult = result.replace(s"$${i+1}", xs(i))
+      val newResult = result.replace(s"$$${i+1}", xs(i))
       if (newResult == result)
         throw new IllegalArgumentException(
           s"Missing argument ${i + 1} in template $template"
@@ -107,10 +107,10 @@ object Template {
     }
     for (i <- 1 to 9) {
       for (x <- xs) {
-        if (x.contains(s"$${i}"))
+        if (x.contains("s$$${i}"))
           throw new IllegalArgumentException(s"Unexpected $i in args $args")
       }
-      if (result.contains(s"$${i}"))
+      if (result.contains("s$$${i}"))
         throw new IllegalArgumentException(s"Missing argument $i in args $args")
     }
     result.replace("$$", "$")

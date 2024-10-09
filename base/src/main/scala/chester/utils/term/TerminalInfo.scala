@@ -1,7 +1,5 @@
 package chester.utils.term
 
-
-
 trait TerminalInfo {
   def checkInputStatus(input: String): InputStatus
 

@@ -11,7 +11,7 @@ type ModuleName = ModuleNameQualified
 case class ModuleNameQualified(ids: Vector[Name]) derives ReadWriter
 
 object ModuleName {
-  def builtin = ModuleNameQualified(Vector())
+  def builtin: ModuleNameQualified = ModuleNameQualified(Vector())
 }
 
 @deprecated("Create new module representation")
@@ -24,5 +24,5 @@ case class QualifiedID(
 
 @deprecated("Create new module representation")
 object QualifiedID {
-  def builtin(name: String) = QualifiedID(ModuleName.builtin, name)
+  def builtin(name: String): QualifiedID = QualifiedID(ModuleName.builtin, name)
 }

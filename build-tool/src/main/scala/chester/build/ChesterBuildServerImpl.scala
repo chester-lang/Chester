@@ -55,7 +55,7 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
     // After initialization, read the package.chester file
     val packageFile = Paths.get("package.chester")
     if (Files.exists(packageFile)) {
-      val content = Files.readString(packageFile)
+      Files.readString(packageFile)
       // Parse the content and store necessary information
     } else {
       logger.error("package.chester file not found.")
@@ -295,7 +295,7 @@ class ChesterBuildServerImpl extends ChesterBuildServer with BuildServer {
               .parseTopLevel(FileNameAndContent(path.toString, content)) match {
               case Right(parsedBlock) =>
                 Tycker.check(parsedBlock) match {
-                  case TyckResult.Success(result, _, _) =>
+                  case TyckResult.Success(_, _, _) =>
                     logger.info(s"Type checking succeeded for file: $path")
                   case TyckResult.Failure(errors, _, _, _) =>
                     logger.error(

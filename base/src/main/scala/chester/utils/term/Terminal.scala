@@ -1,6 +1,5 @@
 package chester.utils.term
 
-
 trait Terminal[F[_]] {
   def runTerminal[T](init: TerminalInit, block: InTerminal[F] ?=> F[T]): F[T]
 }

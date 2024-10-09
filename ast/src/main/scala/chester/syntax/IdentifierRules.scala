@@ -6,34 +6,34 @@ import chester.utils.parse.Character
 import java.lang.Character.{isDigit, isLetter}
 
 object IdentifierRules {
-  val AllowedOperatorSymbols = ".:=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
-  val AllowedWordingSymbols = "_".toSet.map(_.toInt)
-  val AllowedMiddleWordingSymbols = "-".toSet.map(_.toInt)
+  val AllowedOperatorSymbols: Set[Int] = ".:=-+\\|<>/?`~!@$%^&*".toSet.map(_.toInt)
+  val AllowedWordingSymbols: Set[Int] = "_".toSet.map(_.toInt)
+  val AllowedMiddleWordingSymbols: Set[Int] = "-".toSet.map(_.toInt)
   val ReservedSymbols = ";,#()[]{}'\""
 
   def isEmoji(codePoint: Int): Boolean = {
     codePointIsEmoji(codePoint)
   }
 
-  def isWording(x: Character) = isLetter(x) || isEmoji(x)
+  def isWording(x: Character): Boolean = isLetter(x) || isEmoji(x)
 
-  def isOperatorSymbol(x: Character) = AllowedOperatorSymbols.contains(x)
+  def isOperatorSymbol(x: Character): Boolean = AllowedOperatorSymbols.contains(x)
 
-  def isWordingSymbol(x: Character) = AllowedWordingSymbols.contains(x)
+  def isWordingSymbol(x: Character): Boolean = AllowedWordingSymbols.contains(x)
 
-  def isMiddleWordingSymbol(x: Character) =
+  def isMiddleWordingSymbol(x: Character): Boolean =
     AllowedMiddleWordingSymbols.contains(x)
 
-  def identifierFirst(x: Character) = isWording(x) || isWordingSymbol(x)
+  def identifierFirst(x: Character): Boolean = isWording(x) || isWordingSymbol(x)
 
-  def identifierMiddle(x: Character) =
+  def identifierMiddle(x: Character): Boolean =
     identifierFirst(x) || isDigit(x) || isMiddleWordingSymbol(x)
 
-  def identifierEnd(x: Character) = identifierFirst(x) || isDigit(x)
+  def identifierEnd(x: Character): Boolean = identifierFirst(x) || isDigit(x)
 
-  def operatorIdentifierFirst(x: Character) = isOperatorSymbol(x)
+  def operatorIdentifierFirst(x: Character): Boolean = isOperatorSymbol(x)
 
-  def operatorIdentifierRest(x: Character) =
+  def operatorIdentifierRest(x: Character): Boolean =
     isOperatorSymbol(x) || isWordingSymbol(x)
 
   def strIsOperator(s: String): Boolean = {

@@ -30,7 +30,7 @@ private def parseFromSource[T](
           )
       ) match {
         case Parsed.Success(result, _) => Right(result)
-        case Parsed.Failure(msg, index, extra) =>
+        case Parsed.Failure(_, index, extra) =>
           val pos = indexer.charIndexToLineAndColumnWithUTF16(index)
           val p = Pos(
             indexer.charIndexToWithUTF16(index.refineUnsafe),

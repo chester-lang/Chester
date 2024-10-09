@@ -1,11 +1,7 @@
 package chester.parser
 
-import chester.syntax.concrete.*
-import munit.FunSuite
-
 import java.nio.file.{Files, Path, Paths}
 import scala.jdk.CollectionConverters.*
-import scala.util.Try
 
 def getInputFiles(testDir: String): (Path, Seq[Path]) = {
   val path = Paths.get(testDir)

@@ -8,7 +8,6 @@ inThisBuild(
   List(
     semanticdbEnabled := true, // enable SemanticDB
     semanticdbVersion := scalafixSemanticdb.revision // only required for Scala 2.x
-
   )
 )
 
@@ -58,12 +57,7 @@ val commonSettings = Seq(
       "-experimental"
     ),
   // scalafix
-  scalacOptions += {
-    if (scalaVersion.value.startsWith("2.12"))
-      "-Ywarn-unused-import"
-    else
-      "-Wunused:imports"
-  },
+  scalacOptions ++= Seq("-Wunused:imports", "-Xlint:adapted-args", "-Wunused:unsafe-warn-patvars"),
   scalacOptions ++= Seq("-rewrite", "-source", "3.4-migration"),
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % "1.0.2" % Test,

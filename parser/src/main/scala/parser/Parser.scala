@@ -312,9 +312,9 @@ case class ParserInternal(
       newLineAfterBlockMeansEnds: Boolean = false,
       dontAllowBlockApply: Boolean = false
   ) {
-    def opSeq = !inOpSeq && !dontallowOpSeq
+    def opSeq: Boolean = !inOpSeq && !dontallowOpSeq
 
-    def blockCall = !inOpSeq && !dontAllowBlockApply
+    def blockCall: Boolean = !inOpSeq && !dontAllowBlockApply
   }
 
   def callingOnce(

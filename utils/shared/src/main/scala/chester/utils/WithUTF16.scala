@@ -19,6 +19,6 @@ case class WithUTF16(i: Int :| Positive0, utf16: Int :| Positive0) derives ReadW
 }
 
 object WithUTF16 {
-  val Zero = WithUTF16(0, 0)
-  val One = WithUTF16(1, 1)
+  val Zero: WithUTF16 = WithUTF16(0, 0)
+  val One: WithUTF16 = WithUTF16(1, 1)
 }

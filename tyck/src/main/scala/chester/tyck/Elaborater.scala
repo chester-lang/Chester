@@ -195,7 +195,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
   ): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr) match {
-      case expr @ Identifier(name, meta) => {
+      case expr @ Identifier(name, _) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
             if (c.reference.isDefined) {
@@ -251,7 +251,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
         ListTerm(termResults.map(_._1), convertMeta(meta))
       }
-      case expr @ TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
+      case expr @ TypeAnotationNoEffects(innerExpr, tyExpr, _) =>
         // Check the type annotation expression to get its type
         val declaredTyTerm = checkType(tyExpr)
 
@@ -261,7 +261,7 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
       case expr: FunctionExpr       => elabFunction(expr, ty, effects)
       case expr: Block              => elabBlock(expr, ty, effects)
       case expr: DesaltFunctionCall => elabFunctionCall(expr, ty, effects)
-      case expr @ ObjectExpr(fields, meta) =>
+      case expr @ ObjectExpr(fields, _) =>
         elabObjectExpr(expr, fields, ty, effects)
       case expr: Expr => {
         val problem = NotImplemented(expr)
@@ -395,10 +395,10 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
     implicit var ctx: LocalCtx = LocalCtx.default
     val (module, block): (ModuleRef, Block) = resolve(expr) match {
-      case b @ Block(head +: heads, tail, meta) =>
+      case b @ Block(head +: heads, tail, _) =>
         resolve(head) match {
           case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
-          case stmt                     => (DefaultModule, b)
+          case _                     => (DefaultModule, b)
         }
       case expr => (DefaultModule, Block(Vector(), Some(expr), expr.meta))
     }

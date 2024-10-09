@@ -34,15 +34,15 @@ trait InfixDefitions {
 object InfixDefitions {
   def apply(opinfos: Vector[OpInfo]): InfixDefitions = {
     val (infix, other) = opinfos.partition {
-      case Infix(name, _) => true
+      case Infix(_, _) => true
       case _              => false
     }
     val (prefix, other2) = other.partition {
-      case Prefix(name) => true
+      case Prefix(_) => true
       case _            => false
     }
     val (postfix, other3) = other2.partition {
-      case Postfix(name) => true
+      case Postfix(_) => true
       case _             => false
     }
     if (other3.nonEmpty) {
@@ -51,7 +51,7 @@ object InfixDefitions {
       )
     }
     DefaultInfixDefinitions(
-      infix.collect { case i @ Infix(name, group) => name -> i }.toMap,
+      infix.collect { case i @ Infix(name, _) => name -> i }.toMap,
       prefix.collect { case p @ Prefix(name) => name -> p }.toMap,
       postfix.collect { case p @ Postfix(name) => name -> p }.toMap
     )
@@ -195,15 +195,15 @@ case class PrecedenceGroupCtx(precedenceGroups: Map[Name, PrecedenceGroup]) {
 }
 
 object Names {
-  val Multiplicative = QualifiedIDString.from("Multiplicative")
-  val Additive = QualifiedIDString.from("Additive")
-  val Range = QualifiedIDString.from("Range")
-  val Relational = QualifiedIDString.from("Relational")
-  val Equality = QualifiedIDString.from("Equality")
-  val LogicalAnd = QualifiedIDString.from("LogicalAnd")
-  val LogicalXor = QualifiedIDString.from("LogicalXor")
-  val LogicalOr = QualifiedIDString.from("LogicalOr")
-  val Default = QualifiedIDString.from("Default")
+  val Multiplicative: QualifiedIDString = QualifiedIDString.from("Multiplicative")
+  val Additive: QualifiedIDString = QualifiedIDString.from("Additive")
+  val Range: QualifiedIDString = QualifiedIDString.from("Range")
+  val Relational: QualifiedIDString = QualifiedIDString.from("Relational")
+  val Equality: QualifiedIDString = QualifiedIDString.from("Equality")
+  val LogicalAnd: QualifiedIDString = QualifiedIDString.from("LogicalAnd")
+  val LogicalXor: QualifiedIDString = QualifiedIDString.from("LogicalXor")
+  val LogicalOr: QualifiedIDString = QualifiedIDString.from("LogicalOr")
+  val Default: QualifiedIDString = QualifiedIDString.from("Default")
 }
 
 lazy val DefaultPrecedenceGroup: PrecedenceGroup = PrecedenceGroup(
