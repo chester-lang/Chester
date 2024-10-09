@@ -62,7 +62,7 @@ jobs:
     - name: GraalVM Env - Linux
       if: runner.os == 'Linux'
       run: |
-        echo "NATIVE_IMAGE_OPTIONS='--static --libc=musl'" >> $GITHUB_ENV
+        echo "NATIVE_IMAGE_OPTIONS=--static --libc=musl" >> $GITHUB_ENV
 
     - name: GraalVM Env
       run: |
