@@ -645,6 +645,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
   .crossType(CrossType.Full)
   .in(file("cli"))
   .jvmEnablePlugins(NativeImagePlugin)
+  .enablePlugins(BuildInfoPlugin) // Enable the BuildInfoPlugin
   .dependsOn(common)
   .settings(
     name := "cli",
@@ -653,7 +654,10 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).withoutSuff
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0"
     ),
-    commonSettings
+    commonSettings,
+    buildInfoKeys := Seq[BuildInfoKey](version), // Specify the keys to include
+    buildInfoPackage := "chester.cli",           // Set the package for the generated object
+    buildInfoObject := "BuildInfo"               // Set the object name
   )
   .jvmSettings(
     commonJvmLibSettings,

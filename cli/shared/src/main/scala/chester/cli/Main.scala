@@ -14,6 +14,9 @@ import chester.utils.io.*
 import chester.utils.io.impl.*
 import chester.utils.term.*
 
+// Import the generated BuildInfo object
+import chester.cli.BuildInfo
+
 object Main {
 
   sealed trait Config
@@ -35,7 +38,8 @@ object Main {
                         command: String = "run", // Default command is "run"
                         input: Option[String] = None,
                         inputs: Seq[String] = Seq(),
-                        targetDir: String = "."
+                        targetDir: String = ".",
+                        version: Boolean = false   // Add a flag for the version option
                       )
 
   def main(args: Array[String]): Unit = {
@@ -45,7 +49,12 @@ object Main {
       import builder._
       OParser.sequence(
         programName("chester"),
-        head("Chester CLI Tool", "1.0"),
+        head("chester", BuildInfo.version), // Use BuildInfo.version here
+
+        // Global version option
+        opt[Unit]('v', "version")
+          .action((_, c) => c.copy(version = true))
+          .text("Print version information and exit"),
 
         // Command for "run"
         cmd("run")
@@ -103,6 +112,7 @@ object Main {
               .action((x, c) => c.copy(input = Some(x)))
               .text("Input .tast binary file.")
           ),
+
         // Handle case where user might omit "run" and just provide input directly
         arg[String]("input")
           .optional()
@@ -118,6 +128,9 @@ object Main {
 
     // Parse the arguments
     OParser.parse(parser, argsPlatform(args), CliConfig()) match {
+      case Some(cliConfig) if cliConfig.version =>
+        // Handle version flag
+        println(s"Chester version ${BuildInfo.version}")
       case Some(cliConfig) =>
         val config: Config = cliConfig.command match {
           case "run" =>
