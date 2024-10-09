@@ -4,8 +4,7 @@ import chester.syntax.Name
 import chester.syntax.core.*
 
 object BuiltIn {
-  case class BuiltinItem(id: Name, value: Term, ty: Term){
-  }
+  case class BuiltinItem(id: Name, value: Term, ty: Term) {}
 
   val builtinItems: Seq[BuiltinItem] = Vector(
     BuiltinItem("Int", IntType(), Type0),

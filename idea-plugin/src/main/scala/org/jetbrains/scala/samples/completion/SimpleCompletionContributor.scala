@@ -14,7 +14,11 @@ class SimpleCompletionContributor() extends CompletionContributor {
     CompletionType.BASIC,
     PlatformPatterns.psiElement(VALUE_CHARACTERS),
     new CompletionProvider[CompletionParameters]() {
-      override def addCompletions(parameters: CompletionParameters, context: ProcessingContext, result: CompletionResultSet): Unit =
+      override def addCompletions(
+          parameters: CompletionParameters,
+          context: ProcessingContext,
+          result: CompletionResultSet
+      ): Unit =
         result.addElement(LookupElementBuilder.create("HELLO"))
     }
   )

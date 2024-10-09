@@ -60,7 +60,9 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(0, 4))
   }
 
-  test("charIndexToUnicodeLineAndColumn for multi-line string with surrogate pairs") {
+  test(
+    "charIndexToUnicodeLineAndColumn for multi-line string with surrogate pairs"
+  ) {
     val sp = StringIndex("hello\n\uD834\uDD1Eworld")
     assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(0, 5))
@@ -68,7 +70,9 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(8), LineAndColumn(1, 1))
   }
 
-  test("charIndexToUnicodeLineAndColumn for multi-line string with mixed characters") {
+  test(
+    "charIndexToUnicodeLineAndColumn for multi-line string with mixed characters"
+  ) {
     val sp = StringIndex("hello\n\uD834\uDD1Eworld\nJava\uD834\uDD1EScala")
     assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(0, 5))
@@ -76,7 +80,10 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(8), LineAndColumn(1, 1))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(13), LineAndColumn(1, 6))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(14), LineAndColumn(2, 0))
-    assertEquals(sp.charIndexToUnicodeLineAndColumn(20), LineAndColumn(2, 5)) // Tests the position after the surrogate pair
+    assertEquals(
+      sp.charIndexToUnicodeLineAndColumn(20),
+      LineAndColumn(2, 5)
+    ) // Tests the position after the surrogate pair
   }
   test("charIndexToUnicodeIndex for Chinese characters") {
     val sp = StringIndex("你好世界") // "Hello world" in Chinese
@@ -112,7 +119,8 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(4), LineAndColumn(1, 1))
   }
   test("charIndexToUnicodeIndex for Chinese characters with surrogate pairs") {
-    val sp = StringIndex("𠀋好𠀌") // Includes rare Chinese characters outside the BMP
+    val sp =
+      StringIndex("𠀋好𠀌") // Includes rare Chinese characters outside the BMP
     assertEquals(sp.charIndexToUnicodeIndex(0), 0)
     assertEquals(sp.charIndexToUnicodeIndex(1), 0)
     assertEquals(sp.charIndexToUnicodeIndex(2), 1)
@@ -127,7 +135,9 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.unicodeIndexToCharIndex(2), 3)
   }
 
-  test("charIndexToCharLineAndColumn for multi-line Chinese string with surrogate pairs") {
+  test(
+    "charIndexToCharLineAndColumn for multi-line Chinese string with surrogate pairs"
+  ) {
     val sp = StringIndex("𠀋好\n𠀌世")
     assertEquals(sp.charIndexToCharLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToCharLineAndColumn(1), LineAndColumn(0, 1))
@@ -138,7 +148,9 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToCharLineAndColumn(6), LineAndColumn(1, 2))
   }
 
-  test("charIndexToUnicodeLineAndColumn for multi-line Chinese string with surrogate pairs") {
+  test(
+    "charIndexToUnicodeLineAndColumn for multi-line Chinese string with surrogate pairs"
+  ) {
     val sp = StringIndex("𠀋好\n𠀌世")
     assertEquals(sp.charIndexToUnicodeLineAndColumn(0), LineAndColumn(0, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(1), LineAndColumn(0, 0))
@@ -148,6 +160,5 @@ class StringIndexSuite extends FunSuite {
     assertEquals(sp.charIndexToUnicodeLineAndColumn(5), LineAndColumn(1, 0))
     assertEquals(sp.charIndexToUnicodeLineAndColumn(6), LineAndColumn(1, 1))
   }
-
 
 }

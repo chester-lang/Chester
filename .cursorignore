@@ -1,3 +1,5 @@
 vendor/
 *.expected
 js-typings/
+/vendor
+/js-typings

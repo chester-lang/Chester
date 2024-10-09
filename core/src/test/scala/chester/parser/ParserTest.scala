@@ -5,7 +5,8 @@ import munit.FunSuite
 
 class ParserTest extends FunSuite {
   test("parse valid identifier") {
-    val result = Parser.parseExpr(FileNameAndContent("testFile", "validIdentifier123"))
+    val result =
+      Parser.parseExpr(FileNameAndContent("testFile", "validIdentifier123"))
     result match {
       case Right(Identifier(name, Some(meta))) =>
         assertEquals(name, "validIdentifier123")
@@ -21,7 +22,8 @@ class ParserTest extends FunSuite {
   }
 
   test("parse identifier with symbols") {
-    val result = Parser.parseExpr(FileNameAndContent("testFile", "valid-Identifier_123"))
+    val result =
+      Parser.parseExpr(FileNameAndContent("testFile", "valid-Identifier_123"))
     result match {
       case Right(Identifier(name, Some(meta))) =>
         assertEquals(name, "valid-Identifier_123")
@@ -73,11 +75,12 @@ class ParserTest extends FunSuite {
     parseAndCheck(input, expected)
   }
 
-  if (false) test("parse signed double with exponent") { // we are see it as -(1.23e-4) now
-    val input = "-1.23e-4"
-    val expected = RationalLiteral(BigDecimal("-1.23e-4"))
-    parseAndCheck(input, expected)
-  }
+  if (false)
+    test("parse signed double with exponent") { // we are see it as -(1.23e-4) now
+      val input = "-1.23e-4"
+      val expected = RationalLiteral(BigDecimal("-1.23e-4"))
+      parseAndCheck(input, expected)
+    }
 
   test("parse double without exponent") {
     val input = "456.789"
@@ -97,7 +100,6 @@ class ParserTest extends FunSuite {
     val expected = RationalLiteral(BigDecimal("1.23e4"))
     parseAndCheck(input, expected)
   }
-
 
   test("parse single-line string literal") {
     val input = "\"Hello, world!\""
@@ -135,8 +137,15 @@ class ParserTest extends FunSuite {
       val result = Parser.parseExpr(FileNameAndContent("testFile", input))
       result match {
         case Left(error) =>
-          assert(error.message.contains("Inconsistent indentation in heredoc string literal"))
-        case _ => fail(s"Expected parsing failure due to inconsistent indentation but got $result")
+          assert(
+            error.message.contains(
+              "Inconsistent indentation in heredoc string literal"
+            )
+          )
+        case _ =>
+          fail(
+            s"Expected parsing failure due to inconsistent indentation but got $result"
+          )
       }
     }
 
@@ -158,7 +167,88 @@ class ParserTest extends FunSuite {
         |      Identifier("c") -> IntegerLiteral(3)
         |    ))
         |""".stripMargin
-    val expected = FunctionCall(Identifier("ObjectExpr"), Tuple(Vector(FunctionCall(Identifier("Vector"), Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("a")), None), None), Identifier("->"), FunctionCall(Identifier("ObjectExpr"), Tuple(Vector(FunctionCall(Identifier("Vector"), Tuple(Vector(OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("b")), None), None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(2, None)), None), None)), None)), None), None)), None), None)), None), OpSeq(Vector(FunctionCall(Identifier("Identifier"), Tuple(Vector(StringLiteral("c")), None), None), Identifier("->"), FunctionCall(Identifier("IntegerLiteral"), Tuple(Vector(IntegerLiteral(3, None)), None), None)), None)), None), None)), None), None)
+    val expected = FunctionCall(
+      Identifier("ObjectExpr"),
+      Tuple(
+        Vector(
+          FunctionCall(
+            Identifier("Vector"),
+            Tuple(
+              Vector(
+                OpSeq(
+                  Vector(
+                    FunctionCall(
+                      Identifier("Identifier"),
+                      Tuple(Vector(StringLiteral("a")), None),
+                      None
+                    ),
+                    Identifier("->"),
+                    FunctionCall(
+                      Identifier("ObjectExpr"),
+                      Tuple(
+                        Vector(
+                          FunctionCall(
+                            Identifier("Vector"),
+                            Tuple(
+                              Vector(
+                                OpSeq(
+                                  Vector(
+                                    FunctionCall(
+                                      Identifier("Identifier"),
+                                      Tuple(Vector(StringLiteral("b")), None),
+                                      None
+                                    ),
+                                    Identifier("->"),
+                                    FunctionCall(
+                                      Identifier("IntegerLiteral"),
+                                      Tuple(
+                                        Vector(IntegerLiteral(2, None)),
+                                        None
+                                      ),
+                                      None
+                                    )
+                                  ),
+                                  None
+                                )
+                              ),
+                              None
+                            ),
+                            None
+                          )
+                        ),
+                        None
+                      ),
+                      None
+                    )
+                  ),
+                  None
+                ),
+                OpSeq(
+                  Vector(
+                    FunctionCall(
+                      Identifier("Identifier"),
+                      Tuple(Vector(StringLiteral("c")), None),
+                      None
+                    ),
+                    Identifier("->"),
+                    FunctionCall(
+                      Identifier("IntegerLiteral"),
+                      Tuple(Vector(IntegerLiteral(3, None)), None),
+                      None
+                    )
+                  ),
+                  None
+                )
+              ),
+              None
+            ),
+            None
+          )
+        ),
+        None
+      ),
+      None
+    )
     parseAndCheck(input, expected)
   }
 

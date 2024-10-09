@@ -9,7 +9,10 @@ import typings.node.{processMod, readlineMod}
 import scala.concurrent.{Future, Promise}
 
 class NodejsSimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Future] {
-  private val rl = readlineMod.createInterface(processMod.^.stdin.asInstanceOf, processMod.^.stdout.asInstanceOf)
+  private val rl = readlineMod.createInterface(
+    processMod.^.stdin.asInstanceOf,
+    processMod.^.stdout.asInstanceOf
+  )
 
   private var live: Boolean = true
 
@@ -32,11 +35,14 @@ class NodejsSimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Future
     assert(live)
     val p = Promise[String]()
     reading = p
-    rl.question(prompt.render, { result =>
-      assert(reading == p)
-      reading = null
-      p.success(result)
-    })
+    rl.question(
+      prompt.render,
+      { result =>
+        assert(reading == p)
+        reading = null
+        p.success(result)
+      }
+    )
     p.future
   }
 
@@ -47,5 +53,6 @@ class NodejsSimpleTerminal(init: TerminalInit) extends AbstractInTerminal[Future
     rl.close()
   }
 
-  override def writeln(line: Str): Future[Unit] = Future.successful(println(line.render))
+  override def writeln(line: Str): Future[Unit] =
+    Future.successful(println(line.render))
 }

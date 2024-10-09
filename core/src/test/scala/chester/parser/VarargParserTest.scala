@@ -12,36 +12,28 @@ class VarargParserTest extends FunSuite {
     val expected =
       FunctionCall(
         function = Identifier(
-          name = "func",
-
+          name = "func"
         ),
         telescope = Tuple(
           terms = Vector(
             IntegerLiteral(
-              value = 1,
-
+              value = 1
             ),
             IntegerLiteral(
-              value = 2,
-
+              value = 2
             ),
             OpSeq(
               seq = Vector(
                 Identifier(
-                  name = "xs",
-
+                  name = "xs"
                 ),
                 Identifier(
-                  name = "*",
-
+                  name = "*"
                 )
-              ),
-
+              )
             )
-          ),
-
-        ),
-
+          )
+        )
       )
     parseAndCheck(input, expected)
   }
@@ -51,36 +43,28 @@ class VarargParserTest extends FunSuite {
     val expected =
       FunctionCall(
         function = Identifier(
-          name = "func",
-
+          name = "func"
         ),
         telescope = Tuple(
           terms = Vector(
             OpSeq(
               seq = Vector(
                 Identifier(
-                  name = "x",
-
+                  name = "x"
                 ),
                 Identifier(
-                  name = ":",
-
+                  name = ":"
                 ),
                 Identifier(
-                  name = "Integer",
-
+                  name = "Integer"
                 ),
                 Identifier(
-                  name = "*",
-
+                  name = "*"
                 )
-              ),
-
+              )
             )
-          ),
-
-        ),
-
+          )
+        )
       )
     parseAndCheck(input, expected)
   }

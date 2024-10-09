@@ -8,28 +8,37 @@ import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
 import chester.utils.propagator.CommonPropagator
+import chester.uniqid.*
 
 trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropagator[Tyck] {
 
   trait EffectsCell extends Cell[Effects] {
-    def requireEffect(effect: Term)(using ck: Tyck, state: StateAbility[Tyck]): LocalV = {
+    def requireEffect(
+        effect: Term
+    )(using ck: Tyck, state: StateAbility[Tyck]): LocalV = {
       ???
     }
   }
 
-
-  def toEffectsM(x: CellIdOr[Effects])(using state: StateAbility[Tyck]): EffectsM = x match {
-    case x: Effects => x
+  def toEffectsM(
+      x: CellIdOr[Effects]
+  )(using state: StateAbility[Tyck]): EffectsM = x match {
+    case x: Effects     => x
     case x: EffectsCell => Meta(x.asInstanceOf[CellId[Effects]])
   }
 
-  def toEffectsCell(x: EffectsM)(using state: StateAbility[Tyck]): CIdOf[EffectsCell] = x match {
+  def toEffectsCell(
+      x: EffectsM
+  )(using state: StateAbility[Tyck]): CIdOf[EffectsCell] = x match {
     case x: Effects => state.addCell(FixedEffectsCell(x))
-    case Meta(x) => x.asInstanceOf[CIdOf[EffectsCell]]
+    case Meta(x)    => x.asInstanceOf[CIdOf[EffectsCell]]
   }
 
-
-  case class DynamicEffectsCell(effects: Map[LocalV, Term] = Map()) extends BaseMapCell[LocalV, Term] with EffectsCell with UnstableCell[Effects] with NoFill[Effects] {
+  case class DynamicEffectsCell(effects: Map[LocalV, Term] = Map())
+      extends BaseMapCell[LocalV, Term]
+      with EffectsCell
+      with UnstableCell[Effects]
+      with NoFill[Effects] {
     override def add(key: LocalV, value: Term): DynamicEffectsCell = {
       require(!effects.contains(key))
       copy(effects = effects + (key -> value))
@@ -42,7 +51,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     override def readStable: Option[Effects] = Some(effects)
   }
 
-  def resolve(expr: Expr)(using localCtx: LocalCtx, reporter: Reporter[TyckProblem]): Expr = {
+  def resolve(
+      expr: Expr
+  )(using localCtx: LocalCtx, reporter: Reporter[TyckProblem]): Expr = {
     val result = SimpleDesalt.desugarUnwrap(expr) match {
       case opseq: OpSeq => {
         val result = resolveOpSeq(reporter, localCtx.operators, opseq)
@@ -53,10 +64,11 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     reuse(expr, result)
   }
 
-
   type Literals = Expr & (IntegerLiteral | RationalLiteral | StringLiteral | SymbolLiteral)
 
-  case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using localCtx: LocalCtx) extends Propagator[Tyck] {
+  case class Unify(lhs: CellId[Term], rhs: CellId[Term], cause: Expr)(using
+      localCtx: LocalCtx
+  ) extends Propagator[Tyck] {
     override val readingCells = Set(lhs, rhs)
     override val writingCells = Set(lhs, rhs)
     override val zonkingCells = Set(lhs, rhs)
@@ -82,7 +94,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       return false
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
+    override def naiveZonk(
+        needed: Vector[CellId[?]]
+    )(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
       val lhs = state.readStable(this.lhs)
       val rhs = state.readStable(this.rhs)
       (lhs, rhs) match {
@@ -101,10 +115,11 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
   }
 
   case class UnionOf(
-                      lhs: CellId[Term],
-                      rhs: Vector[CellId[Term]],
-                      cause: Expr,
-                    )(using localCtx: LocalCtx) extends Propagator[Tyck] {
+      lhs: CellId[Term],
+      rhs: Vector[CellId[Term]],
+      cause: Expr
+  )(using localCtx: LocalCtx)
+      extends Propagator[Tyck] {
     override val readingCells = Set(lhs) ++ rhs.toSet
     override val writingCells = Set(lhs)
     override val zonkingCells = Set(lhs) ++ rhs.toSet
@@ -129,7 +144,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       }
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
+    override def naiveZonk(
+        needed: Vector[CellId[?]]
+    )(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
       val lhsValueOpt = state.readStable(lhs)
       val rhsValuesOpt = rhs.map(state.readStable)
 
@@ -157,7 +174,10 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
   }
 
-  def tryUnify(lhs: Term, rhs: Term)(using state: StateAbility[Tyck], localCtx: LocalCtx): Boolean = {
+  def tryUnify(lhs: Term, rhs: Term)(using
+      state: StateAbility[Tyck],
+      localCtx: LocalCtx
+  ): Boolean = {
     if (lhs == rhs) return true
     val lhsResolved = lhs match {
       case varCall: MaybeVarCall =>
@@ -203,8 +223,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
   }
 
-
-  case class LiteralType(x: Literals, tyLhs: CellId[Term])(using localCtx: LocalCtx) extends Propagator[Tyck] {
+  case class LiteralType(x: Literals, tyLhs: CellId[Term])(using
+      localCtx: LocalCtx
+  ) extends Propagator[Tyck] {
     override val readingCells = Set(tyLhs)
     override val writingCells = Set(tyLhs)
     override val zonkingCells = Set(tyLhs)
@@ -246,16 +267,21 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       }
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], more: Tyck): ZonkResult =
-      state.fill(tyLhs, x match {
-        case IntegerLiteral(_, _) => IntegerType()
-        case RationalLiteral(_, _) => RationalType()
-        case StringLiteral(_, _) => StringType()
-        case SymbolLiteral(_, _) => SymbolType()
-      })
+    override def naiveZonk(
+        needed: Vector[CellId[?]]
+    )(using state: StateAbility[Tyck], more: Tyck): ZonkResult =
+      state.fill(
+        tyLhs,
+        x match {
+          case IntegerLiteral(_, _)  => IntegerType()
+          case RationalLiteral(_, _) => RationalType()
+          case StringLiteral(_, _)   => StringType()
+          case SymbolLiteral(_, _)   => SymbolType()
+        }
+      )
       ZonkResult.Done
   }
-  
+
   def newMeta(using ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
     val cell = state.addCell(OnceCell[Term]())
     cell
@@ -270,7 +296,10 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     Meta(newType)
   }
 
-  def newEffects(using ck: Tyck, state: StateAbility[Tyck]): CIdOf[EffectsCell] = {
+  def newEffects(using
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): CIdOf[EffectsCell] = {
     val cell = state.addCell(DynamicEffectsCell())
     cell
   }
@@ -279,7 +308,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     Meta(newEffects)
   }
 
-  def readVar(x: Term)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def readVar(
+      x: Term
+  )(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Term = {
     var result = x
     while (true) {
       result match {
@@ -297,7 +328,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     result
   }
 
-  def readMetaVar(x: Term)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def readMetaVar(
+      x: Term
+  )(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Term = {
     var result = x
     while (true) {
       result match {
@@ -312,7 +345,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
         case Meta(id) =>
           state.readStable(id) match {
             case Some(x) => result = x
-            case None => return result
+            case None    => return result
           }
         case _ => return result
       }
@@ -320,7 +353,11 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     result
   }
 
-  def unify(lhs: Term, rhs: Term, cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Unit = {
+  def unify(lhs: Term, rhs: Term, cause: Expr)(using
+      localCtx: LocalCtx,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Unit = {
     if (lhs == rhs) return
     val lhsResolved = readVar(lhs)
     val rhsResolved = readVar(rhs)
@@ -349,7 +386,7 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       case (Type(level1, _), Type(level2, _)) =>
         unify(level1, level2, cause)
 
-      case (LevelFinite(_,_), Levelω(_)) => ()
+      case (LevelFinite(_, _), Levelω(_)) => ()
 
       case (Union(types1, _), Union(types2, _)) => ???
 
@@ -360,20 +397,35 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
     }
   }
 
-  def unify(t1: Term, t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Unit = {
+  def unify(t1: Term, t2: CellId[Term], cause: Expr)(using
+      localCtx: LocalCtx,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Unit = {
     state.addPropagator(Unify(literal(t1), t2, cause))
   }
 
-  def unify(t1: CellId[Term], t2: Term, cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Unit = {
+  def unify(t1: CellId[Term], t2: Term, cause: Expr)(using
+      localCtx: LocalCtx,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Unit = {
     state.addPropagator(Unify(t1, literal(t2), cause))
   }
 
-  def unify(t1: CellId[Term], t2: CellId[Term], cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): Unit = {
+  def unify(t1: CellId[Term], t2: CellId[Term], cause: Expr)(using
+      localCtx: LocalCtx,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Unit = {
     state.addPropagator(Unify(t1, t2, cause))
   }
 
   /** t is rhs, listT is lhs */
-  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(using ck: Tyck, localCtx: LocalCtx) extends Propagator[Tyck] {
+  case class ListOf(tRhs: CellId[Term], listTLhs: CellId[Term], cause: Expr)(using
+      ck: Tyck,
+      localCtx: LocalCtx
+  ) extends Propagator[Tyck] {
     override val readingCells = Set(tRhs, listTLhs)
     override val writingCells = Set(tRhs, listTLhs)
     override val zonkingCells = Set(listTLhs)
@@ -409,7 +461,9 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
       }
     }
 
-    override def naiveZonk(needed: Vector[CellId[?]])(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
+    override def naiveZonk(
+        needed: Vector[CellId[?]]
+    )(using state: StateAbility[Tyck], more: Tyck): ZonkResult = {
       val t1 = state.readStable(this.tRhs)
       val listT1 = state.readStable(this.listTLhs)
       if (!t1.isDefined) return ZonkResult.Require(Vector(this.tRhs))
@@ -433,28 +487,32 @@ trait ElaboraterCommon extends ProvideCtx with ElaboraterBase with CommonPropaga
 trait ElaboraterBase extends CommonPropagator[Tyck] {
 
   object Meta {
-    def rec(x: CellId[Term], default: Term)(using state: StateAbility[Tyck]): Term = {
+    def rec(x: CellId[Term], default: Term)(using
+        state: StateAbility[Tyck]
+    ): Term = {
       state.readStable(x) match {
         case Some(x) => x
-        case None => default
+        case None    => default
       }
     }
 
     def apply[T <: Term](x: CellId[T])(using state: StateAbility[Tyck]): T | MetaTerm = {
       state.readUnstable(x) match {
-        case Some(x@Meta(id)) => rec(id, x).asInstanceOf[T | MetaTerm]
-        case Some(x) => x
-        case None => MetaTerm.from(x)
+        case Some(x @ Meta(id)) => rec(id, x).asInstanceOf[T | MetaTerm]
+        case Some(x)            => x
+        case None               => MetaTerm.from(x)
       }
     }
 
-    def unapply(x: Term)(using state: StateAbility[Tyck]): Option[CellId[Term]] = x match {
+    def unapply(
+        x: Term
+    )(using state: StateAbility[Tyck]): Option[CellId[Term]] = x match {
       case m: MetaTerm => {
         var result: CellId[Term] = m.unsafeRead[CellId[Term]]
         while (true) {
           state.readUnstable(result) match {
             case Some(m: MetaTerm) => result = m.unsafeRead[CellId[Term]]
-            case _ => return Some(result)
+            case _                 => return Some(result)
           }
         }
         throw new IllegalStateException("Unreachable")
@@ -463,26 +521,36 @@ trait ElaboraterBase extends CommonPropagator[Tyck] {
     }
   }
 
-
-  def newLocalv(name: Name, ty: CellIdOr[Term], id: UniqIdOf[LocalV], meta: Option[ExprMeta])(using ck: Tyck, state: StateAbility[Tyck]): LocalV = {
+  def newLocalv(
+      name: Name,
+      ty: CellIdOr[Term],
+      id: UniqIdOf[LocalV],
+      meta: Option[ExprMeta]
+  )(using ck: Tyck, state: StateAbility[Tyck]): LocalV = {
     val m = convertMeta(meta)
     LocalV(name, toTerm(ty), id, m)
   }
 
   def toTerm[T <: Term](x: CellIdOr[T])(using state: StateAbility[Tyck]): T | MetaTerm = x match {
-    case x: Term => x match {
-      case Meta(x) => Meta(x).asInstanceOf[T | MetaTerm]
-      case x => x.asInstanceOf[T | MetaTerm]
-    }
+    case x: Term =>
+      x match {
+        case Meta(x) => Meta(x).asInstanceOf[T | MetaTerm]
+        case x       => x.asInstanceOf[T | MetaTerm]
+      }
     case x => Meta(x.asInstanceOf[CellId[Term]]).asInstanceOf[T | MetaTerm]
   }
 
-  def toId[T <: Term](x: CellIdOr[T])(using state: StateAbility[Tyck]): CellId[T] = x match {
+  def toId[T <: Term](
+      x: CellIdOr[T]
+  )(using state: StateAbility[Tyck]): CellId[T] = x match {
     case Meta(id) => id.asInstanceOf[CellId[T]]
-    case x => state.toId(x)
+    case x        => state.toId(x)
   }
 
-  def merge(a: CellIdOr[Term], b: CellIdOr[Term])(using state: StateAbility[Tyck], ab: Tyck): Unit = {
+  def merge(a: CellIdOr[Term], b: CellIdOr[Term])(using
+      state: StateAbility[Tyck],
+      ab: Tyck
+  ): Unit = {
     if (a == b) return
     val t1 = toTerm(a)
     val t2 = toTerm(b)
@@ -490,7 +558,7 @@ trait ElaboraterBase extends CommonPropagator[Tyck] {
     (t1, t2) match {
       case (Meta(t1), t2) => state.fill(t1, t2)
       case (t1, Meta(t2)) => state.fill(t2, t1)
-      case _ => ???
+      case _              => ???
     }
   }
 }

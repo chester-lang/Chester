@@ -25,11 +25,13 @@ object QualifiedIDString {
   def from(id: Name*): QualifiedIDString = id.toVector
 }
 
-implicit val ModuleRefRW: ReadWriter[ModuleRef] = readwriter[Vector[Name]].bimap(_.xs, ModuleRef(_))
+implicit val ModuleRefRW: ReadWriter[ModuleRef] =
+  readwriter[Vector[Name]].bimap(_.xs, ModuleRef(_))
 
 /** nonempty */
 case class ModuleRef(xs: Vector[Name]) extends AnyVal with ToDoc {
-  override def toDoc(implicit options: PrettierOptions): Doc = Doc.text(xs.mkString("."))
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    Doc.text(xs.mkString("."))
 }
 
 val BuiltinModule = ModuleRef(Vector("_builtin"))
@@ -38,5 +40,6 @@ val DefaultModule = ModuleRef(Vector("_default"))
 
 case class AbsoluteRef(module: ModuleRef, id: Name) extends ToDoc derives ReadWriter {
   def name: Name = id
-  override def toDoc(implicit options: PrettierOptions): Doc = module.toDoc <> Doc.text(".") <> id.toDoc
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    module.toDoc <> Doc.text(".") <> id.toDoc
 }

@@ -11,7 +11,9 @@ import scalax.collection.immutable.Graph
 import scala.collection.mutable
 
 // Constructs the precedence graph from the given context
-def constructPrecedenceGraph(ctx: PrecedenceGroupCtx): Graph[PrecedenceGroup, DiEdge[PrecedenceGroup]] = {
+def constructPrecedenceGraph(
+    ctx: PrecedenceGroupCtx
+): Graph[PrecedenceGroup, DiEdge[PrecedenceGroup]] = {
   val groups: Seq[PrecedenceGroup] = ctx.groups
 
   // Create directed edges based on 'higherThan' and 'lowerThan' relationships
@@ -40,18 +42,20 @@ def constructPrecedenceGraph(ctx: PrecedenceGroupCtx): Graph[PrecedenceGroup, Di
 
 // Determines the precedence of an operator based on its group
 def precedenceOf(
-                  opInfo: OpInfo,
-                  groupPrecedence: Map[QualifiedIDString, Int],
-                  reporter: Reporter[TyckError]
-                ): Int = {
+    opInfo: OpInfo,
+    groupPrecedence: Map[QualifiedIDString, Int],
+    reporter: Reporter[TyckError]
+): Int = {
   opInfo match {
     case op: OpWithGroup =>
       val groupName = op.group.name
-      groupPrecedence.getOrElse(groupName, {
-        // Report unknown precedence group
-        reporter.apply(UnknownPrecedenceGroup(op.group))
-        Int.MaxValue
-      })
+      groupPrecedence.getOrElse(
+        groupName, {
+          // Report unknown precedence group
+          reporter.apply(UnknownPrecedenceGroup(op.group))
+          Int.MaxValue
+        }
+      )
     case _ =>
       // Assign default precedence for operators without a group
       groupPrecedence.getOrElse(DefaultPrecedenceGroup.name, Int.MaxValue)
@@ -62,18 +66,20 @@ def precedenceOf(
 def associativityOf(opInfo: OpInfo): Associativity = {
   opInfo match {
     case op: OpWithGroup => op.group.associativity
-    case _ => Associativity.None
+    case _               => Associativity.None
   }
 }
 
 // Determines the operator type (Infix, Prefix, Postfix, Operand) based on context
 def determineOpType(
-                     tokenInfo: TokenInfo,
-                     prevToken: Option[TokenInfo],
-                     nextToken: Option[TokenInfo]
-                   ): OpType = {
-  val isPrevOperand = prevToken.exists(_.possibleOpTypes.contains(OpType.Operand))
-  val isNextOperand = nextToken.exists(_.possibleOpTypes.contains(OpType.Operand))
+    tokenInfo: TokenInfo,
+    prevToken: Option[TokenInfo],
+    nextToken: Option[TokenInfo]
+): OpType = {
+  val isPrevOperand =
+    prevToken.exists(_.possibleOpTypes.contains(OpType.Operand))
+  val isNextOperand =
+    nextToken.exists(_.possibleOpTypes.contains(OpType.Operand))
 
   val possibleTypes = tokenInfo.possibleOpTypes
 
@@ -93,13 +99,13 @@ def determineOpType(
 
 // Parses tokens from expressions, associating them with operator information
 def parseTokens(
-                 seq: Vector[Expr],
-                 opContext: OperatorsContext,
-                 groupPrecedence: Map[QualifiedIDString, Int],
-                 reporter: Reporter[TyckError]
-               ): Vector[TokenInfo] = {
+    seq: Vector[Expr],
+    opContext: OperatorsContext,
+    groupPrecedence: Map[QualifiedIDString, Int],
+    reporter: Reporter[TyckError]
+): Vector[TokenInfo] = {
   seq.map {
-    case id@Identifier(name, _) =>
+    case id @ Identifier(name, _) =>
       val possibleOps = Seq(
         opContext.resolveInfix(name).map(op => (op, OpType.Infix)),
         opContext.resolvePrefix(name).map(op => (op, OpType.Prefix)),
@@ -132,10 +138,10 @@ def parseTokens(
 
 // Builds the expression tree from the output stack using operator information
 def buildExpr(
-               stack: mutable.Stack[TokenInfo],
-               opContext: OperatorsContext,
-               reporter: Reporter[TyckError]
-             ): Expr = {
+    stack: mutable.Stack[TokenInfo],
+    opContext: OperatorsContext,
+    reporter: Reporter[TyckError]
+): Expr = {
   if (stack.isEmpty) {
     reporter.apply(UnexpectedTokens(Nil))
     Identifier("error")
@@ -167,10 +173,10 @@ def buildExpr(
 
 // Determines whether to pop operators from the stack based on precedence and associativity
 def shouldPopOperator(
-                       topOperator: TokenInfo,
-                       currentPrec: Int,
-                       currentAssoc: Associativity
-                     ): Boolean = {
+    topOperator: TokenInfo,
+    currentPrec: Int,
+    currentAssoc: Associativity
+): Boolean = {
   val topPrec = topOperator.precedence
   if (currentAssoc == Associativity.Left) {
     topPrec <= currentPrec
@@ -181,16 +187,17 @@ def shouldPopOperator(
 
 // Parses the expression tokens into an expression tree using the Shunting Yard algorithm
 def parseExpression(
-                     tokens: Vector[TokenInfo],
-                     opContext: OperatorsContext,
-                     reporter: Reporter[TyckError]
-                   ): Expr = {
+    tokens: Vector[TokenInfo],
+    opContext: OperatorsContext,
+    reporter: Reporter[TyckError]
+): Expr = {
   val output = mutable.Stack[TokenInfo]()
   val operators = mutable.Stack[TokenInfo]()
 
   tokens.zipWithIndex.foreach { case (tokenInfo, index) =>
     val prevToken = if (index > 0) Some(tokens(index - 1)) else None
-    val nextToken = if (index < tokens.length - 1) Some(tokens(index + 1)) else None
+    val nextToken =
+      if (index < tokens.length - 1) Some(tokens(index + 1)) else None
 
     // Determine the operator type based on context
     val opType = determineOpType(tokenInfo, prevToken, nextToken)
@@ -245,19 +252,19 @@ object OpType {
 
 // Holds information about each token in the expression
 case class TokenInfo(
-                      expr: Expr,
-                      precedence: Int,
-                      associativity: Associativity,
-                      possibleOpTypes: Set[OpType],
-                      opInfos: Seq[(OpInfo, OpType)] = Seq.empty
-                    )
+    expr: Expr,
+    precedence: Int,
+    associativity: Associativity,
+    possibleOpTypes: Set[OpType],
+    opInfos: Seq[(OpInfo, OpType)] = Seq.empty
+)
 
 // Resolves an operation sequence into an expression
 def resolveOpSeq(
-                  reporter: Reporter[TyckError],
-                  opContext: OperatorsContext,
-                  opSeq: OpSeq
-                ): Expr = {
+    reporter: Reporter[TyckError],
+    opContext: OperatorsContext,
+    opSeq: OpSeq
+): Expr = {
 
   // Construct the precedence graph
   val precedenceGraph = constructPrecedenceGraph(opContext.groups)
@@ -270,16 +277,16 @@ def resolveOpSeq(
       // Convert to LayeredTopologicalOrder to access layers
       val layeredOrder = order.toLayered
       // Map each group to its precedence level
-      layeredOrder.iterator
-        .flatMap { case (index, nodes) =>
-          nodes.map { node =>
-            node.outer.name -> index
-          }
+      layeredOrder.iterator.flatMap { case (index, nodes) =>
+        nodes.map { node =>
+          node.outer.name -> index
         }
-        .toMap
+      }.toMap
     case Left(_) =>
       // If there's a cycle, report an error
-      reporter.apply(PrecedenceCycleDetected(precedenceGraph.nodes.map(_.outer)))
+      reporter.apply(
+        PrecedenceCycleDetected(precedenceGraph.nodes.map(_.outer))
+      )
       Map.empty
   }
 
@@ -288,8 +295,8 @@ def resolveOpSeq(
 
   // Collect operator groups from tokens
   val operatorGroups = tokens.flatMap { tokenInfo =>
-    tokenInfo.opInfos.collect {
-      case (op: OpWithGroup, _) => op.group
+    tokenInfo.opInfos.collect { case (op: OpWithGroup, _) =>
+      op.group
     }
   }
 

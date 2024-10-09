@@ -16,7 +16,10 @@ class SimpleTerminal(init: TerminalInit)(using runner: Runner[Id]) extends Abstr
 }
 
 class SimpleTerminalFactory(using runner: Runner[Id]) extends Terminal[Id] {
-  inline def runTerminal[T](init: TerminalInit, block: InTerminal[Id] ?=> T): T = {
+  inline def runTerminal[T](
+      init: TerminalInit,
+      block: InTerminal[Id] ?=> T
+  ): T = {
     val terminal = new SimpleTerminal(init)
     block(using terminal)
   }

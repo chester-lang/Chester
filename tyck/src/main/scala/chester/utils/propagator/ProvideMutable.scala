@@ -1,6 +1,6 @@
 package chester.utils.propagator
 
-import chester.syntax.core.{UniqId, UniqIdOf}
+import chester.uniqid.{UniqId, UniqIdOf}
 
 import scala.collection.mutable
 
@@ -16,7 +16,10 @@ trait ProvideMutable extends ProvideImpl {
 
   type CIdOf[+T <: Cell[?]] = HoldCell[T]
 
-  class HoldPropagator[+T <: Propagator[?]](val uniqId: UniqIdOf[Impl[?]], value: T) {
+  class HoldPropagator[+T <: Propagator[?]](
+      val uniqId: UniqIdOf[Impl[?]],
+      value: T
+  ) {
     var store: Propagator[?] = value
     var alive: Boolean = true
   }
@@ -33,9 +36,12 @@ trait ProvideMutable extends ProvideImpl {
     x.asInstanceOf[CIdOf[Cell[?]]]
   }
 
-  override def stateAbilityImpl[Ability]: StateAbility[Ability] = Impl[Ability]()
+  override def stateAbilityImpl[Ability]: StateAbility[Ability] =
+    Impl[Ability]()
 
-  class Impl[Ability](val uniqId: UniqIdOf[Impl[Ability]] = UniqId.generate[Impl[Ability]]) extends StateAbility[Ability] {
+  class Impl[Ability](
+      val uniqId: UniqIdOf[Impl[Ability]] = UniqId.generate[Impl[Ability]]
+  ) extends StateAbility[Ability] {
     var didChanged: mutable.ArrayDeque[CIdOf[?]] = mutable.ArrayDeque.empty
 
     override def readCell[T <: Cell[?]](id: CIdOf[T]): Option[T] = {
@@ -43,7 +49,9 @@ trait ProvideMutable extends ProvideImpl {
       Some(id.store.asInstanceOf[T])
     }
 
-    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using Ability): Unit = {
+    override def update[T <: Cell[?]](id: CIdOf[T], f: T => T)(using
+        Ability
+    ): Unit = {
       didSomething = true
       require(id.uniqId == uniqId)
       id.store = f(id.store.asInstanceOf[T])
@@ -57,7 +65,9 @@ trait ProvideMutable extends ProvideImpl {
       id
     }
 
-    override def addPropagator[T <: Propagator[Ability]](propagator: T)(using more: Ability): PIdOf[T] = {
+    override def addPropagator[T <: Propagator[Ability]](
+        propagator: T
+    )(using more: Ability): PIdOf[T] = {
       didSomething = true
       val id = new HoldPropagator[T](uniqId, propagator)
       for (cell <- propagator.zonkingCells) {
@@ -92,14 +102,24 @@ trait ProvideMutable extends ProvideImpl {
       }
     }
 
-    override def readingZonkings(cells: Vector[CIdOf[Cell[?]]]): Vector[Propagator[Ability]] = {
-      cells.flatMap(_.zonkingPropagators).map(_.store.asInstanceOf[Propagator[Ability]])
+    override def readingZonkings(
+        cells: Vector[CIdOf[Cell[?]]]
+    ): Vector[Propagator[Ability]] = {
+      cells
+        .flatMap(_.zonkingPropagators)
+        .map(_.store.asInstanceOf[Propagator[Ability]])
     }
 
-    override def requireRemovePropagatorZonking(identify: Any, cell: CellId[?]): Unit = {
+    override def requireRemovePropagatorZonking(
+        identify: Any,
+        cell: CellId[?]
+    ): Unit = {
       val cell1 = cell.asInstanceOf[CIdOf[Cell[?]]]
-      for(p<-cell1.zonkingPropagators.filter(x=> x.store.identify == Some(identify))) {
-        if(p.alive) {
+      for (
+        p <- cell1.zonkingPropagators
+          .filter(x => x.store.identify == Some(identify))
+      ) {
+        if (p.alive) {
           didSomething = true
           p.alive = false
         }
@@ -108,13 +128,17 @@ trait ProvideMutable extends ProvideImpl {
 
     var didSomething = false
 
-    override def naiveZonk(cells: Vector[CIdOf[Cell[?]]])(using more: Ability): Unit = {
+    override def naiveZonk(
+        cells: Vector[CIdOf[Cell[?]]]
+    )(using more: Ability): Unit = {
       var cellsNeeded = cells
       var tryFallback: Int = 0
       while (true) {
         didSomething = false
         tickAll
-        cellsNeeded = cellsNeeded.filter(this.noAnyValue(_)).sortBy(x=> -x.zonkingPropagators.map(_.store.score).sum)
+        cellsNeeded = cellsNeeded
+          .filter(this.noAnyValue(_))
+          .sortBy(x => -x.zonkingPropagators.map(_.store.score).sum)
         if (cellsNeeded.isEmpty) {
           return
         }
@@ -132,7 +156,7 @@ trait ProvideMutable extends ProvideImpl {
               tickAll
               if (c.noAnyValue && p.alive) {
                 val store = p.store.asInstanceOf[Propagator[Ability]]
-                if(store.run(using this, more)) {
+                if (store.run(using this, more)) {
                   p.alive = false
                   didSomething = true
                 } else {
@@ -142,7 +166,9 @@ trait ProvideMutable extends ProvideImpl {
                       p.alive = false
                       didSomething = true
                     case ZonkResult.Require(needed) =>
-                      val needed1 = needed.filter(this.noStableValue(_)).filterNot(cellsNeeded.contains)
+                      val needed1 = needed
+                        .filter(this.noStableValue(_))
+                        .filterNot(cellsNeeded.contains)
                       if (needed1.nonEmpty) {
                         cellsNeeded = cellsNeeded ++ needed1
                         didSomething = true
@@ -152,23 +178,26 @@ trait ProvideMutable extends ProvideImpl {
                 }
               }
             }
-            if (tryFallback>0 && !didSomething) {
+            if (tryFallback > 0 && !didSomething) {
               for (p <- processZonking) {
                 require(p.uniqId == uniqId)
                 tickAll
                 if (c.noAnyValue && p.alive) {
                   val store = p.store.asInstanceOf[Propagator[Ability]]
-                  if(store.run(using this, more)) {
+                  if (store.run(using this, more)) {
                     p.alive = false
                     didSomething = true
                   } else {
-                    val on = store.naiveFallbackZonk(cellsNeeded)(using this, more)
+                    val on =
+                      store.naiveFallbackZonk(cellsNeeded)(using this, more)
                     on match {
                       case ZonkResult.Done =>
                         p.alive = false
                         didSomething = true
                       case ZonkResult.Require(needed) =>
-                        val needed1 = needed.filter(this.noStableValue(_)).filterNot(cellsNeeded.contains)
+                        val needed1 = needed
+                          .filter(this.noStableValue(_))
+                          .filterNot(cellsNeeded.contains)
                         if (needed1.nonEmpty) {
                           cellsNeeded = cellsNeeded ++ needed1
                           didSomething = true
@@ -181,7 +210,7 @@ trait ProvideMutable extends ProvideImpl {
             }
           }
         }
-        if(tryFallback>1 && !didSomething) {
+        if (tryFallback > 1 && !didSomething) {
           for (c <- cellsNeeded) {
             if (c.noAnyValue && c.store.default.isDefined) {
               fill(c.asInstanceOf[CellId[Any]], c.store.default.get)
@@ -190,10 +219,12 @@ trait ProvideMutable extends ProvideImpl {
           }
         }
         if (!didSomething) {
-          if (tryFallback>1) {
-            throw new IllegalStateException(s"Cells $cellsNeeded are not covered by any propagator")
+          if (tryFallback > 1) {
+            throw new IllegalStateException(
+              s"Cells $cellsNeeded are not covered by any propagator"
+            )
           } else {
-            tryFallback = tryFallback+1
+            tryFallback = tryFallback + 1
           }
         } else {
           tryFallback = 0

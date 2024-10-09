@@ -5,32 +5,32 @@ import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
 
+@deprecated
 case class CoreTycker(reporter: Reporter[TyckError]) {
   def check(judge: Judge): Unit = ???
 
   def inferNoEffect(term: Term): Term = term match {
-    case ty: WithType => ty.ty
-    case ListType(t,_)=>inferNoEffect(t)
-    case IntegerTerm(_,_) => IntegerType()
-    case IntTerm(_,_) => IntType()
-    case StringTerm(_,_) => StringType()
-    case RationalTerm(_,_) => RationalType()
-    case SymbolTerm(_,_) => SymbolType()
-    case TupleTerm(terms,_) =>
+    case ty: WithType       => ty.ty
+    case ListType(t, _)     => inferNoEffect(t)
+    case IntegerTerm(_, _)  => IntegerType()
+    case IntTerm(_, _)      => IntType()
+    case StringTerm(_, _)   => StringType()
+    case RationalTerm(_, _) => RationalType()
+    case SymbolTerm(_, _)   => SymbolType()
+    case TupleTerm(terms, _) =>
       val types = terms.map(inferNoEffect)
       TupleType(types)
-    case ListTerm(terms,_) =>
+    case ListTerm(terms, _) =>
       val elementType = inferCommonType(terms)
       ListType(elementType)
-    case ObjectTerm(clauses,_) =>
-      val fieldTypes = clauses.map {
-        case ObjectClauseValueTerm(key, value,_) =>
-          val keyType = inferNoEffect(key)
-          val valueType = inferNoEffect(value)
-          ObjectClauseValueTerm(key, valueType)
+    case ObjectTerm(clauses, _) =>
+      val fieldTypes = clauses.map { case ObjectClauseValueTerm(key, value, _) =>
+        val keyType = inferNoEffect(key)
+        val valueType = inferNoEffect(value)
+        ObjectClauseValueTerm(key, valueType)
       }
       ObjectType(fieldTypes)
-    case lv:LocalV =>
+    case lv: LocalV =>
       lv.ty
     case FunctionType(telescope, resultTy, _, _) => Typeω // TODO
     case _ =>

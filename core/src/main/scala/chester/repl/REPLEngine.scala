@@ -15,17 +15,26 @@ import chester.utils.term.*
 import fansi.*
 
 // could be inline
-def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: Environment): F[Unit] = {
-  implicit val options: PrettierOptions = PrettierOptions.Default.updated(ReplaceBracketsWithWord, env.hasWindowsNarrator)
+def REPLEngine[F[_]](using
+    runner: Runner[F],
+    inTerminal: InTerminal[F],
+    env: Environment
+): F[Unit] = {
+  implicit val options: PrettierOptions = PrettierOptions.Default.updated(
+    ReplaceBracketsWithWord,
+    env.hasWindowsNarrator
+  )
 
   val maxWidth = 80
 
   val mainPrompt: Str = Str("Chester> ").overlay(Colors.REPLPrompt.toFansi)
-  val continuationPrompt0: Str = Str("...      ").overlay(Colors.REPLPrompt.toFansi)
+  val continuationPrompt0: Str =
+    Str("...      ").overlay(Colors.REPLPrompt.toFansi)
   assert(mainPrompt.length == continuationPrompt0.length)
 
   val terminalInfo = new TerminalInfo {
-    override def checkInputStatus(input: String): InputStatus = ParserEngine.checkInputStatus(input)
+    override def checkInputStatus(input: String): InputStatus =
+      ParserEngine.checkInputStatus(input)
 
     override def defaultPrompt: fansi.Str = mainPrompt
 
@@ -41,8 +50,12 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
   def startF: F[Unit] = {
     for {
       _ <- InTerminal.writeln("Welcome to the Chester REPL!")
-      _ <- InTerminal.writeln("Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help.")
-      _ <- InTerminal.writeln(s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}")
+      _ <- InTerminal.writeln(
+        "Type your expressions below. Type 'exit' or ':q' to quit, ':?' for help."
+      )
+      _ <- InTerminal.writeln(
+        s"OS: ${env.getOS} Arch: ${env.getArch} Environment: ${env.getRunningOn}"
+      )
       _ <- runREPL
     } yield ()
   }
@@ -51,34 +64,40 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     InTerminal.readline(terminalInfo).flatMap {
       case LineRead(line) =>
         processLine(line).flatMap {
-          case true => runREPL
+          case true  => runREPL
           case false => Runner.pure(())
         }
-      case UserInterrupted => for {
-        _ <- InTerminal.writeln("User interrupted the input. Continuing the REPL.")
-        _ <- runREPL
-      } yield ()
+      case UserInterrupted =>
+        for {
+          _ <- InTerminal
+            .writeln("User interrupted the input. Continuing the REPL.")
+          _ <- runREPL
+        } yield ()
       case EndOfFile =>
         InTerminal.writeln("End of input detected. Exiting REPL.")
-      case StatusError(_) => for {
-        _ <- InTerminal.writeln("Error reading input. Continuing the REPL.")
-        _ <- runREPL
-      } yield ()
+      case StatusError(_) =>
+        for {
+          _ <- InTerminal.writeln("Error reading input. Continuing the REPL.")
+          _ <- runREPL
+        } yield ()
     }
   }
 
   def processLine(line: String): F[Boolean] = {
     line match {
-      case "exit" | ":q" => for {
-        _ <-
-          InTerminal.writeln("Exiting REPL.")
-      } yield false
+      case "exit" | ":q" =>
+        for {
+          _ <-
+            InTerminal.writeln("Exiting REPL.")
+        } yield false
       case ":?" =>
         for {
           _ <- InTerminal.writeln("Commands:")
           _ <- InTerminal.writeln(":t <expr> - Check the type of an expression")
           _ <- InTerminal.writeln(":q - Quit the REPL")
-          _ <- InTerminal.writeln("You can also just type any expression to evaluate it.")
+          _ <- InTerminal.writeln(
+            "You can also just type any expression to evaluate it."
+          )
         } yield true
       case _ =>
         if (line.startsWith(":t ")) {
@@ -90,23 +109,26 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     }
   }
 
-  def handleTypeCheck(exprStr: String): F[Unit] = InTerminal.getHistory.flatMap { history =>
-    ParserEngine.parseInput(history, exprStr) match {
-      case Right(parsedExpr) =>
-        typeCheck(parsedExpr) match {
-          case TyckResult.Success(judge, _, _) => InTerminal.writeln(prettyPrintJudge(judge))
-          case TyckResult.Failure(errors, _, _, _) => printErrors(errors)
-        }
-      case Left(error) =>
-        InTerminal.writeln(s"Parse Error: ${error.message}")
+  def handleTypeCheck(exprStr: String): F[Unit] =
+    InTerminal.getHistory.flatMap { history =>
+      ParserEngine.parseInput(history, exprStr) match {
+        case Right(parsedExpr) =>
+          typeCheck(parsedExpr) match {
+            case TyckResult.Success(judge, _, _) =>
+              InTerminal.writeln(prettyPrintJudge(judge))
+            case TyckResult.Failure(errors, _, _, _) => printErrors(errors)
+          }
+        case Left(error) =>
+          InTerminal.writeln(s"Parse Error: ${error.message}")
+      }
     }
-  }
 
   def handleExpression(line: String): F[Unit] = InTerminal.getHistory.flatMap { history =>
     ParserEngine.parseInput(history, line) match {
       case Right(parsedExpr) =>
         typeCheck(parsedExpr) match {
-          case TyckResult.Success(judge, _, _) => InTerminal.writeln(prettyPrintJudgeWellTyped(judge))
+          case TyckResult.Success(judge, _, _) =>
+            InTerminal.writeln(prettyPrintJudgeWellTyped(judge))
           case TyckResult.Failure(errors, _, _, _) => printErrors(errors)
         }
       case Left(error) =>
@@ -118,13 +140,20 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     Tycker.check(expr)
   }
 
-  def printErrors(er: Vector[chester.error.TyckError], wr: Vector[chester.error.TyckWarning] = Vector()): F[Unit] = {
+  def printErrors(
+      er: Vector[chester.error.TyckError],
+      wr: Vector[chester.error.TyckWarning] = Vector()
+  ): F[Unit] = {
     for {
       _ <- er.traverse(x => {
-        InTerminal.writeln(FansiPrettyPrinter.render(x.renderWithLocation, maxWidth))
+        InTerminal.writeln(
+          FansiPrettyPrinter.render(x.renderWithLocation, maxWidth)
+        )
       })
       _ <- wr.traverse(x => {
-        InTerminal.writeln(FansiPrettyPrinter.render(x.renderWithLocation, maxWidth))
+        InTerminal.writeln(
+          FansiPrettyPrinter.render(x.renderWithLocation, maxWidth)
+        )
       })
     } yield ()
   }
@@ -134,7 +163,9 @@ def REPLEngine[F[_]](using runner: Runner[F], inTerminal: InTerminal[F], env: En
     val typeDoc = judge.ty
     val effectDoc = judge.effects
 
-    val doc = termDoc <+> Doc.text(":") <+> typeDoc <+?> (judge.effects.nonEmpty, "/" <> effectDoc)
+    val doc = termDoc <+> Doc.text(
+      ":"
+    ) <+> typeDoc <+?> (judge.effects.nonEmpty, "/" <> effectDoc)
 
     FansiPrettyPrinter.render(doc, maxWidth).render
   }

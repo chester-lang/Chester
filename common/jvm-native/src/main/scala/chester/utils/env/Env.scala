@@ -5,9 +5,12 @@ def isTermux: Boolean = {
   val termuxString = "/data/data/com.termux"
 
   // Check each environment variable for the presence of the termuxString
-  val prefixIncludesTermux = sys.env.get("PREFIX").exists(_.contains(termuxString))
-  val ldPreloadIncludesTermux = sys.env.get("LD_PRELOAD").exists(_.contains(termuxString))
-  val shellIncludesTermux = sys.env.get("SHELL").exists(_.contains(termuxString))
+  val prefixIncludesTermux =
+    sys.env.get("PREFIX").exists(_.contains(termuxString))
+  val ldPreloadIncludesTermux =
+    sys.env.get("LD_PRELOAD").exists(_.contains(termuxString))
+  val shellIncludesTermux =
+    sys.env.get("SHELL").exists(_.contains(termuxString))
   val pathIncludesTermux = sys.env.get("PATH").exists(_.contains(termuxString))
 
   // Return true if any of the checks pass
@@ -26,9 +29,12 @@ val platform$getOS: OS = {
 val platform$getArch: Architecture = {
   System.getProperty("os.arch").toLowerCase match {
     case "x86_64" | "amd64" | "x64" => Architecture.Amd64
-    case "x86" | "i386" => Architecture.X86
-    case "arm" => Architecture.Arm
-    case "aarch64" | "arm64" => Architecture.Arm64
-    case _ => throw new Exception(s"Unknown architecture: ${System.getProperty("os.arch")}")
+    case "x86" | "i386"             => Architecture.X86
+    case "arm"                      => Architecture.Arm
+    case "aarch64" | "arm64"        => Architecture.Arm64
+    case _ =>
+      throw new Exception(
+        s"Unknown architecture: ${System.getProperty("os.arch")}"
+      )
   }
 }

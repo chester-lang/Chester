@@ -33,12 +33,16 @@ class BlockAndBlockCallParserTest extends FunSuite {
     val input = "f{g(1); 2}"
     val expected = FunctionCall(
       Identifier("f"),
-      Tuple(Vector(Block(
+      Tuple(
         Vector(
-          FunctionCall(Identifier("g"), Tuple(Vector(IntegerLiteral(1))))
-        ),
-        Some(IntegerLiteral(2))
-      )))
+          Block(
+            Vector(
+              FunctionCall(Identifier("g"), Tuple(Vector(IntegerLiteral(1))))
+            ),
+            Some(IntegerLiteral(2))
+          )
+        )
+      )
     )
     parseAndCheck(input, expected)
   }
@@ -47,12 +51,16 @@ class BlockAndBlockCallParserTest extends FunSuite {
     val input = "f {\n  g(1);\n  2\n}"
     val expected = FunctionCall(
       Identifier("f"),
-      Tuple(Vector(Block(
+      Tuple(
         Vector(
-          FunctionCall(Identifier("g"), Tuple(Vector(IntegerLiteral(1))))
-        ),
-        Some(IntegerLiteral(2))
-      )))
+          Block(
+            Vector(
+              FunctionCall(Identifier("g"), Tuple(Vector(IntegerLiteral(1))))
+            ),
+            Some(IntegerLiteral(2))
+          )
+        )
+      )
     )
     parseAndCheck(input, expected)
   }

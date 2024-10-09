@@ -14,16 +14,26 @@ import io.github.iltotore.iron.constraint.numeric.*
 import java.lang.Character.{isDigit, isLetter}
 import scala.util.*
 
-
 object ParserEngine {
 
-  def parseInput(history: Seq[String], currentInput: String, useCRLF: Boolean = platformUseCRLF): Either[ParseError, ParsedExpr] = {
-    //assert(history.last == currentInput) // doesn't hold for :t commands in repl
+  def parseInput(
+      history: Seq[String],
+      currentInput: String,
+      useCRLF: Boolean = platformUseCRLF
+  ): Either[ParseError, ParsedExpr] = {
+    // assert(history.last == currentInput) // doesn't hold for :t commands in repl
     val linesOffset = history.init.map(x => x.count(_ == '\n') + 1).sum
-    val posOffsetUTF16 = history.init.map(x => x.length + (if(useCRLF) 2 else 1)).sum
-    val posOffsetUnicode = history.init.map(x => StringIndex(x).unicodeLength + (if(useCRLF) 2 else 1)).sum
+    val posOffsetUTF16 =
+      history.init.map(x => x.length + (if (useCRLF) 2 else 1)).sum
+    val posOffsetUnicode = history.init
+      .map(x => StringIndex(x).unicodeLength + (if (useCRLF) 2 else 1))
+      .sum
 
-    parseCompleteExpression(currentInput, linesOffset.refineUnsafe, WithUTF16(posOffsetUnicode.refineUnsafe, posOffsetUTF16.refineUnsafe))
+    parseCompleteExpression(
+      currentInput,
+      linesOffset.refineUnsafe,
+      WithUTF16(posOffsetUnicode.refineUnsafe, posOffsetUTF16.refineUnsafe)
+    )
   }
 
   def checkInputStatus(currentInput: String): InputStatus = {
@@ -37,23 +47,43 @@ object ParserEngine {
         case '(' | '{' | '[' => stack.push(char)
         case ')' =>
           if (stack.isEmpty || stack.pop() != '(')
-            return InputStatus.Error(s"Unmatched closing parenthesis at position $index")
+            return InputStatus.Error(
+              s"Unmatched closing parenthesis at position $index"
+            )
         case ']' =>
           if (stack.isEmpty || stack.pop() != '[')
-            return InputStatus.Error(s"Unmatched closing bracket at position $index")
+            return InputStatus.Error(
+              s"Unmatched closing bracket at position $index"
+            )
         case '}' =>
           if (stack.isEmpty || stack.pop() != '{')
-            return InputStatus.Error(s"Unmatched closing brace at position $index")
+            return InputStatus.Error(
+              s"Unmatched closing brace at position $index"
+            )
         case _ => // Ignore other characters
       }
     }
     if (stack.nonEmpty) InputStatus.Incomplete else InputStatus.Complete
   }
 
-  private def parseCompleteExpression(input: String, linesOffset: Int :| Positive0, posOffset: WithUTF16): Either[ParseError, ParsedExpr] = {
-    parse(input, p => new ParserInternal(SourceOffset(FileNameAndContent("repl", input), linesOffset = linesOffset, posOffset = posOffset))(p).exprEntrance) match {
+  private def parseCompleteExpression(
+      input: String,
+      linesOffset: Int :| Positive0,
+      posOffset: WithUTF16
+  ): Either[ParseError, ParsedExpr] = {
+    parse(
+      input,
+      p =>
+        new ParserInternal(
+          SourceOffset(
+            FileNameAndContent("repl", input),
+            linesOffset = linesOffset,
+            posOffset = posOffset
+          )
+        )(p).exprEntrance
+    ) match {
       case Parsed.Success(expr, _) => Right(expr)
-      case f: Parsed.Failure => Left(ParseError(f.msg, Pos.Zero))
+      case f: Parsed.Failure       => Left(ParseError(f.msg, Pos.Zero))
     }
   }
 }

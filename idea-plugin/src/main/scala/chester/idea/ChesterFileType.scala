@@ -8,7 +8,8 @@ class ChesterFileType extends LanguageFileType(ChesterLanguage) {
   override def getName: String = "Chester File"
   override def getDescription: String = "Chester language file"
   override def getDefaultExtension: String = "chester"
-  override def getIcon: Icon = IconLoader.getIcon("/icons/chester-icon.png", getClass)
+  override def getIcon: Icon =
+    IconLoader.getIcon("/icons/chester-icon.png", getClass)
 }
 
 object ChesterFileType {

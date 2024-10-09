@@ -21,13 +21,19 @@ class VectorReporter[T] extends Reporter[T] {
   def getReports: Vector[T] = buffer.toVector
 }
 
-case class SeverityMap(error: Boolean, goal: Boolean, warn: Boolean, info: Boolean) derives ReadWriter
+case class SeverityMap(
+    error: Boolean,
+    goal: Boolean,
+    warn: Boolean,
+    info: Boolean
+) derives ReadWriter
 
 object SeverityMap {
-  def Empty: SeverityMap = SeverityMap(error=false, goal=false, warn=false, info=false)
+  def Empty: SeverityMap =
+    SeverityMap(error = false, goal = false, warn = false, info = false)
 }
 
-class ReporterTrackError[T<:Problem](x: Reporter[T]) extends Reporter[T] {
+class ReporterTrackError[T <: Problem](x: Reporter[T]) extends Reporter[T] {
   private var errorVar = false
   private var warnVar = false
   private var goalVar = false
@@ -45,13 +51,18 @@ class ReporterTrackError[T<:Problem](x: Reporter[T]) extends Reporter[T] {
   def hasWarn: Boolean = warnVar
   def hasGoal: Boolean = goalVar
   def hasInfo: Boolean = infoVar
-  
-  def getSeverityMap: SeverityMap = SeverityMap(error=errorVar, goal=goalVar, warn=warnVar, info=infoVar)
+
+  def getSeverityMap: SeverityMap = SeverityMap(
+    error = errorVar,
+    goal = goalVar,
+    warn = warnVar,
+    info = infoVar
+  )
 }
 
 class Get[P, S](val reporter: Reporter[P], private val state: MutBox[S]) {
   def getState: S = state.get
-  
+
   implicit inline def toReporter: Reporter[P] = reporter
 
   def report(problem: P): Unit = reporter.apply(problem)
@@ -72,7 +83,9 @@ class Get[P, S](val reporter: Reporter[P], private val state: MutBox[S]) {
 }
 
 object Get {
-  def run[P <: WithServerity, S, A](program: Get[P, S] => A)(state: S): TyckResult0[P, S, A] = {
+  def run[P <: WithServerity, S, A](
+      program: Get[P, S] => A
+  )(state: S): TyckResult0[P, S, A] = {
     val reporter = new VectorReporter[P]
     val stateBox = MutBox(state)
     val get = Get(reporter, stateBox)

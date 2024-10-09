@@ -8,7 +8,9 @@ case class RationalSerialized(numerator: BigInt, denominator: BigInt) derives Re
 }
 
 extension (r: Rational) {
-  def toSerialized: RationalSerialized = RationalSerialized(r.numerator.toBigInt, r.denominator.toBigInt)
+  def toSerialized: RationalSerialized =
+    RationalSerialized(r.numerator.toBigInt, r.denominator.toBigInt)
 }
 
-implicit val rationalRW: ReadWriter[Rational] = readwriter[RationalSerialized].bimap(_.toSerialized, _.toRational)
+implicit val rationalRW: ReadWriter[Rational] =
+  readwriter[RationalSerialized].bimap(_.toSerialized, _.toRational)

@@ -12,7 +12,7 @@ import chester.utils.*
 import chester.utils.propagator.*
 import chester.syntax.*
 import chester.tyck.api.{NoopSemanticCollector, SemanticCollector, UnusedVariableWarningWrapper}
-
+import chester.uniqid.*
 import scala.language.implicitConversions
 import scala.util.boundary
 import scala.util.boundary.break
@@ -21,26 +21,51 @@ type Tyck = Get[TyckProblem, Unit]
 
 trait Elaborater extends ProvideCtx with ElaboraterCommon {
 
-  def checkType(expr: Expr)(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def checkType(expr: Expr)(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term = {
     // Create a new type cell representing the kind Typeω (the type of types)
     val kindType = literal(Typeω: Term)
 
     elab(expr, kindType, toEffectsCell(NoEffect))
   }
 
-  def checkTypeId(expr: Expr)(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
+  def checkTypeId(expr: Expr)(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): CellId[Term] = {
     toId(checkType(expr))
   }
 
-  def elabTy(expr: Option[Expr])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term =
+  def elabTy(expr: Option[Expr])(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term =
     expr match {
       case Some(expr) => checkType(expr)
-      case None => Meta(newType)
+      case None       => Meta(newType)
     }
 
-  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term
+  def elab(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term
 
-  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
+  def elabId(expr: Expr, ty: CellIdOr[Term], effects: CIdOf[EffectsCell])(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): CellId[Term] = {
     val term = elab(expr, ty, effects)
     toId(term)
   }
@@ -50,18 +75,32 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   // TODO: add something for implicit conversion
 
-  def newSubtype(ty: CellIdOr[Term], cause: Expr)(using localCtx: LocalCtx, ck: Tyck, state: StateAbility[Tyck]): CellId[Term] = {
+  def newSubtype(ty: CellIdOr[Term], cause: Expr)(using
+      localCtx: LocalCtx,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): CellId[Term] = {
     val cell = newType
     state.addPropagator(Unify(toId(ty), cell, cause))
     cell
   }
 
-  def elabBlock(expr: Block, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): BlockTerm = {
+  def elabBlock(expr: Block, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): BlockTerm = {
     val ty = toId(readMetaVar(toTerm(ty0)))
     val Block(heads0, tail, meta) = expr
     val heads = heads0.map(resolve)
     {
-      case class DefInfo(expr: LetDefStmt, id: UniqIdOf[LocalV], tyAndVal: TyAndVal, item: ContextItem)
+      case class DefInfo(
+          expr: LetDefStmt,
+          id: UniqIdOf[LocalV],
+          tyAndVal: TyAndVal,
+          item: ContextItem
+      )
 
       val defs = heads.collect {
         case expr: LetDefStmt if expr.kind == LetDefType.Def =>
@@ -73,12 +112,17 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           val id = UniqId.generate[LocalV]
           val localv = newLocalv(name, tyandval.ty, id, meta)
           val r = parameter.newSymbol(localv, id, expr)
-          DefInfo(expr, UniqId.generate[LocalV], tyandval, ContextItem(name, id, localv, tyandval.ty, Some(r)))
+          DefInfo(
+            expr,
+            UniqId.generate[LocalV],
+            tyandval,
+            ContextItem(name, id, localv, tyandval.ty, Some(r))
+          )
       }
       val defsMap = defs.map(info => (info.expr, info)).toMap
       var ctx = localCtx.add(defs.map(_.item))
-      val names = heads.collect {
-        case expr: LetDefStmt => expr.defined match {
+      val names = heads.collect { case expr: LetDefStmt =>
+        expr.defined match {
           case DefinedPattern(PatternBind(name, _)) => name
         }
       }
@@ -112,12 +156,14 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           val id = UniqId.generate[LocalV]
           val ty = expr.ty match {
             case Some(tyExpr) => checkType(tyExpr)
-            case None => newTypeTerm
+            case None         => newTypeTerm
           }
           val localv = newLocalv(name, ty, id, meta)
           val r = parameter.newSymbol(localv, id, expr)
           val wellTyped = elab(expr.body.get, ty, effects)
-          ctx = ctx.add(ContextItem(name, id, localv, ty, Some(r))).knownAdd(id, TyAndVal(ty, wellTyped))
+          ctx = ctx
+            .add(ContextItem(name, id, localv, ty, Some(r)))
+            .knownAdd(id, TyAndVal(ty, wellTyped))
           Vector(LetStmtTerm(name, wellTyped, ty))
         }
         case importStmt: ImportStmt => {
@@ -140,10 +186,19 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
   }
 
   /** ty is lhs */
-  override def elab(expr: Expr, ty0: CellIdOr[Term], effects: CIdOf[EffectsCell])(using localCtx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = toTerm {
+  override def elab(
+      expr: Expr,
+      ty0: CellIdOr[Term],
+      effects: CIdOf[EffectsCell]
+  )(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term = toTerm {
     val ty = toId(readMetaVar(toTerm(ty0)))
     resolve(expr) match {
-      case expr@Identifier(name, meta) => {
+      case expr @ Identifier(name, meta) => {
         localCtx.get(name) match {
           case Some(c: ContextItem) => {
             if (c.reference.isDefined) {
@@ -159,27 +214,27 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
           }
         }
       }
-      case expr@IntegerLiteral(value, meta) => {
+      case expr @ IntegerLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
         AbstractIntTerm.from(value, convertMeta(meta))
       }
-      case expr@RationalLiteral(value, meta) => {
+      case expr @ RationalLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
         RationalTerm(value, convertMeta(meta))
       }
-      case expr@StringLiteral(value, meta) => {
+      case expr @ StringLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
         StringTerm(value, convertMeta(meta))
       }
-      case expr@SymbolLiteral(value, meta) => {
+      case expr @ SymbolLiteral(value, meta) => {
         state.addPropagator(LiteralType(expr, ty))
         SymbolTerm(value, convertMeta(meta))
       }
-      case expr@UnitExpr(meta) => {
+      case expr @ UnitExpr(meta) => {
         unify(ty, UnitType(convertMeta(meta)), expr)
         UnitTerm(convertMeta(meta))
       }
-      case expr@ListExpr(terms, meta) => {
+      case expr @ ListExpr(terms, meta) => {
         val t = newType
         // Relate the list type 'ty' to 'ListType(t)'
         state.addPropagator(ListOf(t, ty, expr))
@@ -199,17 +254,17 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
         ListTerm(termResults.map(_._1), convertMeta(meta))
       }
-      case expr@TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
+      case expr @ TypeAnotationNoEffects(innerExpr, tyExpr, meta) =>
         // Check the type annotation expression to get its type
         val declaredTyTerm = checkType(tyExpr)
 
         unify(ty, declaredTyTerm, expr)
 
         elab(innerExpr, declaredTyTerm, effects)
-      case expr: FunctionExpr => elabFunction(expr, ty, effects)
-      case expr: Block => elabBlock(expr, ty, effects)
+      case expr: FunctionExpr       => elabFunction(expr, ty, effects)
+      case expr: Block              => elabBlock(expr, ty, effects)
       case expr: DesaltFunctionCall => elabFunctionCall(expr, ty, effects)
-      case expr@ObjectExpr(fields, meta) =>
+      case expr @ ObjectExpr(fields, meta) =>
         elabObjectExpr(expr, fields, ty, effects)
       case expr: Expr => {
         val problem = NotImplemented(expr)
@@ -223,16 +278,16 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
   // TODO: untested
   def elabObjectExpr(
-                      expr: ObjectExpr,
-                      fields: Vector[ObjectClause],
-                      ty: CellId[Term],
-                      effects: CIdOf[EffectsCell]
-                    )(using
-                      localCtx: LocalCtx,
-                      parameter: SemanticCollector,
-                      ck: Tyck,
-                      state: StateAbility[Tyck]
-                    ): Term = {
+      expr: ObjectExpr,
+      fields: Vector[ObjectClause],
+      ty: CellId[Term],
+      effects: CIdOf[EffectsCell]
+  )(using
+      localCtx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term = {
     // Create collections to store field keys and types
     val fieldTypeVars = scala.collection.mutable.Map[Term, CellId[Term]]()
     val elaboratedFields = fields.flatMap {
@@ -251,9 +306,8 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
     val objectTerm = ObjectTerm(elaboratedFields)
 
     // Construct the expected object type
-    val expectedObjectType = ObjectType(elaboratedFields.map {
-      case ObjectClauseValueTerm(keyTerm, _, _) =>
-        ObjectClauseValueTerm(keyTerm, Meta(fieldTypeVars(keyTerm)))
+    val expectedObjectType = ObjectType(elaboratedFields.map { case ObjectClauseValueTerm(keyTerm, _, _) =>
+      ObjectClauseValueTerm(keyTerm, Meta(fieldTypeVars(keyTerm)))
     })
 
     // Unify the expected type with the object's type
@@ -265,8 +319,14 @@ trait ProvideElaborater extends ProvideCtx with Elaborater with ElaboraterFuncti
 
 trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElaboraterFunction with ProvideElaboraterFunctionCall {
 
-  def check(expr: Expr, ty: Option[Term] = None, effects: Option[Effects] = None, sementicCollector: SemanticCollector = NoopSemanticCollector): TyckResult[Unit, Judge] = {
-    implicit val collecter: UnusedVariableWarningWrapper = new UnusedVariableWarningWrapper(sementicCollector)
+  def check(
+      expr: Expr,
+      ty: Option[Term] = None,
+      effects: Option[Effects] = None,
+      sementicCollector: SemanticCollector = NoopSemanticCollector
+  ): TyckResult[Unit, Judge] = {
+    implicit val collecter: UnusedVariableWarningWrapper =
+      new UnusedVariableWarningWrapper(sementicCollector)
     val reporter = new VectorReporter[TyckProblem]
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
@@ -292,7 +352,11 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     implicit val ctx: LocalCtx = LocalCtx.default
     val wellTyped = elabId(expr, ty1, effects1)
     able.naiveZonk(Vector(ty1, effects1, wellTyped))
-    val judge = Judge(able.readStable(wellTyped).get, able.readStable(ty1).get, able.readUnstable(effects1).get)
+    val judge = Judge(
+      able.readStable(wellTyped).get,
+      able.readStable(ty1).get,
+      able.readUnstable(effects1).get
+    )
     val finalJudge = finalizeJudge(judge)
 
     TyckResult0((), finalJudge, reporter.getReports)
@@ -300,11 +364,13 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
   }
 
   def finalizeJudge(
-                     judge0: Judge
-                   )(using ck: Tyck,
-                     able: StateAbility[Tyck],
-                     recording: SemanticCollector,
-                     reporter: Reporter[TyckProblem]): Judge = {
+      judge0: Judge
+  )(using
+      ck: Tyck,
+      able: StateAbility[Tyck],
+      recording: SemanticCollector,
+      reporter: Reporter[TyckProblem]
+  ): Judge = {
     var judge = judge0
     boundary {
       while (true) {
@@ -317,17 +383,26 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     judge
   }
 
-  def checkTop(fileName: String, expr: Expr, reporter0: Reporter[Problem], sementicCollector: SemanticCollector = NoopSemanticCollector): chester.syntax.TAST = {
-    implicit val collecter: UnusedVariableWarningWrapper = new UnusedVariableWarningWrapper(sementicCollector)
-    implicit val reporter: ReporterTrackError[Problem] = new ReporterTrackError(reporter0)
+  def checkTop(
+      fileName: String,
+      expr: Expr,
+      reporter0: Reporter[Problem],
+      sementicCollector: SemanticCollector = NoopSemanticCollector
+  ): chester.syntax.TAST = {
+    implicit val collecter: UnusedVariableWarningWrapper =
+      new UnusedVariableWarningWrapper(sementicCollector)
+    implicit val reporter: ReporterTrackError[Problem] = new ReporterTrackError(
+      reporter0
+    )
     implicit val get: Tyck = new Get(reporter, new MutBox(()))
     implicit val able: StateAbility[Tyck] = stateAbilityImpl
     implicit var ctx: LocalCtx = LocalCtx.default
     val (module, block): (ModuleRef, Block) = resolve(expr) match {
-      case b@Block(head +: heads, tail, meta) => resolve(head) match {
-        case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
-        case stmt => (DefaultModule, b)
-      }
+      case b @ Block(head +: heads, tail, meta) =>
+        resolve(head) match {
+          case ModuleStmt(module, meta) => (module, Block(heads, tail, meta))
+          case stmt                     => (DefaultModule, b)
+        }
       case expr => (DefaultModule, Block(Vector(), Some(expr), expr.meta))
     }
     ctx = ctx.updateModule(module)
@@ -335,8 +410,9 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
     val effects = newEffects
     val wellTyped = elabBlock(block, ty, effects)
     able.naiveZonk(Vector(ty, effects))
-    val judge = Judge(wellTyped, able.readStable(ty).get, able.readUnstable(effects).get)
-    val finalJudge= finalizeJudge(judge)
+    val judge =
+      Judge(wellTyped, able.readStable(ty).get, able.readUnstable(effects).get)
+    val finalJudge = finalizeJudge(judge)
 
     TAST(
       fileName = fileName,
@@ -349,7 +425,6 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
   }
 }
 
-object Tycker extends DefaultImpl with ProvideMutable {
-}
+object Tycker extends DefaultImpl with ProvideMutable {}
 
 export Tycker.{check, checkTop}

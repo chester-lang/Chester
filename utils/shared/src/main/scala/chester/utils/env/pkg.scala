@@ -49,10 +49,9 @@ object RunningOn {
   case class NativeImage(version: String) extends JavaLike
 
   case class Native(version: String) extends RunningOn
-  
+
   case object Browser extends RunningOn
 }
-
 
 trait Environment {
   def getOS: OS
@@ -69,5 +68,7 @@ object BrowserEnv extends Environment {
 
 inline def getOS(using inline env: Environment): OS = env.getOS
 inline def getArch(using inline env: Environment): Architecture = env.getArch
-inline def getRunningOn(using inline env: Environment): RunningOn = env.getRunningOn
-inline def hasWindowsNarrator(using inline env: Environment): Boolean = env.hasWindowsNarrator
+inline def getRunningOn(using inline env: Environment): RunningOn =
+  env.getRunningOn
+inline def hasWindowsNarrator(using inline env: Environment): Boolean =
+  env.hasWindowsNarrator

@@ -11,9 +11,13 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("world"),
       Identifier("execute"),
-      Vector(Tuple(Vector(
-        Identifier("me"),
-      )))
+      Vector(
+        Tuple(
+          Vector(
+            Identifier("me")
+          )
+        )
+      )
     )
     parseAndCheck(input, expected)
   }
@@ -55,10 +59,14 @@ class DotParserTest extends FunSuite {
     val expected = DotCall(
       Identifier("obj"),
       Identifier("method"),
-      Vector(Tuple(Vector(
-        Identifier("arg1"),
-        Identifier("arg2")
-      )))
+      Vector(
+        Tuple(
+          Vector(
+            Identifier("arg1"),
+            Identifier("arg2")
+          )
+        )
+      )
     )
     parseAndCheck(input, expected)
   }
@@ -67,38 +75,30 @@ class DotParserTest extends FunSuite {
     val expected =
       DotCall(
         expr = Identifier(
-          name = "obj",
-
+          name = "obj"
         ),
         field = Identifier(
-          name = "method",
-
+          name = "method"
         ),
         telescope = Vector(
           Tuple(
             terms = Vector(
               Identifier(
-                name = "arg1",
-
+                name = "arg1"
               ),
               Identifier(
-                name = "arg2",
-
+                name = "arg2"
               )
-            ),
-
+            )
           ),
           Tuple(
             terms = Vector(
               Identifier(
-                name = "arg1",
-
+                name = "arg1"
               )
-            ),
-
+            )
           )
-        ),
-
+        )
       )
     parseAndCheck(input, expected)
   }

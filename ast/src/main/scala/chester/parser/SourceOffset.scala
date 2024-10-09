@@ -49,7 +49,11 @@ case class FilePath private (fileName: String) extends ParserSource {
 }
 
 // TODO: maybe column offset for the first line also
-case class SourceOffset(source: ParserSource, linesOffset: Int :| Positive0 = 0, posOffset: WithUTF16 = WithUTF16.Zero)derives ReadWriter {
+case class SourceOffset(
+    source: ParserSource,
+    linesOffset: Int :| Positive0 = 0,
+    posOffset: WithUTF16 = WithUTF16.Zero
+) derives ReadWriter {
   def fileName: String = source.fileName
 
   def readContent: Either[ParseError, String] = source.readContent

@@ -3,6 +3,7 @@ package chester.syntax
 import chester.syntax.*
 import chester.syntax.core.{BlockTerm, Effects, Term}
 import chester.tyck.SeverityMap
+import chester.uniqid.*
 import chester.utils.*
 import upickle.default.*
 import upickle.default as upickle
@@ -18,7 +19,29 @@ object TASTPackage {
   // Typed Abstract Syntax Trees
   // files
   // TODO: handle SourcePos for performance and file size, especially avoid duplicated SourceOffset
-  case class TAST(fileName: String, module: ModuleRef, ast: BlockTerm, ty: Term, effects: Effects, problems: SeverityMap)derives ReadWriter {
+  case class TAST(
+      fileName: String,
+      module: ModuleRef,
+      ast: BlockTerm,
+      ty: Term,
+      effects: Effects,
+      problems: SeverityMap
+  ) extends ContainsUniqId
+      derives ReadWriter {
+    override def collectU(collector: CollectorU): Unit = {
+      ast.collectU(collector)
+      ty.collectU(collector)
+      effects.collectU(collector)
+    }
+
+    override def rerangeU(reranger: RerangerU): TAST = {
+      copy(
+        ast = ast.rerangeU(reranger).asInstanceOf[BlockTerm],
+        ty = ty.rerangeU(reranger),
+        effects = effects.rerangeU(reranger).asInstanceOf[Effects]
+      )
+    }
+
     def writeBinary: Array[Byte] = upickle.writeBinary[TAST](this)
 
     def readBinary(bytes: Array[Byte]): TAST = upickle.readBinary[TAST](bytes)
@@ -30,8 +53,14 @@ object TASTPackage {
 
   case class LoadedModules(map: HashMap[ModuleRef, Vector[TAST]] = HashMap()) extends AnyVal {
     def add(tast: TAST): LoadedModules = {
-      if (map.contains(tast.module) && map.apply(tast.module).exists(_.fileName == tast.fileName)) {
-        throw new IllegalArgumentException(s"Module ${tast.module} already loaded from file ${tast.fileName}")
+      if (
+        map.contains(tast.module) && map
+          .apply(tast.module)
+          .exists(_.fileName == tast.fileName)
+      ) {
+        throw new IllegalArgumentException(
+          s"Module ${tast.module} already loaded from file ${tast.fileName}"
+        )
       } else {
         val newTASTs = map.getOrElse(tast.module, Vector()) :+ tast
         LoadedModules(map.updated(tast.module, newTASTs))

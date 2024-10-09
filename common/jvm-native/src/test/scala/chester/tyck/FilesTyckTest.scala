@@ -22,14 +22,17 @@ class FilesTyckTest extends FunSuite {
         case Right(parsedBlock) =>
           Tycker.check(parsedBlock) match {
             case TyckResult.Success(result, status, warnings) =>
-              val actual = StringPrinter.render(result.wellTyped)(using PrettierOptions.Default)
+              val actual = StringPrinter.render(result.wellTyped)(using
+                PrettierOptions.Default
+              )
 
-              if(false){
+              if (false) {
                 if (!expectedExists) {
                   Files.write(expectedFile, actual.getBytes)
                   println(s"Created expected file: $expectedFile")
                 } else {
-                  val expected = Files.readString(expectedFile, StandardCharsets.UTF_8)
+                  val expected =
+                    Files.readString(expectedFile, StandardCharsets.UTF_8)
                   assertEquals(actual, expected)
                 }
               }
@@ -61,12 +64,13 @@ class FilesTyckFailsTest extends FunSuite {
             case TyckResult.Failure(errors, warnings, state, result) =>
               val actual = errors.map(_.toString).mkString("\n")
 
-              if(false){
+              if (false) {
                 if (!expectedExists) {
                   Files.write(expectedFile, actual.getBytes)
                   println(s"Created expected file: $expectedFile")
                 } else {
-                  val expected = Files.readString(expectedFile, StandardCharsets.UTF_8)
+                  val expected =
+                    Files.readString(expectedFile, StandardCharsets.UTF_8)
                   assertEquals(actual, expected)
                 }
               }

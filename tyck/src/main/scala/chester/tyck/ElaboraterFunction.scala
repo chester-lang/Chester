@@ -3,13 +3,28 @@ package chester.tyck
 import chester.syntax.concrete.*
 import chester.syntax.core.*
 import chester.tyck.api.SemanticCollector
+import chester.uniqid.*
 
 trait ElaboraterFunction extends ProvideCtx with Elaborater {
-  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term
+  def elabFunction(
+      expr: FunctionExpr,
+      ty: CellId[Term],
+      outerEffects: CIdOf[EffectsCell]
+  )(using
+      ctx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term
 }
 
 trait ProvideElaboraterFunction extends ElaboraterFunction {
-  def elabArg(arg: Arg, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): ArgTerm = {
+  def elabArg(arg: Arg, effects: CIdOf[EffectsCell])(using
+      localCtx: MutableLocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): ArgTerm = {
     require(arg.decorations.isEmpty, "decorations are not supported yet")
     val ty = elabTy(arg.ty)
     val default = arg.exprOrDefault.map(elab(_, ty, effects))
@@ -25,7 +40,12 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     }
   }
 
-  def elabTelescope(telescope: DefTelescope, effects: CIdOf[EffectsCell])(using localCtx: MutableLocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): TelescopeTerm = {
+  def elabTelescope(telescope: DefTelescope, effects: CIdOf[EffectsCell])(using
+      localCtx: MutableLocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): TelescopeTerm = {
     // Process each argument in the telescope, updating the context
     val argTerms = telescope.args.map { arg =>
       elabArg(arg, effects)
@@ -34,7 +54,16 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     TelescopeTerm(argTerms, telescope.implicitly)
   }
 
-  def elabFunction(expr: FunctionExpr, ty: CellId[Term], outerEffects: CIdOf[EffectsCell])(using ctx: LocalCtx, parameter: SemanticCollector, ck: Tyck, state: StateAbility[Tyck]): Term = {
+  def elabFunction(
+      expr: FunctionExpr,
+      ty: CellId[Term],
+      outerEffects: CIdOf[EffectsCell]
+  )(using
+      ctx: LocalCtx,
+      parameter: SemanticCollector,
+      ck: Tyck,
+      state: StateAbility[Tyck]
+  ): Term = {
     // Start with a mutable local context based on the current context
     val mutableCtx = new MutableLocalCtx(ctx)
 
@@ -42,7 +71,12 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
 
     // Elaborate each telescope and collect TelescopeTerms
     val telescopeTerms: Vector[TelescopeTerm] = expr.telescope.map { telescope =>
-      elabTelescope(telescope, effects)(using mutableCtx, parameter, ck, state)
+      elabTelescope(telescope, effects)(using
+        mutableCtx,
+        parameter,
+        ck,
+        state
+      )
     }
 
     // Process the return type, if provided
@@ -54,10 +88,16 @@ trait ProvideElaboraterFunction extends ElaboraterFunction {
     }
 
     // Process the body of the function using the updated context
-    val bodyTerm: Term = elab(expr.body, returnType, effects)(using mutableCtx.ctx, parameter, ck, state)
+    val bodyTerm: Term = elab(expr.body, returnType, effects)(using
+      mutableCtx.ctx,
+      parameter,
+      ck,
+      state
+    )
 
     // Build the function type by folding over the telescopes
-    val functionType = FunctionType(telescopeTerms, returnType, effects=toTerm(effects))
+    val functionType =
+      FunctionType(telescopeTerms, returnType, effects = toTerm(effects))
 
     // Unify the expected type with the constructed function type
     unify(ty, functionType, expr)

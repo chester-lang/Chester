@@ -16,7 +16,12 @@ object ModuleName {
 }
 
 @deprecated("Create new module representation")
-case class QualifiedID(component: ModuleName, name: Name, sourcePos: Option[SourcePos] = None) extends WithPos derives ReadWriter
+case class QualifiedID(
+    component: ModuleName,
+    name: Name,
+    sourcePos: Option[SourcePos] = None
+) extends WithPos
+    derives ReadWriter
 
 @deprecated("Create new module representation")
 object QualifiedID {

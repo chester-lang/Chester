@@ -8,7 +8,7 @@ import scala.scalanative.unsafe.*
 @link("readline")
 object facade {
 
-  def readline(prompt: String): String = Zone { 
+  def readline(prompt: String): String = Zone {
     val cPrompt = toCString(prompt)
     val line = all.readline(cPrompt)
     val res = fromCString(line)
@@ -16,19 +16,19 @@ object facade {
     res
   }
 
-  def read_history(filename: String): Int = Zone { 
+  def read_history(filename: String): Int = Zone {
     all.read_history(toCString(filename))
   }
 
-  def write_history(filename: String): Int = Zone { 
+  def write_history(filename: String): Int = Zone {
     all.write_history(toCString(filename))
   }
 
-  def append_history(nelements: Int, filename: String): Int = Zone { 
+  def append_history(nelements: Int, filename: String): Int = Zone {
     all.append_history(nelements, toCString(filename))
   }
 
-  def add_history(line: String): Unit = Zone { 
+  def add_history(line: String): Unit = Zone {
     all.add_history(toCString(line))
   }
 
@@ -74,12 +74,19 @@ object facade {
 
   def history_expansion_char: Char = externs.history_expansion_char.toChar
   def history_subst_char: Char = externs.history_subst_char.toChar
-  def history_word_delimiters: String = fromCString(externs.history_word_delimiters)
+  def history_word_delimiters: String = fromCString(
+    externs.history_word_delimiters
+  )
   def history_comment_char: Char = externs.history_comment_char.toChar
-  def history_no_expand_chars: String = fromCString(externs.history_no_expand_chars)
-  def history_search_delimiter_chars: String = fromCString(externs.history_search_delimiter_chars)
+  def history_no_expand_chars: String = fromCString(
+    externs.history_no_expand_chars
+  )
+  def history_search_delimiter_chars: String = fromCString(
+    externs.history_search_delimiter_chars
+  )
 
-  def history_quotes_inhibit_expansion: Int = externs.history_quotes_inhibit_expansion
+  def history_quotes_inhibit_expansion: Int =
+    externs.history_quotes_inhibit_expansion
   def history_quoting_state: Int = externs.history_quoting_state
 
   def history_write_timestamps: Int = externs.history_write_timestamps
@@ -87,17 +94,22 @@ object facade {
   def rl_bind_key(key: Int, function: rl_command_func_t): Int =
     all.rl_bind_key(key, function.asInstanceOf[Ptr[rl_command_func_t]])
 
-  def rl_add_defun(name: String, function: rl_command_func_t, key: Int): Int = Zone { 
-    all.rl_add_defun(toCString(name), function.asInstanceOf[Ptr[rl_command_func_t]], key)
-  }
+  def rl_add_defun(name: String, function: rl_command_func_t, key: Int): Int =
+    Zone {
+      all.rl_add_defun(
+        toCString(name),
+        function.asInstanceOf[Ptr[rl_command_func_t]],
+        key
+      )
+    }
 
-  def rl_set_prompt(prompt: String): Int = Zone { 
+  def rl_set_prompt(prompt: String): Int = Zone {
     all.rl_set_prompt(toCString(prompt))
   }
 
   def rl_redisplay(): Unit = all.rl_redisplay()
 
-  def rl_insert_text(text: String): Int = Zone { 
+  def rl_insert_text(text: String): Int = Zone {
     all.rl_insert_text(toCString(text))
   }
 
@@ -114,7 +126,7 @@ object facade {
 
   def rl_make_bare_keymap(): Keymap = all.rl_make_bare_keymap()
 
-  def rl_parse_and_bind(line: String): Int = Zone { 
+  def rl_parse_and_bind(line: String): Int = Zone {
     all.rl_parse_and_bind(toCString(line))
   }
 

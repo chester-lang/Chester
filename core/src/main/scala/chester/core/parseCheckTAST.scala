@@ -8,9 +8,10 @@ import chester.tyck.*
 import chester.tyck.api.{NoopSemanticCollector, SemanticCollector}
 
 def parseCheckTAST(
-                    source: ParserSource,
-                    ignoreLocation: Boolean = false, sementicCollector: SemanticCollector = NoopSemanticCollector
-                  )(using reporter: Reporter[Problem]): chester.syntax.TAST = {
+    source: ParserSource,
+    ignoreLocation: Boolean = false,
+    sementicCollector: SemanticCollector = NoopSemanticCollector
+)(using reporter: Reporter[Problem]): chester.syntax.TAST = {
   // Parse the source code into an Expr using parseTopLevel
   Parser.parseTopLevel(source, ignoreLocation) match {
     case Right(expr) =>

@@ -11,7 +11,7 @@ abstract class InTerminalNoHistory[F[_]](using runner: Runner[F]) extends Abstra
 abstract class AbstractInTerminal[F[_]](using runner: Runner[F]) extends InTerminal[F] {
   private var history: Vector[String] = Vector()
   private var currentInputs: String = ""
-  
+
   private var inited: Boolean = false
 
   private def checkInit: F[Unit] = {

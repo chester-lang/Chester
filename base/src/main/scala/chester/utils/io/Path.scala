@@ -12,7 +12,9 @@ extension [T](p: T)(using ops: PathOps[T]) {
   inline def /(inline p2: String): T = ops.join(p, p2)
 }
 
-implicit inline def stringToPath[T](inline path: String)(using inline ops: PathOps[T]): T = ops.of(path)
+implicit inline def stringToPath[T](inline path: String)(using
+    inline ops: PathOps[T]
+): T = ops.of(path)
 
 implicit object PathOpsString extends PathOps[String] {
   inline def of(path: String): String = path

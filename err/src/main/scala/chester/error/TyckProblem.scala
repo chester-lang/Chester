@@ -22,30 +22,38 @@ sealed trait TyckProblem extends Problem derives ReadWriter {
 
   def hint: ToDoc = empty
 
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc
 
   def cause: Term | Expr
 
   def location: Option[SourcePos] = cause match {
     case x: WithPos => x.sourcePos
-    case _ => None
+    case _          => None
   }
 
-  def renderWithLocation(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
+  def renderWithLocation(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = {
     val baseMessage = Doc.text(t"Error") <+> this
 
     val locationInfo = location match {
       case Some(pos) =>
         val lines = pos.getLinesInRange match {
-          case Some(lines) => lines.map { case (lineNumber, line) =>
-            Doc.text(t"$lineNumber") <+> Doc.text(line, Styling.BoldOn)
-          }
+          case Some(lines) =>
+            lines.map { case (lineNumber, line) =>
+              Doc.text(t"$lineNumber") <+> Doc.text(line, Styling.BoldOn)
+            }
           case None => Vector.empty
         }
         val locationHeader = Doc.text(t"Location") <+>
-          Doc.text(t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column.i + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column.i + 1}]", Styling.BoldOn)
+          Doc.text(
+            t"${pos.fileName} [${pos.range.start.line + 1}:${pos.range.start.column.i + 1}] to [${pos.range.end.line + 1}:${pos.range.end.column.i + 1}]",
+            Styling.BoldOn
+          )
 
-        val codeBlock = Doc.group(Doc.concat(lines.map(_.end) *))
+        val codeBlock = Doc.group(Doc.concat(lines.map(_.end)*))
 
         locationHeader <|> codeBlock
 
@@ -68,39 +76,61 @@ sealed trait TyckWarning extends TyckProblem derives ReadWriter {
 }
 
 case class UnusedVariableWarning(id: MaybeVarCall, cause: Expr) extends TyckWarning {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
     d"Unused variable: ${id}"
 }
 
-implicit val rwThis: ReadWriter[QualifiedName | String] = union2RW[Expr, String](using implicitly[ClassTag[Expr]], implicitly[ClassTag[String]], a = qualifiedNameRW.asInstanceOf[ReadWriter[Expr]], b = readwriter[String]).asInstanceOf
+implicit val rwThis: ReadWriter[QualifiedName | String] =
+  union2RW[Expr, String](using
+    implicitly[ClassTag[Expr]],
+    implicitly[ClassTag[String]],
+    a = qualifiedNameRW.asInstanceOf[ReadWriter[Expr]],
+    b = readwriter[String]
+  ).asInstanceOf
 
 case class ExpectCase(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"case clause must have a pattern and a return expression"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"case clause must have a pattern and a return expression"
 }
 
 case class ExpectFullCaseBlock(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a full case block, got "
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Expected a full case block, got "
 }
 
 case class ExpectLambda(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a lambda expression, got "
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Expected a lambda expression, got "
 }
 
 case class ExpectLetDef(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Expected a let or def statement, got "
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Expected a let or def statement, got "
 }
 
 case class UnexpectedTelescope(cause: MaybeTelescope) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unexpected telescope"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Unexpected telescope"
 }
 
 case class ExpectParameterList(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
     t"Expected a parameter list, got ${cause}"
 }
 
 case class UnsupportedTermError(cause: Term) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unsupported term"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Unsupported term"
 }
 
 sealed trait OpInfoError extends TyckError derives ReadWriter {
@@ -127,51 +157,78 @@ case class UnknownPrecedenceGroup(group: PrecedenceGroup) extends OpInfoError {
     t"Unknown precedence group: '${group.name}'."
 }
 
-case class UnconnectedPrecedenceGroups(group1: PrecedenceGroup, group2: PrecedenceGroup) extends OpInfoError {
+case class UnconnectedPrecedenceGroups(
+    group1: PrecedenceGroup,
+    group2: PrecedenceGroup
+) extends OpInfoError {
   override def toDoc(implicit options: PrettierOptions): Doc =
     t"Precedence groups '${group1.name}' and '${group2.name}' are not connected."
 }
 
 case class UnboundVariable(name: Name, cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Unbound variable $name"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Unbound variable $name"
 }
 
 case class NotImplemented(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Not implemented ${cause.getClass.getName}"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Not implemented ${cause.getClass.getName}"
 }
 
 case class TypeMismatch(lhs: Term, rhs: Term, cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = d"Type mismatch: expected $lhs but got $rhs"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = d"Type mismatch: expected $lhs but got $rhs"
 }
 
 case class DuplicateDefinition(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Duplicate definition"
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Duplicate definition"
 }
 
 case class FunctionCallUnificationError(
-                                         functionType: Term,
-                                         argumentTypes: Vector[Term],
-                                         cause: Expr
-                                       ) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+    functionType: Term,
+    argumentTypes: Vector[Term],
+    cause: Expr
+) extends TyckError {
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
     t"Function call unification failed: expected $functionType but got $argumentTypes"
 
 }
 
-case class FunctionCallArityMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expects $expected arguments, but got $actual"
+case class FunctionCallArityMismatchError(
+    expected: Int,
+    actual: Int,
+    cause: Expr
+) extends TyckError {
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Function expects $expected arguments, but got $actual"
 }
 
-case class FunctionCallArgumentMismatchError(expected: Int, actual: Int, cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = t"Function expected $expected arguments, but received $actual"
+case class FunctionCallArgumentMismatchError(
+    expected: Int,
+    actual: Int,
+    cause: Expr
+) extends TyckError {
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = t"Function expected $expected arguments, but received $actual"
 }
 
 case class ObjectFieldMismatch(
-                                missingInLHS: Seq[Term],
-                                missingInRHS: Seq[Term],
-                                cause: Expr
-                              ) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc = {
+    missingInLHS: Seq[Term],
+    missingInRHS: Seq[Term],
+    cause: Expr
+) extends TyckError {
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc = {
     val missingInLHSDoc = if (missingInLHS.nonEmpty) {
       Doc.text(t"Missing fields in LHS: ${missingInLHS.mkString(", ")}")
     } else Doc.empty
@@ -183,11 +240,15 @@ case class ObjectFieldMismatch(
 }
 
 case class InvalidImportSyntax(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
     t"Invalid syntax in import statement:"
 }
 
 case class InvalidModuleSyntax(cause: Expr) extends TyckError {
-  override def toDoc(implicit options: PrettierOptions = PrettierOptions.Default): Doc =
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
     t"Invalid syntax in module statement:"
 }

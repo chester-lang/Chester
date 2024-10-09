@@ -3,7 +3,10 @@ import upickle.default.*
 
 import scala.reflect.ClassTag
 
-def union2RW[A:ClassTag,B:ClassTag](implicit a: ReadWriter[A], b: ReadWriter[B]): ReadWriter[A | B] = {
+def union2RW[A: ClassTag, B: ClassTag](implicit
+    a: ReadWriter[A],
+    b: ReadWriter[B]
+): ReadWriter[A | B] = {
   require(a != b)
   sealed trait Union2 derives ReadWriter {
     def toUnionType: A | B
@@ -23,7 +26,12 @@ def union2RW[A:ClassTag,B:ClassTag](implicit a: ReadWriter[A], b: ReadWriter[B])
   readwriter[Union2].bimap(_.toUnion2, _.toUnionType)
 }
 
-def union4RW[A:ClassTag,B:ClassTag,C:ClassTag,D:ClassTag](implicit a: ReadWriter[A], b: ReadWriter[B], c: ReadWriter[C], d: ReadWriter[D]): ReadWriter[A | B | C | D] = {
+def union4RW[A: ClassTag, B: ClassTag, C: ClassTag, D: ClassTag](implicit
+    a: ReadWriter[A],
+    b: ReadWriter[B],
+    c: ReadWriter[C],
+    d: ReadWriter[D]
+): ReadWriter[A | B | C | D] = {
   require(a != b && a != c && a != d && b != c && b != d && c != d)
   sealed trait Union4 derives ReadWriter {
     def toUnionType: A | B | C | D

@@ -43,11 +43,26 @@ jobs:
       uses: actions/checkout@v4
 
     - uses: graalvm/setup-graalvm@v1
+      if: runner.os != 'Linux'
       with:
         java-version: '23'
         distribution: 'graalvm'
         github-token: ${{ secrets.GITHUB_TOKEN }}
         native-image-job-reports: 'true'
+
+    - uses: graalvm/setup-graalvm@v1
+      if: runner.os == 'Linux'
+      with:
+        native-image-musl: 'true'
+        java-version: '23'
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        native-image-job-reports: 'true'
+
+    - name: GraalVM Env - Linux
+      if: runner.os == 'Linux'
+      run: |
+        echo "NATIVE_IMAGE_OPTIONS=--static --libc=musl" >> $GITHUB_ENV
 
     - name: GraalVM Env
       run: |
