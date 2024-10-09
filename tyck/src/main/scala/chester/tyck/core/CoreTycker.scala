@@ -5,6 +5,7 @@ import chester.syntax.core.*
 import chester.tyck.Reporter
 import chester.utils.*
 
+@deprecated
 case class CoreTycker(reporter: Reporter[TyckError]) {
   def check(judge: Judge): Unit = ???
 
