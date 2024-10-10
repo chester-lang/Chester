@@ -35,6 +35,7 @@ object Main {
   )
 
   def main(args: Array[String]): Unit = {
+    PlatformSpecific.testLoadingJS()
 
     val builder = OParser.builder[CliConfig]
     val parser = {

@@ -7,6 +7,9 @@ import chester.utils.*
 import java.nio.file.{Files, Paths}
 
 object PlatformSpecific {
+  def testLoadingJS():Unit={
+    println(chester.Js4Jvm.exports.getMember("helloFromJs").toString)
+  }
   def genSemanticDB(config: CliConfig): Unit = {
     val inputPath = config.input.getOrElse {
       println("Error: Input path is required.")
