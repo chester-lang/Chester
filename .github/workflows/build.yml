@@ -51,6 +51,7 @@ jobs:
         native-image-job-reports: 'true'
 
     - uses: pnpm/action-setup@v4
+      if: runner.os != 'Windows'
       with:
         version: 9
 
@@ -59,6 +60,10 @@ jobs:
       with:
         node-version: "lts/*"
         cache: ''
+    - name: Install pnpm on windows
+      if: runner.os == 'Windows'
+      run: |
+        npm install -g pnpm
 
     - uses: graalvm/setup-graalvm@v1
       if: runner.os == 'Linux'
@@ -108,13 +113,28 @@ jobs:
           ${{ runner.os }}-sbt-
 
     - name: Build Common JAR with SBT
-      run: sbt common/assembly
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        shell: bash
+        command: sbt common/assembly
 
     - name: Build CLI JAR with SBT
-      run: sbt cli/assembly
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        shell: bash
+        command: sbt cli/assembly
 
     - name: Build LSP JAR with SBT
-      run: sbt lsp/assembly
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        shell: bash
+        command: sbt lsp/assembly
 
     - name: Build CLI Native Executable
       run: sbt cliNative/nativeLink
