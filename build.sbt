@@ -425,7 +425,11 @@ lazy val tyckJvm = crossProject(JVMPlatform)
       "org.soot-oss" % "sootup.java.bytecode" % sootupVersion,
       "org.soot-oss" % "sootup.jimple.parser" % sootupVersion,
       "org.soot-oss" % "sootup.callgraph" % sootupVersion,
-      "org.soot-oss" % "sootup.analysis" % sootupVersion
+      "org.soot-oss" % "sootup.analysis" % sootupVersion,
+      // suppose to support normal jvm https://github.com/oracle/graaljs/blob/master/docs/user/RunOnJDK.md
+      // https://www.graalvm.org/latest/reference-manual/native-image/guides/build-polyglot-native-executable/
+      "org.graalvm.polyglot" % "polyglot" % graalvmVersion,
+      "org.graalvm.polyglot" % "js" % graalvmVersion
     ),
     commonSettings
   )
