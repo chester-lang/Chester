@@ -448,6 +448,22 @@ lazy val tyck = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .jvmSettings(commonJvmLibSettings)
 
+lazy val jsForJvm = crossProject(JSPlatform)
+  .withoutSuffixFor(JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("js-for-jvm"))
+  .dependsOn(common)
+  .settings(
+    commonSettings,
+    name := "js-for-jvm",
+    scalaJSLinkerConfig ~= {
+      // Enable ECMAScript module output.
+      _.withModuleKind(ModuleKind.ESModule)
+        // Use .mjs extension.
+        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
+    }
+  )
+
 val sootupVersion = "1.3.0"
 lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -456,9 +472,47 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .dependsOn(common)
   .settings(
     name := "tyck-platform",
-    commonSettings
+    commonSettings,
   )
+  .jvmConfigure(_.dependsOn(jsForJvm.js))
   .jvmSettings(
+    // Ensure that tyckPlatform.jvm depends on jsForJvm's fastLinkJS task
+    Compile / compile := (Compile / compile)
+      .dependsOn(jsForJvm.js / Compile / fastLinkJS)
+      .value,
+    // Modify the source generator to use Def.taskDyn
+    Compile / sourceGenerators += Def.taskDyn {
+      // Use Def.taskDyn to create a dynamic dependency on jsForJvm.js / fastLinkJS
+      (jsForJvm.js / Compile / fastLinkJS).map { jsLinkerOutput =>
+        val jsArtifact = jsLinkerOutput.data.publicModules.head.jsFileName
+
+        // Read the content of the JS file
+        val jsContent = IO.read(new File(jsArtifact))
+
+        // Escape special characters in the JS content
+        val escapedJsContent = jsContent
+          .replace("\\", "\\\\") // Escape backslashes
+          .replace("\"\"\"", "\\\"\\\"\\\"") // Escape triple quotes if any
+
+        // Define where to place the generated Scala file
+        val sourceDir = (Compile / sourceManaged).value
+        val file = sourceDir / "chester" / "generated" / "GeneratedJS.scala"
+
+        // Generate the content of the Scala file
+        val content =
+          s"""package chester.generated
+object GeneratedJS {
+  val jsCode: String = \"\"\"$escapedJsContent\"\"\"
+}
+          """
+
+        // Write the content to the Scala file
+        IO.write(file, content)
+
+        // Return the generated file
+        Seq(file)
+      }
+    }.taskValue,
     commonJvmLibSettings,
     libraryDependencies ++= Seq(
       "org.scalameta" %% "semanticdb-shared" % "4.10.1" cross (CrossVersion.for3Use2_13) exclude ("com.lihaoyi", "sourcecode_2.13"),
@@ -1097,7 +1151,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     err,
     pretty,
     tyck,
-    tyckPlatform,
+    tyckPlatform,jsForJvm,
     core,
     common,
     cli,
