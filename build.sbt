@@ -474,7 +474,7 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .dependsOn(common)
   .settings(
     name := "tyck-platform",
-    commonSettings,
+    commonSettings
   )
   .jvmConfigure(_.dependsOn(jsForJvm.js))
   .jvmSettings(
@@ -1150,7 +1150,8 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     err,
     pretty,
     tyck,
-    tyckPlatform,jsForJvm,
+    tyckPlatform,
+    jsForJvm,
     core,
     common,
     cli,
