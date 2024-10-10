@@ -36,7 +36,6 @@ jobs:
 
     defaults:
       run:
-        shell: bash
         working-directory: ./
 
     steps:
@@ -77,10 +76,12 @@ jobs:
 
     - name: GraalVM Env - Linux
       if: runner.os == 'Linux'
+      shell: bash
       run: |
         echo "NATIVE_IMAGE_OPTIONS=--static --libc=musl" >> $GITHUB_ENV
 
     - name: GraalVM Env
+      shell: bash
       run: |
         echo "NATIVE_IMAGE_INSTALLED=true" >> $GITHUB_ENV
         echo "GRAALVM_INSTALLED=true" >> $GITHUB_ENV
@@ -118,7 +119,6 @@ jobs:
       with:
         timeout_minutes: 25
         max_attempts: 2
-        shell: bash
         command: sbt common/assembly
 
     - name: Build CLI JAR with SBT
@@ -126,7 +126,6 @@ jobs:
       with:
         timeout_minutes: 25
         max_attempts: 2
-        shell: bash
         command: sbt cli/assembly
 
     - name: Build LSP JAR with SBT
@@ -134,13 +133,17 @@ jobs:
       with:
         timeout_minutes: 25
         max_attempts: 2
-        shell: bash
         command: sbt lsp/assembly
 
     - name: Build CLI Native Executable
-      run: sbt cliNative/nativeLink
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        command: sbt cliNative/nativeLink
 
     - name: Rename CLI Native Executable
+      shell: bash
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           mv cli/native/target/scala-${{ env.SCALA_VERSION }}/cli-out.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe || mv cli/native/target/scala-${{ env.SCALA_VERSION }}/native/chester.cli.Main.exe cli/native/target/scala-${{ env.SCALA_VERSION }}/chester-out.exe
@@ -149,20 +152,36 @@ jobs:
         fi
 
     - name: Generate JS Artifacts for CLI
-      run: |
-        sbt cliJS/fullLinkJS
-        mv cli/js/target/scala-${{ env.SCALA_VERSION }}/cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
+      shell: bash
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        shell: bash
+        command: |
+          sbt cliJS/fullLinkJS
+          mv cli/js/target/scala-${{ env.SCALA_VERSION }}/cli-opt/main.js cli/js/target/scala-${{ env.SCALA_VERSION }}/chester.js
 
     - name: Build Native Image for LSP
-      run: sbt lsp/nativeImage
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        command: sbt lsp/nativeImage
 
     - name: Build Native Image for CLI
-      run: sbt cli/nativeImage
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 25
+        max_attempts: 2
+        command: sbt cli/nativeImage
 
     - name: Test Native Image for CLI integrity
+      shell: bash
       run: ./target/chester integrity
 
     - name: List files for debugging
+      shell: bash
       run: find . -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
       continue-on-error: true
 
@@ -242,6 +261,7 @@ jobs:
 
     # Add OS name to artifacts and create archives (Unix)
     - name: Add OS name to artifacts and create tar.gz (Unix)
+      shell: bash
       if: runner.os != 'Windows' && startsWith(github.ref, 'refs/tags/')
       run: |
         # Rename artifacts with OS name
@@ -273,6 +293,7 @@ jobs:
           -DestinationPath chester-${{ matrix.os_name }}.zip
     # generating checksum using Git Bash
     - name: Generate checksum for Windows zip
+      shell: bash
       if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
       run: |
         sha256sum chester-${{ matrix.os_name }}.zip > chester-${{ matrix.os_name }}.zip.sha256
@@ -322,5 +343,4 @@ jobs:
       with:
         timeout_minutes: 25
         max_attempts: 3
-        shell: bash
         command: sbt test
