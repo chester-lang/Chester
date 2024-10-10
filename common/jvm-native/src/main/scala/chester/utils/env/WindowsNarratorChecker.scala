@@ -1,5 +1,7 @@
 package chester.utils.env
 
+import scala.sys.process.*
+import scala.util.Try
 import com.eed3si9n.ifdef.*
 
 object WindowsNarratorChecker {

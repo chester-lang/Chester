@@ -4,6 +4,7 @@ import sbt.librarymanagement.InclExclRule
 
 import scala.scalanative.build.*
 
+addCommandAlias("lint", "scalafmtAll ; scalafmtSbt ; scalafixAll")
 inThisBuild(
   List(
     semanticdbEnabled := true, // enable SemanticDB
