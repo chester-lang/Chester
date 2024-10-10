@@ -119,7 +119,7 @@ val baseDeps = Seq(
 
 commonSettings
 
-ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.9")
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.10")
 ThisBuild / organization := "com.github.chester-lang"
 
 lazy val bump = inputKey[Unit]("Bump version in multiple files")
@@ -136,10 +136,19 @@ bump := {
       file("idea-plugin/resources/META-INF/plugin.xml"),
       file("vscode/package.json")
     )
+    val filesToUpdateWithoutQuotes = Seq(
+      file("idea-plugin/resources/META-INF/plugin.xml")
+    )
 
     filesToUpdate.foreach { f =>
       val content = IO.read(f)
       val updated = content.replaceAllLiterally(s""""$oldVersion"""", s""""$newVersion"""")
+      IO.write(f, updated)
+    }
+
+    filesToUpdateWithoutQuotes.foreach { f =>
+      val content = IO.read(f)
+      val updated = content.replaceAllLiterally(oldVersion, newVersion)
       IO.write(f, updated)
     }
 
