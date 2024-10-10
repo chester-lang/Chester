@@ -6,7 +6,7 @@ export default {
   input: 'index.js', // Adjust the input path as needed
   output: {
     file: 'dist/bundle.js',
-    format: 'es', // Output as an ES6 module
+    format: 'commonjs',
     sourcemap: true,
   },
   plugins: [
@@ -14,10 +14,5 @@ export default {
       preferBuiltins: false,
     }),
     commonjs(),
-    terser({
-      compress: {
-        dead_code: true, // Enable dead code removal
-      },
-    }),
   ],
 };
