@@ -36,7 +36,7 @@ private object DesaltCaseClauseMatch {
 }
 
 private object MatchDeclarationTelescope {
-  private def handleTerms(terms: Vector[Expr], x:Expr)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = {
+  private def handleTerms(terms: Vector[Expr], x:Expr, implicitly: Boolean)(using reporter: Reporter[TyckProblem]): Option[DefTelescope] = {
       // Parameters enclosed in parentheses
       val argsResult = terms.map {
         case id: Identifier =>
@@ -51,7 +51,7 @@ private object MatchDeclarationTelescope {
       if (argsResult.contains(None)) {
         None
       } else {
-        Some(DefTelescope(argsResult.flatten.toVector))
+        Some(DefTelescope(argsResult.flatten.toVector, implicitly=implicitly, meta=x.meta))
       }
   }
   def unapply(
@@ -61,7 +61,8 @@ private object MatchDeclarationTelescope {
       // Single parameter without type
       Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
     case opseq@OpSeq(terms, meta) if terms.nonEmpty => unapply(Tuple(Vector(opseq), meta))
-    case t@Tuple(terms, _) => handleTerms(terms, t)
+    case t@Tuple(terms, _) => handleTerms(terms, t, false)
+    case t@ListExpr(terms, _) => handleTerms(terms, t, true)
     case _ =>
       reporter(ExpectParameterList(x))
       None
