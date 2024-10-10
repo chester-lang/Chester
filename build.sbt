@@ -3,6 +3,7 @@ import org.scalajs.linker.interface.OutputPatterns
 import sbt.librarymanagement.InclExclRule
 
 import scala.scalanative.build.*
+import sbt.complete.DefaultParsers._
 
 addCommandAlias("lint", "scalafmtAll ; scalafmtSbt ; scalafixAll")
 inThisBuild(
@@ -118,8 +119,41 @@ val baseDeps = Seq(
 
 commonSettings
 
-ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.8")
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.9")
 ThisBuild / organization := "com.github.chester-lang"
+
+lazy val bump = inputKey[Unit]("Bump version in multiple files")
+bump := {
+  val args: Seq[String] = spaceDelimited("<new_version>").parsed
+  if (args.length != 1) {
+    println("Usage: bump <new_version>")
+  } else {
+    val newVersion = args(0)
+    val oldVersion = (ThisBuild / version).value
+    val filesToUpdate = Seq(
+      file("build.sbt"),
+      file("idea-plugin/build.sbt"),
+      file("idea-plugin/resources/META-INF/plugin.xml"),
+      file("vscode/package.json")
+    )
+
+    filesToUpdate.foreach { f =>
+      val content = IO.read(f)
+      val updated = content.replaceAllLiterally(s""""$oldVersion"""", s""""$newVersion"""")
+      IO.write(f, updated)
+    }
+
+    // Update the version in build.sbt
+    val buildSbtContent = IO.read(file("build.sbt"))
+    val updatedBuildSbt = buildSbtContent.replace(
+      s"""ThisBuild / version := sys.env.getOrElse("VERSION", "$oldVersion")""",
+      s"""ThisBuild / version := sys.env.getOrElse("VERSION", "$newVersion")"""
+    )
+    IO.write(file("build.sbt"), updatedBuildSbt)
+
+    println(s"Version bumped from $oldVersion to $newVersion in all specified files.")
+  }
+}
 
 ThisBuild / assemblyMergeStrategy := {
   case PathList("META-INF", "versions", "9", "module-info.class") =>
