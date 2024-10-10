@@ -128,6 +128,7 @@ ThisBuild / assemblyMergeStrategy := {
       ) =>
     MergeStrategy.discard
   case PathList("META-INF", "eclipse.inf") => MergeStrategy.discard
+  case PathList("org", "jline", "nativ", xs @ _*) => MergeStrategy.first
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
@@ -788,7 +789,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     nativeImageOutput := file("target") / "chester",
     graalvmSettings,
     libraryDependencies ++= Seq(
-      "org.jline" % "jline" % "3.27.0"
+      "org.jline" % "jline" % "3.27.0",
+      "org.jline" % "jline-native" % "3.27.0"
     )
   )
   .jsConfigure(_.dependsOn(nodejs.js))
