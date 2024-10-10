@@ -1,6 +1,5 @@
 package chester.utils.io
 
-import chester.utils.io.*
 import chester.utils.io.impl.*
 import chester.utils.term.*
 import fansi.Str

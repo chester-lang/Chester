@@ -5,14 +5,10 @@ import chester.utils.io.impl.*
 import chester.utils.term.*
 import typings.std.global.setTimeout
 import typings.xtermReadline.mod.Readline
-import typings.xtermXterm.mod as xterm
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
-import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.Thenable.Implicits.*
-import scala.scalajs.js.annotation.JSExportTopLevel
 
 def setTimeoutThen: Future[Unit] = {
   val promise = Promise[Unit]()

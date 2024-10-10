@@ -1,8 +1,7 @@
 package chester.utils.io
 
 import java.io.IOException
-import java.net.URL
-import java.nio.file.{Files, Path, StandardCopyOption}
+import java.nio.file.Path
 
 object FileDownloader {
 

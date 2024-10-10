@@ -1,12 +1,10 @@
 package linenoise // sn-bindgen-x86_64-pc-linux --package linenoise --header linenoise.h --scala > ~/Downloads/linenoise.scala
 
 import _root_.scala.scalanative.*
-import _root_.scala.scalanative.libc.*
 import _root_.scala.scalanative.unsafe.*
 import _root_.scala.scalanative.unsigned.*
 
 object aliases:
-  import _root_.linenoise.aliases.*
   import _root_.linenoise.structs.*
 
   /** [bindgen] header: linenoise.h
@@ -52,7 +50,6 @@ object aliases:
 
 object structs:
   import _root_.linenoise.aliases.*
-  import _root_.linenoise.structs.*
 
   /** [bindgen] header: linenoise.h
     */
@@ -158,7 +155,6 @@ private[linenoise] object extern_functions:
 object functions:
   import _root_.linenoise.aliases.*
   import _root_.linenoise.structs.*
-  import extern_functions.*
   export extern_functions.*
 
 object types:

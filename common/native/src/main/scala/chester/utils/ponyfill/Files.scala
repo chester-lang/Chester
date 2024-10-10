@@ -1,6 +1,6 @@
 package chester.utils.ponyfill
 
-import java.nio.charset.{Charset, StandardCharsets}
+import java.nio.charset.Charset
 import java.nio.file.Path
 
 object Files {

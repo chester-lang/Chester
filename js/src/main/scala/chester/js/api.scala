@@ -14,9 +14,9 @@ def runFileTopLevel(content: String, lightMode: Boolean): String = {
   ) match {
     case Right(parsedBlock) =>
       Tycker.check(parsedBlock) match {
-        case TyckResult.Success(result, status, warnings) =>
+        case TyckResult.Success(result, _, _) =>
           colorfulToHtml(ColorfulPrettyPrinter.render(result.wellTyped))
-        case TyckResult.Failure(errors, warnings, state, result) =>
+        case TyckResult.Failure(errors, _, _, _) =>
           s"Failed to type check file: $errors"
       }
     case Left(error) =>

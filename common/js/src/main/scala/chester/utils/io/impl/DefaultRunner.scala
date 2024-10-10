@@ -1,21 +1,9 @@
 package chester.utils.io.impl
 
-import cats.*
-import cats.free.*
-import cats.instances.future.*
 import chester.utils.io.*
-import typings.node.*
-import typings.node.bufferMod.global.BufferEncoding
-import typings.node.fsMod.MakeDirectoryOptions
 
-import java.io.IOException
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import scala.scalajs.js
-import scala.scalajs.js.JavaScriptException
-import scala.scalajs.js.Thenable.Implicits.*
-import scala.scalajs.js.typedarray.Uint8Array
 import scala.util.Try
 
 implicit object DefaultRunner extends Runner[Future] {

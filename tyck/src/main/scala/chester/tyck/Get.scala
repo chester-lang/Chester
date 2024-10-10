@@ -10,9 +10,9 @@ trait Reporter[-T] {
 }
 
 object StdErrReporter extends Reporter[Problem] {
-    def apply(value: Problem): Unit = {
-        println(value)
-    }
+  def apply(value: Problem): Unit = {
+    println(value)
+  }
 }
 
 extension [T](reporter: Reporter[T]) {

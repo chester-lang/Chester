@@ -1,10 +1,9 @@
 package chester.cli
 
-import chester.cli.Main.{CliConfig, Config}
+import chester.cli.Main.CliConfig
 import chester.tyck.SemanticDBGenerator
-import chester.parser.Parser
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
 object PlatformSpecific {
   def genSemanticDB(config: CliConfig): Unit = {

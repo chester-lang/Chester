@@ -7,8 +7,6 @@ import chester.parser
 import chester.tyck.api.{CollectedSymbol, VectorSemanticCollector}
 import chester.syntax.*
 import chester.syntax.concrete.Expr
-import chester.syntax.core.*
-import chester.uniqid.*
 import os.*
 
 import scala.meta.internal.semanticdb.*
@@ -18,7 +16,8 @@ class SemanticDBGenerator extends VectorSemanticCollector {
   // Process a file or directory
   def processPath(path: Path): Unit = {
     if (os.isDir(path)) {
-      val files = os.walk(path)
+      val files = os
+        .walk(path)
         .filter(p => os.isFile(p) && p.ext == "chester")
       files.foreach(processFile)
     } else {
@@ -31,7 +30,7 @@ class SemanticDBGenerator extends VectorSemanticCollector {
     val parserSource = parser.FilePath(file.toString)
     implicit val reporter: Reporter[Problem] = StdErrReporter
     // Parse and type-check the source code using parseCheckTAST
-    val tast = parseCheckTAST(parserSource, sementicCollector = this)
+    parseCheckTAST(parserSource, sementicCollector = this)
   }
 
   // Convert CollectedSymbols to SemanticDB TextDocument
@@ -39,9 +38,7 @@ class SemanticDBGenerator extends VectorSemanticCollector {
     val symbols = get.map(symbolInformation)
     val occurrences = get.flatMap { sym =>
       val defOccurrence = symbolOccurrence(sym.definedOn, sym.id.toString, SymbolOccurrence.Role.DEFINITION)
-      val refOccurrences = sym.referencedOn.map(expr =>
-        symbolOccurrence(expr, sym.id.toString, SymbolOccurrence.Role.REFERENCE)
-      )
+      val refOccurrences = sym.referencedOn.map(expr => symbolOccurrence(expr, sym.id.toString, SymbolOccurrence.Role.REFERENCE))
       defOccurrence +: refOccurrences
     }
 
@@ -67,9 +64,9 @@ class SemanticDBGenerator extends VectorSemanticCollector {
 
   // Create SymbolOccurrence from Expr
   private def symbolOccurrence(
-    expr: Expr,
-    symbol: String,
-    role: SymbolOccurrence.Role
+      expr: Expr,
+      symbol: String,
+      role: SymbolOccurrence.Role
   ): SymbolOccurrence = {
     SymbolOccurrence(
       range = exprRange(expr),

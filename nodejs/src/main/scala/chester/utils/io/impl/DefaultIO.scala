@@ -11,7 +11,6 @@ import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 import scala.concurrent.ExecutionContext.Implicits.global
 import typings.std.global.fetch
-import scala.scalajs.js.typedarray.TypedArrayBuffer
 
 implicit object DefaultIO extends IO[Future] {
   type Path = String
@@ -51,7 +50,7 @@ implicit object DefaultIO extends IO[Future] {
     fsPromisesMod.writeFile(path, bytesToJS)
 
   inline override def removeWhenExists(path: String): Future[Boolean] =
-    fsPromisesMod.unlink(path).map(_ => true).recover { case e: js.JavaScriptException =>
+    fsPromisesMod.unlink(path).map(_ => true).recover { case _: js.JavaScriptException =>
       false
     }
 

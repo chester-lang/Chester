@@ -1,2 +1,2 @@
 #!/bin/sh
-exec sbt scalafmtAll scalafmtSbt rootJVM/scalafixAll
+exec sbt scalafmtAll scalafmtSbt scalafixAll

@@ -2,12 +2,7 @@ package chester.site
 
 import chester.js.*
 
-import chester.doc.const.LightMode
-import chester.parser.{FileNameAndContent, Parser}
 import chester.repl.REPLEngine
-import chester.tyck.{TyckResult}
-import chester.utils.doc.*
-import chester.utils.doc.ColorfulToHtml.colorfulToHtml
 import chester.utils.env.{BrowserEnv, Environment}
 import chester.utils.io.*
 import chester.utils.io.impl.*
@@ -20,7 +15,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
-import scala.scalajs.js.Thenable.Implicits.*
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 @JSExportTopLevel("startRepl")

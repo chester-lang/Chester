@@ -1,7 +1,6 @@
 package chester.repl
 
 import cats.Id
-import chester.utils.io.*
 import chester.utils.term.InputStatus.*
 import chester.utils.term.*
 import readline.facade
