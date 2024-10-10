@@ -393,7 +393,7 @@ lazy val tyckJvm = crossProject(JVMPlatform)
   .settings(
     name := "tyck-jvm",
     libraryDependencies ++= Seq(
-      "org.scalameta" %% "semanticdb-shared" % "4.10.1" cross (CrossVersion.for3Use2_13) exclude("com.lihaoyi", "sourcecode_2.13"),
+      "org.scalameta" %% "semanticdb-shared" % "4.10.1" cross (CrossVersion.for3Use2_13) exclude ("com.lihaoyi", "sourcecode_2.13"),
       "org.scala-lang.modules" % "scala-asm" % "9.7.0-scala-2",
       "ch.epfl.scala" %% "tasty-query" % "1.4.0",
       "org.scala-lang" %% "scala3-tasty-inspector" % scalaVersion.value,

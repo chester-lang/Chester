@@ -23,6 +23,8 @@ trait SemanticCollector {
       id: UniqIdOf[? <: MaybeVarCall],
       definedOn: Expr
   ): SymbolCollector = NoopSymbolCollector
+
+  def metaFinished(replace: MetaTerm => Term): Unit = ()
 }
 
 private implicit inline def rwUniqIDOfVar[T]: ReadWriter[UniqIdOf[? <: MaybeVarCall]] =
@@ -36,6 +38,10 @@ case class CollectedSymbol(
     referencedOn: Vector[Expr]
 ) derives ReadWriter {
   def name: Name = call.name
+
+  def metaFinished(replace: MetaTerm => Term): CollectedSymbol = {
+    this.copy(call = call.replaceMeta(replace).asInstanceOf[MaybeVarCall])
+  }
 }
 
 class VectorSemanticCollector extends SemanticCollector {
@@ -57,6 +63,10 @@ class VectorSemanticCollector extends SemanticCollector {
     }
   }
   def get: Vector[CollectedSymbol] = builder.toVector
+
+  override def metaFinished(replace: MetaTerm => Term): Unit = {
+    builder = builder.map(_.metaFinished(replace))
+  }
 }
 
 object NoopSemanticCollector extends SemanticCollector {}

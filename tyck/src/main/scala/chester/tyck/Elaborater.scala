@@ -377,6 +377,7 @@ trait DefaultImpl extends ProvideElaborater with ProvideImpl with ProvideElabora
         judge = judge.replaceMeta(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
       }
     }
+    recording.metaFinished(x => able.readUnstable(x.unsafeRead[CellId[Term]]).get)
     judge
   }
 
