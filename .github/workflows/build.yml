@@ -50,6 +50,16 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         native-image-job-reports: 'true'
 
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        cache: ''
+
     - uses: graalvm/setup-graalvm@v1
       if: runner.os == 'Linux'
       with:
@@ -134,12 +144,6 @@ jobs:
     - name: List files for debugging
       run: find . -type f -name "*.jar" -or -name "chester" -or -name "chester-lsp" -or -name "chester-out" -or -name "*.exe"
       continue-on-error: true
-
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: "lts/*"
-        cache: ''
 
     - name: Install Node.js dependencies
       working-directory: vscode

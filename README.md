@@ -29,6 +29,14 @@ proto plugin add --global chester "https://github.com/chester-lang/chester/raw/r
 proto install chester
 ```
 
+## Build requirements
+
++ Node.JS and PNPM
++ SBT
++ JDK 11 +
++ [Optional] GraalVM
++ [Optional] Clang
+
 ## Example
 
 It might look like?
