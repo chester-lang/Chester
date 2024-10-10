@@ -476,7 +476,6 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "tyck-platform",
     commonSettings
   )
-  .jvmConfigure(_.dependsOn(jsForJvm.js))
   .jvmSettings(
     // Ensure that tyckPlatform.jvm depends on jsForJvm's fastLinkJS task
     Compile / compile := (Compile / compile)
