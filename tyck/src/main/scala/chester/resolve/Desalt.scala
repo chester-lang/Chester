@@ -93,11 +93,10 @@ private object DesaltSimpleFunction {
 
         paramsExpr.traverse(MatchDeclarationTelescope.unapply) match {
           case Some(telescopes) =>
-            val telescopeArgs = telescopes.flatMap(_.args)
             val body = opSeq(after)
             Some(
               FunctionExpr(
-                telescope = Vector(DefTelescope(telescopeArgs)),
+                telescope = telescopes,
                 body = body,
                 meta = meta
               )
