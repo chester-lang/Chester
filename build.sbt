@@ -127,8 +127,19 @@ ThisBuild / assemblyMergeStrategy := {
         "module-info.class" | "plugin.xml" | "plugin.properties" | ".options" | ".api_description"
       ) =>
     MergeStrategy.discard
-  case PathList("META-INF", "eclipse.inf") => MergeStrategy.discard
-  case PathList("org", "jline", "nativ", xs @ _*) => MergeStrategy.first
+  case PathList("META-INF", "eclipse.inf")                    => MergeStrategy.discard
+  case PathList("META-INF", "groovy-release-info.properties") => MergeStrategy.discard
+  // TODO: actually fix jline issue
+  case PathList("org", "jline", xs @ _*)                          => MergeStrategy.first
+  case PathList("META-INF", "native-image", "org.jline", xs @ _*) => MergeStrategy.first
+  // TODO: actually fix scala issue
+  case PathList("scala", "tools", xs @ _*) => MergeStrategy.first
+  case PathList("scala-asm.properties")    => MergeStrategy.first
+  case PathList("compiler.properties")     => MergeStrategy.first
+  // TODO
+  case PathList("org", "osgi", "service", "prefs", xs @ _*) => MergeStrategy.first
+  // TODO
+  case PathList("org", "objectweb", "asm", xs @ _*) => MergeStrategy.first
   case x =>
     val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
     oldStrategy(x)
@@ -764,6 +775,7 @@ ThisBuild / enableCliReadline := false
 val windows: Boolean = System.getProperty("os.name").toLowerCase.contains("win")
 val unix: Boolean = !windows
 
+val jlineVersion = "3.27.0"
 lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -789,8 +801,21 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     nativeImageOutput := file("target") / "chester",
     graalvmSettings,
     libraryDependencies ++= Seq(
-      "org.jline" % "jline" % "3.27.0",
-      "org.jline" % "jline-native" % "3.27.0"
+      "org.jline" % "jline" % jlineVersion,
+      "org.jline" % "jline-terminal" % jlineVersion,
+      "org.jline" % "jline-terminal-jansi" % jlineVersion,
+      "org.jline" % "jline-terminal-jni" % jlineVersion,
+      "org.jline" % "jline-terminal-jna" % jlineVersion,
+      "org.jline" % "jline-terminal-ffm" % jlineVersion,
+      "org.jline" % "jline-native" % jlineVersion,
+      "org.jline" % "jline-reader" % jlineVersion,
+      "org.jline" % "jline-style" % jlineVersion,
+      "org.jline" % "jline-remote-ssh" % jlineVersion,
+      "org.jline" % "jline-remote-telnet" % jlineVersion,
+      "org.jline" % "jline-builtins" % jlineVersion,
+      "org.jline" % "jline-console" % jlineVersion,
+      // "org.jline" % "jline-groovy" % jlineVersion,
+      "org.jline" % "jline-console-ui" % jlineVersion
     )
   )
   .jsConfigure(_.dependsOn(nodejs.js))
