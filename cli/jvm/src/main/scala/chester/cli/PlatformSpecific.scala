@@ -30,7 +30,7 @@ object PlatformSpecific {
     generator.processPath(path)
 
     // Save the SemanticDB file
-    val outputPath = path / os.up / path.baseName + ".semanticdb"
+    val outputPath = path / os.up / (path.baseName + ".semanticdb")
     generator.saveSemanticDB(path.toString, outputPath.toString)
 
     println(s"SemanticDB generated at: $outputPath")

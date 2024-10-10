@@ -405,13 +405,16 @@ lazy val tyck = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jvmSettings(commonJvmLibSettings)
 
 val sootupVersion = "1.3.0"
-lazy val tyckJvm = crossProject(JVMPlatform)
+lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("tyck-jvm"))
+  .crossType(CrossType.Full)
+  .in(file("tyck-platform"))
   .dependsOn(common)
   .settings(
-    name := "tyck-jvm",
+    name := "tyck-platform",
+    commonSettings
+  )
+  .jvmSettings(commonJvmLibSettings,
     libraryDependencies ++= Seq(
       "org.scalameta" %% "semanticdb-shared" % "4.10.1" cross (CrossVersion.for3Use2_13) exclude ("com.lihaoyi", "sourcecode_2.13"),
       "org.scala-lang.modules" % "scala-asm" % "9.7.0-scala-2",
@@ -431,9 +434,7 @@ lazy val tyckJvm = crossProject(JVMPlatform)
       "org.graalvm.polyglot" % "polyglot" % graalvmVersion,
       "org.graalvm.polyglot" % "js" % graalvmVersion
     ),
-    commonSettings
   )
-  .jvmSettings(commonJvmLibSettings)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -787,8 +788,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("cli"))
   .jvmEnablePlugins(NativeImagePlugin)
   .enablePlugins(BuildInfoPlugin) // Enable the BuildInfoPlugin
-  .dependsOn(common)
-  .jvmConfigure(_.dependsOn(tyckJvm.jvm))
+  .dependsOn(common, tyckPlatform)
   .settings(
     name := "cli",
     Compile / mainClass := Some("chester.cli.Main"),
@@ -1052,7 +1052,7 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     err,
     pretty,
     tyck,
-    tyckJvm,
+    tyckPlatform,
     core,
     common,
     cli,

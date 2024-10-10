@@ -1,6 +1,7 @@
 package chester.utils.io.impl
 
 import cats.Id
+import chester.utils.os2
 import chester.utils.io.*
 import _root_.os.*
 
@@ -46,8 +47,7 @@ implicit object DefaultIO extends IO[Id] {
 
   override inline def println(x: String): Unit = Predef.println(x)
 
-  // https://github.com/com-lihaoyi/os-lib/issues/318
-  def pwd: os.Path = os.Path(java.nio.file.Paths.get(".").toAbsolutePath)
+  def pwd: os.Path = os2.pwd
 
   override inline def readString(path: Path): String =
     os.read(path.resolveFrom(pwd))
