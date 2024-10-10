@@ -484,10 +484,10 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     Compile / sourceGenerators += Def.taskDyn {
       // Use Def.taskDyn to create a dynamic dependency on jsForJvm.js / fastLinkJS
       (jsForJvm.js / Compile / fastLinkJS).map { jsLinkerOutput =>
-        val jsArtifact = jsLinkerOutput.data.publicModules.head.jsFileName
+        val jsArtifact = (jsForJvm.js / Compile / fastLinkJSOutput).value / jsLinkerOutput.data.publicModules.head.jsFileName
 
         // Read the content of the JS file
-        val jsContent = IO.read(new File(jsArtifact))
+        val jsContent = IO.read(jsArtifact)
 
         // Escape special characters in the JS content
         val escapedJsContent = jsContent
