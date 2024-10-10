@@ -14,6 +14,10 @@ export default {
       preferBuiltins: false,
     }),
     commonjs(),
-    terser(), // Add the Terser plugin for minification
+    terser({
+      compress: {
+        dead_code: true, // Enable dead code removal
+      },
+    }),
   ],
 };
