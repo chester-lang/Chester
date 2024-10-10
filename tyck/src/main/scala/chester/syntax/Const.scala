@@ -1,7 +1,7 @@
 package chester.syntax
 
 object Const {
-    val Record = "record"
+  val Record = "record"
   val Case: String = "case"
   val Data: String = "data"
   val Trait: String = "trait"

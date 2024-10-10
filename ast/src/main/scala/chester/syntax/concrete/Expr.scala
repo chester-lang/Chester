@@ -160,7 +160,7 @@ case class ResolvedIdentifier(
   ): ResolvedIdentifier = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    Doc.text(module.toString) <> Doc.text(".") <> Doc.text(name.toString)
+    Doc.text(module.toString) <> Docs.`.` <> Doc.text(name.toString)
   )
 }
 
@@ -188,7 +188,7 @@ case class OpSeq(seq: Vector[Expr], meta: Option[ExprMeta] = None) extends Parse
   ): OpSeq = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    seq.map(_.toDoc).reduce(_ </> _)
+    seq.map(_.toDoc).reduceOption(_ </> _).getOrElse(Doc.empty)
   )
 }
 
@@ -207,7 +207,7 @@ case class InfixExpr(
   ): InfixExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    left.toDoc <> operator.toDoc <> right.toDoc
+    left.toDoc <+> operator.toDoc <+> right.toDoc
   )
 }
 
@@ -225,7 +225,7 @@ case class PrefixExpr(
   ): PrefixExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    operator.toDoc <> operand.toDoc
+    operator.toDoc <+> operand.toDoc
   )
 }
 
@@ -243,9 +243,10 @@ case class PostfixExpr(
   ): PostfixExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    operand.toDoc <> operator.toDoc
+    operand.toDoc <+> operator.toDoc
   )
 }
+
 sealed trait Field extends Expr derives ReadWriter {
   def name: Identifier
   def ty: Option[Expr]
@@ -270,8 +271,8 @@ case class RecordField(
   ): RecordField = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
-    val defaultDoc = defaultValue.map(v => Doc.text(" = ") <> v.toDoc).getOrElse(Doc.empty)
+    val tyDoc = ty.map(t => Docs.`:` <+> t.toDoc).getOrElse(Doc.empty)
+    val defaultDoc = defaultValue.map(v => Docs.`=` <+> v.toDoc).getOrElse(Doc.empty)
     name.toDoc <> tyDoc <> defaultDoc
   }
 }
@@ -294,9 +295,9 @@ case class RecordExpr(
   ): RecordExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val fieldsDoc = fields.map(_.toDoc).reduceOption(_ <> Doc.text(", ") <> _).getOrElse(Doc.empty)
-    val bodyDoc = body.map(b => " " <> b.toDoc).getOrElse(Doc.empty)
-    group(Doc.text("record") <+> name.toDoc <> Doc.text("(") <> fieldsDoc <> Doc.text(")") <> bodyDoc)
+    val fieldsDoc = fields.map(_.toDoc).reduceOption(_ <> Docs.`,` <+> _).getOrElse(Doc.empty)
+    val bodyDoc = body.map(b => Doc.empty <+> b.toDoc).getOrElse(Doc.empty)
+    group(Doc.text("record") <+> name.toDoc <> Docs.`(` <> fieldsDoc <> Docs.`)` <> bodyDoc)
   }
 }
 
@@ -334,7 +335,7 @@ object Block {
     Block(heads, Some(tail), meta)
 }
 
-// in function declaration
+// In function declaration
 case class Arg(
     decorations: Vector[Identifier] = Vector(),
     name: Identifier,
@@ -370,16 +371,16 @@ case class Arg(
       s"Arg($decorations,$name,$ty,$exorOrDefault,$vararg)"
   }
 
-  def toDoc(implicit options: PrettierOptions): Doc = group {
+  override def toDoc(implicit options: PrettierOptions): Doc = group {
     val decDoc =
       if (decorations.nonEmpty)
-        decorations.map(_.toDoc).reduce(_ </> _) <> Doc.text(" ")
+        decorations.map(_.toDoc).reduce(_ </> _) <+> Doc.empty
       else Doc.empty
     val nameDoc = name.toDoc
-    val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
+    val tyDoc = ty.map(t => Docs.`:` <+> t.toDoc).getOrElse(Doc.empty)
     val exprDoc =
-      exprOrDefault.map(e => Doc.text(" = ") <> e.toDoc).getOrElse(Doc.empty)
-    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
+      exprOrDefault.map(e => Docs.`=` <+> e.toDoc).getOrElse(Doc.empty)
+    val varargDoc = if (vararg) Docs.`...` else Doc.empty
     decDoc <> nameDoc <> tyDoc <> exprDoc <> varargDoc
   }
 }
@@ -395,10 +396,10 @@ case class CallingArg(
     CallingArg(name, operator(expr), vararg, meta)
   }
 
-  def toDoc(implicit options: PrettierOptions): Doc = group {
-    val nameDoc = name.map(n => n.toDoc <> Doc.text(" = ")).getOrElse(Doc.empty)
+  override def toDoc(implicit options: PrettierOptions): Doc = group {
+    val nameDoc = name.map(n => n.toDoc <> Docs.`=` <+> Doc.empty).getOrElse(Doc.empty)
     val exprDoc = expr.toDoc
-    val varargDoc = if (vararg) Doc.text("...") else Doc.empty
+    val varargDoc = if (vararg) Docs.`...` else Doc.empty
     nameDoc <> exprDoc <> varargDoc
   }
 }
@@ -419,9 +420,9 @@ case class DesaltCallingTelescope(
   ): DesaltCallingTelescope = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = {
-    val argsDoc = args.map(_.toDoc).reduce(_ <> Doc.text(", ") <> _)
-    if (implicitly) Doc.text("@(") <> argsDoc <> Doc.text(")")
-    else Doc.text("(") <> argsDoc <> Doc.text(")")
+    val argsDoc = args.map(_.toDoc).reduceOption(_ <> Docs.`,` <+> _).getOrElse(Doc.empty)
+    if (implicitly) Docs.`[` <> argsDoc <> Docs.`]`
+    else Docs.`(` <> argsDoc <> Docs.`)`
   }
 }
 
@@ -443,7 +444,7 @@ case class Tuple(terms: Vector[Expr], meta: Option[ExprMeta] = None) extends Par
   ): Tuple = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("(", ")", ", ")(terms)
+    Doc.wrapperlist(Docs.`(`, Docs.`)`)(terms)
 }
 
 case class DefTelescope(
@@ -546,7 +547,7 @@ case class DotCall(
   }
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    expr.toDoc <> Doc.text(".") <> field.toDoc <> telescope
+    expr.toDoc <> Docs.`.` <> field.toDoc <> telescope
       .map(_.toDoc)
       .reduceOption(_ <> _)
       .getOrElse(Doc.empty)
@@ -706,12 +707,12 @@ case class ObjectExpr(
   ): ObjectExpr = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("{", "}", ", ")(
+    Doc.wrapperlist(Docs.`{`, Docs.`}`)(
       clauses.map {
         case ObjectExprClause(key, value) =>
-          key.toDoc <> Doc.text("=") <> value.toDoc
+          key.toDoc <> Docs.`=` <+> value.toDoc
         case ObjectExprClauseOnValue(key, value) =>
-          key.toDoc <> Doc.text("=>") <> value.toDoc
+          key.toDoc <> Docs.`=>` <+> value.toDoc
       }
     )
 }
@@ -770,7 +771,7 @@ case class DesaltMatching(
   )
 
   override def toDoc(implicit options: PrettierOptions): Doc =
-    Doc.wrapperlist("{", "}", ";")(
+    Doc.wrapperlist(Docs.`{`, Docs.`}`, Docs.`;`)(
       clauses.map(_.toDoc)
     )
 }

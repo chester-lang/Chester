@@ -965,7 +965,6 @@ def UnitType(meta: OptionTermMeta = None) =
 def UnitTerm(meta: OptionTermMeta = None) =
   ObjectTerm(Vector.empty, meta = meta)
 
-
 case class FieldTerm(
     name: Name,
     ty: Term,
@@ -976,7 +975,6 @@ case class FieldTerm(
   override def toDoc(implicit options: PrettierOptions): Doc =
     Doc.text(name) <> Doc.text(": ") <> ty.toDoc
 }
-
 
 case class RecordTerm(
     name: Name,
@@ -995,8 +993,8 @@ case class RecordTerm(
 
     group(
       Doc.text("record ") <> Doc.text(name) <>
-      Doc.group(Doc.text("(") <> fieldsDoc <> Doc.text(")")) <>
-      bodyDoc
+        Doc.group(Doc.text("(") <> fieldsDoc <> Doc.text(")")) <>
+        bodyDoc
     )
   }
 }

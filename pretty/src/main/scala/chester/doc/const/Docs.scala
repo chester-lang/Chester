@@ -29,4 +29,5 @@ object Docs {
   def `=>`(implicit options: PrettierOptions): Doc =
     if (ReplaceBracketsWithWord.get) Doc.text("returns ") else Doc.text("=>")
   def `.`(implicit options: PrettierOptions): Doc = Doc.text(".")
+  def `;`(implicit options: PrettierOptions): Doc = Doc.text(";")
 }

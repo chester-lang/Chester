@@ -5,7 +5,8 @@ import sbt.librarymanagement.InclExclRule
 import scala.scalanative.build.*
 import sbt.complete.DefaultParsers._
 
-addCommandAlias("lint", "scalafmtAll ; scalafmtSbt ; scalafixAll")
+addCommandAlias("format", "scalafmtAll ; scalafmtSbt ; scalafixAll")
+addCommandAlias("fmt", "scalafmtAll ; scalafmtSbt")
 inThisBuild(
   List(
     semanticdbEnabled := true, // enable SemanticDB
@@ -457,7 +458,8 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "tyck-platform",
     commonSettings
   )
-  .jvmSettings(commonJvmLibSettings,
+  .jvmSettings(
+    commonJvmLibSettings,
     libraryDependencies ++= Seq(
       "org.scalameta" %% "semanticdb-shared" % "4.10.1" cross (CrossVersion.for3Use2_13) exclude ("com.lihaoyi", "sourcecode_2.13"),
       "org.scala-lang.modules" % "scala-asm" % "9.7.0-scala-2",
@@ -476,7 +478,7 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       // https://www.graalvm.org/latest/reference-manual/native-image/guides/build-polyglot-native-executable/
       "org.graalvm.polyglot" % "polyglot" % graalvmVersion,
       "org.graalvm.polyglot" % "js" % graalvmVersion
-    ),
+    )
   )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
@@ -791,7 +793,7 @@ lazy val common = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     commonSettings
   )
   .jvmSettings(
-    commonJvmLibSettings,
+    commonJvmLibSettings
   )
   .nativeSettings(
     scalacOptions ++= (if (supportNativeBuildForTermux)
