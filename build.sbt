@@ -5,6 +5,8 @@ import sbt.librarymanagement.InclExclRule
 import scala.scalanative.build.*
 import sbt.complete.DefaultParsers._
 
+import scala.sys.process._
+
 addCommandAlias("format", "scalafmtAll ; scalafmtSbt ; scalafixAll")
 addCommandAlias("fmt", "scalafmtAll ; scalafmtSbt")
 inThisBuild(
@@ -486,8 +488,15 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       (jsForJvm.js / Compile / fastLinkJS).map { jsLinkerOutput =>
         val jsArtifact = (jsForJvm.js / Compile / fastLinkJSOutput).value / jsLinkerOutput.data.publicModules.head.jsFileName
 
+        val log = streams.value.log
+
+        // Copy to file("js-for-jvm") / "index.js"
+        IO.copyFile(jsArtifact, file("js-for-jvm") / "index.js")
+        Process("pnpm install", file("js-for-jvm")) ! log
+        Process("pnpm run build", file("js-for-jvm")) ! log
+
         // Read the content of the JS file
-        val jsContent = IO.read(jsArtifact)
+        val jsContent = IO.read(file("js-for-jvm") / "dist" / "bundle.js")
 
         // Escape special characters in the JS content
         val escapedJsContent = jsContent
@@ -496,7 +505,7 @@ lazy val tyckPlatform = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 
         // Define where to place the generated Scala file
         val sourceDir = (Compile / sourceManaged).value
-        val file = sourceDir / "chester" / "generated" / "GeneratedJS.scala"
+        val generatedFile = sourceDir / "chester" / "generated" / "GeneratedJS.scala"
 
         // Generate the content of the Scala file
         val content =
@@ -507,10 +516,10 @@ object GeneratedJS {
           """
 
         // Write the content to the Scala file
-        IO.write(file, content)
+        IO.write(generatedFile, content)
 
         // Return the generated file
-        Seq(file)
+        Seq(generatedFile)
       }
     }.taskValue,
     commonJvmLibSettings,
