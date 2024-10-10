@@ -1,6 +1,7 @@
 package chester.js4jvm
 
 import org.graalvm.polyglot.*
+import org.graalvm.polyglot.io.IOAccess
 
 object Js4Jvm {
   // https://www.graalvm.org/latest/reference-manual/js/Modules/
