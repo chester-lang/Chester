@@ -122,7 +122,7 @@ val baseDeps = Seq(
 
 commonSettings
 
-ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.10")
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.0.11")
 ThisBuild / organization := "com.github.chester-lang"
 
 lazy val bump = inputKey[Unit]("Bump version in multiple files")
