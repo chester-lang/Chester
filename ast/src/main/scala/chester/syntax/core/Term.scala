@@ -796,6 +796,7 @@ case class STEffect(meta: OptionTermMeta = None) extends Effect {
 
 sealed trait MaybeVarCall extends MaybeCallTerm with TermWithUniqId derives ReadWriter {
   def name: Name
+  def ty: Term
 }
 
 case class LocalV(

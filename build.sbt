@@ -389,7 +389,7 @@ lazy val tyckJvm = crossProject(JVMPlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("tyck-jvm"))
-  .dependsOn(tyck)
+  .dependsOn(common)
   .settings(
     name := "tyck-jvm",
     libraryDependencies ++= Seq(
@@ -769,6 +769,7 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jvmEnablePlugins(NativeImagePlugin)
   .enablePlugins(BuildInfoPlugin) // Enable the BuildInfoPlugin
   .dependsOn(common)
+  .jvmConfigure(_.dependsOn(tyckJvm.jvm))
   .settings(
     name := "cli",
     Compile / mainClass := Some("chester.cli.Main"),

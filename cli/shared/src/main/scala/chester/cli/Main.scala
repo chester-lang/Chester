@@ -116,6 +116,24 @@ object Main {
               .text("Input .tast binary file.")
           ),
 
+        // Command for "genSemanticDB"
+        cmd("genSemanticDB")
+          .action((_, c) => c.copy(command = "genSemanticDB"))
+          .text("Generate SemanticDB for testing")
+          .children(
+            arg[String]("input")
+              .required()
+              .validate {
+                case path if fileExists(path) => success
+                case path =>
+                  failure(
+                    s"Invalid input. Provide a valid source file or directory. Provided: $path"
+                  )
+              }
+              .action((x, c) => c.copy(input = Some(x)))
+              .text("Input source file or directory.")
+          ),
+
         // Handle case where user might omit "run" and just provide input directly
         arg[String]("input")
           .optional()
@@ -161,6 +179,9 @@ object Main {
                 println("Error: Input file is required for decompile command.")
                 return
             }
+          case "genSemanticDB" =>
+            PlatformSpecific.genSemanticDB(cliConfig)
+            return
           case _ =>
             println("Invalid command")
             return
