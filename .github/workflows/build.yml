@@ -60,10 +60,12 @@ jobs:
       with:
         node-version: "lts/*"
         cache: ''
-    - name: Install pnpm on windows
+
+    - name: Choco install pnpm on windows
       if: runner.os == 'Windows'
-      run: |
-        npm install -g pnpm
+      uses: crazy-max/ghaction-chocolatey@v3
+      with:
+        args: install pnpm
 
     - uses: graalvm/setup-graalvm@v1
       if: runner.os == 'Linux'
