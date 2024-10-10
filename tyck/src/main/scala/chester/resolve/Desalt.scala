@@ -382,6 +382,46 @@ case object SimpleDesalt {
             reporter(error)
             DesaltFailed(opseq, error, meta)
         }
+      case expr @ OpSeq(Vector(Identifier(Const.Record, _), name: Identifier, rest @ _*), meta) =>
+      // Parse the fields and body
+      val (fieldExprs, bodyExprs) = rest.toList.span {
+        case Tuple(_, _) => true
+        case _           => false
+      }
+
+      // Desugar fields into Field instances
+      val desugaredFields = fieldExprs.flatMap {
+        case Tuple(terms, _) =>
+          terms.map {
+            case OpSeq(Vector(id: Identifier, Identifier(Const.`:`, _), ty), _) =>
+              Some(RecordField(name = id, ty = Some(ty)))
+            case id: Identifier =>
+              Some(RecordField(name = id))
+            case other =>
+              reporter(ExpectFieldDeclaration(other))
+              None
+          }
+        case other =>
+          reporter(ExpectFieldDeclaration(other))
+          None
+      }.flatten.toVector
+
+      // Desugar body if present
+      val desugaredBody = if (bodyExprs.nonEmpty) {
+        val bodyExpr = opSeq(bodyExprs)
+        Some(desugar(bodyExpr) match {
+          case b: Block => b
+          case other    => Block(Vector(other), None)
+        })
+      } else None
+
+      RecordExpr(
+        name = name,
+        fields = desugaredFields,
+        body = desugaredBody,
+        meta = meta
+      )
+
       case default => default
     }
 

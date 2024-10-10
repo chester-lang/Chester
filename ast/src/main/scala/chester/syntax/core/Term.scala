@@ -964,3 +964,39 @@ def UnitType(meta: OptionTermMeta = None) =
   ObjectType(Vector.empty, meta = meta)
 def UnitTerm(meta: OptionTermMeta = None) =
   ObjectTerm(Vector.empty, meta = meta)
+
+
+case class FieldTerm(
+    name: Name,
+    ty: Term,
+    meta: OptionTermMeta = None
+) extends Term {
+  override def descent(f: Term => Term): Term = copy(ty = f(ty))
+
+  override def toDoc(implicit options: PrettierOptions): Doc =
+    Doc.text(name) <> Doc.text(": ") <> ty.toDoc
+}
+
+
+case class RecordTerm(
+    name: Name,
+    fields: Vector[FieldTerm],
+    body: Seq[Term],
+    meta: OptionTermMeta = None
+) extends StmtTerm {
+  override def descent(f: Term => Term): RecordTerm = copy(
+    fields = fields.map(field => field.copy(ty = f(field.ty))),
+    body = body.map(f)
+  )
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val fieldsDoc = fields.map(_.toDoc).reduceOption(_ <> Doc.text(", ") <> _).getOrElse(Doc.empty)
+    val bodyDoc = body.map(_.toDoc).reduceOption(_ </> _).getOrElse(Doc.empty)
+
+    group(
+      Doc.text("record ") <> Doc.text(name) <>
+      Doc.group(Doc.text("(") <> fieldsDoc <> Doc.text(")")) <>
+      bodyDoc
+    )
+  }
+}

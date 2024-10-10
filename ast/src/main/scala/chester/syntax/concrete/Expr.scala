@@ -246,13 +246,66 @@ case class PostfixExpr(
     operand.toDoc <> operator.toDoc
   )
 }
+sealed trait Field extends Expr derives ReadWriter {
+  def name: Identifier
+  def ty: Option[Expr]
+  override def descent(operator: Expr => Expr): Field = ???
+}
+
+case class RecordField(
+    name: Identifier,
+    ty: Option[Expr] = None,
+    defaultValue: Option[Expr] = None,
+    meta: Option[ExprMeta] = None
+) extends Field {
+  override def descent(operator: Expr => Expr): RecordField = copy(
+    name = name,
+    ty = ty.map(operator),
+    defaultValue = defaultValue.map(operator),
+    meta = meta
+  )
+
+  override def updateMeta(
+      updater: Option[ExprMeta] => Option[ExprMeta]
+  ): RecordField = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val tyDoc = ty.map(t => Doc.text(": ") <> t.toDoc).getOrElse(Doc.empty)
+    val defaultDoc = defaultValue.map(v => Doc.text(" = ") <> v.toDoc).getOrElse(Doc.empty)
+    name.toDoc <> tyDoc <> defaultDoc
+  }
+}
+
+case class RecordExpr(
+    name: Identifier,
+    fields: Vector[Field],
+    body: Option[Block],
+    meta: Option[ExprMeta] = None
+) extends Expr {
+  override def descent(operator: Expr => Expr): RecordExpr = copy(
+    name = name,
+    fields = fields.map(_.descent(operator)),
+    body = body.map(_.descent(operator)),
+    meta = meta
+  )
+
+  override def updateMeta(
+      updater: Option[ExprMeta] => Option[ExprMeta]
+  ): RecordExpr = copy(meta = updater(meta))
+
+  override def toDoc(implicit options: PrettierOptions): Doc = {
+    val fieldsDoc = fields.map(_.toDoc).reduceOption(_ <> Doc.text(", ") <> _).getOrElse(Doc.empty)
+    val bodyDoc = body.map(b => " " <> b.toDoc).getOrElse(Doc.empty)
+    group(Doc.text("record") <+> name.toDoc <> Doc.text("(") <> fieldsDoc <> Doc.text(")") <> bodyDoc)
+  }
+}
 
 case class Block(
     heads: Vector[Expr],
     tail: Option[Expr],
     meta: Option[ExprMeta] = None
 ) extends ParsedExpr {
-  override def descent(operator: Expr => Expr): Expr = thisOr {
+  override def descent(operator: Expr => Expr): Block = thisOr {
     Block(heads.map(operator), tail.map(operator), meta)
   }
 
@@ -263,12 +316,13 @@ case class Block(
   override def toDoc(implicit options: PrettierOptions): Doc = group {
     val headDocs = heads
       .map(_.toDoc)
-      .reduceOption(_ <> Doc.text(";") </> _)
+      .reduceOption(_ <> Docs.`;` </> _)
       .getOrElse(Doc.empty)
     val tailDoc = tail.map(_.toDoc).getOrElse(Doc.empty)
-    (Doc.text("{") </> Doc.indented(Doc.concat(headDocs, tailDoc)) </> Doc.text(
-      "}"
-    ))
+
+    Docs.`{` </>
+      Doc.indented(Doc.concat(headDocs, tailDoc)) </>
+      Docs.`}`
   }
 }
 
@@ -586,7 +640,7 @@ case class TypeAnnotation(expr: Expr, ty: Expr, meta: Option[ExprMeta] = None) e
   ): TypeAnnotation = copy(meta = updater(meta))
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    expr.toDoc <> Doc.text(": ") <> ty.toDoc
+    expr.toDoc <> Docs.`:` <+> ty.toDoc
   )
 }
 
@@ -699,7 +753,7 @@ case class DesaltCaseClause(
   )
 
   override def toDoc(implicit options: PrettierOptions): Doc = group(
-    Doc.text("case ") <> pattern.toDoc <> Doc.text(" => ") <> returning.toDoc
+    Doc.text("case") <+> pattern.toDoc <+> Docs.`=>` <+> returning.toDoc
   )
 }
 
@@ -743,16 +797,14 @@ case class FunctionExpr(
   )
 
   override def toDoc(implicit options: PrettierOptions): Doc = group {
-    val telescopeDoc =
-      telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
-    val effectDoc =
-      effect.map(e => Doc.text(" ") <> e.toDoc).getOrElse(Doc.empty)
-    val resultDoc =
-      resultTy.map(r => Doc.text(" -> ") <> r.toDoc).getOrElse(Doc.empty)
+    val telescopeDoc = telescope.map(_.toDoc).reduceOption(_ <+> _).getOrElse(Doc.empty)
+    val effectDoc = effect.map(_.toDoc).getOrElse(Doc.empty)
+    val resultDoc = resultTy.map(r => Docs.`->` <+> r.toDoc).getOrElse(Doc.empty)
     val bodyDoc = body.toDoc
-    telescopeDoc <> effectDoc <> resultDoc <+> Docs.`{` </> Doc.indented(
-      bodyDoc
-    ) </> Docs.`}`
+
+    telescopeDoc <+> effectDoc <+> resultDoc <+> Docs.`{` </>
+      Doc.indented(bodyDoc) </>
+      Docs.`}`
   }
 }
 

@@ -251,3 +251,10 @@ case class InvalidModuleSyntax(cause: Expr) extends TyckError {
   ): Doc =
     t"Invalid syntax in module statement:"
 }
+
+case class ExpectFieldDeclaration(cause: Expr) extends TyckError {
+  override def toDoc(implicit
+      options: PrettierOptions = PrettierOptions.Default
+  ): Doc =
+    t"Expected a field declaration, got "
+}
