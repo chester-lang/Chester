@@ -1038,16 +1038,6 @@ lazy val lsp = crossProject(JVMPlatform)
     graalvmSettings
   )
 
-lazy val lspTs = crossProject(JSPlatform)
-  .withoutSuffixFor(JSPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("lsp-ts"))
-  .dependsOn(common, nodejs)
-  .settings(
-    name := "lsp-ts",
-    commonSettings
-  )
-
 lazy val buildProtocol = crossProject(JVMPlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
@@ -1165,7 +1155,6 @@ lazy val root = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     common,
     cli,
     lsp,
-    lspTs,
     buildProtocol,
     buildTool,
     truffle,
