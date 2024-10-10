@@ -18,7 +18,7 @@ object PlatformSpecific {
       println(s"Error: Input path does not exist: $inputPath")
       return
     }
-    if(path.ext != "chester") {
+    if (path.ext != "chester") {
       println(s"Error: Input path must be a .chester file: $inputPath")
       return
     }
@@ -30,7 +30,7 @@ object PlatformSpecific {
     generator.processPath(path)
 
     // Save the SemanticDB file
-    val outputPath = os.Path(path.baseName + ".semanticdb")
+    val outputPath = path / os.up / path.baseName + ".semanticdb"
     generator.saveSemanticDB(path.toString, outputPath.toString)
 
     println(s"SemanticDB generated at: $outputPath")
