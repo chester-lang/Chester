@@ -42,26 +42,7 @@ private object MatchDeclarationTelescope {
     case id: Identifier =>
       // Single parameter without type
       Some(DefTelescope(Vector(Arg(name = id, meta = id.meta))))
-    case OpSeq(terms, _) if terms.nonEmpty =>
-      // Multiple parameters, possibly with types
-      val argsResult = terms
-        .grouped(3)
-        .map {
-          case Vector(id: Identifier, Identifier(Const.`:`, _), ty) =>
-            Some(Arg(name = id, ty = Some(ty), meta = id.meta))
-          case Vector(id: Identifier) =>
-            Some(Arg(name = id, meta = id.meta))
-          case _ =>
-            reporter(ExpectParameterList(x))
-            None
-        }
-        .toVector
-
-      if (argsResult.contains(None)) {
-        None
-      } else {
-        Some(DefTelescope(argsResult.flatten))
-      }
+    case opseq@OpSeq(terms, meta) if terms.nonEmpty => unapply(Tuple(Vector(opseq), meta))
     case Tuple(terms, _) =>
       // Parameters enclosed in parentheses
       val argsResult = terms.map {
